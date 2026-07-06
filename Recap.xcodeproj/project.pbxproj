@@ -7,13 +7,37 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		A7BB44142FF2A90B00752373 /* Recap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Recap.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A7BB44142FF2A90B00752373 /* Recap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Recap.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		A7DC3DEA2FFBE596007765AD /* Exceptions for "Recap" folder in "Recap" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"docs/화면정의서.md",
+			);
+			target = A7BB44132FF2A90B00752373 /* Recap */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		A7DC3DEB2FFBE596007765AD /* Exceptions for "Recap" folder in "Compile Sources" phase from "Recap" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = A7BB44102FF2A90B00752373 /* Sources */;
+			membershipExceptions = (
+				"docs/화면정의서.md",
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A7BB44162FF2A90B00752373 /* Recap */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Recap";
+			exceptions = (
+				A7DC3DEA2FFBE596007765AD /* Exceptions for "Recap" folder in "Recap" target */,
+				A7DC3DEB2FFBE596007765AD /* Exceptions for "Recap" folder in "Compile Sources" phase from "Recap" target */,
+			);
+			path = Recap;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -63,10 +87,10 @@
 			fileSystemSynchronizedGroups = (
 				A7BB44162FF2A90B00752373 /* Recap */,
 			);
-			name = "Recap";
+			name = Recap;
 			packageProductDependencies = (
 			);
-			productName = "Recap";
+			productName = Recap;
 			productReference = A7BB44142FF2A90B00752373 /* Recap.app */;
 			productType = "com.apple.product-type.application";
 		};
