@@ -56,7 +56,7 @@ struct HomeView: View {
                 )
 
                 Button(action: openSearch) {
-                    SearchBar(text: .constant(""))
+                    SearchBar(text: .constant(""), placeholder: "카드 제목 또는 핵심 정보 검색")
                         .allowsHitTesting(false)
                 }
                 .buttonStyle(.plain)
@@ -69,14 +69,16 @@ struct HomeView: View {
                     onAction: openAllRecent
                 )
 
-                VStack(spacing: RecapTheme.Spacing.medium) {
-                    ForEach(visibleRecentCards) { card in
-                        Button {
-                            openCard(card.id)
-                        } label: {
-                            InfoCardRow(card: card)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(alignment: .top, spacing: RecapTheme.Spacing.medium) {
+                        ForEach(visibleRecentCards) { card in
+                            Button {
+                                openCard(card.id)
+                            } label: {
+                                RecentRecapCard(card: card)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
                 }
 

@@ -17,11 +17,13 @@ struct TagChip: View {
 }
 
 #Preview {
-    HStack {
-        TagChip(title: "전체", isSelected: true)
-        TagChip(title: "맛집")
-        TagChip(title: "#성수동")
+    ZStack {
+        RecapTheme.ColorToken.background.ignoresSafeArea()
+        HStack {
+            TagChip(title: "전체", isSelected: true)
+            TagChip(title: "맛집")
+            TagChip(title: "#성수동")
+        }
+        .padding()
     }
-    .padding()
-    .background(RecapTheme.ColorToken.background)
 }

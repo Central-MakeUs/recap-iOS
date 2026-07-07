@@ -86,16 +86,18 @@ extension View {
 }
 
 #Preview("Theme card") {
-    VStack(spacing: RecapTheme.Spacing.large) {
-        Text("RE-CAP")
-            .font(RecapTheme.Typography.heading2)
-        Text("카드 스타일 미리보기")
-            .font(RecapTheme.Typography.body2)
-            .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+    ZStack {
+        RecapTheme.ColorToken.background.ignoresSafeArea()
+        VStack(spacing: RecapTheme.Spacing.large) {
+            Text("RE-CAP")
+                .font(RecapTheme.Typography.heading2)
+            Text("카드 스타일 미리보기")
+                .font(RecapTheme.Typography.body2)
+                .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
+        .recapCard()
+        .padding()
     }
-    .frame(maxWidth: .infinity)
-    .padding()
-    .recapCard()
-    .padding()
-    .background(RecapTheme.ColorToken.background)
 }

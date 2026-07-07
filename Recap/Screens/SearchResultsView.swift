@@ -39,7 +39,7 @@ struct SearchResultsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: RecapTheme.Spacing.large) {
-                SearchBar(text: $query, showsClearButton: true)
+                SearchBar(text: $query, placeholder: "카드 제목 또는 핵심 정보 검색", showsClearButton: true)
 
                 VStack(alignment: .leading, spacing: RecapTheme.Spacing.xSmall) {
                     HStack(spacing: 4) {

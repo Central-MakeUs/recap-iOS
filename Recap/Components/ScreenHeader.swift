@@ -54,10 +54,12 @@ struct ScreenHeader: View {
 }
 
 #Preview {
-    VStack(spacing: RecapTheme.Spacing.large) {
-        ScreenHeader(style: .logo)
-        ScreenHeader(style: .title("컬렉션"), showsMenu: false)
+    ZStack {
+        RecapTheme.ColorToken.background.ignoresSafeArea()
+        VStack(spacing: RecapTheme.Spacing.large) {
+            ScreenHeader(style: .logo)
+            ScreenHeader(style: .title("컬렉션"), showsMenu: false)
+        }
+        .padding()
     }
-    .padding()
-    .background(RecapTheme.ColorToken.background)
 }

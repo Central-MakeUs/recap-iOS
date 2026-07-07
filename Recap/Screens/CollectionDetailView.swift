@@ -88,6 +88,13 @@ struct CollectionDetailView: View {
                         .padding(.top, 2)
                 }
 
+                HStack {
+                    RecapFilterButton(title: "최신순") {
+                        onAction(.selectFilter("최신순"))
+                    }
+                    Spacer()
+                }
+
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: RecapTheme.Spacing.small) {
                         TagChip(title: "전체", color: RecapTheme.ColorToken.primary, isSelected: true)
@@ -98,16 +105,18 @@ struct CollectionDetailView: View {
                     }
                 }
 
-                VStack(spacing: RecapTheme.Spacing.medium) {
+                VStack(spacing: 0) {
                     ForEach(cards) { card in
                         Button {
                             openCard(card.id)
                         } label: {
-                            InfoCardRow(card: card)
+                            ArchiveListCard(card: card)
                         }
                         .buttonStyle(.plain)
                     }
                 }
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.medium, style: .continuous))
             }
             .padding(RecapTheme.Spacing.large)
         }

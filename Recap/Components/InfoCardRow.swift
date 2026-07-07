@@ -64,10 +64,12 @@ struct PlaceholderThumbnail: View {
 }
 
 #Preview {
-    VStack {
-        InfoCardRow(card: SampleData.cards[0])
-        InfoCardRow(card: SampleData.cards[1])
+    ZStack {
+        RecapTheme.ColorToken.background.ignoresSafeArea()
+        VStack {
+            InfoCardRow(card: SampleData.cards[0])
+            InfoCardRow(card: SampleData.cards[1])
+        }
+        .padding()
     }
-    .padding()
-    .background(RecapTheme.ColorToken.background)
 }

@@ -29,7 +29,9 @@ struct RecapLogo: View {
 }
 
 #Preview {
-    RecapLogo(showsSubtitle: true)
-        .padding()
-        .background(RecapTheme.ColorToken.background)
+    ZStack {
+        RecapTheme.ColorToken.background.ignoresSafeArea()
+        RecapLogo(showsSubtitle: true)
+            .padding()
+    }
 }

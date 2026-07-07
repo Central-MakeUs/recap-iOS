@@ -49,10 +49,12 @@ struct CollectionSummaryCard: View {
 }
 
 #Preview {
-    VStack(spacing: RecapTheme.Spacing.medium) {
-        CollectionSummaryCard(summary: SampleData.collectionSummaries[0])
-        CollectionSummaryCard(summary: SampleData.collectionSummaries[1], compact: true)
+    ZStack {
+        RecapTheme.ColorToken.background.ignoresSafeArea()
+        VStack(spacing: RecapTheme.Spacing.medium) {
+            CollectionSummaryCard(summary: SampleData.collectionSummaries[0])
+            CollectionSummaryCard(summary: SampleData.collectionSummaries[1], compact: true)
+        }
+        .padding()
     }
-    .padding()
-    .background(RecapTheme.ColorToken.background)
 }

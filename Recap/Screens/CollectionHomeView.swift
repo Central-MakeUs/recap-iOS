@@ -55,12 +55,26 @@ struct CollectionHomeView: View {
 
                 SectionHeader(title: "기본 컬렉션")
 
-                VStack(spacing: RecapTheme.Spacing.medium) {
+                LazyVGrid(
+                    columns: [
+                        GridItem(.flexible(), spacing: RecapTheme.Spacing.large),
+                        GridItem(.flexible(), spacing: RecapTheme.Spacing.large),
+                        GridItem(.flexible(), spacing: RecapTheme.Spacing.large)
+                    ],
+                    alignment: .leading,
+                    spacing: RecapTheme.Spacing.xLarge
+                ) {
                     ForEach(summaries) { summary in
                         Button {
                             openArchive(summary.kind)
                         } label: {
-                            CollectionSummaryCard(summary: summary)
+                            let collection = RecapPresentation.collectionDisplay(for: summary.kind)
+                            ArchiveCategoryCard(
+                                title: collection.title,
+                                count: summary.count,
+                                thumbnailState: summary.count == 0 ? .empty : .filled,
+                                tint: collection.dotColor
+                            )
                         }
                         .buttonStyle(.plain)
                     }
