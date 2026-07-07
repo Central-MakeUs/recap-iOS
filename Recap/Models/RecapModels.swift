@@ -13,17 +13,10 @@ enum OnboardingStep: Hashable {
 
 enum MainTab: String, CaseIterable, Identifiable, Hashable {
     case home
-    case collection
-    case myPage
+    case organize
+    case archive
 
     var id: String { rawValue }
-}
-
-enum AppRoute: Hashable {
-    case search
-    case collectionDetail(CollectionKind)
-    case cardDetail(InformationCard.ID)
-    case settingsDetail(SettingsRoute)
 }
 
 enum SettingsRoute: String, CaseIterable, Hashable, Identifiable {

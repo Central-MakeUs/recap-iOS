@@ -62,9 +62,9 @@ struct RecapButton: View {
 
 #Preview {
     VStack(spacing: RecapTheme.Spacing.medium) {
-        RecapButton(title: "권한 허용하기", style: .primary) {}
-        RecapButton(title: "카카오로 시작하기", systemImage: "message.fill", style: .kakao) {}
-        RecapButton(title: "Apple로 시작하기", systemImage: "apple.logo", style: .dark) {}
+        RecapButton(title: "권한 허용하기", style: .primary, action: PreviewActions.noop)
+        RecapButton(title: "카카오로 시작하기", systemImage: "message.fill", style: .kakao, action: PreviewActions.noop)
+        RecapButton(title: "Apple로 시작하기", systemImage: "apple.logo", style: .dark, action: PreviewActions.noop)
     }
     .padding()
     .background(RecapTheme.ColorToken.background)

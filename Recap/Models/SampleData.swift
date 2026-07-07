@@ -1,7 +1,7 @@
 import Foundation
 
 enum SampleData {
-    static let cards: [InformationCard] = [
+    nonisolated static let cards: [InformationCard] = [
         InformationCard(
             id: UUID(uuidString: "11111111-1111-1111-1111-111111111111")!,
             title: "성수동 브런치 맛집",
@@ -82,24 +82,24 @@ enum SampleData {
         )
     ]
 
-    static let recentCards: [InformationCard] = Array(cards.prefix(3))
+    nonisolated static let recentCards: [InformationCard] = Array(cards.prefix(3))
 
-    static let collectionSummaries: [CollectionSummary] = [
+    nonisolated static let collectionSummaries: [CollectionSummary] = [
         CollectionSummary(kind: .revisit, count: 12, previewTitle: "6월 공고 지원 안내"),
         CollectionSummary(kind: .comparison, count: 8, previewTitle: "성수동 브런치 맛집"),
         CollectionSummary(kind: .archive, count: 5, previewTitle: "결제 내역 캡처"),
         CollectionSummary(kind: .reference, count: 15, previewTitle: "2026 모바일 UI 트렌드")
     ]
 
-    static func cards(in kind: CollectionKind) -> [InformationCard] {
+    nonisolated static func cards(in kind: CollectionKind) -> [InformationCard] {
         cards.filter { $0.collection == kind }
     }
 
-    static func card(id: InformationCard.ID) -> InformationCard? {
+    nonisolated static func card(id: InformationCard.ID) -> InformationCard? {
         cards.first { $0.id == id }
     }
 
-    static func search(_ query: String) -> [InformationCard] {
+    nonisolated static func search(_ query: String) -> [InformationCard] {
         guard !query.isEmpty else { return Array(cards.prefix(2)) }
         return cards.filter { card in
             card.title.localizedCaseInsensitiveContains(query)

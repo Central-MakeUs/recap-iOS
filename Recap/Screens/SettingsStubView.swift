@@ -1,10 +1,31 @@
 import SwiftUI
 
+struct SettingsContainerView: View {
+    @Environment(AppRouter.self) private var router
+
+    var body: some View {
+        SettingsStubView(onAction: handleAction)
+    }
+
+    private func handleAction(_ action: SettingsAction) {
+        switch action {
+        case .open(let route):
+            router.navigate(.settingsDetail(route))
+        }
+    }
+}
+
 struct SettingsStubView: View {
+    let onAction: (SettingsAction) -> Void
+
+    init(onAction: @escaping (SettingsAction) -> Void) {
+        self.onAction = onAction
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: RecapTheme.Spacing.large) {
-                ScreenHeader(style: .title("마이페이지"), showsMenu: false)
+                ScreenHeader(style: .title("설정"), showsMenu: false)
 
                 VStack(alignment: .leading, spacing: RecapTheme.Spacing.small) {
                     RecapLogo()
@@ -18,7 +39,9 @@ struct SettingsStubView: View {
 
                 VStack(spacing: RecapTheme.Spacing.medium) {
                     ForEach(SettingsRoute.allCases) { route in
-                        NavigationLink(value: AppRoute.settingsDetail(route)) {
+                        Button {
+                            open(route)
+                        } label: {
                             SettingsRow(route: route)
                         }
                         .buttonStyle(.plain)
@@ -28,6 +51,12 @@ struct SettingsStubView: View {
             .padding(RecapTheme.Spacing.large)
         }
         .background(RecapTheme.ColorToken.background)
+        .navigationTitle("설정")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func open(_ route: SettingsRoute) {
+        onAction(.open(route))
     }
 }
 
@@ -92,7 +121,9 @@ struct SettingsDetailStubView: View {
 }
 
 #Preview {
-    NavigationStack { SettingsStubView() }
+    NavigationStack {
+        SettingsStubView(onAction: PreviewActions.handleSettings)
+    }
 }
 
 #Preview("Settings detail") {

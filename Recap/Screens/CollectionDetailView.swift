@@ -1,14 +1,52 @@
 import SwiftUI
 
-struct CollectionDetailView: View {
+struct CollectionDetailContainerView: View {
+    @Environment(AppRouter.self) private var router
+    @Environment(RecapCardStore.self) private var cardStore
+
     let kind: CollectionKind
 
-    private var cards: [InformationCard] {
-        SampleData.cards(in: kind)
+    var body: some View {
+        CollectionDetailView(
+            kind: kind,
+            cards: cardStore.cards(in: kind),
+            summary: cardStore.collectionSummaries.first { $0.kind == kind },
+            onAction: handleAction
+        )
     }
 
-    private var summary: CollectionSummary? {
-        SampleData.collectionSummaries.first { $0.kind == kind }
+    private func handleAction(_ action: ArchiveAction) {
+        switch action {
+        case .search:
+            router.navigate(.search)
+        case .openArchive(let kind):
+            router.navigate(.archiveDetail(kind))
+        case .openCard(let id):
+            router.navigate(.cardDetail(id))
+        case .selectFilter:
+            break
+        case .openSettings:
+            router.navigate(.settings)
+        }
+    }
+}
+
+struct CollectionDetailView: View {
+    let kind: CollectionKind
+    let cards: [InformationCard]
+    let summary: CollectionSummary?
+    let onAction: (ArchiveAction) -> Void
+
+    init(
+        kind: CollectionKind,
+        cards: [InformationCard],
+        summary: CollectionSummary?,
+        onAction: @escaping (ArchiveAction) -> Void
+    ) {
+        self.kind = kind
+        self.cards = cards
+        self.summary = summary
+        self.onAction = onAction
     }
 
     var body: some View {
@@ -62,7 +100,9 @@ struct CollectionDetailView: View {
 
                 VStack(spacing: RecapTheme.Spacing.medium) {
                     ForEach(cards) { card in
-                        NavigationLink(value: AppRoute.cardDetail(card.id)) {
+                        Button {
+                            openCard(card.id)
+                        } label: {
                             InfoCardRow(card: card)
                         }
                         .buttonStyle(.plain)
@@ -71,6 +111,10 @@ struct CollectionDetailView: View {
             }
             .padding(RecapTheme.Spacing.large)
         }
+    }
+
+    private func openCard(_ id: InformationCard.ID) {
+        onAction(.openCard(id))
     }
 }
 
@@ -106,7 +150,14 @@ struct MissingCollectionSummaryView: View {
 }
 
 #Preview {
-    NavigationStack { CollectionDetailView(kind: .comparison) }
+    NavigationStack {
+        CollectionDetailView(
+            kind: .comparison,
+            cards: SampleData.cards(in: .comparison),
+            summary: SampleData.collectionSummaries.first { $0.kind == .comparison },
+            onAction: PreviewActions.handleArchive
+        )
+    }
 }
 
 #Preview("Missing collection summary") {

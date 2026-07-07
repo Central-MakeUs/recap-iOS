@@ -1,13 +1,13 @@
 import SwiftUI
 
-struct MainTabShellView: View {
-    @Binding var selectedTab: MainTab
+struct AppShellView: View {
+    let router: AppRouter
+    let cardStore: RecapCardStore
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            NavigationStack {
-                HomeView()
-                    .navigationDestination(for: AppRoute.self, destination: destination)
+        TabView(selection: selectedTab) {
+            tabStack(for: .home) {
+                HomeContainerView()
             }
             .tabItem {
                 let item = RecapPresentation.tabItem(for: .home)
@@ -15,49 +15,53 @@ struct MainTabShellView: View {
             }
             .tag(MainTab.home)
 
-            NavigationStack {
-                CollectionHomeView()
-                    .navigationDestination(for: AppRoute.self, destination: destination)
+            tabStack(for: .organize) {
+                OrganizeContainerView()
             }
             .tabItem {
-                let item = RecapPresentation.tabItem(for: .collection)
+                let item = RecapPresentation.tabItem(for: .organize)
                 Label(item.title, systemImage: item.systemImage)
             }
-            .tag(MainTab.collection)
+            .tag(MainTab.organize)
 
-            NavigationStack {
-                SettingsStubView()
-                    .navigationDestination(for: AppRoute.self, destination: destination)
+            tabStack(for: .archive) {
+                CollectionHomeContainerView()
             }
             .tabItem {
-                let item = RecapPresentation.tabItem(for: .myPage)
+                let item = RecapPresentation.tabItem(for: .archive)
                 Label(item.title, systemImage: item.systemImage)
             }
-            .tag(MainTab.myPage)
+            .tag(MainTab.archive)
         }
+        .withAppPresentations(router: router, cardStore: cardStore)
         .tint(RecapTheme.ColorToken.primary)
         .background(RecapTheme.ColorToken.background)
+        .environment(router)
+        .environment(cardStore)
     }
 
     @ViewBuilder
-    private func destination(for route: AppRoute) -> some View {
-        switch route {
-        case .search:
-            SearchResultsView()
-        case .collectionDetail(let kind):
-            CollectionDetailView(kind: kind)
-        case .cardDetail(let id):
-            if let card = SampleData.card(id: id) {
-                CardDetailView(card: card)
-            } else {
-                MissingCardView(cardID: id)
-            }
-        case .settingsDetail(let route):
-            SettingsDetailStubView(route: route)
+    private func tabStack<Content: View>(
+        for tab: MainTab,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        NavigationStack(path: router.binding(for: tab)) {
+            content()
+                .withAppNavigationDestinations()
         }
+    }
+
+    private var selectedTab: Binding<MainTab> {
+        Binding(
+            get: { router.selectedTab },
+            set: { router.selectedTab = $0 }
+        )
     }
 }
 
 #Preview {
-    MainTabShellView(selectedTab: .constant(.home))
+    AppShellView(
+        router: AppRouter(),
+        cardStore: PreviewStores.recapCardStore()
+    )
 }

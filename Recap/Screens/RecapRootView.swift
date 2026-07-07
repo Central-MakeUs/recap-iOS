@@ -2,11 +2,26 @@ import SwiftUI
 
 struct RecapRootView: View {
     @State private var phase: AppPhase
+    @State private var router: AppRouter
+    @State private var cardStore: RecapCardStore
     @State private var selectedRange: InitialRange = .thirtyDays
-    @State private var selectedTab: MainTab = .home
 
     init(initialPhase: AppPhase = .onboarding(.introLogin)) {
+        self.init(
+            initialPhase: initialPhase,
+            router: AppRouter(),
+            cardStore: RecapCardStore(cards: [])
+        )
+    }
+
+    init(
+        initialPhase: AppPhase = .onboarding(.introLogin),
+        router: AppRouter,
+        cardStore: RecapCardStore
+    ) {
         _phase = State(initialValue: initialPhase)
+        _router = State(initialValue: router)
+        _cardStore = State(initialValue: cardStore)
     }
 
     var body: some View {
@@ -16,7 +31,7 @@ struct RecapRootView: View {
                 onboardingView(for: step)
                     .transition(.opacity.combined(with: .move(edge: .trailing)))
             case .main:
-                MainTabShellView(selectedTab: $selectedTab)
+                AppShellView(router: router, cardStore: cardStore)
                     .transition(.opacity)
             }
         }
@@ -51,5 +66,9 @@ struct RecapRootView: View {
 }
 
 #Preview("Main tabs") {
-    RecapRootView(initialPhase: .main)
+    RecapRootView(
+        initialPhase: .main,
+        router: AppRouter(),
+        cardStore: PreviewStores.recapCardStore()
+    )
 }

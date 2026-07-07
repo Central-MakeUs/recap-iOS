@@ -8,6 +8,7 @@ struct ScreenHeader: View {
 
     let style: Style
     var showsMenu = true
+    var onMenuTap: (() -> Void)? = nil
 
     var body: some View {
         HStack(spacing: RecapTheme.Spacing.medium) {
@@ -23,19 +24,32 @@ struct ScreenHeader: View {
             Spacer()
 
             if showsMenu {
-                Image(systemName: "ellipsis")
-                    .rotationEffect(.degrees(90))
-                    .font(.subheadline.weight(.bold))
-                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
-                    .frame(width: 32, height: 32)
-                    .background(RecapTheme.ColorToken.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous)
-                            .stroke(RecapTheme.ColorToken.border, lineWidth: 1)
-                    )
+                if let onMenuTap {
+                    Button(action: onMenuTap) {
+                        menuIcon
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("설정 열기")
+                } else {
+                    menuIcon
+                        .accessibilityHidden(true)
+                }
             }
         }
+    }
+
+    private var menuIcon: some View {
+        Image(systemName: "ellipsis")
+            .rotationEffect(.degrees(90))
+            .font(.subheadline.weight(.bold))
+            .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+            .frame(width: 32, height: 32)
+            .background(RecapTheme.ColorToken.surface)
+            .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous)
+                    .stroke(RecapTheme.ColorToken.border, lineWidth: 1)
+            )
     }
 }
 

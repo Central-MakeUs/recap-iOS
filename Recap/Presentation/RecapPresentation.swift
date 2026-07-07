@@ -36,10 +36,10 @@ enum RecapPresentation {
         switch tab {
         case .home:
             TabItem(title: "홈", systemImage: "square.fill")
-        case .collection:
-            TabItem(title: "컬렉션", systemImage: "square.grid.2x2")
-        case .myPage:
-            TabItem(title: "마이페이지", systemImage: "person.crop.circle")
+        case .organize:
+            TabItem(title: "정리하기", systemImage: "plus.square")
+        case .archive:
+            TabItem(title: "보관함", systemImage: "square.grid.2x2")
         }
     }
 

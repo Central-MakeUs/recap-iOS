@@ -1,10 +1,39 @@
 import SwiftUI
 
+struct SearchContainerView: View {
+    @Environment(AppRouter.self) private var router
+    @Environment(RecapCardStore.self) private var cardStore
+
+    var body: some View {
+        SearchResultsView(
+            search: cardStore.search,
+            onAction: handleAction
+        )
+    }
+
+    private func handleAction(_ action: SearchAction) {
+        switch action {
+        case .openCard(let id):
+            router.navigate(.cardDetail(id))
+        }
+    }
+}
+
 struct SearchResultsView: View {
     @State private var query = "성수동"
+    let search: (String) -> [InformationCard]
+    let onAction: (SearchAction) -> Void
+
+    init(
+        search: @escaping (String) -> [InformationCard],
+        onAction: @escaping (SearchAction) -> Void
+    ) {
+        self.search = search
+        self.onAction = onAction
+    }
 
     private var results: [InformationCard] {
-        SampleData.search(query)
+        search(query)
     }
 
     var body: some View {
@@ -31,7 +60,9 @@ struct SearchResultsView: View {
                 } else {
                     VStack(spacing: RecapTheme.Spacing.medium) {
                         ForEach(results) { card in
-                            NavigationLink(value: AppRoute.cardDetail(card.id)) {
+                            Button {
+                                openCard(card.id)
+                            } label: {
                                 InfoCardRow(card: card)
                             }
                             .buttonStyle(.plain)
@@ -44,6 +75,10 @@ struct SearchResultsView: View {
         .background(RecapTheme.ColorToken.background)
         .navigationTitle("검색")
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func openCard(_ id: InformationCard.ID) {
+        onAction(.openCard(id))
     }
 
     private var emptyState: some View {
@@ -65,5 +100,10 @@ struct SearchResultsView: View {
 }
 
 #Preview {
-    NavigationStack { SearchResultsView() }
+    NavigationStack {
+        SearchResultsView(
+            search: SampleData.search,
+            onAction: PreviewActions.handleSearch
+        )
+    }
 }

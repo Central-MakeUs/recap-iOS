@@ -1,7 +1,48 @@
 import SwiftUI
 
+struct CardDetailContainerView: View {
+    @Environment(AppRouter.self) private var router
+    @Environment(RecapCardStore.self) private var cardStore
+
+    let cardID: InformationCard.ID
+
+    var body: some View {
+        if let card = cardStore.card(id: cardID) {
+            CardDetailView(card: card, onAction: handleAction)
+        } else {
+            MissingCardView(cardID: cardID)
+        }
+    }
+
+    private func handleAction(_ action: CardDetailAction) {
+        switch action {
+        case .openOriginal(let id):
+            router.presentSheet(.originalPreview(cardID: id))
+        case .share(let id):
+            router.presentSheet(.sharePreview(cardID: id))
+        case .edit(let id):
+            router.navigate(.cardEdit(id))
+        case .changeCollection(let id):
+            router.presentSheet(.collectionPicker(cardID: id))
+        case .exclude(let id):
+            router.presentModal(.excludeCard(id))
+        case .delete(let id):
+            router.presentModal(.deleteCard(id))
+        }
+    }
+}
+
 struct CardDetailView: View {
     let card: InformationCard
+    let onAction: (CardDetailAction) -> Void
+
+    init(
+        card: InformationCard,
+        onAction: @escaping (CardDetailAction) -> Void
+    ) {
+        self.card = card
+        self.onAction = onAction
+    }
 
     var body: some View {
         let collection = RecapPresentation.collectionDisplay(for: card.collection)
@@ -57,7 +98,7 @@ struct CardDetailView: View {
                 .clipShape(Capsule())
                 .padding(RecapTheme.Spacing.medium)
 
-            Button {} label: {
+            Button(action: openOriginal) {
                 Label("원본 보기", systemImage: "rectangle")
                     .font(.caption.weight(.bold))
                     .foregroundStyle(.white)
@@ -119,17 +160,19 @@ struct CardDetailView: View {
     private var bottomActions: some View {
         VStack(spacing: RecapTheme.Spacing.small) {
             HStack(spacing: RecapTheme.Spacing.small) {
-                RecapButton(title: "공유", style: .secondary) {}
-                RecapButton(title: "카드 수정", style: .secondary) {}
-                RecapButton(title: "컬렉션 변경", style: .primary) {}
+                RecapButton(title: "공유", style: .secondary, action: shareCard)
+                RecapButton(title: "카드 수정", style: .secondary, action: editCard)
+                RecapButton(title: "컬렉션 변경", style: .primary, action: changeCollection)
             }
 
             HStack(spacing: RecapTheme.Spacing.large) {
-                Text("RE-CAP에서 제외")
+                Button("RE-CAP에서 제외", action: excludeCard)
+                    .buttonStyle(.plain)
                 Text("|")
                     .foregroundStyle(RecapTheme.ColorToken.textTertiary)
-                Text("카드 삭제")
+                Button("카드 삭제", action: deleteCard)
                     .foregroundStyle(.red)
+                    .buttonStyle(.plain)
             }
             .font(.caption.weight(.semibold))
             .foregroundStyle(RecapTheme.ColorToken.textTertiary)
@@ -138,6 +181,30 @@ struct CardDetailView: View {
         .padding(.top, RecapTheme.Spacing.medium)
         .padding(.bottom, RecapTheme.Spacing.small)
         .background(.ultraThinMaterial)
+    }
+
+    private func openOriginal() {
+        onAction(.openOriginal(card.id))
+    }
+
+    private func shareCard() {
+        onAction(.share(card.id))
+    }
+
+    private func editCard() {
+        onAction(.edit(card.id))
+    }
+
+    private func changeCollection() {
+        onAction(.changeCollection(card.id))
+    }
+
+    private func excludeCard() {
+        onAction(.exclude(card.id))
+    }
+
+    private func deleteCard() {
+        onAction(.delete(card.id))
     }
 }
 
@@ -203,7 +270,12 @@ private struct DetailRow: View {
 }
 
 #Preview {
-    NavigationStack { CardDetailView(card: SampleData.cards[0]) }
+    NavigationStack {
+        CardDetailView(
+            card: SampleData.cards[0],
+            onAction: PreviewActions.handleCardDetail
+        )
+    }
 }
 
 #Preview("Missing card") {
