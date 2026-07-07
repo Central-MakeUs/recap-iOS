@@ -1,0 +1,114 @@
+import SwiftUI
+
+struct CollectionDetailView: View {
+    let kind: CollectionKind
+
+    private var cards: [InformationCard] {
+        SampleData.cards(in: kind)
+    }
+
+    private var summary: CollectionSummary? {
+        SampleData.collectionSummaries.first { $0.kind == kind }
+    }
+
+    var body: some View {
+        let collection = RecapPresentation.collectionDisplay(for: kind)
+
+        Group {
+            if let summary {
+                detailContent(collection: collection, summary: summary)
+            } else {
+                MissingCollectionSummaryView(kind: kind)
+            }
+        }
+        .background(RecapTheme.ColorToken.background)
+        .navigationTitle(collection.title)
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func detailContent(collection: RecapPresentation.CollectionDisplay, summary: CollectionSummary) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: RecapTheme.Spacing.large) {
+                VStack(alignment: .leading, spacing: RecapTheme.Spacing.small) {
+                    HStack(spacing: RecapTheme.Spacing.small) {
+                        Circle()
+                            .fill(collection.dotColor)
+                            .frame(width: 9, height: 9)
+                        Text(collection.title)
+                            .font(.title3.weight(.black))
+                            .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                    }
+
+                    Text(collection.subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Text("\(summary.count)개 카드")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(RecapTheme.ColorToken.primary)
+                        .padding(.top, 2)
+                }
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: RecapTheme.Spacing.small) {
+                        TagChip(title: "전체", color: RecapTheme.ColorToken.primary, isSelected: true)
+                        TagChip(title: "상품", color: collection.dotColor)
+                        TagChip(title: "맛집", color: collection.dotColor)
+                        TagChip(title: "여행지", color: collection.dotColor)
+                        TagChip(title: "숙소", color: collection.dotColor)
+                    }
+                }
+
+                VStack(spacing: RecapTheme.Spacing.medium) {
+                    ForEach(cards) { card in
+                        NavigationLink(value: AppRoute.cardDetail(card.id)) {
+                            InfoCardRow(card: card)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+            .padding(RecapTheme.Spacing.large)
+        }
+    }
+}
+
+struct MissingCollectionSummaryView: View {
+    let kind: CollectionKind
+
+    var body: some View {
+        let collection = RecapPresentation.collectionDisplay(for: kind)
+
+        VStack(spacing: RecapTheme.Spacing.large) {
+            Image(systemName: "rectangle.stack.badge.questionmark")
+                .font(.title.weight(.bold))
+                .foregroundStyle(RecapTheme.ColorToken.textTertiary)
+                .frame(width: 64, height: 64)
+                .background(RecapTheme.ColorToken.surface)
+                .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.large, style: .continuous))
+
+            VStack(spacing: RecapTheme.Spacing.small) {
+                Text("컬렉션 정보를 찾을 수 없어요")
+                    .font(.title3.weight(.black))
+                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+
+                Text("\(collection.title) 요약 데이터가 없어 실제 카드 수로 조용히 대체하지 않았습니다.")
+                    .font(.subheadline)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+            }
+        }
+        .padding(RecapTheme.Spacing.xLarge)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(RecapTheme.ColorToken.background)
+    }
+}
+
+#Preview {
+    NavigationStack { CollectionDetailView(kind: .comparison) }
+}
+
+#Preview("Missing collection summary") {
+    NavigationStack { MissingCollectionSummaryView(kind: .reference) }
+}

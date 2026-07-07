@@ -14,28 +14,22 @@
 		A7DC3DEA2FFBE596007765AD /* Exceptions for "Recap" folder in "Recap" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				"docs/상위기획서.md",
+				"docs/핵심정책정의서.md",
+				"docs/화면별기능정의서.md",
 				"docs/화면정의서.md",
+				docs/IA.md,
+				docs/UserFlow.md,
 			);
 			target = A7BB44132FF2A90B00752373 /* Recap */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		A7DC3DEB2FFBE596007765AD /* Exceptions for "Recap" folder in "Compile Sources" phase from "Recap" target */ = {
-			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			buildPhase = A7BB44102FF2A90B00752373 /* Sources */;
-			membershipExceptions = (
-				"docs/화면정의서.md",
-			);
-		};
-/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A7BB44162FF2A90B00752373 /* Recap */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				A7DC3DEA2FFBE596007765AD /* Exceptions for "Recap" folder in "Recap" target */,
-				A7DC3DEB2FFBE596007765AD /* Exceptions for "Recap" folder in "Compile Sources" phase from "Recap" target */,
 			);
 			path = Recap;
 			sourceTree = "<group>";
