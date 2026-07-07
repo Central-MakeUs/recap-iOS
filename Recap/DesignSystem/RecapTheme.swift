@@ -2,20 +2,44 @@ import SwiftUI
 
 enum RecapTheme {
     enum ColorToken {
-        static let background = Color(red: 0.965, green: 0.976, blue: 0.992)
+        static let blue900 = Color("RecapBlue900")
+        static let blue500 = Color("RecapBlue500")
+        static let blue300 = Color("RecapBlue300")
+        static let blue50 = Color("RecapBlue50")
+
+        static let gray900 = Color("RecapGray900")
+        static let gray700 = Color("RecapGray700")
+        static let gray500 = Color("RecapGray500")
+        static let gray300 = Color("RecapGray300")
+        static let gray200 = Color("RecapGray200")
+        static let gray100 = Color("RecapGray100")
+        static let gray50 = Color("RecapGray50")
+
+        static let background = gray50
         static let surface = Color.white
-        static let primary = Color(red: 0.255, green: 0.420, blue: 0.929)
-        static let primaryLight = Color(red: 0.910, green: 0.936, blue: 1.000)
-        static let primarySoft = Color(red: 0.965, green: 0.976, blue: 1.000)
-        static let textPrimary = Color(red: 0.100, green: 0.120, blue: 0.170)
-        static let textSecondary = Color(red: 0.420, green: 0.470, blue: 0.560)
-        static let textTertiary = Color(red: 0.600, green: 0.650, blue: 0.730)
-        static let border = Color(red: 0.875, green: 0.900, blue: 0.940)
-        static let divider = Color(red: 0.920, green: 0.935, blue: 0.960)
+        static let primary = blue500
+        static let primaryLight = blue300
+        static let primarySoft = blue50
+        static let textPrimary = gray900
+        static let textSecondary = gray500
+        static let textTertiary = gray300
+        static let border = gray100
+        static let divider = gray100
         static let warning = Color(red: 0.965, green: 0.680, blue: 0.175)
         static let warningSoft = Color(red: 1.000, green: 0.965, blue: 0.875)
         static let success = Color(red: 0.180, green: 0.650, blue: 0.420)
-        static let thumbnail = Color(red: 0.835, green: 0.870, blue: 0.920)
+        static let thumbnail = gray200
+    }
+
+    enum Typography {
+        static let heading1 = Font.system(size: 22, weight: .semibold)
+        static let heading2 = Font.system(size: 18, weight: .semibold)
+        static let heading3 = Font.system(size: 16, weight: .semibold)
+        static let body1 = Font.system(size: 15, weight: .medium)
+        static let body2 = Font.system(size: 14, weight: .regular)
+        static let caption1 = Font.system(size: 13, weight: .medium)
+        static let caption2 = Font.system(size: 12, weight: .medium)
+        static let caption3 = Font.system(size: 10, weight: .medium)
     }
 
     enum Spacing {
@@ -64,9 +88,9 @@ extension View {
 #Preview("Theme card") {
     VStack(spacing: RecapTheme.Spacing.large) {
         Text("RE-CAP")
-            .font(.headline)
+            .font(RecapTheme.Typography.heading2)
         Text("카드 스타일 미리보기")
-            .font(.subheadline)
+            .font(RecapTheme.Typography.body2)
             .foregroundStyle(RecapTheme.ColorToken.textSecondary)
     }
     .frame(maxWidth: .infinity)
