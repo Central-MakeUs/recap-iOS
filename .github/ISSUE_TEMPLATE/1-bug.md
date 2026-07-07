@@ -1,12 +1,12 @@
 ---
-name: Bug
+name: "⚠️ Bug"
 about: 앱에서 발생한 문제를 기록합니다.
 title: "[Bug] "
-labels: bug
+labels: "bug ⚠️"
 assignees: ""
 ---
 
-## 문제 상황
+## ⚠️ 문제 상황
 
 <!-- 어떤 문제가 발생했는지 간단히 적어주세요. -->
 

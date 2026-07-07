@@ -1,4 +1,4 @@
-## 작업 내용
+## ✨ 작업 내용
 
 <!-- 이번 PR에서 변경한 내용을 간단히 적어주세요. -->
 
@@ -6,13 +6,13 @@
 
 <!-- 해당하는 항목에 체크해주세요. -->
 
-- [ ] Feature
-- [ ] Bug
-- [ ] Refactor
-- [ ] Chore
-- [ ] Docs
-- [ ] Design
-- [ ] API
+- [ ] Feature ✨
+- [ ] Bug ⚠️
+- [ ] Refactor 🔧
+- [ ] Chore ⚙️
+- [ ] Docs 📝
+- [ ] Design 🎨
+- [ ] API 🔌
 
 ## 관련 이슈
 

@@ -1,12 +1,12 @@
 ---
-name: Feature
+name: "✨ Feature"
 about: 새로운 기능 또는 화면 구현을 기록합니다.
 title: "[Feature] "
-labels: feature
+labels: "feature ✨"
 assignees: ""
 ---
 
-## 작업 내용
+## ✨ 작업 내용
 
 <!-- 구현할 기능 또는 화면을 간단히 적어주세요. -->
 

@@ -1,20 +1,20 @@
 ---
-name: Task
+name: "🧰 Task"
 about: 리팩터링, 문서, 설정, 디자인 반영, API 연동 작업을 기록합니다.
 title: "[Task] "
-labels: chore
+labels: "chore ⚙️"
 assignees: ""
 ---
 
-## 작업 종류
+## 🧰 작업 종류
 
 <!-- 해당하는 라벨을 이슈에 추가해주세요. -->
 
-- [ ] refactor
-- [ ] chore
-- [ ] docs
-- [ ] design
-- [ ] api
+- [ ] refactor 🔧
+- [ ] chore ⚙️
+- [ ] docs 📝
+- [ ] design 🎨
+- [ ] api 🔌
 
 ## 작업 내용
 
