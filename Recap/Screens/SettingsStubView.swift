@@ -25,10 +25,27 @@ struct SettingsStubView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: RecapTheme.Spacing.large) {
-                ScreenHeader(style: .title("설정"), showsMenu: false)
+                HStack(spacing: RecapTheme.Spacing.medium) {
+                    Text("설정")
+                        .font(.title3.weight(.black))
+                        .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+
+                    Spacer()
+                }
 
                 VStack(alignment: .leading, spacing: RecapTheme.Spacing.small) {
-                    RecapLogo()
+                    HStack(spacing: RecapTheme.Spacing.small) {
+                        Text("R")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(.white)
+                            .frame(width: 28, height: 28)
+                            .background(RecapTheme.ColorToken.primary)
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                        Text("RE-CAP")
+                            .font(.headline.weight(.black))
+                            .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                    }
                     Text("설정과 데이터 관리는 다음 단계에서 연결됩니다.")
                         .font(.subheadline)
                         .foregroundStyle(RecapTheme.ColorToken.textSecondary)

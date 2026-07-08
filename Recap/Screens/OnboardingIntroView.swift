@@ -7,7 +7,25 @@ struct OnboardingIntroView: View {
         VStack(spacing: 0) {
             Spacer(minLength: RecapTheme.Spacing.xLarge)
 
-            RecapLogo(showsSubtitle: true)
+            VStack(spacing: RecapTheme.Spacing.small) {
+                HStack(spacing: RecapTheme.Spacing.small) {
+                    Text("R")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(.white)
+                        .frame(width: 28, height: 28)
+                        .background(RecapTheme.ColorToken.primary)
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                    Text("RE-CAP")
+                        .font(.headline.weight(.black))
+                        .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                }
+
+                Text("SCREENSHOT ORGANIZER")
+                    .font(.caption2.weight(.bold))
+                    .tracking(1.2)
+                    .foregroundStyle(RecapTheme.ColorToken.textTertiary)
+            }
                 .padding(.bottom, RecapTheme.Spacing.large)
 
             onboardingArtwork

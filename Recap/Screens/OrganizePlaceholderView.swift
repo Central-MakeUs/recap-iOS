@@ -22,10 +22,29 @@ struct OrganizePlaceholderView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: RecapTheme.Spacing.large) {
-            ScreenHeader(
-                style: .title("정리하기"),
-                onMenuTap: openSettings
-            )
+            HStack(spacing: RecapTheme.Spacing.medium) {
+                Text("정리하기")
+                    .font(.title3.weight(.black))
+                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+
+                Spacer()
+
+                Button(action: openSettings) {
+                    Image(systemName: "ellipsis")
+                        .rotationEffect(.degrees(90))
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                        .frame(width: 32, height: 32)
+                        .background(RecapTheme.ColorToken.surface)
+                        .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous)
+                                .stroke(RecapTheme.ColorToken.border, lineWidth: 1)
+                        )
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("설정 열기")
+            }
 
             Spacer(minLength: RecapTheme.Spacing.large)
 

@@ -5,7 +5,7 @@ struct RecentRecapCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
-            PlaceholderThumbnail(kind: card.collection)
+            RecapPlaceholderThumbnail(kind: card.collection)
                 .frame(width: 111, height: 111)
                 .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
 
@@ -58,11 +58,11 @@ struct ArchiveListCard: View {
 
     private var thumbnailGroup: some View {
         ZStack(alignment: .leading) {
-            PlaceholderThumbnail(kind: card.collection)
+            RecapPlaceholderThumbnail(kind: card.collection)
                 .frame(width: 59, height: 59)
                 .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
                 .offset(x: 20)
-            PlaceholderThumbnail(kind: card.collection)
+            RecapPlaceholderThumbnail(kind: card.collection)
                 .frame(width: 59, height: 59)
                 .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
         }
@@ -76,7 +76,7 @@ struct OrganizeRecapCard: View {
 
     var body: some View {
         HStack(spacing: 15) {
-            PlaceholderThumbnail(kind: card.collection)
+            RecapPlaceholderThumbnail(kind: card.collection)
                 .frame(width: 68, height: 68)
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
 
@@ -116,7 +116,7 @@ struct OrganizeRecapCard: View {
     }
 }
 
-struct RecapCategoryPill: View {
+private struct RecapCategoryPill: View {
     let title: String
 
     var body: some View {
@@ -128,6 +128,26 @@ struct RecapCategoryPill: View {
             .frame(height: 22)
             .background(RecapTheme.ColorToken.primarySoft)
             .clipShape(Capsule())
+    }
+}
+
+private struct RecapPlaceholderThumbnail: View {
+    let kind: CollectionKind
+
+    var body: some View {
+        let collection = RecapPresentation.collectionDisplay(for: kind)
+
+        RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous)
+            .fill(RecapTheme.ColorToken.thumbnail)
+            .overlay(
+                RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous)
+                    .fill(collection.dotColor.opacity(0.08))
+            )
+            .overlay(
+                Image(systemName: "doc.text.fill")
+                    .font(.caption)
+                    .foregroundStyle(collection.dotColor.opacity(0.55))
+            )
     }
 }
 

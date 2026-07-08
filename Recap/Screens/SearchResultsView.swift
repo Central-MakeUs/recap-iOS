@@ -63,7 +63,48 @@ struct SearchResultsView: View {
                             Button {
                                 openCard(card.id)
                             } label: {
-                                InfoCardRow(card: card)
+                                let collection = RecapPresentation.collectionDisplay(for: card.collection)
+                                HStack(spacing: RecapTheme.Spacing.medium) {
+                                    RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous)
+                                        .fill(RecapTheme.ColorToken.thumbnail)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous)
+                                                .fill(collection.dotColor.opacity(0.08))
+                                        )
+                                        .overlay(
+                                            Image(systemName: "doc.text.fill")
+                                                .font(.caption)
+                                                .foregroundStyle(collection.dotColor.opacity(0.55))
+                                        )
+                                        .frame(width: 54, height: 54)
+
+                                    VStack(alignment: .leading, spacing: RecapTheme.Spacing.xSmall) {
+                                        Text(card.title)
+                                            .font(.subheadline.weight(.bold))
+                                            .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                                            .lineLimit(1)
+
+                                        Text(card.summary)
+                                            .font(.caption)
+                                            .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                                            .lineLimit(1)
+
+                                        HStack(spacing: RecapTheme.Spacing.xSmall) {
+                                            Circle()
+                                                .fill(collection.dotColor)
+                                                .frame(width: 5, height: 5)
+                                            Text(collection.title)
+                                            Text("·")
+                                            Text(card.dateText)
+                                        }
+                                        .font(.caption2.weight(.semibold))
+                                        .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                                    }
+
+                                    Spacer(minLength: RecapTheme.Spacing.small)
+                                }
+                                .padding(RecapTheme.Spacing.medium)
+                                .recapCard(radius: RecapTheme.Radius.medium)
                             }
                             .buttonStyle(.plain)
                         }

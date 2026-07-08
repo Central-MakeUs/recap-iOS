@@ -54,7 +54,13 @@ struct CardDetailView: View {
                 detailTable
 
                 HStack(spacing: RecapTheme.Spacing.small) {
-                    TagChip(title: collection.title, color: collection.dotColor)
+                    Text(collection.title)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(collection.dotColor)
+                        .padding(.horizontal, RecapTheme.Spacing.medium)
+                        .padding(.vertical, RecapTheme.Spacing.small)
+                        .background(collection.dotColor.opacity(0.10))
+                        .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous))
                     Text(card.dateText + " 저장")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(RecapTheme.ColorToken.textTertiary)
@@ -64,7 +70,13 @@ struct CardDetailView: View {
 
                 HStack(spacing: RecapTheme.Spacing.small) {
                     ForEach(card.tags, id: \.self) { tag in
-                        TagChip(title: "#\(tag)")
+                        Text("#\(tag)")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(RecapTheme.ColorToken.primary)
+                            .padding(.horizontal, RecapTheme.Spacing.medium)
+                            .padding(.vertical, RecapTheme.Spacing.small)
+                            .background(RecapTheme.ColorToken.primary.opacity(0.10))
+                            .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous))
                     }
                 }
             }

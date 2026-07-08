@@ -42,10 +42,29 @@ struct CollectionHomeView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: RecapTheme.Spacing.large) {
-                ScreenHeader(
-                    style: .title("보관함"),
-                    onMenuTap: openSettings
-                )
+                HStack(spacing: RecapTheme.Spacing.medium) {
+                    Text("보관함")
+                        .font(.title3.weight(.black))
+                        .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+
+                    Spacer()
+
+                    Button(action: openSettings) {
+                        Image(systemName: "ellipsis")
+                            .rotationEffect(.degrees(90))
+                            .font(.subheadline.weight(.bold))
+                            .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                            .frame(width: 32, height: 32)
+                            .background(RecapTheme.ColorToken.surface)
+                            .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous)
+                                    .stroke(RecapTheme.ColorToken.border, lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("설정 열기")
+                }
 
                 Button(action: openSearch) {
                     SearchBar(text: .constant(""))
