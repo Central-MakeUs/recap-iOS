@@ -6,23 +6,29 @@ enum AppPhase: Hashable {
 }
 
 enum OnboardingStep: Hashable {
-    case introLogin
+    case serviceIntro
+    case login
     case permissionGuide
-    case rangeSelection
+    case shareSetup
+    case shareSetupDetail
+    case firstCleanup
 }
 
 enum MainTab: String, CaseIterable, Identifiable, Hashable {
     case home
-    case organize
     case archive
+    case organize
 
     var id: String { rawValue }
 }
 
 enum SettingsRoute: String, CaseIterable, Hashable, Identifiable {
-    case permissions
-    case dataPolicy
-    case help
+    case accountManagement
+    case notificationSettings
+    case dataManagement
+    case usageGuide
+    case privacyPolicy
+    case support
 
     var id: String { rawValue }
 }
@@ -36,12 +42,28 @@ enum InitialRange: String, CaseIterable, Identifiable, Hashable {
 }
 
 enum CollectionKind: String, CaseIterable, Identifiable, Hashable {
-    case revisit
-    case comparison
-    case archive
-    case reference
+    case shopping
+    case place
+    case schedule
+    case knowledge
+    case content
+    case benefits
+    case capture
+    case career
+    case other
 
     var id: String { rawValue }
+
+    static let folderCases: [CollectionKind] = [
+        .shopping,
+        .place,
+        .schedule,
+        .knowledge,
+        .content,
+        .benefits,
+        .capture,
+        .career
+    ]
 }
 
 enum HomeStatus: String, CaseIterable, Identifiable, Hashable {
@@ -49,6 +71,7 @@ enum HomeStatus: String, CaseIterable, Identifiable, Hashable {
     case processing
     case complete
     case waiting
+    case failed
 
     var id: String { rawValue }
 }
@@ -65,6 +88,38 @@ struct InformationCard: Identifiable, Hashable {
     let confirmationLabel: String?
     let memo: String
     let tags: [String]
+    let thumbnailAssetName: String?
+    var isFavorite: Bool
+
+    init(
+        id: UUID,
+        title: String,
+        summary: String,
+        collection: CollectionKind,
+        dateText: String,
+        location: String,
+        businessHours: String,
+        category: String,
+        confirmationLabel: String?,
+        memo: String,
+        tags: [String],
+        thumbnailAssetName: String? = nil,
+        isFavorite: Bool
+    ) {
+        self.id = id
+        self.title = title
+        self.summary = summary
+        self.collection = collection
+        self.dateText = dateText
+        self.location = location
+        self.businessHours = businessHours
+        self.category = category
+        self.confirmationLabel = confirmationLabel
+        self.memo = memo
+        self.tags = tags
+        self.thumbnailAssetName = thumbnailAssetName
+        self.isFavorite = isFavorite
+    }
 }
 
 struct CollectionSummary: Identifiable, Hashable {

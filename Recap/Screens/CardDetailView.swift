@@ -24,6 +24,8 @@ struct CardDetailContainerView: View {
             router.navigate(.cardEdit(id))
         case .changeCollection(let id):
             router.presentSheet(.collectionPicker(cardID: id))
+        case .toggleFavorite(let id):
+            cardStore.toggleFavorite(id: id)
         case .exclude(let id):
             router.presentModal(.excludeCard(id))
         case .delete(let id):
@@ -33,6 +35,9 @@ struct CardDetailContainerView: View {
 }
 
 struct CardDetailView: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var isMenuPresented = false
+
     let card: InformationCard
     let onAction: (CardDetailAction) -> Void
 
@@ -45,166 +50,210 @@ struct CardDetailView: View {
     }
 
     var body: some View {
-        let collection = RecapPresentation.collectionDisplay(for: card.collection)
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 0) {
+                screenshotHero
 
-        ScrollView {
-            VStack(alignment: .leading, spacing: RecapTheme.Spacing.large) {
-                screenshotPreview
+                VStack(alignment: .leading, spacing: 18) {
+                    metaRow
 
-                detailTable
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(card.title)
+                            .font(RecapFont.pretendard(size: 22, weight: .semibold))
+                            .tracking(-0.44)
+                            .foregroundStyle(RecapTheme.ColorToken.textPrimary)
 
-                HStack(spacing: RecapTheme.Spacing.small) {
-                    TagChip(title: collection.title, color: collection.dotColor)
-                    Text(card.dateText + " 저장")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(RecapTheme.ColorToken.textTertiary)
-                }
-
-                memoBox
-
-                HStack(spacing: RecapTheme.Spacing.small) {
-                    ForEach(card.tags, id: \.self) { tag in
-                        TagChip(title: "#\(tag)")
+                        Text(card.summary)
+                            .font(RecapFont.pretendard(size: 15, weight: .medium))
+                            .tracking(-0.3)
+                            .foregroundStyle(RecapTheme.ColorToken.textBody)
                     }
+
+                    Text(card.memo)
+                        .font(RecapFont.pretendard(size: 15, weight: .medium))
+                        .tracking(-0.3)
+                        .lineSpacing(3)
+                        .foregroundStyle(RecapTheme.ColorToken.textBody)
+                        .padding(.top, 21)
                 }
+                .padding(.horizontal, 16)
+                .padding(.top, 22)
+                .padding(.bottom, 40)
             }
-            .padding(RecapTheme.Spacing.large)
-            .padding(.bottom, 110)
         }
         .background(RecapTheme.ColorToken.background)
-        .navigationTitle(card.title)
-        .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .bottom) {
-            bottomActions
+        .ignoresSafeArea(edges: .top)
+        .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
+        .sheet(isPresented: $isMenuPresented) {
+            CardDetailMenuSheet(
+                onEdit: editCard,
+                onShare: shareCard,
+                onDelete: deleteCard
+            )
         }
     }
 
-    private var screenshotPreview: some View {
-        ZStack(alignment: .topLeading) {
-            RoundedRectangle(cornerRadius: RecapTheme.Radius.large, style: .continuous)
-                .fill(RecapTheme.ColorToken.thumbnail)
-                .overlay(
-                    diagonalPattern
-                        .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.large, style: .continuous))
-                )
-                .frame(height: 160)
+    private var screenshotHero: some View {
+        ZStack(alignment: .top) {
+            RecapScreenshotThumbnail(kind: card.collection, assetName: card.thumbnailAssetName)
+                .frame(height: 309)
+                .frame(maxWidth: .infinity)
+                .clipped()
 
-            Text("원본 스크린샷")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(RecapTheme.ColorToken.textSecondary)
-                .padding(.horizontal, RecapTheme.Spacing.medium)
-                .padding(.vertical, RecapTheme.Spacing.small)
-                .background(.white.opacity(0.75))
-                .clipShape(Capsule())
-                .padding(RecapTheme.Spacing.medium)
+            LinearGradient(
+                stops: [
+                    .init(color: Color.black.opacity(0.90), location: 0),
+                    .init(color: Color.black.opacity(0.0), location: 1)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 261)
+
+            HStack(spacing: 12) {
+                Button(action: close) {
+                    RecapIconView(icon: .back, size: 24, color: .white)
+                }
+                .buttonStyle(.plain)
+
+                Text("스크린샷 상세")
+                    .font(RecapFont.pretendard(size: 16, weight: .semibold))
+                    .tracking(-0.32)
+                    .foregroundStyle(.white)
+
+                Spacer()
+
+                Button(action: favorite) {
+                    Image(systemName: card.isFavorite ? "star.fill" : "star")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(width: 24, height: 24)
+                }
+                .buttonStyle(.plain)
+
+                Button(action: menu) {
+                    RecapIconView(icon: .more, size: 24, color: .white)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 78)
 
             Button(action: openOriginal) {
-                Label("원본 보기", systemImage: "rectangle")
-                    .font(.caption.weight(.bold))
+                Image(systemName: "arrow.up.left.and.arrow.down.right")
+                    .font(.system(size: 13, weight: .bold))
                     .foregroundStyle(.white)
-                    .padding(.horizontal, RecapTheme.Spacing.medium)
-                    .padding(.vertical, RecapTheme.Spacing.small)
-                    .background(RecapTheme.ColorToken.textPrimary.opacity(0.82))
-                    .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous))
+                    .frame(width: 21, height: 21)
+                    .background(.black.opacity(0.28))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 2)
+                            .stroke(RecapTheme.ColorToken.border, lineWidth: 1)
+                    }
             }
             .buttonStyle(.plain)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            .padding(RecapTheme.Spacing.medium)
+            .padding(.trailing, 21)
+            .padding(.bottom, 16)
+        }
+        .frame(height: 309)
+    }
+
+    private var metaRow: some View {
+        HStack(alignment: .center) {
+            RecapCategoryPill(kind: card.collection, size: .regular)
+            Spacer()
+            Text(card.dateText)
+                .font(RecapFont.pretendard(size: 12, weight: .medium))
+                .tracking(-0.24)
+                .foregroundStyle(RecapTheme.ColorToken.textTertiary)
         }
     }
 
-    private var diagonalPattern: some View {
-        Canvas { context, size in
-            let lineColor = Color.white.opacity(0.18)
-            for offset in stride(from: -size.height, through: size.width, by: 18) {
-                var path = Path()
-                path.move(to: CGPoint(x: offset, y: size.height))
-                path.addLine(to: CGPoint(x: offset + size.height, y: 0))
-                context.stroke(path, with: .color(lineColor), lineWidth: 1)
-            }
-        }
-    }
+    private func close() { dismiss() }
+    private func openOriginal() { onAction(.openOriginal(card.id)) }
+    private func favorite() { onAction(.toggleFavorite(card.id)) }
+    private func menu() { isMenuPresented = true }
+    private func editCard() { onAction(.edit(card.id)) }
+    private func shareCard() { onAction(.share(card.id)) }
+    private func deleteCard() { onAction(.delete(card.id)) }
+}
 
-    private var detailTable: some View {
+private struct CardDetailMenuSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let onEdit: () -> Void
+    let onShare: () -> Void
+    let onDelete: () -> Void
+
+    var body: some View {
         VStack(spacing: 0) {
-            DetailRow(title: "위치", value: card.location)
-            Divider().background(RecapTheme.ColorToken.divider)
-            DetailRow(title: "영업시간", value: card.businessHours)
-            Divider().background(RecapTheme.ColorToken.divider)
-            DetailRow(title: "유형", value: card.category)
-            if let confirmationLabel = card.confirmationLabel {
-                Divider().background(RecapTheme.ColorToken.divider)
-                DetailRow(title: "확인 필요", value: confirmationLabel, highlighted: true)
+            Capsule()
+                .fill(RecapTheme.ColorToken.border)
+                .frame(width: 43, height: 5)
+                .padding(.top, 13)
+                .padding(.bottom, 17)
+
+            Button {
+                dismiss()
+                onEdit()
+            } label: {
+                Text("스크린샷 정보 수정")
+                    .font(RecapFont.pretendard(size: 16, weight: .semibold))
+                    .tracking(-0.32)
+                    .foregroundStyle(RecapTheme.ColorToken.textBody)
+                    .frame(maxWidth: .infinity, minHeight: 50)
+                    .background(RecapTheme.ColorToken.controlFill)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
+            .buttonStyle(.plain)
+
+            Button {
+                dismiss()
+                onShare()
+            } label: {
+                Text("스크린샷 공유")
+                    .font(RecapFont.pretendard(size: 16, weight: .semibold))
+                    .tracking(-0.32)
+                    .foregroundStyle(RecapTheme.ColorToken.textBody)
+                    .frame(maxWidth: .infinity, minHeight: 50)
+                    .background(RecapTheme.ColorToken.controlFill)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 10)
+
+            Button {
+                dismiss()
+                onDelete()
+            } label: {
+                Text("스크린샷 삭제")
+                    .font(RecapFont.pretendard(size: 16, weight: .semibold))
+                    .tracking(-0.32)
+                    .foregroundStyle(Color(red: 251 / 255, green: 61 / 255, blue: 61 / 255))
+                    .frame(maxWidth: .infinity, minHeight: 50)
+                    .background(Color(red: 1, green: 239 / 255, blue: 239 / 255))
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 10)
+
+            Button("닫기", action: { dismiss() })
+                .font(RecapFont.pretendard(size: 15, weight: .medium))
+                .tracking(-0.3)
+                .foregroundStyle(RecapTheme.ColorToken.textBody)
+                .frame(maxWidth: .infinity, minHeight: 50)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .stroke(RecapTheme.ColorToken.border, lineWidth: 1)
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 24)
         }
-        .recapCard()
-    }
-
-    private var memoBox: some View {
-        HStack(alignment: .top, spacing: RecapTheme.Spacing.medium) {
-            Image(systemName: "note.text")
-                .foregroundStyle(RecapTheme.ColorToken.warning)
-            VStack(alignment: .leading, spacing: 4) {
-                Text("메모")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
-                Text(card.memo)
-                    .font(.subheadline)
-                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
-            }
-        }
-        .padding(RecapTheme.Spacing.medium)
-        .recapCard(borderColor: Color(red: 0.970, green: 0.870, blue: 0.610), fill: RecapTheme.ColorToken.warningSoft)
-    }
-
-    private var bottomActions: some View {
-        VStack(spacing: RecapTheme.Spacing.small) {
-            HStack(spacing: RecapTheme.Spacing.small) {
-                RecapButton(title: "공유", style: .secondary, action: shareCard)
-                RecapButton(title: "카드 수정", style: .secondary, action: editCard)
-                RecapButton(title: "컬렉션 변경", style: .primary, action: changeCollection)
-            }
-
-            HStack(spacing: RecapTheme.Spacing.large) {
-                Button("RE-CAP에서 제외", action: excludeCard)
-                    .buttonStyle(.plain)
-                Text("|")
-                    .foregroundStyle(RecapTheme.ColorToken.textTertiary)
-                Button("카드 삭제", action: deleteCard)
-                    .foregroundStyle(.red)
-                    .buttonStyle(.plain)
-            }
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(RecapTheme.ColorToken.textTertiary)
-        }
-        .padding(.horizontal, RecapTheme.Spacing.large)
-        .padding(.top, RecapTheme.Spacing.medium)
-        .padding(.bottom, RecapTheme.Spacing.small)
-        .background(.ultraThinMaterial)
-    }
-
-    private func openOriginal() {
-        onAction(.openOriginal(card.id))
-    }
-
-    private func shareCard() {
-        onAction(.share(card.id))
-    }
-
-    private func editCard() {
-        onAction(.edit(card.id))
-    }
-
-    private func changeCollection() {
-        onAction(.changeCollection(card.id))
-    }
-
-    private func excludeCard() {
-        onAction(.exclude(card.id))
-    }
-
-    private func deleteCard() {
-        onAction(.delete(card.id))
+        .padding(.horizontal, 19)
+        .background(Color.white)
+        .presentationDetents([.height(296)])
+        .presentationDragIndicator(.hidden)
     }
 }
 
@@ -212,33 +261,10 @@ struct MissingCardView: View {
     let cardID: InformationCard.ID
 
     var body: some View {
-        VStack(spacing: RecapTheme.Spacing.large) {
-            Image(systemName: "doc.text.magnifyingglass")
-                .font(.title.weight(.bold))
-                .foregroundStyle(RecapTheme.ColorToken.textTertiary)
-                .frame(width: 64, height: 64)
-                .background(RecapTheme.ColorToken.surface)
-                .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.large, style: .continuous))
-
-            VStack(spacing: RecapTheme.Spacing.small) {
-                Text("카드를 찾을 수 없어요")
-                    .font(.title3.weight(.black))
-                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
-
-                Text("선택한 카드가 샘플 데이터에 없어서 잘못된 상세 화면을 대신 보여주지 않았습니다.")
-                    .font(.subheadline)
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
-            }
-
-            Text(cardID.uuidString)
-                .font(.caption2.monospaced())
-                .foregroundStyle(RecapTheme.ColorToken.textTertiary)
-                .lineLimit(1)
-                .truncationMode(.middle)
-                .padding(.horizontal, RecapTheme.Spacing.medium)
-        }
-        .padding(RecapTheme.Spacing.xLarge)
+        RecapInlineEmptyView(
+            title: "카드를 찾을 수 없어요",
+            message: "선택한 카드가 샘플 데이터에 없습니다."
+        )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(RecapTheme.ColorToken.background)
         .navigationTitle("카드 없음")
@@ -246,30 +272,7 @@ struct MissingCardView: View {
     }
 }
 
-private struct DetailRow: View {
-    let title: String
-    let value: String
-    var highlighted = false
-
-    var body: some View {
-        HStack {
-            Text(title)
-                .font(.caption)
-                .foregroundStyle(RecapTheme.ColorToken.textSecondary)
-            Spacer()
-            Text(value)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(highlighted ? RecapTheme.ColorToken.warning : RecapTheme.ColorToken.textPrimary)
-                .padding(.horizontal, highlighted ? RecapTheme.Spacing.small : 0)
-                .padding(.vertical, highlighted ? 4 : 0)
-                .background(highlighted ? RecapTheme.ColorToken.warningSoft : .clear)
-                .clipShape(Capsule())
-        }
-        .padding(RecapTheme.Spacing.medium)
-    }
-}
-
-#Preview {
+#Preview("Card detail") {
     NavigationStack {
         CardDetailView(
             card: SampleData.cards[0],

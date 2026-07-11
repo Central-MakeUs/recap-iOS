@@ -6,29 +6,33 @@ struct CardOriginalPreviewSheet: View {
 
     let cardID: InformationCard.ID
 
-    private var card: InformationCard? {
-        cardStore.card(id: cardID)
-    }
+    private var card: InformationCard? { cardStore.card(id: cardID) }
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: RecapTheme.Spacing.large) {
-                RoundedRectangle(cornerRadius: RecapTheme.Radius.large, style: .continuous)
-                    .fill(RecapTheme.ColorToken.thumbnail)
-                    .overlay {
-                        Text(card?.title ?? "원본 이미지")
-                            .font(.headline.weight(.bold))
-                            .foregroundStyle(RecapTheme.ColorToken.textSecondary)
-                    }
-                    .frame(height: 260)
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 16) {
+                    RecapScreenshotThumbnail(
+                        kind: card?.collection ?? .capture,
+                        assetName: card?.thumbnailAssetName
+                    )
+                    .aspectRatio(9 / 14, contentMode: .fit)
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
 
-                Text("원본 이미지는 아직 실제 저장소에 연결하지 않았습니다. 이 화면은 원본 보기 액션이 조용히 실패하지 않도록 둔 자리표시자입니다.")
-                    .font(.subheadline)
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
-                    .padding(.horizontal, RecapTheme.Spacing.large)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(card?.title ?? "원본 이미지")
+                            .font(RecapFont.pretendard(size: 20, weight: .semibold))
+                            .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+
+                        if let card {
+                            Text(card.dateText)
+                                .font(RecapFont.pretendard(size: 13, weight: .medium))
+                                .foregroundStyle(RecapTheme.ColorToken.textTertiary)
+                        }
+                    }
+                }
+                .padding(16)
             }
-            .padding(RecapTheme.Spacing.large)
             .background(RecapTheme.ColorToken.background)
             .navigationTitle("원본 보기")
             .navigationBarTitleDisplayMode(.inline)
@@ -40,9 +44,7 @@ struct CardOriginalPreviewSheet: View {
         }
     }
 
-    private func close() {
-        dismiss()
-    }
+    private func close() { dismiss() }
 }
 
 struct CardSharePreviewSheet: View {
@@ -51,31 +53,45 @@ struct CardSharePreviewSheet: View {
 
     let cardID: InformationCard.ID
 
-    private var card: InformationCard? {
-        cardStore.card(id: cardID)
-    }
+    private var card: InformationCard? { cardStore.card(id: cardID) }
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: RecapTheme.Spacing.large) {
-                Image(systemName: "square.and.arrow.up")
-                    .font(.title.weight(.bold))
-                    .foregroundStyle(RecapTheme.ColorToken.primary)
-                    .frame(width: 64, height: 64)
-                    .background(RecapTheme.ColorToken.primaryLight)
-                    .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.large, style: .continuous))
+            VStack(alignment: .leading, spacing: 18) {
+                if let card {
+                    RecapScreenshotThumbnail(kind: card.collection, assetName: card.thumbnailAssetName)
+                        .frame(height: 176)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
 
-                VStack(spacing: RecapTheme.Spacing.small) {
-                    Text(card?.title ?? "카드 공유")
-                        .font(.title3.weight(.black))
-                        .foregroundStyle(RecapTheme.ColorToken.textPrimary)
-                    Text("공유 시트 연결은 다음 단계의 실제 기능으로 남기고, 지금은 공유 액션 진입만 명확히 확인합니다.")
-                        .font(.subheadline)
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                    VStack(alignment: .leading, spacing: 8) {
+                        RecapCategoryPill(kind: card.collection, size: .regular)
+
+                        Text(card.title)
+                            .font(RecapFont.pretendard(size: 20, weight: .semibold))
+                            .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+
+                        Text(card.summary)
+                            .font(RecapFont.pretendard(size: 14, weight: .medium))
+                            .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                    }
+
+                    ShareLink(
+                        item: shareText(for: card),
+                        preview: SharePreview(card.title)
+                    ) {
+                        Label("공유하기", systemImage: "square.and.arrow.up")
+                            .font(RecapFont.pretendard(size: 16, weight: .semibold))
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .tint(RecapTheme.ColorToken.primary)
+                    .padding(.top, 8)
+                } else {
+                    MissingCardView(cardID: cardID)
                 }
             }
-            .padding(RecapTheme.Spacing.xLarge)
+            .padding(16)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(RecapTheme.ColorToken.background)
             .navigationTitle("공유")
@@ -88,8 +104,17 @@ struct CardSharePreviewSheet: View {
         }
     }
 
-    private func close() {
-        dismiss()
+    private func close() { dismiss() }
+
+    private func shareText(for card: InformationCard) -> String {
+        [
+            card.title,
+            card.summary,
+            card.memo.isEmpty ? nil : card.memo,
+            card.dateText
+        ]
+        .compactMap { $0 }
+        .joined(separator: "\n\n")
     }
 }
 
@@ -100,45 +125,55 @@ struct CollectionPickerSheet: View {
     let cardID: InformationCard.ID
     @State private var selectedCollection: CollectionKind
 
-    init(cardID: InformationCard.ID, initialCollection: CollectionKind = .comparison) {
+    init(cardID: InformationCard.ID, initialCollection: CollectionKind = .schedule) {
         self.cardID = cardID
         _selectedCollection = State(initialValue: initialCollection)
     }
 
     var body: some View {
-        NavigationStack {
-            List {
-                ForEach(CollectionKind.allCases) { kind in
-                    Button {
-                        select(kind)
-                    } label: {
-                        HStack {
-                            let display = RecapPresentation.collectionDisplay(for: kind)
-                            Circle()
-                                .fill(display.dotColor)
-                                .frame(width: 9, height: 9)
-                            Text(display.title)
-                                .foregroundStyle(RecapTheme.ColorToken.textPrimary)
-                            Spacer()
-                            if selectedCollection == kind {
-                                Image(systemName: "checkmark")
-                                    .foregroundStyle(RecapTheme.ColorToken.primary)
-                            }
+        VStack(spacing: 0) {
+            Capsule()
+                .fill(RecapTheme.ColorToken.border)
+                .frame(width: 43, height: 5)
+                .padding(.top, 16)
+                .padding(.bottom, 17)
+
+            VStack(alignment: .leading, spacing: 18) {
+                Text("유형 변경")
+                    .font(RecapFont.pretendard(size: 16, weight: .semibold))
+                    .tracking(-0.32)
+                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+
+                LazyVGrid(
+                    columns: [GridItem(.fixed(140), spacing: 32), GridItem(.fixed(140))],
+                    alignment: .leading,
+                    spacing: 17
+                ) {
+                    ForEach(CollectionKind.allCases) { kind in
+                        Button {
+                            selectedCollection = kind
+                        } label: {
+                            CategoryPickerChip(
+                                kind: kind,
+                                isSelected: selectedCollection == kind
+                            )
                         }
+                        .buttonStyle(.plain)
                     }
                 }
+                .frame(width: 312, alignment: .leading)
+                .padding(.leading, 16)
+
+                RecapButton(title: "선택 완료", style: .primary, action: save)
+                    .padding(.top, 14)
             }
-            .navigationTitle("컬렉션 변경")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("취소", action: close)
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("완료", action: save)
-                }
-            }
+            .padding(.horizontal, 16)
+
+            Spacer(minLength: 0)
         }
+        .background(Color.white)
+        .presentationDetents([.height(466)])
+        .presentationDragIndicator(.hidden)
         .onAppear(perform: syncInitialCollection)
     }
 
@@ -148,17 +183,37 @@ struct CollectionPickerSheet: View {
         }
     }
 
-    private func select(_ kind: CollectionKind) {
-        selectedCollection = kind
-    }
-
     private func save() {
         cardStore.moveCard(id: cardID, to: selectedCollection)
         dismiss()
     }
+}
 
-    private func close() {
-        dismiss()
+private struct CategoryPickerChip: View {
+    let kind: CollectionKind
+    let isSelected: Bool
+
+    var body: some View {
+        let display = RecapPresentation.collectionDisplay(for: kind)
+        Text(pickerTitle(for: kind, defaultTitle: display.title))
+            .font(RecapFont.pretendard(size: 16, weight: .semibold))
+            .tracking(-0.32)
+            .foregroundStyle(isSelected ? display.textColor : RecapTheme.ColorToken.textTertiary)
+            .frame(maxWidth: .infinity)
+            .frame(height: 48)
+            .overlay {
+                Capsule()
+                    .stroke(isSelected ? display.dotColor : RecapTheme.ColorToken.border, lineWidth: 1)
+            }
+    }
+
+    private func pickerTitle(for kind: CollectionKind, defaultTitle: String) -> String {
+        switch kind {
+        case .content:
+            "책 · 컨텐츠"
+        default:
+            defaultTitle
+        }
     }
 }
 

@@ -4,108 +4,186 @@ struct OnboardingIntroView: View {
     let onStart: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer(minLength: RecapTheme.Spacing.xLarge)
+        OnboardingScaffold {
+            Spacer(minLength: 60)
 
-            RecapLogo(showsSubtitle: true)
-                .padding(.bottom, RecapTheme.Spacing.large)
+            VStack(spacing: 12) {
+                RecapLogoText(size: 20.73)
 
-            onboardingArtwork
-                .padding(.horizontal, RecapTheme.Spacing.large)
-                .padding(.bottom, RecapTheme.Spacing.xLarge)
-
-            VStack(alignment: .leading, spacing: RecapTheme.Spacing.medium) {
-                Text("저장된 스크린샷을\n필요한 순간 다시 찾을 수 있게")
-                    .font(.title2.weight(.black))
+                Text("갤러리에 쌓인 스크린샷\n핵심정보만 정리해요")
+                    .font(RecapFont.pretendard(size: 22, weight: .semibold))
+                    .tracking(-0.44)
+                    .lineSpacing(3)
+                    .multilineTextAlignment(.center)
                     .foregroundStyle(RecapTheme.ColorToken.textPrimary)
-                    .lineSpacing(3)
 
-                Text("맛집, 상품, 일정, 레퍼런스까지\n스크린샷 속 정보를 카드와 컬렉션으로 정리해요.")
-                    .font(.subheadline)
+                Text("이제 앨범에서 헤맬 필요 없이,\n바로 찾을 수 있어요!")
+                    .font(RecapFont.pretendard(size: 15, weight: .medium))
+                    .tracking(-0.3)
+                    .lineSpacing(3)
+                    .multilineTextAlignment(.center)
                     .foregroundStyle(RecapTheme.ColorToken.textSecondary)
-                    .lineSpacing(3)
+                    .padding(.top, 2)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, RecapTheme.Spacing.xLarge)
 
-            Spacer(minLength: RecapTheme.Spacing.xLarge)
+            Spacer(minLength: 40)
 
-            VStack(spacing: RecapTheme.Spacing.medium) {
-                RecapButton(title: "카카오로 시작하기", systemImage: "message.fill", style: .kakao, action: onStart)
-                RecapButton(title: "Apple로 시작하기", systemImage: "apple.logo", style: .dark, action: onStart)
+            RecapMascotMark(size: 168)
 
-                Button("이메일로 로그인", action: onStart)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(RecapTheme.ColorToken.textTertiary)
-                    .padding(.top, RecapTheme.Spacing.small)
-            }
-            .padding(.horizontal, RecapTheme.Spacing.xLarge)
-            .padding(.bottom, RecapTheme.Spacing.xxLarge)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(RecapTheme.ColorToken.background)
-    }
+            Spacer()
 
-    private var onboardingArtwork: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: RecapTheme.Radius.xLarge, style: .continuous)
-                .fill(RecapTheme.ColorToken.primarySoft)
-                .frame(height: 160)
-
-            RoundedRectangle(cornerRadius: RecapTheme.Radius.medium, style: .continuous)
-                .fill(.white)
-                .frame(width: 116, height: 140)
-                .rotationEffect(.degrees(-8))
-                .shadow(color: RecapTheme.ColorToken.primary.opacity(0.10), radius: 18, y: 10)
-                .overlay(alignment: .top) {
-                    VStack(spacing: 10) {
-                        RoundedRectangle(cornerRadius: 6)
-                            .fill(RecapTheme.ColorToken.thumbnail)
-                            .frame(width: 70, height: 34)
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(RecapTheme.ColorToken.border)
-                            .frame(width: 72, height: 8)
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(RecapTheme.ColorToken.border)
-                            .frame(width: 58, height: 8)
-                    }
-                    .padding(.top, 18)
-                }
-
-            RoundedRectangle(cornerRadius: RecapTheme.Radius.medium, style: .continuous)
-                .fill(.white)
-                .frame(width: 124, height: 82)
-                .offset(x: 44, y: -4)
-                .shadow(color: RecapTheme.ColorToken.primary.opacity(0.12), radius: 18, y: 12)
-                .overlay(alignment: .leading) {
-                    VStack(alignment: .leading, spacing: 5) {
-                        HStack(spacing: 5) {
-                            Circle()
-                                .fill(RecapTheme.ColorToken.primary)
-                                .frame(width: 7, height: 7)
-                            Text("다시 볼 정보")
-                                .font(.caption2.weight(.bold))
-                                .foregroundStyle(RecapTheme.ColorToken.primary)
-                        }
-                        Text("성수동 브런치\n맛집")
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(RecapTheme.ColorToken.textPrimary)
-                    }
-                    .padding(.leading, 14)
-                }
-
-            Image(systemName: "chevron.right")
-                .font(.headline.weight(.black))
-                .foregroundStyle(.white)
-                .frame(width: 42, height: 42)
-                .background(RecapTheme.ColorToken.primary)
-                .clipShape(Circle())
-                .shadow(color: RecapTheme.ColorToken.primary.opacity(0.30), radius: 12, y: 8)
-                .offset(y: 30)
+            RecapButton(title: "시작하기", style: .primary, action: onStart)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 31)
         }
     }
 }
 
-#Preview {
+struct OnboardingLoginView: View {
+    enum Provider { case kakao, apple }
+
+    @State private var isLoggingIn = false
+    @State private var showsLoginFailure = false
+
+    let onStart: () -> Void
+    var login: (Provider) async -> Bool = { _ in true }
+
+    var body: some View {
+        OnboardingScaffold {
+            Spacer(minLength: 60)
+
+            VStack(spacing: 12) {
+                RecapLogoText(size: 20.73)
+
+                Text("갤러리에 쌓인 스크린샷\n핵심정보만 정리해요")
+                    .font(RecapFont.pretendard(size: 22, weight: .semibold))
+                    .tracking(-0.44)
+                    .lineSpacing(3)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+
+                Text("5초만에 시작하기")
+                    .font(RecapFont.pretendard(size: 13, weight: .medium))
+                    .tracking(-0.26)
+                    .foregroundStyle(RecapTheme.ColorToken.primary)
+                    .padding(.horizontal, 14)
+                    .frame(height: 35)
+                    .overlay {
+                        Capsule().stroke(RecapTheme.ColorToken.primary, lineWidth: 1)
+                    }
+                    .padding(.top, 18)
+            }
+
+            Spacer(minLength: 120)
+
+            VStack(spacing: 28) {
+                Text("간편로그인")
+                    .font(RecapFont.pretendard(size: 15, weight: .medium))
+                    .tracking(-0.3)
+                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+
+                HStack(spacing: 18) {
+                    Button { authenticate(with: .kakao) } label: {
+                        Circle()
+                            .fill(RecapComponentColor.kakao)
+                            .frame(width: 67, height: 67)
+                            .overlay {
+                                Image(systemName: "message.fill")
+                                    .font(.system(size: 26, weight: .semibold))
+                                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                            }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("카카오 로그인")
+
+                    Button { authenticate(with: .apple) } label: {
+                        Circle()
+                            .fill(RecapTheme.ColorToken.textPrimary)
+                            .frame(width: 67, height: 67)
+                            .overlay {
+                                Image(systemName: "apple.logo")
+                                    .font(.system(size: 29, weight: .medium))
+                                    .foregroundStyle(.white)
+                            }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Apple 로그인")
+                }
+
+                Text("로그인하면 서비스 이용약관 및 개인정보 처리방침에 동의하게 됩니다.")
+                    .font(RecapFont.pretendard(size: 12, weight: .medium))
+                    .tracking(-0.24)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(RecapTheme.ColorToken.textTertiary)
+                    .padding(.horizontal, 40)
+            }
+
+            Spacer(minLength: 40)
+        }
+        .disabled(isLoggingIn)
+        .overlay(alignment: .bottom) {
+            if showsLoginFailure {
+                HStack(spacing: 10) {
+                    Image(systemName: "exclamationmark.circle.fill")
+                        .font(.system(size: 24, weight: .medium))
+                    Text("로그인에 실패했어요. 잠시 후 다시 시도해주세요.")
+                        .font(RecapFont.pretendard(size: 13, weight: .medium))
+                        .tracking(-0.26)
+                }
+                    .foregroundStyle(.white)
+                    .frame(width: 317, height: 60)
+                    .background(Color.black.opacity(0.5))
+                    .clipShape(Capsule())
+                    .padding(.bottom, 103)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: showsLoginFailure)
+    }
+
+    private func authenticate(with provider: Provider) {
+        guard !isLoggingIn else { return }
+        isLoggingIn = true
+        showsLoginFailure = false
+        Task {
+            let succeeded = await login(provider)
+            await MainActor.run {
+                isLoggingIn = false
+                if succeeded {
+                    onStart()
+                } else {
+                    showsLoginFailure = true
+                }
+            }
+        }
+    }
+}
+
+private struct OnboardingScaffold<Content: View>: View {
+    private let content: Content
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            content
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(RecapTheme.ColorToken.background)
+        .toolbar(.hidden, for: .navigationBar)
+    }
+}
+
+#Preview("Onboarding intro") {
     OnboardingIntroView(onStart: {})
+}
+
+#Preview("Onboarding login") {
+    OnboardingLoginView(onStart: {})
+}
+
+#Preview("Onboarding login failure") {
+    OnboardingLoginView(onStart: {}, login: { _ in false })
 }

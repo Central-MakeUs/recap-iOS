@@ -2,17 +2,20 @@ import SwiftUI
 
 struct SearchBar: View {
     @Binding var text: String
-    var placeholder = "카드 제목 또는 핵심 정보 검색"
+    var placeholder = "스크린샷 내용이나 제목으로 검색"
     var showsClearButton = false
+    var showsLeadingIcon = true
 
     var body: some View {
-        HStack(spacing: RecapTheme.Spacing.small) {
-            Image(systemName: "magnifyingglass")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(RecapTheme.ColorToken.textTertiary)
+        HStack(spacing: 10) {
+            if showsLeadingIcon {
+                RecapIconView(icon: .search, size: 18, color: RecapTheme.ColorToken.textTertiary)
+            }
 
             TextField(placeholder, text: $text)
-                .font(.subheadline)
+                .font(RecapFont.pretendard(size: 13, weight: .medium))
+                .tracking(-0.26)
+                .foregroundStyle(RecapTheme.ColorToken.textPrimary)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
 
@@ -20,23 +23,53 @@ struct SearchBar: View {
                 Button {
                     text = ""
                 } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(RecapTheme.ColorToken.textTertiary)
+                    RecapIconView(icon: .cancel, size: 16, color: RecapTheme.ColorToken.textTertiary)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, RecapTheme.Spacing.medium)
-        .frame(height: 40)
-        .recapCard(radius: RecapTheme.Radius.medium)
+        .padding(.leading, showsLeadingIcon ? 16 : 18)
+        .padding(.trailing, 14)
+        .frame(height: 44)
+        .background(RecapTheme.ColorToken.controlFill)
+        .clipShape(RoundedRectangle(cornerRadius: 44, style: .continuous))
     }
 }
 
-#Preview {
-    VStack {
-        SearchBar(text: .constant(""))
-        SearchBar(text: .constant("성수동"), showsClearButton: true)
+struct SearchBarDisplay: View {
+    var placeholder = "스크린샷 내용이나 제목으로 검색"
+    var showsLeadingIcon = true
+
+    var body: some View {
+        HStack(spacing: 10) {
+            if showsLeadingIcon {
+                RecapIconView(icon: .search, size: 18, color: RecapTheme.ColorToken.textTertiary)
+            }
+
+            Text(placeholder)
+                .font(RecapFont.pretendard(size: 13, weight: .medium))
+                .tracking(-0.26)
+                .foregroundStyle(RecapTheme.ColorToken.textTertiary)
+
+            Spacer(minLength: 0)
+        }
+        .padding(.leading, showsLeadingIcon ? 16 : 18)
+        .padding(.trailing, 14)
+        .frame(height: 44)
+        .background(RecapTheme.ColorToken.controlFill)
+        .clipShape(RoundedRectangle(cornerRadius: 44, style: .continuous))
     }
-    .padding()
-    .background(RecapTheme.ColorToken.background)
+}
+
+#Preview("Search bars") {
+    ZStack {
+        RecapTheme.ColorToken.background.ignoresSafeArea()
+        VStack(spacing: RecapTheme.Spacing.medium) {
+            SearchBar(text: .constant(""))
+            SearchBarDisplay()
+            SearchBar(text: .constant("숙소예약"), showsClearButton: true)
+            SearchBar(text: .constant(""), showsLeadingIcon: false)
+        }
+        .padding()
+    }
 }

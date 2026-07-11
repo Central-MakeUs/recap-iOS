@@ -14,8 +14,16 @@ final class RecapCardStore {
         Array(cards.prefix(3))
     }
 
+    var favoriteCards: [InformationCard] {
+        cards.filter(\.isFavorite)
+    }
+
+    var uncategorizedCards: [InformationCard] {
+        cards.filter { $0.collection == .other }
+    }
+
     var collectionSummaries: [CollectionSummary] {
-        CollectionKind.allCases.map { kind in
+        CollectionKind.folderCases.map { kind in
             let cardsForKind = cards(in: kind)
             return CollectionSummary(
                 kind: kind,
@@ -38,10 +46,11 @@ final class RecapCardStore {
     }
 
     func search(_ query: String) -> [InformationCard] {
-        guard !query.isEmpty else { return Array(cards.prefix(2)) }
+        guard !query.isEmpty else { return [] }
         return cards.filter { card in
             card.title.localizedCaseInsensitiveContains(query)
                 || card.summary.localizedCaseInsensitiveContains(query)
+                || card.category.localizedCaseInsensitiveContains(query)
                 || card.tags.contains { $0.localizedCaseInsensitiveContains(query) }
         }
     }
@@ -49,6 +58,16 @@ final class RecapCardStore {
     func moveCard(id: InformationCard.ID, to collection: CollectionKind) {
         guard let index = cards.firstIndex(where: { $0.id == id }) else { return }
         cards[index] = cards[index].with(collection: collection)
+    }
+
+    func updateCard(id: InformationCard.ID, with draft: CardEditDraft) {
+        guard let index = cards.firstIndex(where: { $0.id == id }) else { return }
+        cards[index] = cards[index].with(editDraft: draft)
+    }
+
+    func toggleFavorite(id: InformationCard.ID) {
+        guard let index = cards.firstIndex(where: { $0.id == id }) else { return }
+        cards[index] = cards[index].with(isFavorite: !cards[index].isFavorite)
     }
 
     func removeCard(id: InformationCard.ID) {
@@ -66,10 +85,39 @@ private extension InformationCard {
             dateText: dateText,
             location: location,
             businessHours: businessHours,
-            category: category,
+            category: RecapPresentation.collectionDisplay(for: collection).title,
             confirmationLabel: confirmationLabel,
             memo: memo,
-            tags: tags
+            tags: tags,
+            thumbnailAssetName: thumbnailAssetName,
+            isFavorite: isFavorite
+        )
+    }
+
+    func with(editDraft draft: CardEditDraft) -> InformationCard {
+        InformationCard(
+            id: id,
+            title: draft.title,
+            summary: draft.summary,
+            collection: draft.collection,
+            dateText: dateText,
+            location: location,
+            businessHours: businessHours,
+            category: RecapPresentation.collectionDisplay(for: draft.collection).title,
+            confirmationLabel: confirmationLabel,
+            memo: draft.body,
+            tags: tags,
+            thumbnailAssetName: thumbnailAssetName,
+            isFavorite: isFavorite
+        )
+    }
+
+    func with(isFavorite: Bool) -> InformationCard {
+        InformationCard(
+            id: id, title: title, summary: summary, collection: collection,
+            dateText: dateText, location: location, businessHours: businessHours,
+            category: category, confirmationLabel: confirmationLabel, memo: memo,
+            tags: tags, thumbnailAssetName: thumbnailAssetName, isFavorite: isFavorite
         )
     }
 }

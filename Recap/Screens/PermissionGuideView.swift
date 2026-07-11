@@ -1,101 +1,91 @@
 import SwiftUI
 
 struct PermissionGuideView: View {
-    let onBack: () -> Void
     let onContinue: () -> Void
-    let onSkip: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            onboardingHeader(stepText: "1 / 3", onBack: onBack)
+        VStack(alignment: .leading, spacing: 0) {
+            Spacer(minLength: 118)
 
-            VStack(alignment: .leading, spacing: RecapTheme.Spacing.xLarge) {
-                Image(systemName: "photo")
-                    .font(.title2.weight(.bold))
-                    .foregroundStyle(RecapTheme.ColorToken.primary)
-                    .frame(width: 60, height: 60)
-                    .background(RecapTheme.ColorToken.primaryLight)
-                    .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.large, style: .continuous))
+            VStack(alignment: .leading, spacing: 12) {
+                Text("서비스 이용을 위해\n다음 접근 권한이 필요해요")
+                    .font(RecapFont.pretendard(size: 22, weight: .semibold))
+                    .tracking(-0.44)
+                    .lineSpacing(3)
+                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
 
-                VStack(alignment: .leading, spacing: RecapTheme.Spacing.medium) {
-                    Text("스크린샷을 정리하려면\n사진 접근 권한이 필요해요")
-                        .font(.title2.weight(.black))
-                        .foregroundStyle(RecapTheme.ColorToken.textPrimary)
-                        .lineSpacing(3)
-
-                    Text("RE-CAP은 사용자가 허용한 범위 안에서\n스크린샷만 찾아 정리합니다.")
-                        .font(.subheadline)
-                        .foregroundStyle(RecapTheme.ColorToken.textSecondary)
-                        .lineSpacing(3)
-                }
-
-                VStack(alignment: .leading, spacing: RecapTheme.Spacing.large) {
-                    PermissionCheckRow(text: "선택한 범위의 스크린샷만 분석해요")
-                    PermissionCheckRow(text: "원본 이미지는 앱에서 다시 확인할 수 있어요")
-                    PermissionCheckRow(text: "민감한 정보는 확인이 필요한 카드로 분리할 수 있어요")
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, RecapTheme.Spacing.xLarge)
-            .padding(.top, RecapTheme.Spacing.xLarge)
-
-            Spacer()
-
-            VStack(spacing: RecapTheme.Spacing.medium) {
-                RecapButton(title: "권한 허용하기", style: .primary, action: onContinue)
-                Button("나중에 하기", action: onSkip)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(RecapTheme.ColorToken.textTertiary)
-            }
-            .padding(.horizontal, RecapTheme.Spacing.xLarge)
-            .padding(.bottom, RecapTheme.Spacing.xxLarge)
-        }
-        .background(RecapTheme.ColorToken.background)
-    }
-
-    private func onboardingHeader(stepText: String, onBack: @escaping () -> Void) -> some View {
-        HStack {
-            Button(action: onBack) {
-                Image(systemName: "chevron.left")
-                    .font(.subheadline.weight(.bold))
+                Text("권한은 허용 후에도 설정에서 언제든 변경할 수 있어요.")
+                    .font(RecapFont.pretendard(size: 15, weight: .medium))
+                    .tracking(-0.3)
                     .foregroundStyle(RecapTheme.ColorToken.textSecondary)
-                    .frame(width: 32, height: 32)
-                    .background(RecapTheme.ColorToken.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous))
             }
-            .buttonStyle(.plain)
+            .padding(.horizontal, 22)
+
+            VStack(alignment: .leading, spacing: 18) {
+                PermissionGuideRow(
+                    iconName: "photo.on.rectangle",
+                    title: "사진 접근 권한",
+                    message: "스크린샷을 불러와 정리하기 위해 필요해요."
+                )
+                PermissionGuideRow(
+                    iconName: "bell.badge",
+                    title: "알림 권한",
+                    message: "정리가 끝났을 때 알려드리기 위해 사용해요."
+                )
+                PermissionGuideRow(
+                    iconName: "square.and.arrow.up",
+                    title: "공유 확장",
+                    message: "갤러리나 다른 앱에서 Recap으로 보낼 수 있어요."
+                )
+            }
+            .padding(22)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(height: 185)
+            .background(RecapTheme.ColorToken.controlFill)
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .padding(.horizontal, 16)
+            .padding(.top, 42)
 
             Spacer()
 
-            Text(stepText)
-                .font(.footnote.weight(.bold))
-                .foregroundStyle(RecapTheme.ColorToken.primary)
+            RecapButton(title: "확인했어요", style: .primary, action: onContinue)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 31)
         }
-        .padding(.horizontal, RecapTheme.Spacing.xLarge)
-        .padding(.top, RecapTheme.Spacing.medium)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .background(RecapTheme.ColorToken.background)
+        .toolbar(.hidden, for: .navigationBar)
     }
 }
 
-private struct PermissionCheckRow: View {
-    let text: String
+private struct PermissionGuideRow: View {
+    let iconName: String
+    let title: String
+    let message: String
 
     var body: some View {
-        HStack(alignment: .top, spacing: RecapTheme.Spacing.medium) {
-            Image(systemName: "checkmark")
-                .font(.caption.weight(.black))
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: iconName)
+                .font(.system(size: 18, weight: .semibold))
                 .foregroundStyle(RecapTheme.ColorToken.primary)
-                .frame(width: 22, height: 22)
-                .background(RecapTheme.ColorToken.primaryLight)
-                .clipShape(Circle())
+                .frame(width: 36, height: 36)
+                .background(.white)
+                .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
 
-            Text(text)
-                .font(.subheadline)
-                .foregroundStyle(RecapTheme.ColorToken.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(RecapFont.pretendard(size: 15, weight: .semibold))
+                    .tracking(-0.3)
+                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                Text(message)
+                    .font(RecapFont.pretendard(size: 13, weight: .medium))
+                    .tracking(-0.26)
+                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+            }
         }
     }
 }
 
-#Preview {
-    PermissionGuideView(onBack: {}, onContinue: {}, onSkip: {})
+#Preview("Permission guide") {
+    PermissionGuideView(onContinue: {})
 }

@@ -10,7 +10,8 @@ struct RecapButton: View {
         var foreground: Color {
             switch self {
             case .primary, .dark: .white
-            case .kakao, .secondary: RecapTheme.ColorToken.textPrimary
+            case .kakao: RecapTheme.ColorToken.textPrimary
+            case .secondary: RecapTheme.ColorToken.primary
             }
         }
 
@@ -18,7 +19,7 @@ struct RecapButton: View {
             switch self {
             case .primary: RecapTheme.ColorToken.primary
             case .dark: RecapTheme.ColorToken.textPrimary
-            case .kakao: Color(red: 1.000, green: 0.895, blue: 0.200)
+            case .kakao: RecapComponentColor.kakao
             case .secondary: RecapTheme.ColorToken.surface
             }
         }
@@ -41,18 +42,19 @@ struct RecapButton: View {
             HStack(spacing: RecapTheme.Spacing.small) {
                 if let systemImage {
                     Image(systemName: systemImage)
-                        .font(.subheadline.weight(.bold))
+                        .font(.system(size: 16, weight: .semibold))
                 }
                 Text(title)
-                    .font(.subheadline.weight(.bold))
+                    .font(RecapFont.pretendard(size: 14, weight: .semibold))
+                    .tracking(-0.28)
             }
             .foregroundStyle(style.foreground)
             .frame(maxWidth: .infinity)
-            .frame(height: 52)
+            .frame(height: 50)
             .background(style.background)
-            .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.medium, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: RecapTheme.Radius.medium, style: .continuous)
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .stroke(style.border, lineWidth: 1)
             )
         }
@@ -60,12 +62,25 @@ struct RecapButton: View {
     }
 }
 
-#Preview {
-    VStack(spacing: RecapTheme.Spacing.medium) {
-        RecapButton(title: "권한 허용하기", style: .primary, action: PreviewActions.noop)
-        RecapButton(title: "카카오로 시작하기", systemImage: "message.fill", style: .kakao, action: PreviewActions.noop)
-        RecapButton(title: "Apple로 시작하기", systemImage: "apple.logo", style: .dark, action: PreviewActions.noop)
+struct RecapIconButtonLarge: View {
+    let title: String
+    var systemImage: String
+    var style: RecapButton.Style = .kakao
+    let action: () -> Void
+
+    var body: some View {
+        RecapButton(title: title, systemImage: systemImage, style: style, action: action)
     }
-    .padding()
-    .background(RecapTheme.ColorToken.background)
+}
+
+#Preview {
+    ZStack {
+        RecapTheme.ColorToken.background.ignoresSafeArea()
+        VStack(spacing: RecapTheme.Spacing.medium) {
+            RecapButton(title: "버튼", style: .primary, action: PreviewActions.noop)
+            RecapButton(title: "카카오로 로그인", systemImage: "message.fill", style: .kakao, action: PreviewActions.noop)
+            RecapButton(title: "Apple로 시작하기", systemImage: "apple.logo", style: .dark, action: PreviewActions.noop)
+        }
+        .padding()
+    }
 }

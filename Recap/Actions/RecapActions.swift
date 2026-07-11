@@ -2,6 +2,7 @@ import Foundation
 
 enum HomeAction: Hashable {
     case search
+    case startOrganizing
     case openAllRecent
     case openCard(InformationCard.ID)
     case openArchive(CollectionKind)
@@ -9,7 +10,7 @@ enum HomeAction: Hashable {
 }
 
 enum OrganizeAction: Hashable {
-    case startSelection
+    case start
     case openSettings
 }
 
@@ -18,6 +19,7 @@ enum ArchiveAction: Hashable {
     case openArchive(CollectionKind)
     case openCard(InformationCard.ID)
     case selectFilter(String)
+    case deleteCards(Set<InformationCard.ID>)
     case openSettings
 }
 
@@ -30,6 +32,7 @@ enum CardDetailAction: Hashable {
     case share(InformationCard.ID)
     case edit(InformationCard.ID)
     case changeCollection(InformationCard.ID)
+    case toggleFavorite(InformationCard.ID)
     case exclude(InformationCard.ID)
     case delete(InformationCard.ID)
 }
