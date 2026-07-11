@@ -9,7 +9,7 @@ struct RecapFilterButton: View {
         Button(action: action) {
             HStack(spacing: 10) {
                 Text(title)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(RecapFont.pretendard(size: 12, weight: .medium))
                     .tracking(-0.24)
                 RecapIconView(icon: icon, size: 16, color: RecapComponentColor.filterText)
             }

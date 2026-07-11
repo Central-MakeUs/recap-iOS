@@ -15,31 +15,34 @@ enum RecapTheme {
         static let gray100 = Color("RecapGray100")
         static let gray50 = Color("RecapGray50")
 
-        static let background = gray50
+        static let background = Color(red: 253 / 255, green: 253 / 255, blue: 253 / 255)
         static let surface = Color.white
-        static let primary = blue500
-        static let primaryLight = blue300
-        static let primarySoft = blue50
-        static let textPrimary = gray900
-        static let textSecondary = gray500
-        static let textTertiary = gray300
-        static let border = gray100
-        static let divider = gray100
+        static let controlFill = Color(red: 244 / 255, green: 245 / 255, blue: 248 / 255)
+        static let primary = Color(red: 92 / 255, green: 116 / 255, blue: 255 / 255)
+        static let primaryLight = Color(red: 92 / 255, green: 116 / 255, blue: 255 / 255).opacity(0.14)
+        static let primarySoft = Color(red: 243 / 255, green: 245 / 255, blue: 255 / 255)
+        static let textPrimary = Color(red: 11 / 255, green: 17 / 255, blue: 29 / 255)
+        static let textBody = Color(red: 34 / 255, green: 43 / 255, blue: 60 / 255)
+        static let textSecondary = Color(red: 77 / 255, green: 88 / 255, blue: 108 / 255)
+        static let textTertiary = Color(red: 153 / 255, green: 160 / 255, blue: 176 / 255)
+        static let border = Color(red: 226 / 255, green: 230 / 255, blue: 237 / 255)
+        static let divider = border
         static let warning = Color(red: 0.965, green: 0.680, blue: 0.175)
         static let warningSoft = Color(red: 1.000, green: 0.965, blue: 0.875)
         static let success = Color(red: 0.180, green: 0.650, blue: 0.420)
-        static let thumbnail = gray200
+        static let unimplemented = Color(red: 1.0, green: 0.18, blue: 0.62)
+        static let thumbnail = Color(red: 217 / 255, green: 217 / 255, blue: 217 / 255)
     }
 
     enum Typography {
-        static let heading1 = Font.system(size: 22, weight: .semibold)
-        static let heading2 = Font.system(size: 18, weight: .semibold)
-        static let heading3 = Font.system(size: 16, weight: .semibold)
-        static let body1 = Font.system(size: 15, weight: .medium)
-        static let body2 = Font.system(size: 14, weight: .regular)
-        static let caption1 = Font.system(size: 13, weight: .medium)
-        static let caption2 = Font.system(size: 12, weight: .medium)
-        static let caption3 = Font.system(size: 10, weight: .medium)
+        static let heading1 = RecapFont.pretendard(size: 22, weight: .semibold)
+        static let heading2 = RecapFont.pretendard(size: 18, weight: .semibold)
+        static let heading3 = RecapFont.pretendard(size: 16, weight: .semibold)
+        static let body1 = RecapFont.pretendard(size: 15, weight: .medium)
+        static let body2 = RecapFont.pretendard(size: 14, weight: .regular)
+        static let caption1 = RecapFont.pretendard(size: 13, weight: .medium)
+        static let caption2 = RecapFont.pretendard(size: 12, weight: .medium)
+        static let caption3 = RecapFont.pretendard(size: 10, weight: .medium)
     }
 
     enum Spacing {
@@ -71,6 +74,7 @@ struct RecapCardStyle: ViewModifier {
             .overlay(
                 RoundedRectangle(cornerRadius: radius, style: .continuous)
                     .stroke(borderColor, lineWidth: 1)
+                    .allowsHitTesting(false)
             )
     }
 }
@@ -89,7 +93,7 @@ extension View {
     ZStack {
         RecapTheme.ColorToken.background.ignoresSafeArea()
         VStack(spacing: RecapTheme.Spacing.large) {
-            Text("RE-CAP")
+            Text("Recap")
                 .font(RecapTheme.Typography.heading2)
             Text("카드 스타일 미리보기")
                 .font(RecapTheme.Typography.body2)

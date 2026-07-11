@@ -17,7 +17,7 @@ struct RecapButton: View {
 
         var background: Color {
             switch self {
-            case .primary: RecapTheme.ColorToken.primaryLight
+            case .primary: RecapTheme.ColorToken.primary
             case .dark: RecapTheme.ColorToken.textPrimary
             case .kakao: RecapComponentColor.kakao
             case .secondary: RecapTheme.ColorToken.surface
@@ -45,7 +45,7 @@ struct RecapButton: View {
                         .font(.system(size: 16, weight: .semibold))
                 }
                 Text(title)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(RecapFont.pretendard(size: 14, weight: .semibold))
                     .tracking(-0.28)
             }
             .foregroundStyle(style.foreground)

@@ -9,6 +9,10 @@ import SwiftUI
 
 @main
 struct RecapApp: App {
+    init() {
+        RecapFont.registerFonts()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()

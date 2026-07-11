@@ -4,18 +4,17 @@ struct RecapRootView: View {
     @State private var phase: AppPhase
     @State private var router: AppRouter
     @State private var cardStore: RecapCardStore
-    @State private var selectedRange: InitialRange = .thirtyDays
 
-    init(initialPhase: AppPhase = .onboarding(.introLogin)) {
+    init(initialPhase: AppPhase = .main) {
         self.init(
             initialPhase: initialPhase,
             router: AppRouter(),
-            cardStore: RecapCardStore(cards: [])
+            cardStore: RecapCardStore(cards: SampleData.cards)
         )
     }
 
     init(
-        initialPhase: AppPhase = .onboarding(.introLogin),
+        initialPhase: AppPhase = .main,
         router: AppRouter,
         cardStore: RecapCardStore
     ) {
@@ -31,7 +30,16 @@ struct RecapRootView: View {
                 onboardingView(for: step)
                     .transition(.opacity.combined(with: .move(edge: .trailing)))
             case .main:
-                AppShellView(router: router, cardStore: cardStore)
+                AppShellView(
+                    router: router,
+                    cardStore: cardStore,
+                    onLogout: {
+                        MainTab.allCases.forEach(router.reset)
+                        router.dismissSheet()
+                        router.dismissModal()
+                        phase = .onboarding(.login)
+                    }
+                )
                     .transition(.opacity)
             }
         }
@@ -41,28 +49,39 @@ struct RecapRootView: View {
     @ViewBuilder
     private func onboardingView(for step: OnboardingStep) -> some View {
         switch step {
-        case .introLogin:
+        case .serviceIntro:
             OnboardingIntroView(
+                onStart: { phase = .onboarding(.login) }
+            )
+        case .login:
+            OnboardingLoginView(
                 onStart: { phase = .onboarding(.permissionGuide) }
             )
         case .permissionGuide:
             PermissionGuideView(
-                onBack: { phase = .onboarding(.introLogin) },
-                onContinue: { phase = .onboarding(.rangeSelection) },
-                onSkip: { phase = .onboarding(.rangeSelection) }
+                onContinue: { phase = .onboarding(.shareSetup) }
             )
-        case .rangeSelection:
-            InitialRangeSelectionView(
-                selectedRange: $selectedRange,
-                onBack: { phase = .onboarding(.permissionGuide) },
-                onContinue: { phase = .main }
+        case .shareSetup:
+            ShareSetupGuideView(
+                onNext: { phase = .onboarding(.shareSetupDetail) },
+                onSkip: { phase = .onboarding(.firstCleanup) }
+            )
+        case .shareSetupDetail:
+            ShareSetupDetailView(
+                onBack: { phase = .onboarding(.shareSetup) },
+                onNext: { phase = .onboarding(.firstCleanup) }
+            )
+        case .firstCleanup:
+            FirstCleanupStartView(
+                onStart: { phase = .main },
+                onSkip: { phase = .main }
             )
         }
     }
 }
 
 #Preview("Onboarding start") {
-    RecapRootView()
+    RecapRootView(initialPhase: .onboarding(.serviceIntro))
 }
 
 #Preview("Main tabs") {

@@ -52,13 +52,13 @@ extension View {
         case .cardDetail(let id):
             CardDetailContainerView(cardID: id)
         case .cardEdit(let id):
-            CardEditPlaceholderView(cardID: id)
+            CardEditView(cardID: id)
         case .organizeStart:
-            OrganizeStartPlaceholderView()
+            OrganizeFlowView()
         case .settings:
             SettingsContainerView()
         case .settingsDetail(let route):
-            SettingsDetailStubView(route: route)
+            SettingsDetailView(route: route)
         }
     }
 

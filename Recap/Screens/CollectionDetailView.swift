@@ -9,10 +9,14 @@ struct CollectionDetailContainerView: View {
     var body: some View {
         CollectionDetailView(
             kind: kind,
-            cards: cardStore.cards(in: kind),
+            cards: cardsForDisplay,
             summary: cardStore.collectionSummaries.first { $0.kind == kind },
             onAction: handleAction
         )
+    }
+
+    private var cardsForDisplay: [InformationCard] {
+        cardStore.cards(in: kind)
     }
 
     private func handleAction(_ action: ArchiveAction) {
@@ -25,6 +29,8 @@ struct CollectionDetailContainerView: View {
             router.navigate(.cardDetail(id))
         case .selectFilter:
             break
+        case .deleteCards(let ids):
+            ids.forEach(cardStore.removeCard)
         case .openSettings:
             router.navigate(.settings)
         }
@@ -32,124 +38,154 @@ struct CollectionDetailContainerView: View {
 }
 
 struct CollectionDetailView: View {
+    enum LoadState { case loaded, failed }
+
+    @State private var query = ""
+    @State private var isSelecting = false
+    @State private var selectedIDs: Set<InformationCard.ID> = []
+
     let kind: CollectionKind
     let cards: [InformationCard]
     let summary: CollectionSummary?
+    var loadState: LoadState = .loaded
+    var onRetry: () -> Void = {}
     let onAction: (ArchiveAction) -> Void
 
     init(
         kind: CollectionKind,
         cards: [InformationCard],
         summary: CollectionSummary?,
+        loadState: LoadState = .loaded,
+        onRetry: @escaping () -> Void = {},
         onAction: @escaping (ArchiveAction) -> Void
     ) {
         self.kind = kind
         self.cards = cards
         self.summary = summary
+        self.loadState = loadState
+        self.onRetry = onRetry
         self.onAction = onAction
     }
 
     var body: some View {
         let collection = RecapPresentation.collectionDisplay(for: kind)
 
-        Group {
-            if let summary {
-                detailContent(collection: collection, summary: summary)
-            } else {
-                MissingCollectionSummaryView(kind: kind)
+        if loadState == .failed {
+            RecapLoadFailureView(style: .archive, retry: onRetry)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(RecapTheme.ColorToken.background)
+                .navigationTitle("보관함")
+                .navigationBarTitleDisplayMode(.inline)
+        } else {
+            loadedContent(collection: collection)
+        }
+    }
+
+    private func loadedContent(collection: RecapPresentation.CollectionDisplay) -> some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 16) {
+                SearchBar(text: $query)
+                    .padding(.top, 4)
+
+                HStack(spacing: 8) {
+                    RecapFilterButton(title: "최신순") {
+                        onAction(.selectFilter("최신순"))
+                    }
+
+                    Spacer()
+                }
+
+                HStack {
+                    Text("\(filteredCards.count) recaps")
+                        .font(RecapFont.pretendard(size: 13, weight: .medium))
+                        .tracking(-0.26)
+                        .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                    Spacer()
+                    Button(isSelecting ? "완료" : "선택") {
+                        isSelecting.toggle()
+                        if !isSelecting { selectedIDs.removeAll() }
+                    }
+                    .font(RecapFont.pretendard(size: 14, weight: .regular))
+                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                }
+
+                VStack(spacing: 0) {
+                    if filteredCards.isEmpty {
+                        RecapInlineEmptyView(
+                            title: "아직 \(collection.title) 카드가 없어요",
+                            message: "실제 분류 데이터가 연결되면 이곳에 표시됩니다."
+                        )
+                    } else {
+                        ForEach(filteredCards) { card in
+                            Button {
+                                if isSelecting {
+                                    toggleSelection(card.id)
+                                } else {
+                                    openCard(card.id)
+                                }
+                            } label: {
+                                HStack(spacing: 0) {
+                                    if isSelecting {
+                                        Image(systemName: selectedIDs.contains(card.id) ? "checkmark.circle.fill" : "circle")
+                                            .font(.system(size: 22, weight: .medium))
+                                            .foregroundStyle(selectedIDs.contains(card.id) ? RecapTheme.ColorToken.primary : RecapTheme.ColorToken.border)
+                                            .padding(.leading, 16)
+                                    }
+                                    ArchiveListCard(card: card)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(RecapTheme.ColorToken.border, lineWidth: 1)
+                }
             }
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .padding(.bottom, 122)
         }
         .background(RecapTheme.ColorToken.background)
         .navigationTitle(collection.title)
         .navigationBarTitleDisplayMode(.inline)
+        .safeAreaInset(edge: .bottom) {
+            if isSelecting {
+                Button {
+                    onAction(.deleteCards(selectedIDs))
+                    selectedIDs.removeAll()
+                    isSelecting = false
+                } label: {
+                    Text("삭제")
+                        .font(RecapFont.pretendard(size: 14, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .background(selectedIDs.isEmpty ? RecapTheme.ColorToken.textTertiary : Color.red)
+                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .disabled(selectedIDs.isEmpty)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(RecapTheme.ColorToken.background)
+            }
+        }
     }
 
-    private func detailContent(collection: RecapPresentation.CollectionDisplay, summary: CollectionSummary) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: RecapTheme.Spacing.large) {
-                VStack(alignment: .leading, spacing: RecapTheme.Spacing.small) {
-                    HStack(spacing: RecapTheme.Spacing.small) {
-                        Circle()
-                            .fill(collection.dotColor)
-                            .frame(width: 9, height: 9)
-                        Text(collection.title)
-                            .font(.title3.weight(.black))
-                            .foregroundStyle(RecapTheme.ColorToken.textPrimary)
-                    }
-
-                    Text(collection.subtitle)
-                        .font(.subheadline)
-                        .foregroundStyle(RecapTheme.ColorToken.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    Text("\(summary.count)개 카드")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(RecapTheme.ColorToken.primary)
-                        .padding(.top, 2)
-                }
-
-                HStack {
-                    RecapFilterButton(title: "최신순") {
-                        onAction(.selectFilter("최신순"))
-                    }
-                    Spacer()
-                }
-
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: RecapTheme.Spacing.small) {
-                        Text("전체")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, RecapTheme.Spacing.medium)
-                            .padding(.vertical, RecapTheme.Spacing.small)
-                            .background(RecapTheme.ColorToken.primary)
-                            .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous))
-                        Text("상품")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(collection.dotColor)
-                            .padding(.horizontal, RecapTheme.Spacing.medium)
-                            .padding(.vertical, RecapTheme.Spacing.small)
-                            .background(collection.dotColor.opacity(0.10))
-                            .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous))
-                        Text("맛집")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(collection.dotColor)
-                            .padding(.horizontal, RecapTheme.Spacing.medium)
-                            .padding(.vertical, RecapTheme.Spacing.small)
-                            .background(collection.dotColor.opacity(0.10))
-                            .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous))
-                        Text("여행지")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(collection.dotColor)
-                            .padding(.horizontal, RecapTheme.Spacing.medium)
-                            .padding(.vertical, RecapTheme.Spacing.small)
-                            .background(collection.dotColor.opacity(0.10))
-                            .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous))
-                        Text("숙소")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(collection.dotColor)
-                            .padding(.horizontal, RecapTheme.Spacing.medium)
-                            .padding(.vertical, RecapTheme.Spacing.small)
-                            .background(collection.dotColor.opacity(0.10))
-                            .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous))
-                    }
-                }
-
-                VStack(spacing: 0) {
-                    ForEach(cards) { card in
-                        Button {
-                            openCard(card.id)
-                        } label: {
-                            ArchiveListCard(card: card)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .background(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.medium, style: .continuous))
-            }
-            .padding(RecapTheme.Spacing.large)
+    private var filteredCards: [InformationCard] {
+        guard !query.isEmpty else { return cards }
+        return cards.filter {
+            $0.title.localizedCaseInsensitiveContains(query)
+                || $0.summary.localizedCaseInsensitiveContains(query)
         }
+    }
+
+    private func toggleSelection(_ id: InformationCard.ID) {
+        if selectedIDs.contains(id) { selectedIDs.remove(id) } else { selectedIDs.insert(id) }
     }
 
     private func openCard(_ id: InformationCard.ID) {
@@ -157,48 +193,25 @@ struct CollectionDetailView: View {
     }
 }
 
-struct MissingCollectionSummaryView: View {
-    let kind: CollectionKind
-
-    var body: some View {
-        let collection = RecapPresentation.collectionDisplay(for: kind)
-
-        VStack(spacing: RecapTheme.Spacing.large) {
-            Image(systemName: "rectangle.stack.badge.questionmark")
-                .font(.title.weight(.bold))
-                .foregroundStyle(RecapTheme.ColorToken.textTertiary)
-                .frame(width: 64, height: 64)
-                .background(RecapTheme.ColorToken.surface)
-                .clipShape(RoundedRectangle(cornerRadius: RecapTheme.Radius.large, style: .continuous))
-
-            VStack(spacing: RecapTheme.Spacing.small) {
-                Text("컬렉션 정보를 찾을 수 없어요")
-                    .font(.title3.weight(.black))
-                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
-
-                Text("\(collection.title) 요약 데이터가 없어 실제 카드 수로 조용히 대체하지 않았습니다.")
-                    .font(.subheadline)
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
-            }
-        }
-        .padding(RecapTheme.Spacing.xLarge)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(RecapTheme.ColorToken.background)
-    }
-}
-
 #Preview {
     NavigationStack {
         CollectionDetailView(
-            kind: .comparison,
-            cards: SampleData.cards(in: .comparison),
-            summary: SampleData.collectionSummaries.first { $0.kind == .comparison },
+            kind: .shopping,
+            cards: SampleData.cards(in: .shopping),
+            summary: SampleData.collectionSummaries.first { $0.kind == .shopping },
             onAction: PreviewActions.handleArchive
         )
     }
 }
 
-#Preview("Missing collection summary") {
-    NavigationStack { MissingCollectionSummaryView(kind: .reference) }
+#Preview("Archive load failure") {
+    NavigationStack {
+        CollectionDetailView(
+            kind: .shopping,
+            cards: [],
+            summary: nil,
+            loadState: .failed,
+            onAction: PreviewActions.handleArchive
+        )
+    }
 }
