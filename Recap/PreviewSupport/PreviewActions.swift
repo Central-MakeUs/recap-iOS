@@ -13,5 +13,4 @@ enum PreviewActions {
 
     nonisolated static func handleCardDetail(_ action: CardDetailAction) {}
 
-    nonisolated static func handleSettings(_ action: SettingsAction) {}
 }
