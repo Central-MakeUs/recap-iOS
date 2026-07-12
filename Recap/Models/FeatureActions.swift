@@ -9,7 +9,7 @@ enum HomeAction: Hashable {
     case openSettings
 }
 
-enum OrganizeAction: Hashable {
+enum CardCreationAction: Hashable {
     case start
     case openSettings
 }

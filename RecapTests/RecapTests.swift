@@ -7,23 +7,23 @@ final class RecapTests: XCTestCase {
         XCTAssertTrue(true)
     }
 
-    func testOrganizeFlowRequiresASelectionBeforeConfirmation() {
+    func testCardCreationFlowRequiresASelectionBeforeConfirmation() {
         XCTAssertEqual(
-            OrganizeFlowDecision.confirmationStep(selectedCount: 0),
+            CardCreationFlowDecision.confirmationStep(selectedCount: 0),
             .noSelection
         )
     }
 
-    func testOrganizeFlowMovesFromConfirmationToProcessing() {
+    func testCardCreationFlowMovesFromConfirmationToProcessing() {
         XCTAssertEqual(
-            OrganizeFlowDecision.confirmationStep(selectedCount: 1),
+            CardCreationFlowDecision.confirmationStep(selectedCount: 1),
             .confirming
         )
     }
 
-    func testOrganizeFlowReportsPartialFailureWhenSomeLoadsFail() {
+    func testCardCreationFlowReportsPartialFailureWhenSomeLoadsFail() {
         XCTAssertEqual(
-            OrganizeFlowDecision.processingResult(
+            CardCreationFlowDecision.processingResult(
                 failedCount: 1,
                 hasScreenshots: true
             ),
@@ -33,10 +33,10 @@ final class RecapTests: XCTestCase {
 
     func testRouterKeepsNavigationPathsIndependentByTab() {
         let homePath = AppNavigationPath.appending(.search, to: [])
-        let organizePath = AppNavigationPath.appending(.organizeStart, to: [])
+        let cardCreationPath = AppNavigationPath.appending(.cardCreationStart, to: [])
 
         XCTAssertEqual(homePath, [.search])
-        XCTAssertEqual(organizePath, [.organizeStart])
+        XCTAssertEqual(cardCreationPath, [.cardCreationStart])
     }
 
     func testCardStoreSearchesAndUpdatesCards() {

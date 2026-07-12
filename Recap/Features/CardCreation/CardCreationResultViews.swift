@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct OrganizeResultView: View {
-    let state: OrganizeResultState
+struct CardCreationResultView: View {
+    let state: CardCreationResultState
     var selectedCount = 5
     var failedCount = 1
     let onDone: () -> Void
@@ -21,7 +21,7 @@ struct OrganizeResultView: View {
                     .foregroundStyle(RecapTheme.ColorToken.textPrimary)
 
                 if state == .complete {
-                    OrganizeFolderIllustration(style: .complete)
+                    CardCreationFolderIllustration(style: .complete)
                         .padding(.top, 9)
                 }
 
@@ -78,7 +78,7 @@ struct OrganizeResultView: View {
     }
 }
 
-struct OrganizeUnavailableView: View {
+struct CardCreationUnavailableView: View {
     enum Variant {
         case noImages
         case permissionMissing
@@ -146,7 +146,7 @@ struct OrganizeUnavailableView: View {
             Spacer(minLength: 0)
 
             VStack(spacing: 24) {
-                OrganizeDashedIcon(
+                CardCreationDashedIcon(
                     systemName: variant.iconName,
                     tint: variant == .loadFailure ? Color(red: 224 / 255, green: 66 / 255, blue: 66 / 255) : RecapTheme.ColorToken.primary,
                     isError: variant == .loadFailure

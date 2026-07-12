@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct OrganizeFlowHeader: View {
+struct CardCreationFlowHeader: View {
     enum Leading {
         case back
         case close
@@ -41,16 +41,16 @@ struct OrganizeFlowHeader: View {
     }
 }
 
-struct OrganizeScreenshotGrid: View {
+struct CardCreationScreenshotGrid: View {
     enum Mode {
         case select
         case confirm
     }
 
-    let screenshots: [OrganizeScreenshot]
-    let selectedIDs: Set<OrganizeScreenshot.ID>
+    let screenshots: [CardCreationScreenshot]
+    let selectedIDs: Set<CardCreationScreenshot.ID>
     let mode: Mode
-    let onTap: (OrganizeScreenshot) -> Void
+    let onTap: (CardCreationScreenshot) -> Void
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 3)
 
@@ -60,7 +60,7 @@ struct OrganizeScreenshotGrid: View {
                 Button {
                     onTap(screenshot)
                 } label: {
-                    OrganizeScreenshotCell(
+                    CardCreationScreenshotCell(
                         screenshot: screenshot,
                         isSelected: selectedIDs.contains(screenshot.id),
                         mode: mode
@@ -70,17 +70,17 @@ struct OrganizeScreenshotGrid: View {
             }
 
             if mode == .confirm {
-                OrganizeAddSlotCell()
+                CardCreationAddSlotCell()
             }
         }
         .padding(.horizontal, mode == .select ? 0 : 14)
     }
 }
 
-struct OrganizeScreenshotCell: View {
-    let screenshot: OrganizeScreenshot
+struct CardCreationScreenshotCell: View {
+    let screenshot: CardCreationScreenshot
     let isSelected: Bool
-    let mode: OrganizeScreenshotGrid.Mode
+    let mode: CardCreationScreenshotGrid.Mode
 
     var body: some View {
         Group {
@@ -115,7 +115,7 @@ struct OrganizeScreenshotCell: View {
     }
 }
 
-struct OrganizeAddSlotCell: View {
+struct CardCreationAddSlotCell: View {
     var body: some View {
         RoundedRectangle(cornerRadius: 8, style: .continuous)
             .stroke(
@@ -126,7 +126,7 @@ struct OrganizeAddSlotCell: View {
     }
 }
 
-struct OrganizeFolderIllustration: View {
+struct CardCreationFolderIllustration: View {
     enum Style {
         case ready
         case searching
@@ -232,7 +232,7 @@ struct OrganizeFolderIllustration: View {
     }
 }
 
-struct OrganizeDashedIcon: View {
+struct CardCreationDashedIcon: View {
     let systemName: String
     let tint: Color
     var isError = false
@@ -258,7 +258,7 @@ struct OrganizeDashedIcon: View {
     }
 }
 
-struct OrganizeSpeechBubble: View {
+struct CardCreationSpeechBubble: View {
     let text: String
 
     var body: some View {

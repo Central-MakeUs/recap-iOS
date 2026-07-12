@@ -5,7 +5,7 @@ enum PreviewActions {
 
     nonisolated static func handleHome(_ action: HomeAction) {}
 
-    nonisolated static func handleOrganize(_ action: OrganizeAction) {}
+    nonisolated static func handleCardCreation(_ action: CardCreationAction) {}
 
     nonisolated static func handleArchive(_ action: ArchiveAction) {}
 

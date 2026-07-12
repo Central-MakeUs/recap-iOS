@@ -16,7 +16,7 @@ struct AppShellView: View {
                     if showsBottomBar {
                         RecapBottomNavigationBar(
                             selectedTab: selectedTab,
-                            onOrganize: openOrganizeFlow
+                            onCardCreation: openCardCreationFlow
                         )
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
@@ -37,8 +37,8 @@ struct AppShellView: View {
             tabStack(for: .home) { HomeContainerView() }
         case .archive:
             tabStack(for: .archive) { CollectionHomeContainerView() }
-        case .organize:
-            tabStack(for: .organize) { OrganizeContainerView() }
+        case .cardCreation:
+            tabStack(for: .cardCreation) { CardCreationContainerView() }
         }
     }
 
@@ -65,22 +65,22 @@ struct AppShellView: View {
         switch lastRoute {
         case .archiveDetail:
             return true
-        case .search, .allRecentCards, .cardDetail, .cardEdit, .organizeStart, .settings:
+        case .search, .allRecentCards, .cardDetail, .cardEdit, .cardCreationStart, .settings:
             return false
         }
     }
 
-    private func openOrganizeFlow() {
-        router.selectedTab = .organize
-        if router.organizePath.last != .organizeStart {
-            router.organizePath = [.organizeStart]
+    private func openCardCreationFlow() {
+        router.selectedTab = .cardCreation
+        if router.cardCreationPath.last != .cardCreationStart {
+            router.cardCreationPath = [.cardCreationStart]
         }
     }
 }
 
 private struct RecapBottomNavigationBar: View {
     @Binding var selectedTab: MainTab
-    let onOrganize: () -> Void
+    let onCardCreation: () -> Void
 
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
@@ -95,7 +95,7 @@ private struct RecapBottomNavigationBar: View {
 
             Spacer(minLength: 0)
 
-            Button(action: onOrganize) {
+            Button(action: onCardCreation) {
                 HStack(spacing: 7) {
                     Image("RecapUploadIcon")
                         .resizable()

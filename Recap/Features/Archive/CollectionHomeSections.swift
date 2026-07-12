@@ -128,7 +128,7 @@ struct CollectionHomeCardSection: View {
                     onOpenCard(card.id)
                 } label: {
                     if style == .favorites {
-                        OrganizeRecapCard(card: card, isStarred: true)
+                        FavoriteRecapListCard(card: card, isStarred: true)
                     } else {
                         ArchiveOtherCard(card: card)
                     }

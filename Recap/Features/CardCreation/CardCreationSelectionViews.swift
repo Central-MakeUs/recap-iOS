@@ -1,13 +1,13 @@
 import Observation
 import SwiftUI
 
-struct OrganizeSelectionView: View {
-    @Bindable var viewModel: OrganizeFlowViewModel
+struct CardCreationSelectionView: View {
+    @Bindable var viewModel: CardCreationFlowViewModel
     let onClose: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
-            OrganizeFlowHeader(
+            CardCreationFlowHeader(
                 title: "스크린샷 선택",
                 countText: "\(viewModel.selectedCount)",
                 leading: .close,
@@ -29,7 +29,7 @@ struct OrganizeSelectionView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 8)
 
-            OrganizeScreenshotGrid(
+            CardCreationScreenshotGrid(
                 screenshots: viewModel.screenshots,
                 selectedIDs: viewModel.selectedIDs,
                 mode: .select,
@@ -51,7 +51,7 @@ struct OrganizeSelectionView: View {
 
     private func handleLoadedPhotos(_ imageData: [Data], failedCount: Int) {
         let screenshots = imageData.map {
-            OrganizeScreenshot(kind: .capture, imageData: $0)
+            CardCreationScreenshot(kind: .capture, imageData: $0)
         }
         if screenshots.isEmpty {
             viewModel.failLoadingScreenshots()
@@ -61,20 +61,20 @@ struct OrganizeSelectionView: View {
     }
 }
 
-struct OrganizeConfirmationView: View {
-    @Bindable var viewModel: OrganizeFlowViewModel
+struct CardCreationConfirmationView: View {
+    @Bindable var viewModel: CardCreationFlowViewModel
     let onBack: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
-            OrganizeFlowHeader(
+            CardCreationFlowHeader(
                 title: "선택 스크린샷 확인",
                 countText: "\(viewModel.selectedCount)",
                 leading: .back,
                 action: onBack
             )
 
-            OrganizeScreenshotGrid(
+            CardCreationScreenshotGrid(
                 screenshots: viewModel.selectedScreenshots,
                 selectedIDs: viewModel.selectedIDs,
                 mode: .confirm,
@@ -96,13 +96,13 @@ struct OrganizeConfirmationView: View {
     }
 }
 
-struct OrganizeNoSelectionView: View {
-    @Bindable var viewModel: OrganizeFlowViewModel
+struct CardCreationNoSelectionView: View {
+    @Bindable var viewModel: CardCreationFlowViewModel
     let onBack: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
-            OrganizeFlowHeader(
+            CardCreationFlowHeader(
                 title: "선택 이미지 확인",
                 countText: "0장",
                 leading: .back,
@@ -112,7 +112,7 @@ struct OrganizeNoSelectionView: View {
             Spacer(minLength: 58)
 
             VStack(spacing: 18) {
-                OrganizeDashedIcon(systemName: "plus", tint: RecapTheme.ColorToken.textTertiary)
+                CardCreationDashedIcon(systemName: "plus", tint: RecapTheme.ColorToken.textTertiary)
 
                 VStack(spacing: 9) {
                     Text("선택된 이미지가 없어요")
@@ -150,7 +150,7 @@ struct OrganizeNoSelectionView: View {
     }
 }
 
-struct OrganizeProcessingView: View {
+struct CardCreationProcessingView: View {
     let onCancel: () -> Void
     let onComplete: () -> Void
 
@@ -165,9 +165,9 @@ struct OrganizeProcessingView: View {
                         .tracking(-0.24)
                         .foregroundStyle(RecapTheme.ColorToken.textPrimary)
 
-                    OrganizeSpeechBubble(text: "앱을 종료해도 백그라운드에서\n정리가 계속 진행돼요!")
+                    CardCreationSpeechBubble(text: "앱을 종료해도 백그라운드에서\n정리가 계속 진행돼요!")
 
-                    OrganizeFolderIllustration(style: .searching)
+                    CardCreationFolderIllustration(style: .searching)
                         .frame(height: 104)
                 }
 

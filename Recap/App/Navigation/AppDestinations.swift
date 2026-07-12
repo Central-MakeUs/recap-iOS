@@ -53,8 +53,8 @@ extension View {
             CardDetailContainerView(cardID: id)
         case .cardEdit(let id):
             CardEditView(cardID: id)
-        case .organizeStart:
-            OrganizeFlowView()
+        case .cardCreationStart:
+            CardCreationFlowView()
         case .settings:
             SettingsContainerView()
         }

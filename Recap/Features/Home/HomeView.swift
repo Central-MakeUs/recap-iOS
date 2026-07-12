@@ -19,8 +19,8 @@ struct HomeContainerView: View {
         case .search:
             router.navigate(.search)
         case .startOrganizing:
-            router.selectedTab = .organize
-            router.organizePath = [.organizeStart]
+            router.selectedTab = .cardCreation
+            router.cardCreationPath = [.cardCreationStart]
         case .openAllRecent:
             router.navigate(.allRecentCards)
         case .openCard(let id):
@@ -192,7 +192,7 @@ struct HomeView: View {
                         Button {
                             openCard(card.id)
                         } label: {
-                            OrganizeRecapCard(card: card, isStarred: true)
+                            FavoriteRecapListCard(card: card, isStarred: true)
                         }
                         .buttonStyle(.plain)
                     }

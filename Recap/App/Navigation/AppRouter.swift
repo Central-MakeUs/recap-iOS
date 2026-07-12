@@ -12,7 +12,7 @@ enum AppNavigationPath {
 final class AppRouter {
     var selectedTab: MainTab = .home
     var homePath: [AppRoute] = []
-    var organizePath: [AppRoute] = []
+    var cardCreationPath: [AppRoute] = []
     var archivePath: [AppRoute] = []
     var presentedSheet: AppSheetRoute?
     var presentedModal: AppModalRoute?
@@ -57,8 +57,8 @@ final class AppRouter {
         switch tab {
         case .home:
             homePath
-        case .organize:
-            organizePath
+        case .cardCreation:
+            cardCreationPath
         case .archive:
             archivePath
         }
@@ -68,8 +68,8 @@ final class AppRouter {
         switch tab {
         case .home:
             homePath = AppNavigationPath.appending(route, to: homePath)
-        case .organize:
-            organizePath = AppNavigationPath.appending(route, to: organizePath)
+        case .cardCreation:
+            cardCreationPath = AppNavigationPath.appending(route, to: cardCreationPath)
         case .archive:
             archivePath = AppNavigationPath.appending(route, to: archivePath)
         }
@@ -79,8 +79,8 @@ final class AppRouter {
         switch tab {
         case .home:
             homePath = path
-        case .organize:
-            organizePath = path
+        case .cardCreation:
+            cardCreationPath = path
         case .archive:
             archivePath = path
         }

@@ -77,7 +77,7 @@ struct ArchiveListCard: View {
     }
 }
 
-struct OrganizeRecapCard: View {
+struct FavoriteRecapListCard: View {
     let card: InformationCard
     var isStarred = false
 
@@ -278,7 +278,7 @@ struct RecapScreenshotThumbnail: View {
             VStack(alignment: .leading, spacing: RecapTheme.Spacing.large) {
                 RecentRecapCard(card: SampleData.cards[0])
                 ArchiveListCard(card: SampleData.cards[1])
-                OrganizeRecapCard(card: SampleData.cards[2], isStarred: true)
+                FavoriteRecapListCard(card: SampleData.cards[2], isStarred: true)
                 RecapSearchResultCard(card: SampleData.cards[0])
             }
             .padding()

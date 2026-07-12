@@ -1,24 +1,24 @@
 import SwiftUI
 
-struct OrganizeContainerView: View {
+struct CardCreationContainerView: View {
     @Environment(AppRouter.self) private var router
 
     var body: some View {
-        OrganizeEntryView(onAction: handleAction)
+        CardCreationEntryView(onAction: handleAction)
     }
 
-    private func handleAction(_ action: OrganizeAction) {
+    private func handleAction(_ action: CardCreationAction) {
         switch action {
         case .start:
-            router.navigate(.organizeStart)
+            router.navigate(.cardCreationStart)
         case .openSettings:
             router.navigate(.settings)
         }
     }
 }
 
-struct OrganizeEntryView: View {
-    let onAction: (OrganizeAction) -> Void
+struct CardCreationEntryView: View {
+    let onAction: (CardCreationAction) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -27,7 +27,7 @@ struct OrganizeEntryView: View {
             Spacer(minLength: 96)
 
             VStack(spacing: 24) {
-                OrganizeFolderIllustration(style: .ready)
+                CardCreationFolderIllustration(style: .ready)
 
                 VStack(spacing: 9) {
                     Text("스크린샷을 정리해볼까요?")
@@ -77,6 +77,6 @@ struct OrganizeEntryView: View {
     private func openSettings() { onAction(.openSettings) }
 }
 
-#Preview("Organize entry") {
-    OrganizeEntryView(onAction: PreviewActions.handleOrganize)
+#Preview("CardCreation entry") {
+    CardCreationEntryView(onAction: PreviewActions.handleCardCreation)
 }

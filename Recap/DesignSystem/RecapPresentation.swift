@@ -41,7 +41,7 @@ enum RecapPresentation {
             TabItem(title: "홈", systemImage: "house.fill")
         case .archive:
             TabItem(title: "보관함", systemImage: "archivebox.fill")
-        case .organize:
+        case .cardCreation:
             TabItem(title: "정리", systemImage: "plus")
         }
     }

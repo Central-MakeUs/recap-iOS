@@ -2,7 +2,7 @@ import Foundation
 import Observation
 import SwiftUI
 
-struct OrganizeScreenshot: Identifiable, Hashable {
+struct CardCreationScreenshot: Identifiable, Hashable {
     let id: UUID
     let kind: CollectionKind
     let assetName: String?
@@ -21,7 +21,7 @@ struct OrganizeScreenshot: Identifiable, Hashable {
     }
 }
 
-enum OrganizeFlowStep: Hashable {
+enum CardCreationFlowStep: Hashable {
     case selecting
     case confirming
     case processing
@@ -34,7 +34,7 @@ enum OrganizeFlowStep: Hashable {
     case loadFailure
 }
 
-enum OrganizeResultState: Hashable {
+enum CardCreationResultState: Hashable {
     case complete
     case partialFailure
     case failure
@@ -62,12 +62,12 @@ enum OrganizeResultState: Hashable {
     var buttonTitle: String { "홈으로" }
 }
 
-enum OrganizeFlowDecision {
-    static func confirmationStep(selectedCount: Int) -> OrganizeFlowStep {
+enum CardCreationFlowDecision {
+    static func confirmationStep(selectedCount: Int) -> CardCreationFlowStep {
         selectedCount > 0 ? .confirming : .noSelection
     }
 
-    static func processingResult(failedCount: Int, hasScreenshots: Bool) -> OrganizeFlowStep {
+    static func processingResult(failedCount: Int, hasScreenshots: Bool) -> CardCreationFlowStep {
         if failedCount == 0 {
             return .complete
         }
@@ -77,16 +77,16 @@ enum OrganizeFlowDecision {
 
 @MainActor
 @Observable
-final class OrganizeFlowViewModel {
-    private(set) var step: OrganizeFlowStep
-    private(set) var screenshots: [OrganizeScreenshot]
-    var selectedIDs: Set<OrganizeScreenshot.ID>
+final class CardCreationFlowViewModel {
+    private(set) var step: CardCreationFlowStep
+    private(set) var screenshots: [CardCreationScreenshot]
+    var selectedIDs: Set<CardCreationScreenshot.ID>
     private(set) var failedLoadCount = 0
 
     init(
-        step: OrganizeFlowStep = .selecting,
-        screenshots: [OrganizeScreenshot]? = nil,
-        selectedIDs: Set<OrganizeScreenshot.ID>? = nil
+        step: CardCreationFlowStep = .selecting,
+        screenshots: [CardCreationScreenshot]? = nil,
+        selectedIDs: Set<CardCreationScreenshot.ID>? = nil
     ) {
         let screenshots = screenshots ?? []
         self.step = step
@@ -98,7 +98,7 @@ final class OrganizeFlowViewModel {
         }
     }
 
-    var selectedScreenshots: [OrganizeScreenshot] {
+    var selectedScreenshots: [CardCreationScreenshot] {
         screenshots.filter { selectedIDs.contains($0.id) }
     }
 
@@ -106,7 +106,7 @@ final class OrganizeFlowViewModel {
     var hasImages: Bool { !screenshots.isEmpty }
     var canConfirm: Bool { selectedCount > 0 }
 
-    func toggle(_ screenshot: OrganizeScreenshot) {
+    func toggle(_ screenshot: CardCreationScreenshot) {
         if selectedIDs.contains(screenshot.id) {
             selectedIDs.remove(screenshot.id)
         } else {
@@ -131,14 +131,14 @@ final class OrganizeFlowViewModel {
     }
 
     func confirmSelection() {
-        step = OrganizeFlowDecision.confirmationStep(selectedCount: selectedCount)
+        step = CardCreationFlowDecision.confirmationStep(selectedCount: selectedCount)
     }
 
     func addMore() {
         step = screenshots.isEmpty ? .noImages : .selecting
     }
 
-    func remove(_ screenshot: OrganizeScreenshot) {
+    func remove(_ screenshot: CardCreationScreenshot) {
         selectedIDs.remove(screenshot.id)
         if selectedIDs.isEmpty {
             step = .noSelection
@@ -158,7 +158,7 @@ final class OrganizeFlowViewModel {
     }
 
     func finishProcessing() {
-        step = OrganizeFlowDecision.processingResult(
+        step = CardCreationFlowDecision.processingResult(
             failedCount: failedLoadCount,
             hasScreenshots: hasImages
         )
@@ -176,7 +176,7 @@ final class OrganizeFlowViewModel {
         step = .selecting
     }
 
-    func replaceScreenshots(with screenshots: [OrganizeScreenshot], failedCount: Int = 0) {
+    func replaceScreenshots(with screenshots: [CardCreationScreenshot], failedCount: Int = 0) {
         self.screenshots = screenshots
         failedLoadCount = failedCount
         selectedIDs = Set(screenshots.map(\.id))
@@ -189,17 +189,17 @@ final class OrganizeFlowViewModel {
     }
 }
 
-enum OrganizeSampleData {
-    static let screenshots: [OrganizeScreenshot] = [
-        OrganizeScreenshot(kind: .shopping, assetName: "HomeFavoriteKeyboard"),
-        OrganizeScreenshot(kind: .place, assetName: "HomeRecentJeju"),
-        OrganizeScreenshot(kind: .schedule, assetName: "HomeFavoriteMove"),
-        OrganizeScreenshot(kind: .knowledge, assetName: "HomeRecentReturn"),
-        OrganizeScreenshot(kind: .content, assetName: "HomeRecentPasta"),
-        OrganizeScreenshot(kind: .benefits, assetName: "HomeFavoriteTax"),
-        OrganizeScreenshot(kind: .capture),
-        OrganizeScreenshot(kind: .career),
-        OrganizeScreenshot(kind: .other)
+enum CardCreationSampleData {
+    static let screenshots: [CardCreationScreenshot] = [
+        CardCreationScreenshot(kind: .shopping, assetName: "HomeFavoriteKeyboard"),
+        CardCreationScreenshot(kind: .place, assetName: "HomeRecentJeju"),
+        CardCreationScreenshot(kind: .schedule, assetName: "HomeFavoriteMove"),
+        CardCreationScreenshot(kind: .knowledge, assetName: "HomeRecentReturn"),
+        CardCreationScreenshot(kind: .content, assetName: "HomeRecentPasta"),
+        CardCreationScreenshot(kind: .benefits, assetName: "HomeFavoriteTax"),
+        CardCreationScreenshot(kind: .capture),
+        CardCreationScreenshot(kind: .career),
+        CardCreationScreenshot(kind: .other)
     ]
 
 }
