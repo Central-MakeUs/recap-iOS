@@ -7,8 +7,21 @@ struct PhotoLibraryPicker<Label: View>: View {
     @State private var isLoading = false
 
     let maxSelectionCount: Int
+    let loader: any PhotoLibraryLoading
     let onLoad: ([Data], Int) -> Void
     @ViewBuilder let label: (Bool) -> Label
+
+    init(
+        maxSelectionCount: Int,
+        loader: any PhotoLibraryLoading = LivePhotoLibraryLoader(),
+        onLoad: @escaping ([Data], Int) -> Void,
+        @ViewBuilder label: @escaping (Bool) -> Label
+    ) {
+        self.maxSelectionCount = maxSelectionCount
+        self.loader = loader
+        self.onLoad = onLoad
+        self.label = label
+    }
 
     var body: some View {
         PhotosPicker(
@@ -28,25 +41,12 @@ struct PhotoLibraryPicker<Label: View>: View {
     private func load(_ items: [PhotosPickerItem]) {
         isLoading = true
         Task {
-            var imageData: [Data] = []
-            var failedCount = 0
-
-            for item in items {
-                do {
-                    if let data = try await item.loadTransferable(type: Data.self) {
-                        imageData.append(data)
-                    } else {
-                        failedCount += 1
-                    }
-                } catch {
-                    failedCount += 1
-                }
-            }
+            let result = await loader.load(items)
 
             await MainActor.run {
                 isLoading = false
                 selectedItems = []
-                onLoad(imageData, failedCount)
+                onLoad(result.imageData, result.failedCount)
             }
         }
     }
