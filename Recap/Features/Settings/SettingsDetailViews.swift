@@ -56,7 +56,7 @@ struct SettingsDetailView: View {
 struct AccountManagementView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.recapLogout) private var logout
-    @State private var confirmation: AccountConfirmation?
+    @State private var showsLogoutConfirmation = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -71,17 +71,21 @@ struct AccountManagementView: View {
                 SettingsActionCard(
                     title: "로그아웃",
                     message: "이 기기에서 Recap 계정이 로그아웃돼요.",
-                    action: { confirmation = .logout }
+                    action: { showsLogoutConfirmation = true }
                 )
 
-                SettingsActionCard(
-                    title: "회원탈퇴",
-                    message: "계정과 정리된 캡처 데이터를 삭제해요.",
-                    tint: Color.settingsDestructive,
-                    borderColor: Color.settingsDestructiveBorder,
-                    isDestructive: true,
-                    action: { confirmation = .withdraw }
-                )
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("회원탈퇴 준비 중")
+                        .font(SettingsTypography.rowTitle)
+                        .foregroundStyle(Color.settingsTextSecondary)
+                    Text("서버의 계정 삭제 계약이 확정되면 제공할 예정이에요.")
+                        .font(SettingsTypography.rowCaption)
+                        .foregroundStyle(Color.settingsTextTertiary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(height: 67)
+                .padding(.horizontal, 15)
+                .recapCard(radius: 13, borderColor: Color.recapGray100)
             }
             .padding(.horizontal, 23)
 
@@ -89,7 +93,7 @@ struct AccountManagementView: View {
 
             VStack(alignment: .leading, spacing: 10) {
                 Text("로그아웃해도 정리된 캡처 데이터는 삭제되지 않아요.")
-                Text("회원탈퇴 시 계정과 연결된 데이터가 삭제될 수 있어요.")
+                Text("현재 로그아웃은 이 기기에 저장된 로그인 정보만 삭제해요.")
             }
             .font(SettingsTypography.note)
             .foregroundStyle(Color.settingsTextTertiary)
@@ -100,36 +104,17 @@ struct AccountManagementView: View {
         .background(Color.settingsBackground)
         .toolbar(.hidden, for: .navigationBar)
         .confirmationDialog(
-            confirmation?.title ?? "",
-            isPresented: Binding(
-                get: { confirmation != nil },
-                set: { if !$0 { confirmation = nil } }
-            ),
+            "로그아웃할까요?",
+            isPresented: $showsLogoutConfirmation,
             titleVisibility: .visible
         ) {
-            if let confirmation {
-                Button(confirmation.actionTitle, role: .destructive) {
-                    self.confirmation = nil
-                    logout()
-                }
+            Button("로그아웃", role: .destructive) {
+                logout()
             }
-            Button("취소", role: .cancel) { confirmation = nil }
+            Button("취소", role: .cancel) {}
         } message: {
-            Text(confirmation?.message ?? "")
+            Text("현재 기기에서 계정 연결을 종료합니다.")
         }
-    }
-
-    private enum AccountConfirmation {
-        case logout
-        case withdraw
-
-        var title: String { self == .logout ? "로그아웃할까요?" : "회원탈퇴할까요?" }
-        var message: String {
-            self == .logout
-                ? "현재 기기에서 계정 연결을 종료합니다."
-                : "계정과 연결된 데이터가 삭제되며 되돌릴 수 없습니다."
-        }
-        var actionTitle: String { self == .logout ? "로그아웃" : "회원탈퇴" }
     }
 }
 
@@ -247,4 +232,3 @@ struct SettingsInformationView: View {
         .toolbar(.hidden, for: .navigationBar)
     }
 }
-

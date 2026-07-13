@@ -1,91 +1,160 @@
 import SwiftUI
 
 struct RecapRootView: View {
-    @State private var phase: AppPhase
+    @State private var sessionStore: RecapSessionStore
+    @State private var onboardingStore: OnboardingProgressStore
     @State private var router: AppRouter
     @State private var cardStore: RecapCardStore
 
-    init(initialPhase: AppPhase = .main) {
+    private let dependencies: RecapDependencies
+
+    init(dependencies: RecapDependencies) {
         self.init(
-            initialPhase: initialPhase,
+            dependencies: dependencies,
             router: AppRouter(),
             cardStore: RecapCardStore(cards: SampleData.cards)
         )
     }
 
     init(
-        initialPhase: AppPhase = .main,
+        dependencies: RecapDependencies,
         router: AppRouter,
         cardStore: RecapCardStore
     ) {
-        _phase = State(initialValue: initialPhase)
+        self.dependencies = dependencies
+        _sessionStore = State(initialValue: dependencies.sessionStore)
+        _onboardingStore = State(initialValue: dependencies.onboardingProgressStore)
         _router = State(initialValue: router)
         _cardStore = State(initialValue: cardStore)
     }
 
+    private var destination: AppLaunchDestination {
+        AppLaunchDestinationResolver.resolve(
+            sessionState: sessionStore.state,
+            onboardingProgress: onboardingStore.progress
+        )
+    }
+
     var body: some View {
         Group {
-            switch phase {
-            case .onboarding(let step):
-                onboardingView(for: step)
-                    .transition(.opacity.combined(with: .move(edge: .trailing)))
+            switch destination {
+            case .launching:
+                ProgressView()
+            case .serviceIntro:
+                OnboardingIntroView {
+                    onboardingStore.move(to: .loginReady)
+                }
+            case .login(let reason):
+                loginView(signOutReason: reason)
+            case .permissionGuide:
+                PermissionGuideView {
+                    onboardingStore.move(to: .shareSetup)
+                }
+            case .shareSetup:
+                ShareSetupGuideView(
+                    onNext: { onboardingStore.move(to: .shareSetupDetail) },
+                    onSkip: { onboardingStore.move(to: .firstCardCreation) }
+                )
+            case .shareSetupDetail:
+                ShareSetupDetailView(
+                    onBack: { onboardingStore.move(to: .shareSetup) },
+                    onNext: { onboardingStore.move(to: .firstCardCreation) }
+                )
+            case .firstCardCreation:
+                FirstCleanupStartView(
+                    onStart: completeOnboarding,
+                    onSkip: completeOnboarding
+                )
             case .main:
                 AppShellView(
                     router: router,
                     cardStore: cardStore,
-                    onLogout: {
-                        MainTab.allCases.forEach(router.reset)
-                        phase = .onboarding(.login)
-                    }
+                    onLogout: logout
                 )
-                    .transition(.opacity)
             }
         }
-        .animation(.easeInOut(duration: 0.22), value: phase)
+        .animation(.easeInOut(duration: 0.22), value: destination)
+        .task {
+            if sessionStore.state == .launching {
+                sessionStore.restore()
+            }
+        }
     }
 
-    @ViewBuilder
-    private func onboardingView(for step: OnboardingStep) -> some View {
-        switch step {
-        case .serviceIntro:
-            OnboardingIntroView(
-                onStart: { phase = .onboarding(.login) }
-            )
-        case .login:
-            OnboardingLoginView(
-                onStart: { phase = .onboarding(.permissionGuide) }
-            )
-        case .permissionGuide:
-            PermissionGuideView(
-                onContinue: { phase = .onboarding(.shareSetup) }
-            )
-        case .shareSetup:
-            ShareSetupGuideView(
-                onNext: { phase = .onboarding(.shareSetupDetail) },
-                onSkip: { phase = .onboarding(.firstCleanup) }
-            )
-        case .shareSetupDetail:
-            ShareSetupDetailView(
-                onBack: { phase = .onboarding(.shareSetup) },
-                onNext: { phase = .onboarding(.firstCleanup) }
-            )
-        case .firstCleanup:
-            FirstCleanupStartView(
-                onStart: { phase = .main },
-                onSkip: { phase = .main }
-            )
+    private func loginView(signOutReason: SessionSignOutReason?) -> some View {
+        OnboardingLoginView(
+            notice: loginNotice(for: signOutReason),
+            onStart: { onboardingStore.move(to: .permissionGuide) },
+            login: { provider in
+                let authProvider: AuthProvider = provider == .kakao ? .kakao : .apple
+                return await sessionStore.login(
+                    using: dependencies.loginProvider(for: authProvider)
+                )
+            }
+        )
+    }
+
+    private func loginNotice(for reason: SessionSignOutReason?) -> String? {
+        switch reason {
+        case .sessionExpired:
+            return "로그인 세션이 만료됐어요. 다시 로그인해주세요."
+        case .secureStorageFailed:
+            return "로그인 정보를 불러오지 못했어요. 다시 로그인해주세요."
+        case .authenticationFailed, nil:
+            return nil
         }
+    }
+
+    private func completeOnboarding() {
+        onboardingStore.move(to: .completed)
+    }
+
+    private func logout() {
+        MainTab.allCases.forEach(router.reset)
+        sessionStore.logout()
     }
 }
 
 #Preview("Onboarding start") {
-    RecapRootView(initialPhase: .onboarding(.serviceIntro))
+    RecapRootView(
+        dependencies: .preview(
+            sessionState: .signedOut(nil),
+            onboardingProgress: .notStarted
+        )
+    )
 }
 
 #Preview("Main tabs") {
     RecapRootView(
-        initialPhase: .main,
+        dependencies: .preview(
+            sessionState: .authenticated(
+                ServerTokenRecord(
+                    accessToken: "preview-access",
+                    refreshToken: "preview-refresh",
+                    accessTokenExpiresAt: .distantFuture
+                )
+            ),
+            onboardingProgress: .completed
+        ),
         router: AppRouter(),
         cardStore: PreviewStores.recapCardStore()
+    )
+}
+
+#Preview("Session expired login") {
+    RecapRootView(
+        dependencies: .preview(
+            sessionState: .signedOut(.sessionExpired),
+            onboardingProgress: .completed
+        )
+    )
+}
+
+#Preview("Login in progress") {
+    RecapRootView(
+        dependencies: .preview(
+            sessionState: .authenticating(.kakao),
+            onboardingProgress: .loginReady
+        )
     )
 }
