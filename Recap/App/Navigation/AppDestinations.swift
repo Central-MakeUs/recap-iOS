@@ -21,6 +21,16 @@ extension View {
                 .environment(router)
                 .environment(cardStore)
         }
+        .fullScreenCover(
+            item: Binding(
+                get: { router.presentedFullScreenCover },
+                set: { router.presentedFullScreenCover = $0 }
+            )
+        ) { cover in
+            fullScreenDestination(for: cover)
+                .environment(router)
+                .environment(cardStore)
+        }
         .alert(
             router.presentedModal?.title ?? "",
             isPresented: Binding(
@@ -64,12 +74,19 @@ extension View {
     @ViewBuilder
     private func sheetDestination(for sheet: AppSheetRoute) -> some View {
         switch sheet {
-        case .originalPreview(let cardID):
-            CardOriginalPreviewSheet(cardID: cardID)
         case .sharePreview(let cardID):
             CardSharePreviewSheet(cardID: cardID)
         case .collectionPicker(let cardID):
             CollectionPickerSheet(cardID: cardID)
+        }
+    }
+
+    @MainActor
+    @ViewBuilder
+    private func fullScreenDestination(for cover: AppFullScreenRoute) -> some View {
+        switch cover {
+        case .originalPreview(let cardID):
+            CardOriginalPreviewSheet(cardID: cardID)
         }
     }
 

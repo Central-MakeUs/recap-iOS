@@ -1,168 +1,199 @@
 import SwiftUI
 
-struct CardDetailContainerView: View {
-    @Environment(AppRouter.self) private var router
-    @Environment(RecapCardStore.self) private var cardStore
-
-    let cardID: InformationCard.ID
-
-    var body: some View {
-        if let card = cardStore.card(id: cardID) {
-            CardDetailView(card: card, onAction: handleAction)
-        } else {
-            MissingCardView(cardID: cardID)
-        }
-    }
-
-    private func handleAction(_ action: CardDetailAction) {
-        switch action {
-        case .openOriginal(let id):
-            router.presentSheet(.originalPreview(cardID: id))
-        case .share(let id):
-            router.presentSheet(.sharePreview(cardID: id))
-        case .edit(let id):
-            router.navigate(.cardEdit(id))
-        case .changeCollection(let id):
-            router.presentSheet(.collectionPicker(cardID: id))
-        case .toggleFavorite(let id):
-            cardStore.toggleFavorite(id: id)
-        case .exclude(let id):
-            router.presentModal(.excludeCard(id))
-        case .delete(let id):
-            router.presentModal(.deleteCard(id))
-        }
-    }
-}
-
 struct CardDetailView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var isMenuPresented = false
 
     let card: InformationCard
+    let imageState: CardDetailImageState
     let onAction: (CardDetailAction) -> Void
+
+    @State private var overlayState: CardDetailOverlayState
+    @State private var favoriteToastMessage: String
 
     init(
         card: InformationCard,
+        imageState: CardDetailImageState = .loaded,
+        initialOverlay: CardDetailOverlayState = .none,
         onAction: @escaping (CardDetailAction) -> Void
     ) {
         self.card = card
+        self.imageState = imageState
         self.onAction = onAction
+        _overlayState = State(initialValue: initialOverlay)
+        _favoriteToastMessage = State(initialValue: "즐겨찾기에 추가했어요.")
     }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                screenshotHero
+        ZStack {
+            detailContent
 
-                VStack(alignment: .leading, spacing: 18) {
-                    metaRow
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(card.title)
-                            .font(RecapFont.pretendard(size: 22, weight: .semibold))
-                            .tracking(-0.44)
-                            .foregroundStyle(RecapTheme.ColorToken.textPrimary)
-
-                        Text(card.summary)
-                            .font(RecapFont.pretendard(size: 15, weight: .medium))
-                            .tracking(-0.3)
-                            .foregroundStyle(RecapTheme.ColorToken.textBody)
-                    }
-
-                    Text(card.memo)
-                        .font(RecapFont.pretendard(size: 15, weight: .medium))
-                        .tracking(-0.3)
-                        .lineSpacing(3)
-                        .foregroundStyle(RecapTheme.ColorToken.textBody)
-                        .padding(.top, 21)
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 22)
-                .padding(.bottom, 40)
-            }
+            overlay
         }
         .background(RecapTheme.ColorToken.background)
         .ignoresSafeArea(edges: .top)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
-        .sheet(isPresented: $isMenuPresented) {
-            CardDetailMenuSheet(
-                onEdit: editCard,
-                onShare: shareCard,
-                onDelete: deleteCard
-            )
+        .task(id: overlayState) {
+            await clearTransientOverlayIfNeeded()
+        }
+    }
+
+    private var detailContent: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 0) {
+                if imageState == .failedCard {
+                    compactHeader
+                    failedImageCard
+                    cardTextContent(topPadding: 20)
+                } else {
+                    screenshotHero
+                    cardTextContent(topPadding: 22)
+                }
+            }
         }
     }
 
     private var screenshotHero: some View {
-        ZStack(alignment: .top) {
-            RecapScreenshotThumbnail(kind: card.collection, assetName: card.thumbnailAssetName)
-                .frame(height: 309)
-                .frame(maxWidth: .infinity)
-                .clipped()
+        ZStack(alignment: .topTrailing) {
+            heroImage
 
             LinearGradient(
                 stops: [
                     .init(color: Color.black.opacity(0.90), location: 0),
-                    .init(color: Color.black.opacity(0.0), location: 1)
+                    .init(color: Color.black.opacity(0), location: 1)
                 ],
                 startPoint: .top,
                 endPoint: .bottom
             )
-            .frame(height: 261)
+            .frame(height: CardDetailStyle.heroGradientHeight)
 
-            HStack(spacing: 12) {
-                Button(action: close) {
-                    RecapIconView(icon: .back, size: 24, color: .white)
-                }
-                .buttonStyle(.plain)
+            detailHeader(color: .white)
+                .padding(.top, 78)
 
-                Text("스크린샷 상세")
-                    .font(RecapFont.pretendard(size: 16, weight: .semibold))
-                    .tracking(-0.32)
-                    .foregroundStyle(.white)
+            CardExpandButton(action: openOriginal)
+                .padding(.top, 248)
+                .padding(.trailing, 24)
+        }
+        .frame(height: CardDetailStyle.heroHeight)
+    }
 
-                Spacer()
-
-                Button(action: favorite) {
-                    Image(systemName: card.isFavorite ? "star.fill" : "star")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundStyle(.white)
-                        .frame(width: 24, height: 24)
-                }
-                .buttonStyle(.plain)
-
-                Button(action: menu) {
-                    RecapIconView(icon: .more, size: 24, color: .white)
-                }
-                .buttonStyle(.plain)
+    @ViewBuilder
+    private var heroImage: some View {
+        switch imageState {
+        case .loaded:
+            RecapScreenshotThumbnail(kind: card.collection, assetName: card.detailImageAssetName)
+                .frame(height: CardDetailStyle.heroHeight)
+                .frame(maxWidth: .infinity)
+                .clipped()
+        case .failedFullWidth:
+            ZStack {
+                LinearGradient(
+                    colors: [CardDetailStyle.imageFailureFill, .white],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                CardImageFailureView()
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 78)
+            .frame(height: CardDetailStyle.heroHeight)
+        case .failedCard:
+            EmptyView()
+        }
+    }
 
-            Button(action: openOriginal) {
-                Image(systemName: "arrow.up.left.and.arrow.down.right")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(.white)
-                    .frame(width: 21, height: 21)
-                    .background(.black.opacity(0.28))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 2)
-                            .stroke(RecapTheme.ColorToken.border, lineWidth: 1)
-                    }
+    private var compactHeader: some View {
+        detailHeader(color: RecapTheme.ColorToken.textPrimary)
+            .padding(.top, 78)
+            .padding(.bottom, 43)
+    }
+
+    private func detailHeader(color: Color) -> some View {
+        HStack(spacing: 13) {
+            Button(action: close) {
+                RecapIconView(icon: .back, size: 24, color: color)
             }
             .buttonStyle(.plain)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            .padding(.trailing, 21)
-            .padding(.bottom, 16)
+
+            Text("스크린샷 상세")
+                .font(RecapFont.pretendard(size: 16, weight: .semibold))
+                .tracking(-0.32)
+                .foregroundStyle(color)
+
+            Spacer()
+
+            Button(action: favorite) {
+                Image(systemName: card.isFavorite ? "star.fill" : "star.fill")
+                    .font(.system(size: 20, weight: .regular))
+                    .foregroundStyle(card.isFavorite ? RecapTheme.ColorToken.primary : color.opacity(0.70))
+                    .frame(width: 24, height: 24)
+            }
+            .buttonStyle(.plain)
+
+            RecapIconView(icon: .more, size: 24, color: color)
+                .contentShape(Rectangle())
+                .onTapGesture(perform: showActions)
+                .accessibilityAddTraits(.isButton)
         }
-        .frame(height: 309)
+        .padding(.horizontal, CardDetailStyle.horizontalPadding)
+    }
+
+    private var failedImageCard: some View {
+        ZStack(alignment: .bottomTrailing) {
+            CardDetailStyle.imageFailureFill
+            CardImageFailureView()
+            CardExpandButton(
+                foregroundColor: RecapTheme.ColorToken.textTertiary,
+                backgroundColor: .white,
+                action: openOriginal
+            )
+            .padding(.trailing, 8)
+            .padding(.bottom, 8)
+        }
+        .frame(height: CardDetailStyle.imageCardHeight)
+        .clipShape(RoundedRectangle(cornerRadius: CardDetailStyle.cornerRadius, style: .continuous))
+        .padding(.horizontal, CardDetailStyle.horizontalPadding)
+    }
+
+    private func cardTextContent(topPadding: CGFloat) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            metaRow
+
+            Text(card.title)
+                .font(RecapFont.pretendard(size: 22, weight: .semibold))
+                .tracking(-0.44)
+                .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                .padding(.top, 24)
+
+            Text(card.summary)
+                .font(RecapFont.pretendard(size: 15, weight: .medium))
+                .tracking(-0.3)
+                .foregroundStyle(RecapTheme.ColorToken.textBody)
+                .padding(.top, 8)
+
+            Text(detailBody)
+                .font(RecapFont.pretendard(size: 15, weight: .medium))
+                .tracking(-0.3)
+                .lineSpacing(3)
+                .foregroundStyle(RecapTheme.ColorToken.textBody)
+                .padding(.top, 40)
+        }
+        .padding(.horizontal, CardDetailStyle.horizontalPadding)
+        .padding(.top, topPadding)
+        .padding(.bottom, 40)
     }
 
     private var metaRow: some View {
-        HStack(alignment: .center) {
-            RecapCategoryPill(kind: card.collection, size: .regular)
+        HStack {
+            if overlayState == .none {
+                Text(RecapPresentation.collectionDisplay(for: card.collection).title)
+                    .font(RecapFont.pretendard(size: 14, weight: .semibold))
+                    .tracking(-0.28)
+                    .foregroundStyle(RecapPresentation.collectionDisplay(for: card.collection).textColor)
+            } else {
+                RecapCategoryPill(kind: card.collection, size: .regular)
+            }
+
             Spacer()
+
             Text(card.dateText)
                 .font(RecapFont.pretendard(size: 12, weight: .medium))
                 .tracking(-0.24)
@@ -170,90 +201,80 @@ struct CardDetailView: View {
         }
     }
 
+    @ViewBuilder
+    private var overlay: some View {
+        switch overlayState {
+        case .none:
+            EmptyView()
+        case .actions:
+            ZStack(alignment: .bottom) {
+                CardDetailStyle.dim
+                    .ignoresSafeArea()
+                CardDetailActionPanel(
+                    onEdit: editCard,
+                    onDelete: { overlayState = .deleteConfirmation },
+                    onClose: { overlayState = .none }
+                )
+            }
+            .ignoresSafeArea(edges: .bottom)
+        case .deleteConfirmation:
+            ZStack {
+                CardDetailStyle.dim.ignoresSafeArea()
+                CardConfirmationDialog(
+                    title: "스크린샷을 삭제할까요?",
+                    message: "삭제한 스크린샷 정보는\n되돌릴 수 없어요.",
+                    cancelTitle: "취소",
+                    confirmTitle: "삭제",
+                    onCancel: { overlayState = .none },
+                    onConfirm: deleteCard
+                )
+            }
+        case .favoriteToast:
+            CardFeedbackToast(
+                kind: .success,
+                message: favoriteToastMessage
+            )
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                .padding(.bottom, 49)
+        case .deleteFailure:
+            CardFeedbackToast(kind: .failure, message: "스크린샷을 삭제하지 못했어요. 다시 시도해주세요.")
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                .padding(.horizontal, 25)
+                .padding(.bottom, 49)
+        }
+    }
+
+    private var detailBody: String {
+        card.memo
+    }
+
     private func close() { dismiss() }
     private func openOriginal() { onAction(.openOriginal(card.id)) }
-    private func favorite() { onAction(.toggleFavorite(card.id)) }
-    private func menu() { isMenuPresented = true }
-    private func editCard() { onAction(.edit(card.id)) }
-    private func shareCard() { onAction(.share(card.id)) }
-    private func deleteCard() { onAction(.delete(card.id)) }
-}
+    private func showActions() { overlayState = .actions }
 
-private struct CardDetailMenuSheet: View {
-    @Environment(\.dismiss) private var dismiss
+    private func favorite() {
+        favoriteToastMessage = card.isFavorite
+            ? "즐겨찾기에서 삭제했어요."
+            : "즐겨찾기에 추가했어요."
+        onAction(.toggleFavorite(card.id))
+        overlayState = .favoriteToast
+    }
 
-    let onEdit: () -> Void
-    let onShare: () -> Void
-    let onDelete: () -> Void
+    private func editCard() {
+        overlayState = .none
+        onAction(.edit(card.id))
+    }
 
-    var body: some View {
-        VStack(spacing: 0) {
-            Capsule()
-                .fill(RecapTheme.ColorToken.border)
-                .frame(width: 43, height: 5)
-                .padding(.top, 13)
-                .padding(.bottom, 17)
+    private func deleteCard() {
+        overlayState = .none
+        onAction(.delete(card.id))
+    }
 
-            Button {
-                dismiss()
-                onEdit()
-            } label: {
-                Text("스크린샷 정보 수정")
-                    .font(RecapFont.pretendard(size: 16, weight: .semibold))
-                    .tracking(-0.32)
-                    .foregroundStyle(RecapTheme.ColorToken.textBody)
-                    .frame(maxWidth: .infinity, minHeight: 50)
-                    .background(RecapTheme.ColorToken.controlFill)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            }
-            .buttonStyle(.plain)
-
-            Button {
-                dismiss()
-                onShare()
-            } label: {
-                Text("스크린샷 공유")
-                    .font(RecapFont.pretendard(size: 16, weight: .semibold))
-                    .tracking(-0.32)
-                    .foregroundStyle(RecapTheme.ColorToken.textBody)
-                    .frame(maxWidth: .infinity, minHeight: 50)
-                    .background(RecapTheme.ColorToken.controlFill)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            }
-            .buttonStyle(.plain)
-            .padding(.top, 10)
-
-            Button {
-                dismiss()
-                onDelete()
-            } label: {
-                Text("스크린샷 삭제")
-                    .font(RecapFont.pretendard(size: 16, weight: .semibold))
-                    .tracking(-0.32)
-                    .foregroundStyle(Color(red: 251 / 255, green: 61 / 255, blue: 61 / 255))
-                    .frame(maxWidth: .infinity, minHeight: 50)
-                    .background(Color(red: 1, green: 239 / 255, blue: 239 / 255))
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            }
-            .buttonStyle(.plain)
-            .padding(.top, 10)
-
-            Button("닫기", action: { dismiss() })
-                .font(RecapFont.pretendard(size: 15, weight: .medium))
-                .tracking(-0.3)
-                .foregroundStyle(RecapTheme.ColorToken.textBody)
-                .frame(maxWidth: .infinity, minHeight: 50)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .stroke(RecapTheme.ColorToken.border, lineWidth: 1)
-                }
-                .buttonStyle(.plain)
-                .padding(.top, 24)
-        }
-        .padding(.horizontal, 19)
-        .background(Color.white)
-        .presentationDetents([.height(296)])
-        .presentationDragIndicator(.hidden)
+    private func clearTransientOverlayIfNeeded() async {
+        guard overlayState == .favoriteToast || overlayState == .deleteFailure else { return }
+        try? await Task.sleep(for: .seconds(2))
+        guard !Task.isCancelled else { return }
+        overlayState = .none
     }
 }
 
@@ -270,17 +291,4 @@ struct MissingCardView: View {
         .navigationTitle("카드 없음")
         .navigationBarTitleDisplayMode(.inline)
     }
-}
-
-#Preview("Card detail") {
-    NavigationStack {
-        CardDetailView(
-            card: SampleData.cards[0],
-            onAction: PreviewActions.handleCardDetail
-        )
-    }
-}
-
-#Preview("Missing card") {
-    NavigationStack { MissingCardView(cardID: UUID()) }
 }

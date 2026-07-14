@@ -36,6 +36,7 @@ struct RecapRootView: View {
                     onLogout: {
                         MainTab.allCases.forEach(router.reset)
                         router.dismissSheet()
+                        router.dismissFullScreenCover()
                         router.dismissModal()
                         phase = .onboarding(.login)
                     }

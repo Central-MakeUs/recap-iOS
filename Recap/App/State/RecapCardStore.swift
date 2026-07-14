@@ -112,6 +112,7 @@ extension InformationCard {
             confirmationLabel: confirmationLabel,
             memo: memo,
             tags: tags,
+            originalImageAssetName: originalImageAssetName,
             thumbnailAssetName: thumbnailAssetName,
             isFavorite: isFavorite
         )
@@ -130,6 +131,7 @@ extension InformationCard {
             confirmationLabel: confirmationLabel,
             memo: draft.body,
             tags: tags,
+            originalImageAssetName: originalImageAssetName,
             thumbnailAssetName: thumbnailAssetName,
             isFavorite: isFavorite
         )
@@ -140,7 +142,8 @@ extension InformationCard {
             id: id, title: title, summary: summary, collection: collection,
             dateText: dateText, location: location, businessHours: businessHours,
             category: category, confirmationLabel: confirmationLabel, memo: memo,
-            tags: tags, thumbnailAssetName: thumbnailAssetName, isFavorite: isFavorite
+            tags: tags, originalImageAssetName: originalImageAssetName,
+            thumbnailAssetName: thumbnailAssetName, isFavorite: isFavorite
         )
     }
 }

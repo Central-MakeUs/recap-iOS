@@ -88,6 +88,7 @@ struct InformationCard: Identifiable, Hashable {
     let confirmationLabel: String?
     let memo: String
     let tags: [String]
+    let originalImageAssetName: String?
     let thumbnailAssetName: String?
     var isFavorite: Bool
 
@@ -103,6 +104,7 @@ struct InformationCard: Identifiable, Hashable {
         confirmationLabel: String?,
         memo: String,
         tags: [String],
+        originalImageAssetName: String? = nil,
         thumbnailAssetName: String? = nil,
         isFavorite: Bool
     ) {
@@ -117,6 +119,7 @@ struct InformationCard: Identifiable, Hashable {
         self.confirmationLabel = confirmationLabel
         self.memo = memo
         self.tags = tags
+        self.originalImageAssetName = originalImageAssetName
         self.thumbnailAssetName = thumbnailAssetName
         self.isFavorite = isFavorite
     }

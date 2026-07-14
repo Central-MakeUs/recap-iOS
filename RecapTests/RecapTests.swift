@@ -59,4 +59,81 @@ final class RecapTests: XCTestCase {
         )
         XCTAssertEqual(movedCards[0].collection, .knowledge)
     }
+
+    func testCardEditDraftRequiresTitleAndSummary() {
+        let missingTitle = CardEditDraft(
+            collection: .schedule,
+            title: "   ",
+            summary: "예약 정보",
+            body: "본문"
+        )
+        let missingSummary = CardEditDraft(
+            collection: .schedule,
+            title: "제주 숙소 예약 정보",
+            summary: "\n",
+            body: "본문"
+        )
+
+        XCTAssertFalse(missingTitle.isSavable)
+        XCTAssertTrue(missingTitle.hasRequiredFieldError)
+        XCTAssertFalse(missingSummary.isSavable)
+        XCTAssertTrue(missingSummary.hasRequiredFieldError)
+    }
+
+    func testCardEditDraftRejectsTextBeyondFigmaLimits() {
+        let draft = CardEditDraft(
+            collection: .schedule,
+            title: String(repeating: "가", count: CardEditDraft.titleLimit + 1),
+            summary: "예약 정보",
+            body: "본문"
+        )
+
+        XCTAssertFalse(draft.isSavable)
+        XCTAssertFalse(draft.hasRequiredFieldError)
+    }
+
+    func testCardEditDraftNormalizesWhitespaceBeforeSaving() {
+        let draft = CardEditDraft(
+            collection: .schedule,
+            title: "  제주 숙소 예약 정보  ",
+            summary: "  예약 요약\n",
+            body: "\n본문  "
+        )
+
+        XCTAssertEqual(
+            draft.normalized(),
+            CardEditDraft(
+                collection: .schedule,
+                title: "제주 숙소 예약 정보",
+                summary: "예약 요약",
+                body: "본문"
+            )
+        )
+    }
+
+    func testCardMutationPreservesOriginalImageThroughEditAndFavoriteChanges() {
+        let card = SampleData.cards[1]
+        let draft = CardEditDraft(
+            collection: .knowledge,
+            title: "수정된 제목",
+            summary: "수정된 요약",
+            body: "짧은 본문도 그대로 저장되어야 합니다."
+        )
+
+        let updatedCard = card
+            .with(editDraft: draft)
+            .with(isFavorite: true)
+
+        XCTAssertEqual(updatedCard.memo, draft.body)
+        XCTAssertEqual(updatedCard.originalImageAssetName, "InformationCardOriginal")
+        XCTAssertEqual(updatedCard.detailImageAssetName, "InformationCardOriginal")
+        XCTAssertTrue(updatedCard.isFavorite)
+    }
+
+    func testOriginalImageCoverRoutePreservesCardIdentity() {
+        let cardID = SampleData.cards[1].id
+        let route = AppFullScreenRoute.originalPreview(cardID: cardID)
+
+        XCTAssertEqual(route, .originalPreview(cardID: cardID))
+    }
 }

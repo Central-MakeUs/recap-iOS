@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CardOriginalPreviewSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppRouter.self) private var router
     @Environment(RecapCardStore.self) private var cardStore
 
     let cardID: InformationCard.ID
@@ -9,42 +10,51 @@ struct CardOriginalPreviewSheet: View {
     private var card: InformationCard? { cardStore.card(id: cardID) }
 
     var body: some View {
-        NavigationStack {
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 16) {
-                    RecapScreenshotThumbnail(
-                        kind: card?.collection ?? .capture,
-                        assetName: card?.thumbnailAssetName
-                    )
-                    .aspectRatio(9 / 14, contentMode: .fit)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(card?.title ?? "원본 이미지")
-                            .font(RecapFont.pretendard(size: 20, weight: .semibold))
-                            .foregroundStyle(RecapTheme.ColorToken.textPrimary)
-
-                        if let card {
-                            Text(card.dateText)
-                                .font(RecapFont.pretendard(size: 13, weight: .medium))
-                                .foregroundStyle(RecapTheme.ColorToken.textTertiary)
-                        }
-                    }
+        VStack(spacing: 0) {
+            HStack {
+                Button(action: close) {
+                    Image(systemName: "arrow.left")
+                        .font(.system(size: 20, weight: .regular))
+                        .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                        .frame(width: 24, height: 24)
                 }
-                .padding(16)
+                .buttonStyle(.plain)
+
+                Spacer()
+
+                Button(action: goHome) {
+                    Image(systemName: "house")
+                        .font(.system(size: 19, weight: .regular))
+                        .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                        .frame(width: 24, height: 24)
+                }
+                .buttonStyle(.plain)
             }
-            .background(RecapTheme.ColorToken.background)
-            .navigationTitle("원본 보기")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("닫기", action: close)
+            .padding(.horizontal, 16)
+            .frame(height: 35)
+
+            ScrollView(showsIndicators: true) {
+                if let assetName = card?.detailImageAssetName {
+                    Image(assetName)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: .infinity, alignment: .top)
+                } else {
+                    CardImageFailureView()
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 300)
                 }
             }
         }
+        .background(RecapTheme.ColorToken.background)
+        .statusBarHidden(false)
     }
 
     private func close() { dismiss() }
+
+    private func goHome() {
+        router.returnHome()
+    }
 }
 
 struct CardSharePreviewSheet: View {
@@ -219,6 +229,7 @@ private struct CategoryPickerChip: View {
 
 #Preview("Original preview") {
     CardOriginalPreviewSheet(cardID: SampleData.cards[0].id)
+        .environment(AppRouter())
         .environment(PreviewStores.recapCardStore())
 }
 

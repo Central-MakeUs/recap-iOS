@@ -11,18 +11,26 @@ enum AppRoute: Hashable {
 }
 
 enum AppSheetRoute: Identifiable, Hashable {
-    case originalPreview(cardID: InformationCard.ID)
     case sharePreview(cardID: InformationCard.ID)
     case collectionPicker(cardID: InformationCard.ID)
 
     var id: String {
         switch self {
-        case .originalPreview(let cardID):
-            "original-\(cardID.uuidString)"
         case .sharePreview(let cardID):
             "share-\(cardID.uuidString)"
         case .collectionPicker(let cardID):
             "collection-picker-\(cardID.uuidString)"
+        }
+    }
+}
+
+enum AppFullScreenRoute: Identifiable, Hashable {
+    case originalPreview(cardID: InformationCard.ID)
+
+    var id: String {
+        switch self {
+        case .originalPreview(let cardID):
+            "original-\(cardID.uuidString)"
         }
     }
 }
