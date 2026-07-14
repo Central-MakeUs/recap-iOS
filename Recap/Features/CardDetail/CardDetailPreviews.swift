@@ -53,7 +53,3 @@ import SwiftUI
         onAction: PreviewActions.handleCardDetail
     )
 }
-
-#Preview("Missing card") {
-    NavigationStack { MissingCardView(cardID: UUID()) }
-}

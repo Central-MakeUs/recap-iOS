@@ -50,3 +50,8 @@ struct CardDetailActionPanel: View {
         .buttonStyle(.plain)
     }
 }
+
+#Preview("정보카드 작업 메뉴") {
+    CardDetailActionPanel(onEdit: {}, onDelete: {}, onClose: {})
+        .background(CardDetailStyle.dim)
+}

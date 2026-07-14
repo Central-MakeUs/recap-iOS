@@ -33,3 +33,11 @@ struct CardDetailContainerView: View {
         }
     }
 }
+
+#Preview("정보카드 상세 컨테이너") {
+    NavigationStack {
+        CardDetailContainerView(cardID: SampleData.cards[1].id)
+    }
+    .environment(AppRouter())
+    .environment(PreviewStores.recapCardStore())
+}
