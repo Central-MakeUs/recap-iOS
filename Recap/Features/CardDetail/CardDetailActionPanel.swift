@@ -7,12 +7,6 @@ struct CardDetailActionPanel: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Capsule()
-                .fill(CardDetailStyle.inputBorder)
-                .frame(width: 43, height: 5)
-                .padding(.top, 13)
-                .padding(.bottom, 17)
-
             actionButton(title: "스크린샷 정보 수정", color: RecapTheme.ColorToken.textBody, action: onEdit)
             actionButton(title: "스크린샷 삭제", color: CardDetailStyle.destructiveText, action: onDelete)
                 .padding(.top, 10)
@@ -30,10 +24,10 @@ struct CardDetailActionPanel: View {
                 .buttonStyle(.plain)
                 .padding(.top, 24)
         }
+        .padding(.top, 35)
         .padding(.horizontal, CardDetailStyle.horizontalPadding)
         .frame(height: 236, alignment: .top)
         .background(Color.white)
-        .clipShape(.rect(topLeadingRadius: 20, topTrailingRadius: 20))
     }
 
     private func actionButton(title: String, color: Color, action: @escaping () -> Void) -> some View {
@@ -53,5 +47,4 @@ struct CardDetailActionPanel: View {
 
 #Preview("정보카드 작업 메뉴") {
     CardDetailActionPanel(onEdit: {}, onDelete: {}, onClose: {})
-        .background(CardDetailStyle.dim)
 }

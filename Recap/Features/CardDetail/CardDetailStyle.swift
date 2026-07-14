@@ -8,7 +8,6 @@ enum CardDetailImageState: Hashable {
 
 enum CardDetailOverlayState: Hashable {
     case none
-    case actions
     case deleteConfirmation
     case favoriteToast
     case deleteFailure

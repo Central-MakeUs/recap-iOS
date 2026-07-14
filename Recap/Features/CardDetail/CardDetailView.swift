@@ -9,6 +9,8 @@ struct CardDetailView: View {
 
     @State private var overlayState: CardDetailOverlayState
     @State private var favoriteToastMessage: String
+    @State private var isActionPanelPresented = false
+    @State private var pendingPanelAction: CardDetailPanelAction?
 
     init(
         card: InformationCard,
@@ -21,6 +23,7 @@ struct CardDetailView: View {
         self.onAction = onAction
         _overlayState = State(initialValue: initialOverlay)
         _favoriteToastMessage = State(initialValue: "즐겨찾기에 추가했어요.")
+        _pendingPanelAction = State(initialValue: nil)
     }
 
     var body: some View {
@@ -33,6 +36,19 @@ struct CardDetailView: View {
         .ignoresSafeArea(edges: .top)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
+        .sheet(
+            isPresented: $isActionPanelPresented,
+            onDismiss: handleActionPanelDismissal
+        ) {
+            CardDetailActionPanel(
+                onEdit: requestEdit,
+                onDelete: requestDelete,
+                onClose: closeActionPanel
+            )
+            .presentationDetents([.height(236)])
+            .presentationDragIndicator(.visible)
+            .presentationCornerRadius(20)
+        }
         .task(id: overlayState) {
             await clearTransientOverlayIfNeeded()
         }
@@ -206,17 +222,6 @@ struct CardDetailView: View {
         switch overlayState {
         case .none:
             EmptyView()
-        case .actions:
-            ZStack(alignment: .bottom) {
-                CardDetailStyle.dim
-                    .ignoresSafeArea()
-                CardDetailActionPanel(
-                    onEdit: editCard,
-                    onDelete: { overlayState = .deleteConfirmation },
-                    onClose: { overlayState = .none }
-                )
-            }
-            .ignoresSafeArea(edges: .bottom)
         case .deleteConfirmation:
             ZStack {
                 CardDetailStyle.dim.ignoresSafeArea()
@@ -250,7 +255,7 @@ struct CardDetailView: View {
 
     private func close() { dismiss() }
     private func openOriginal() { onAction(.openOriginal(card.id)) }
-    private func showActions() { overlayState = .actions }
+    private func showActions() { isActionPanelPresented = true }
 
     private func favorite() {
         favoriteToastMessage = card.isFavorite
@@ -260,9 +265,32 @@ struct CardDetailView: View {
         overlayState = .favoriteToast
     }
 
-    private func editCard() {
-        overlayState = .none
-        onAction(.edit(card.id))
+    private func requestEdit() {
+        pendingPanelAction = .edit
+        isActionPanelPresented = false
+    }
+
+    private func requestDelete() {
+        pendingPanelAction = .delete
+        isActionPanelPresented = false
+    }
+
+    private func closeActionPanel() {
+        pendingPanelAction = nil
+        isActionPanelPresented = false
+    }
+
+    private func handleActionPanelDismissal() {
+        defer { pendingPanelAction = nil }
+
+        switch pendingPanelAction {
+        case .edit:
+            onAction(.edit(card.id))
+        case .delete:
+            overlayState = .deleteConfirmation
+        case nil:
+            break
+        }
     }
 
     private func deleteCard() {
@@ -275,5 +303,19 @@ struct CardDetailView: View {
         try? await Task.sleep(for: .seconds(2))
         guard !Task.isCancelled else { return }
         overlayState = .none
+    }
+}
+
+private enum CardDetailPanelAction {
+    case edit
+    case delete
+}
+
+#Preview("정보카드 상세") {
+    NavigationStack {
+        CardDetailView(
+            card: SampleData.cards[1],
+            onAction: PreviewActions.handleCardDetail
+        )
     }
 }
