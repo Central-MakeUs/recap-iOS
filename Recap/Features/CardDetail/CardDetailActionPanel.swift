@@ -11,17 +11,20 @@ struct CardDetailActionPanel: View {
             actionButton(title: "스크린샷 삭제", color: CardDetailStyle.destructiveText, action: onDelete)
                 .padding(.top, 10)
 
-            Button("닫기", action: onClose)
-                .font(RecapFont.pretendard(size: 15, weight: .medium))
-                .tracking(-0.3)
-                .foregroundStyle(RecapTheme.ColorToken.textBody)
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .stroke(RecapTheme.ColorToken.border, lineWidth: 1)
-                }
-                .buttonStyle(.plain)
+            Button(action: onClose) {
+                Text("닫기")
+                    .font(RecapFont.pretendard(size: 15, weight: .medium))
+                    .tracking(-0.3)
+                    .foregroundStyle(RecapTheme.ColorToken.textBody)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(RecapTheme.ColorToken.border, lineWidth: 1)
+                    }
+            }
+            .buttonStyle(.plain)
                 .padding(.top, 24)
         }
         .padding(.top, 35)
