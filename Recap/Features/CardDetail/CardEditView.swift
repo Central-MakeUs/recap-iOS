@@ -119,7 +119,7 @@ struct CardEditScreen: View {
         case .discardConfirmation:
             ZStack {
                 CardDetailStyle.dim.ignoresSafeArea()
-                CardConfirmationDialog(
+                RecapConfirmationDialog(
                     title: "수정을 그만둘까요?",
                     message: "저장하지 않은\n변경사항은 사라져요.",
                     cancelTitle: "계속 수정하기",

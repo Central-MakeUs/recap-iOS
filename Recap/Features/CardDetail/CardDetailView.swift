@@ -220,7 +220,7 @@ struct CardDetailView: View {
         case .deleteConfirmation:
             ZStack {
                 CardDetailStyle.dim.ignoresSafeArea()
-                CardConfirmationDialog(
+                RecapConfirmationDialog(
                     title: "스크린샷을 삭제할까요?",
                     message: "삭제한 스크린샷 정보는\n되돌릴 수 없어요.",
                     cancelTitle: "취소",

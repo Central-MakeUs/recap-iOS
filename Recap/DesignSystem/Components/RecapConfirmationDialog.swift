@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct CardConfirmationDialog: View {
+struct RecapConfirmationDialog: View {
     let title: String
     let message: String
     let cancelTitle: String
@@ -24,17 +24,15 @@ struct CardConfirmationDialog: View {
                 .padding(.top, 10)
 
             HStack(spacing: 14) {
-                dialogButton(
+                RecapPopupButton(
                     title: cancelTitle,
-                    foreground: RecapTheme.ColorToken.textBody,
-                    background: RecapTheme.ColorToken.controlFill,
+                    style: .secondary,
                     action: onCancel
                 )
 
-                dialogButton(
+                RecapPopupButton(
                     title: confirmTitle,
-                    foreground: .white,
-                    background: CardDetailStyle.destructive,
+                    style: .destructive,
                     action: onConfirm
                 )
             }
@@ -46,36 +44,17 @@ struct CardConfirmationDialog: View {
         .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
-
-    private func dialogButton(
-        title: String,
-        foreground: Color,
-        background: Color,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Text(title)
-                .font(RecapFont.pretendard(size: 14, weight: .medium))
-                .tracking(-0.28)
-                .foregroundStyle(foreground)
-                .frame(maxWidth: .infinity)
-                .frame(height: 45)
-                .background(background)
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-        }
-        .buttonStyle(.plain)
-    }
 }
 
-#Preview("정보카드 삭제 확인") {
-    CardConfirmationDialog(
-        title: "정보카드를 삭제할까요?",
-        message: "삭제한 정보카드는 복구할 수 없어요.",
+#Preview("확인 팝업") {
+    RecapConfirmationDialog(
+        title: "스크린샷을 삭제할까요?",
+        message: "삭제한 스크린샷 정보는\n되돌릴 수 없어요.",
         cancelTitle: "취소",
         confirmTitle: "삭제",
         onCancel: {},
         onConfirm: {}
     )
     .padding()
-    .background(CardDetailStyle.dim)
+    .background(Color.black.opacity(0.30))
 }
