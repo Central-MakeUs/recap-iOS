@@ -7,33 +7,50 @@ struct CardDetailView: View {
     let card: InformationCard
     let imageState: CardDetailImageState
 
-    @State private var overlayState: CardDetailOverlayState
-    @State private var favoriteToastMessage: String
+    @State private var isDeleteConfirmationPresented: Bool
+    @State private var feedback: CardFeedback?
     @State private var isActionPanelPresented = false
     @State private var isEditing = false
     @State private var isOriginalPresented = false
     @State private var pendingPanelAction: CardDetailPanelAction?
 
+    private var usesCategoryPill: Bool {
+        isDeleteConfirmationPresented || feedback != nil
+    }
+
+    private var navigationContentColor: Color {
+        imageState == .failedCard ? RecapTheme.ColorToken.textPrimary : .white
+    }
+
     init(
         card: InformationCard,
         imageState: CardDetailImageState = .loaded,
-        initialOverlay: CardDetailOverlayState = .none
+        initiallyShowsDeleteConfirmation: Bool = false,
+        initialFeedback: CardFeedback? = nil
     ) {
         self.card = card
         self.imageState = imageState
-        _overlayState = State(initialValue: initialOverlay)
-        _favoriteToastMessage = State(initialValue: "즐겨찾기에 추가했어요.")
+        _isDeleteConfirmationPresented = State(initialValue: initiallyShowsDeleteConfirmation)
+        _feedback = State(initialValue: initialFeedback)
         _pendingPanelAction = State(initialValue: nil)
     }
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
             detailContent
+                .ignoresSafeArea(edges: .top)
 
-            overlay
+            CardDetailNavigationBar(
+                title: "스크린샷 상세",
+                isFavorite: card.isFavorite,
+                foregroundColor: navigationContentColor,
+                onBack: dismiss.callAsFunction,
+                onFavorite: favorite,
+                onMore: showActions
+            )
+            .padding(.top, 20)
         }
         .background(RecapTheme.ColorToken.background)
-        .ignoresSafeArea(edges: .top)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .sheet(
@@ -55,8 +72,17 @@ struct CardDetailView: View {
         .fullScreenCover(isPresented: $isOriginalPresented) {
             CardOriginalPreviewSheet(card: card)
         }
-        .task(id: overlayState) {
-            await clearTransientOverlayIfNeeded()
+        .recapConfirmationDialog(
+            isPresented: $isDeleteConfirmationPresented,
+            title: "스크린샷을 삭제할까요?",
+            message: "삭제한 스크린샷 정보는\n되돌릴 수 없어요.",
+            cancelTitle: "취소",
+            confirmTitle: "삭제",
+            onConfirm: deleteCard
+        )
+        .cardFeedbackToast(feedback, horizontalPadding: 25, bottomPadding: 49)
+        .task(id: feedback) {
+            await clearFeedbackIfNeeded()
         }
     }
 
@@ -64,8 +90,8 @@ struct CardDetailView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
                 if imageState == .failedCard {
-                    compactHeader
                     failedImageCard
+                        .padding(.top, 145)
                     cardTextContent(topPadding: 20)
                 } else {
                     screenshotHero
@@ -76,7 +102,7 @@ struct CardDetailView: View {
     }
 
     private var screenshotHero: some View {
-        ZStack(alignment: .topTrailing) {
+        ZStack(alignment: .bottomTrailing) {
             heroImage
 
             LinearGradient(
@@ -88,13 +114,11 @@ struct CardDetailView: View {
                 endPoint: .bottom
             )
             .frame(height: CardDetailStyle.heroGradientHeight)
-
-            detailHeader(color: .white)
-                .padding(.top, 78)
+            .frame(maxHeight: .infinity, alignment: .top)
 
             CardExpandButton(action: openOriginal)
-                .padding(.top, 248)
                 .padding(.trailing, 24)
+                .padding(.bottom, 13)
         }
         .frame(height: CardDetailStyle.heroHeight)
     }
@@ -120,42 +144,6 @@ struct CardDetailView: View {
         case .failedCard:
             EmptyView()
         }
-    }
-
-    private var compactHeader: some View {
-        detailHeader(color: RecapTheme.ColorToken.textPrimary)
-            .padding(.top, 78)
-            .padding(.bottom, 43)
-    }
-
-    private func detailHeader(color: Color) -> some View {
-        HStack(spacing: 13) {
-            Button(action: close) {
-                RecapIconView(icon: .back, size: 24, color: color)
-            }
-            .buttonStyle(.plain)
-
-            Text("스크린샷 상세")
-                .font(RecapFont.pretendard(size: 16, weight: .semibold))
-                .tracking(-0.32)
-                .foregroundStyle(color)
-
-            Spacer()
-
-            Button(action: favorite) {
-                Image(systemName: card.isFavorite ? "star.fill" : "star.fill")
-                    .font(.system(size: 20, weight: .regular))
-                    .foregroundStyle(card.isFavorite ? RecapTheme.ColorToken.primary : color.opacity(0.70))
-                    .frame(width: 24, height: 24)
-            }
-            .buttonStyle(.plain)
-
-            RecapIconView(icon: .more, size: 24, color: color)
-                .contentShape(Rectangle())
-                .onTapGesture(perform: showActions)
-                .accessibilityAddTraits(.isButton)
-        }
-        .padding(.horizontal, CardDetailStyle.horizontalPadding)
     }
 
     private var failedImageCard: some View {
@@ -205,7 +193,7 @@ struct CardDetailView: View {
 
     private var metaRow: some View {
         HStack {
-            if overlayState == .none {
+            if !usesCategoryPill {
                 Text(RecapPresentation.collectionDisplay(for: card.collection).title)
                     .font(RecapFont.pretendard(size: 14, weight: .semibold))
                     .tracking(-0.28)
@@ -223,52 +211,21 @@ struct CardDetailView: View {
         }
     }
 
-    @ViewBuilder
-    private var overlay: some View {
-        switch overlayState {
-        case .none:
-            EmptyView()
-        case .deleteConfirmation:
-            ZStack {
-                CardDetailStyle.dim.ignoresSafeArea()
-                RecapConfirmationDialog(
-                    title: "스크린샷을 삭제할까요?",
-                    message: "삭제한 스크린샷 정보는\n되돌릴 수 없어요.",
-                    cancelTitle: "취소",
-                    confirmTitle: "삭제",
-                    onCancel: { overlayState = .none },
-                    onConfirm: deleteCard
-                )
-            }
-        case .favoriteToast:
-            CardFeedbackToast(
-                kind: .success,
-                message: favoriteToastMessage
-            )
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                .padding(.bottom, 49)
-        case .deleteFailure:
-            CardFeedbackToast(kind: .failure, message: "스크린샷을 삭제하지 못했어요. 다시 시도해주세요.")
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                .padding(.horizontal, 25)
-                .padding(.bottom, 49)
-        }
-    }
-
     private var detailBody: String {
         card.memo
     }
 
-    private func close() { dismiss() }
     private func openOriginal() { isOriginalPresented = true }
     private func showActions() { isActionPanelPresented = true }
 
     private func favorite() {
-        favoriteToastMessage = card.isFavorite
-            ? "즐겨찾기에서 삭제했어요."
-            : "즐겨찾기에 추가했어요."
+        feedback = CardFeedback(
+            kind: .success,
+            message: card.isFavorite
+                ? "즐겨찾기에서 삭제했어요."
+                : "즐겨찾기에 추가했어요."
+        )
         cardStore.toggleFavorite(id: card.id)
-        overlayState = .favoriteToast
     }
 
     private func requestEdit() {
@@ -293,23 +250,22 @@ struct CardDetailView: View {
         case .edit:
             isEditing = true
         case .delete:
-            overlayState = .deleteConfirmation
+            isDeleteConfirmationPresented = true
         case nil:
             break
         }
     }
 
     private func deleteCard() {
-        overlayState = .none
         cardStore.removeCard(id: card.id)
         dismiss()
     }
 
-    private func clearTransientOverlayIfNeeded() async {
-        guard overlayState == .favoriteToast || overlayState == .deleteFailure else { return }
+    private func clearFeedbackIfNeeded() async {
+        guard feedback != nil else { return }
         try? await Task.sleep(for: .seconds(2))
         guard !Task.isCancelled else { return }
-        overlayState = .none
+        feedback = nil
     }
 }
 

@@ -40,7 +40,10 @@ private extension SampleData {
     CardEditScreen(
         card: SampleData.cards[1],
         initialDraft: SampleData.cardEditDraft,
-        initialOverlay: .saveFailure,
+        initialFeedback: CardFeedback(
+            kind: .failure,
+            message: "스크린샷 정보를 저장하지 못했어요. 다시 시도해주세요."
+        ),
         onSave: { _ in false }
     )
 }
@@ -49,7 +52,7 @@ private extension SampleData {
     CardEditScreen(
         card: SampleData.cards[1],
         initialDraft: SampleData.cardEditDraft,
-        initialOverlay: .discardConfirmation,
+        initiallyShowsDiscardConfirmation: true,
         onSave: { _ in true }
     )
 }

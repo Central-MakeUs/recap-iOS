@@ -4,7 +4,10 @@ import SwiftUI
     NavigationStack {
         CardDetailView(
             card: SampleData.cards[1],
-            initialOverlay: .favoriteToast
+            initialFeedback: CardFeedback(
+                kind: .success,
+                message: "즐겨찾기에 추가했어요."
+            )
         )
     }
     .environment(AppRouter())
@@ -37,7 +40,7 @@ import SwiftUI
     NavigationStack {
         CardDetailView(
             card: SampleData.cards[1],
-            initialOverlay: .deleteConfirmation
+            initiallyShowsDeleteConfirmation: true
         )
     }
     .environment(AppRouter())
@@ -48,7 +51,10 @@ import SwiftUI
     NavigationStack {
         CardDetailView(
             card: SampleData.cards[1],
-            initialOverlay: .deleteFailure
+            initialFeedback: CardFeedback(
+                kind: .failure,
+                message: "스크린샷을 삭제하지 못했어요. 다시 시도해주세요."
+            )
         )
     }
     .environment(AppRouter())

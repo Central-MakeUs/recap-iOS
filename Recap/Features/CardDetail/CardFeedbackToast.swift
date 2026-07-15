@@ -1,7 +1,12 @@
 import SwiftUI
 
+struct CardFeedback: Hashable {
+    let kind: CardFeedbackToast.Kind
+    let message: String
+}
+
 struct CardFeedbackToast: View {
-    enum Kind {
+    enum Kind: Hashable {
         case success
         case failure
     }
@@ -25,6 +30,22 @@ struct CardFeedbackToast: View {
         .frame(height: 45)
         .background(CardDetailStyle.toastBackground)
         .clipShape(Capsule())
+    }
+}
+
+extension View {
+    func cardFeedbackToast(
+        _ feedback: CardFeedback?,
+        horizontalPadding: CGFloat,
+        bottomPadding: CGFloat
+    ) -> some View {
+        overlay(alignment: .bottom) {
+            if let feedback {
+                CardFeedbackToast(kind: feedback.kind, message: feedback.message)
+                    .padding(.horizontal, horizontalPadding)
+                    .padding(.bottom, bottomPadding)
+            }
+        }
     }
 }
 

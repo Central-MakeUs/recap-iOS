@@ -46,6 +46,67 @@ struct RecapConfirmationDialog: View {
     }
 }
 
+extension View {
+    func recapConfirmationDialog(
+        isPresented: Binding<Bool>,
+        title: String,
+        message: String,
+        cancelTitle: String,
+        confirmTitle: String,
+        onConfirm: @escaping () -> Void
+    ) -> some View {
+        modifier(
+            RecapConfirmationDialogModifier(
+                isPresented: isPresented,
+                title: title,
+                message: message,
+                cancelTitle: cancelTitle,
+                confirmTitle: confirmTitle,
+                onConfirm: onConfirm
+            )
+        )
+    }
+}
+
+private struct RecapConfirmationDialogModifier: ViewModifier {
+    @Binding var isPresented: Bool
+
+    let title: String
+    let message: String
+    let cancelTitle: String
+    let confirmTitle: String
+    let onConfirm: () -> Void
+
+    func body(content: Content) -> some View {
+        content.overlay {
+            if isPresented {
+                ZStack {
+                    Color.black.opacity(0.30)
+                        .ignoresSafeArea()
+
+                    RecapConfirmationDialog(
+                        title: title,
+                        message: message,
+                        cancelTitle: cancelTitle,
+                        confirmTitle: confirmTitle,
+                        onCancel: dismiss,
+                        onConfirm: confirm
+                    )
+                }
+            }
+        }
+    }
+
+    private func dismiss() {
+        isPresented = false
+    }
+
+    private func confirm() {
+        isPresented = false
+        onConfirm()
+    }
+}
+
 #Preview("확인 팝업") {
     RecapConfirmationDialog(
         title: "스크린샷을 삭제할까요?",
