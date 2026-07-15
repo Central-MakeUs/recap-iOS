@@ -18,11 +18,7 @@ struct CardDetailImageCard<Content: View>: View {
             .frame(maxWidth: .infinity)
             .clipped()
             .overlay(alignment: .bottomTrailing) {
-                CardExpandButton(
-                    foregroundColor: RecapTheme.ColorToken.textTertiary,
-                    backgroundColor: .white,
-                    action: onExpand
-                )
+                CardExpandButton(action: onExpand)
                 .padding(.trailing, 8)
                 .padding(.bottom, 8)
             }
