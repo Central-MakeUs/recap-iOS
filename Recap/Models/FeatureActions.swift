@@ -26,10 +26,3 @@ enum ArchiveAction: Hashable {
 enum SearchAction: Hashable {
     case openCard(InformationCard.ID)
 }
-
-enum CardDetailAction: Hashable {
-    case openOriginal(InformationCard.ID)
-    case edit(InformationCard.ID)
-    case toggleFavorite(InformationCard.ID)
-    case delete(InformationCard.ID)
-}

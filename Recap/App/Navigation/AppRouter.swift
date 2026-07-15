@@ -14,8 +14,6 @@ final class AppRouter {
     var homePath: [AppRoute] = []
     var cardCreationPath: [AppRoute] = []
     var archivePath: [AppRoute] = []
-    var presentedFullScreenCover: AppFullScreenRoute?
-    var presentedModal: AppModalRoute?
 
     func binding(for tab: MainTab) -> Binding<[AppRoute]> {
         Binding(
@@ -37,26 +35,9 @@ final class AppRouter {
         setPath([], for: tab)
     }
 
-    func presentFullScreenCover(_ cover: AppFullScreenRoute) {
-        presentedFullScreenCover = cover
-    }
-
-    func dismissFullScreenCover() {
-        presentedFullScreenCover = nil
-    }
-
     func returnHome() {
         selectedTab = .home
         homePath = []
-        presentedFullScreenCover = nil
-    }
-
-    func presentModal(_ modal: AppModalRoute) {
-        presentedModal = modal
-    }
-
-    func dismissModal() {
-        presentedModal = nil
     }
 
     func path(for tab: MainTab) -> [AppRoute] {

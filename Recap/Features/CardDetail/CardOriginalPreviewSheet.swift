@@ -3,11 +3,8 @@ import SwiftUI
 struct CardOriginalPreviewSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppRouter.self) private var router
-    @Environment(RecapCardStore.self) private var cardStore
 
-    let cardID: InformationCard.ID
-
-    private var card: InformationCard? { cardStore.card(id: cardID) }
+    let card: InformationCard
 
     var body: some View {
         VStack(spacing: 0) {
@@ -34,7 +31,7 @@ struct CardOriginalPreviewSheet: View {
             .frame(height: 35)
 
             ScrollView(showsIndicators: true) {
-                if let assetName = card?.detailImageAssetName {
+                if let assetName = card.detailImageAssetName {
                     Image(assetName)
                         .resizable()
                         .scaledToFit()
@@ -60,7 +57,6 @@ struct CardOriginalPreviewSheet: View {
 }
 
 #Preview("원본 이미지 전체 보기") {
-    CardOriginalPreviewSheet(cardID: SampleData.cards[0].id)
+    CardOriginalPreviewSheet(card: SampleData.cards[0])
         .environment(AppRouter())
-        .environment(PreviewStores.recapCardStore())
 }

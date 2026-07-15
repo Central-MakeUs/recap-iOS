@@ -2,25 +2,25 @@ import SwiftUI
 
 struct CardDetailView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(RecapCardStore.self) private var cardStore
 
     let card: InformationCard
     let imageState: CardDetailImageState
-    let onAction: (CardDetailAction) -> Void
 
     @State private var overlayState: CardDetailOverlayState
     @State private var favoriteToastMessage: String
     @State private var isActionPanelPresented = false
+    @State private var isEditing = false
+    @State private var isOriginalPresented = false
     @State private var pendingPanelAction: CardDetailPanelAction?
 
     init(
         card: InformationCard,
         imageState: CardDetailImageState = .loaded,
-        initialOverlay: CardDetailOverlayState = .none,
-        onAction: @escaping (CardDetailAction) -> Void
+        initialOverlay: CardDetailOverlayState = .none
     ) {
         self.card = card
         self.imageState = imageState
-        self.onAction = onAction
         _overlayState = State(initialValue: initialOverlay)
         _favoriteToastMessage = State(initialValue: "즐겨찾기에 추가했어요.")
         _pendingPanelAction = State(initialValue: nil)
@@ -48,6 +48,12 @@ struct CardDetailView: View {
             .presentationDetents([.height(236)])
             .presentationDragIndicator(.visible)
             .presentationCornerRadius(20)
+        }
+        .navigationDestination(isPresented: $isEditing) {
+            CardEditView(card: card)
+        }
+        .fullScreenCover(isPresented: $isOriginalPresented) {
+            CardOriginalPreviewSheet(card: card)
         }
         .task(id: overlayState) {
             await clearTransientOverlayIfNeeded()
@@ -254,14 +260,14 @@ struct CardDetailView: View {
     }
 
     private func close() { dismiss() }
-    private func openOriginal() { onAction(.openOriginal(card.id)) }
+    private func openOriginal() { isOriginalPresented = true }
     private func showActions() { isActionPanelPresented = true }
 
     private func favorite() {
         favoriteToastMessage = card.isFavorite
             ? "즐겨찾기에서 삭제했어요."
             : "즐겨찾기에 추가했어요."
-        onAction(.toggleFavorite(card.id))
+        cardStore.toggleFavorite(id: card.id)
         overlayState = .favoriteToast
     }
 
@@ -285,7 +291,7 @@ struct CardDetailView: View {
 
         switch pendingPanelAction {
         case .edit:
-            onAction(.edit(card.id))
+            isEditing = true
         case .delete:
             overlayState = .deleteConfirmation
         case nil:
@@ -295,7 +301,8 @@ struct CardDetailView: View {
 
     private func deleteCard() {
         overlayState = .none
-        onAction(.delete(card.id))
+        cardStore.removeCard(id: card.id)
+        dismiss()
     }
 
     private func clearTransientOverlayIfNeeded() async {
@@ -313,9 +320,8 @@ private enum CardDetailPanelAction {
 
 #Preview("정보카드 상세") {
     NavigationStack {
-        CardDetailView(
-            card: SampleData.cards[1],
-            onAction: PreviewActions.handleCardDetail
-        )
+        CardDetailView(card: SampleData.cards[1])
     }
+    .environment(AppRouter())
+    .environment(PreviewStores.recapCardStore())
 }

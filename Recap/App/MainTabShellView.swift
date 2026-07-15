@@ -27,7 +27,6 @@ struct AppShellView: View {
         .environment(router)
         .environment(cardStore)
         .environment(\.recapLogout, onLogout)
-        .withAppPresentations(router: router, cardStore: cardStore)
     }
 
     @ViewBuilder
@@ -49,7 +48,7 @@ struct AppShellView: View {
     ) -> some View {
         NavigationStack(path: router.binding(for: tab)) {
             content()
-                .withAppNavigationDestinations()
+                .withAppNavigationDestinations(cardStore: cardStore)
         }
     }
 
@@ -65,7 +64,7 @@ struct AppShellView: View {
         switch lastRoute {
         case .archiveDetail:
             return true
-        case .search, .allRecentCards, .cardDetail, .cardEdit, .cardCreationStart, .settings:
+        case .search, .allRecentCards, .cardDetail, .cardCreationStart, .settings:
             return false
         }
     }

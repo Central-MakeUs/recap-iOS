@@ -2,28 +2,32 @@ import SwiftUI
 
 struct CardEditView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(AppRouter.self) private var router
     @Environment(RecapCardStore.self) private var cardStore
 
-    let cardID: InformationCard.ID
+    let card: InformationCard
+
+    @State private var isOriginalPresented = false
 
     var body: some View {
-        if let card = cardStore.card(id: cardID) {
-            CardEditScreen(
-                card: card,
-                onSave: save,
-                onOpenOriginal: { router.presentFullScreenCover(.originalPreview(cardID: cardID)) },
-                onClose: dismiss.callAsFunction
-            )
-        } else {
-            MissingCardView(cardID: cardID)
+        CardEditScreen(
+            card: card,
+            onSave: save,
+            onOpenOriginal: showOriginal,
+            onClose: dismiss.callAsFunction
+        )
+        .fullScreenCover(isPresented: $isOriginalPresented) {
+            CardOriginalPreviewSheet(card: card)
         }
     }
 
     private func save(_ draft: CardEditDraft) -> Bool {
-        cardStore.updateCard(id: cardID, with: draft.normalized())
+        cardStore.updateCard(id: card.id, with: draft.normalized())
         dismiss()
         return true
+    }
+
+    private func showOriginal() {
+        isOriginalPresented = true
     }
 }
 

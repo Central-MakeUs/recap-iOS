@@ -123,10 +123,4 @@ final class RecapTests: XCTestCase {
         XCTAssertTrue(updatedCard.isFavorite)
     }
 
-    func testOriginalImageCoverRoutePreservesCardIdentity() {
-        let cardID = SampleData.cards[1].id
-        let route = AppFullScreenRoute.originalPreview(cardID: cardID)
-
-        XCTAssertEqual(route, .originalPreview(cardID: cardID))
-    }
 }
