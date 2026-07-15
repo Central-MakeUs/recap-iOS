@@ -13,21 +13,9 @@ struct CardEditOriginalPreview: View {
                 .padding(.top, 10)
                 .padding(.bottom, 8)
 
-            ZStack(alignment: .bottomTrailing) {
+            CardDetailImageCard(onExpand: onOpenOriginal) {
                 RecapScreenshotThumbnail(kind: card.collection, assetName: card.detailImageAssetName)
-                    .frame(height: CardDetailStyle.imageCardHeight)
-                    .frame(maxWidth: .infinity)
-                    .clipped()
-
-                CardExpandButton(
-                    foregroundColor: RecapTheme.ColorToken.textTertiary,
-                    backgroundColor: .white,
-                    action: onOpenOriginal
-                )
-                .padding(.trailing, 8)
-                .padding(.bottom, 8)
             }
-            .clipShape(RoundedRectangle(cornerRadius: CardDetailStyle.cornerRadius, style: .continuous))
 
             Text("원본 이미지는 수정 할 수 없어요. 텍스트 정보만 편집 가능해요")
                 .font(RecapFont.pretendard(size: 10, weight: .semibold))
