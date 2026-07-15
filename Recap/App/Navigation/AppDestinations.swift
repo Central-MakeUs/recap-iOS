@@ -21,8 +21,6 @@ extension View {
         case .cardDetail(let id):
             if let card = cardStore.card(id: id) {
                 CardDetailView(card: card)
-            } else {
-                MissingCardView(cardID: id)
             }
         case .cardCreationStart:
             CardCreationFlowView()
