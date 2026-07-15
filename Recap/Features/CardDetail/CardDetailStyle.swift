@@ -4,6 +4,24 @@ enum CardDetailImageState: Hashable {
     case loaded
     case failedFullWidth
     case failedCard
+
+    var imageTopInset: CGFloat {
+        switch self {
+        case .loaded, .failedFullWidth:
+            0
+        case .failedCard:
+            CardDetailStyle.failedImageCardTopInset
+        }
+    }
+
+    var metadataSpacing: CGFloat {
+        switch self {
+        case .loaded, .failedFullWidth:
+            CardDetailStyle.fullWidthImageMetadataSpacing
+        case .failedCard:
+            CardDetailStyle.imageCardMetadataSpacing
+        }
+    }
 }
 
 enum CardDetailStyle {
@@ -12,6 +30,9 @@ enum CardDetailStyle {
     static let heroGradientHeight: CGFloat = 237
     static let imageCardHeight: CGFloat = 184
     static let cornerRadius: CGFloat = 10
+    static let failedImageCardTopInset: CGFloat = 145
+    static let fullWidthImageMetadataSpacing: CGFloat = 22
+    static let imageCardMetadataSpacing: CGFloat = 20
 
     static let destructive = Color(red: 1, green: 100 / 255, blue: 100 / 255)
     static let destructiveText = Color(red: 251 / 255, green: 61 / 255, blue: 61 / 255)

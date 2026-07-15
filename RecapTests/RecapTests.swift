@@ -123,4 +123,13 @@ final class RecapTests: XCTestCase {
         XCTAssertTrue(updatedCard.isFavorite)
     }
 
+    func testCardDetailImageStatesPreserveFigmaLayoutSpacing() {
+        XCTAssertEqual(CardDetailImageState.loaded.imageTopInset, 0)
+        XCTAssertEqual(CardDetailImageState.loaded.metadataSpacing, 22)
+        XCTAssertEqual(CardDetailImageState.failedFullWidth.imageTopInset, 0)
+        XCTAssertEqual(CardDetailImageState.failedFullWidth.metadataSpacing, 22)
+        XCTAssertEqual(CardDetailImageState.failedCard.imageTopInset, 145)
+        XCTAssertEqual(CardDetailImageState.failedCard.metadataSpacing, 20)
+    }
+
 }
