@@ -19,15 +19,11 @@ struct CardDetailContainerView: View {
         switch action {
         case .openOriginal(let id):
             router.presentFullScreenCover(.originalPreview(cardID: id))
-        case .share(let id):
-            router.presentSheet(.sharePreview(cardID: id))
         case .edit(let id):
             router.navigate(.cardEdit(id))
-        case .changeCollection(let id):
-            router.presentSheet(.collectionPicker(cardID: id))
         case .toggleFavorite(let id):
             cardStore.toggleFavorite(id: id)
-        case .exclude(let id), .delete(let id):
+        case .delete(let id):
             cardStore.removeCard(id: id)
             dismiss()
         }

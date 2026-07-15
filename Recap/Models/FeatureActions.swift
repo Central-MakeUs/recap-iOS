@@ -29,10 +29,7 @@ enum SearchAction: Hashable {
 
 enum CardDetailAction: Hashable {
     case openOriginal(InformationCard.ID)
-    case share(InformationCard.ID)
     case edit(InformationCard.ID)
-    case changeCollection(InformationCard.ID)
     case toggleFavorite(InformationCard.ID)
-    case exclude(InformationCard.ID)
     case delete(InformationCard.ID)
 }

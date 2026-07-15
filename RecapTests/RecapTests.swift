@@ -51,13 +51,6 @@ final class RecapTests: XCTestCase {
             in: [card]
         )
         XCTAssertTrue(favoriteCards[0].isFavorite)
-
-        let movedCards = RecapCardCollection.moving(
-            cardID: card.id,
-            in: favoriteCards,
-            to: .knowledge
-        )
-        XCTAssertEqual(movedCards[0].collection, .knowledge)
     }
 
     func testCardEditDraftRequiresTitleAndSummary() {

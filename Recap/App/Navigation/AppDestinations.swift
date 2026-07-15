@@ -11,16 +11,6 @@ extension View {
     @MainActor
     func withAppPresentations(router: AppRouter, cardStore: RecapCardStore) -> some View {
         self
-        .sheet(
-            item: Binding(
-                get: { router.presentedSheet },
-                set: { router.presentedSheet = $0 }
-            )
-        ) { sheet in
-            sheetDestination(for: sheet)
-                .environment(router)
-                .environment(cardStore)
-        }
         .fullScreenCover(
             item: Binding(
                 get: { router.presentedFullScreenCover },
@@ -72,17 +62,6 @@ extension View {
 
     @MainActor
     @ViewBuilder
-    private func sheetDestination(for sheet: AppSheetRoute) -> some View {
-        switch sheet {
-        case .sharePreview(let cardID):
-            CardSharePreviewSheet(cardID: cardID)
-        case .collectionPicker(let cardID):
-            CollectionPickerSheet(cardID: cardID)
-        }
-    }
-
-    @MainActor
-    @ViewBuilder
     private func fullScreenDestination(for cover: AppFullScreenRoute) -> some View {
         switch cover {
         case .originalPreview(let cardID):
@@ -102,11 +81,6 @@ extension View {
         }
 
         switch modal {
-        case .excludeCard(let cardID):
-            Button("제외", role: .destructive) {
-                cardStore.removeCard(id: cardID)
-                router.dismissModal()
-            }
         case .deleteCard(let cardID):
             Button("삭제", role: .destructive) {
                 cardStore.removeCard(id: cardID)

@@ -14,7 +14,6 @@ final class AppRouter {
     var homePath: [AppRoute] = []
     var cardCreationPath: [AppRoute] = []
     var archivePath: [AppRoute] = []
-    var presentedSheet: AppSheetRoute?
     var presentedFullScreenCover: AppFullScreenRoute?
     var presentedModal: AppModalRoute?
 
@@ -36,14 +35,6 @@ final class AppRouter {
 
     func reset(tab: MainTab) {
         setPath([], for: tab)
-    }
-
-    func presentSheet(_ sheet: AppSheetRoute) {
-        presentedSheet = sheet
-    }
-
-    func dismissSheet() {
-        presentedSheet = nil
     }
 
     func presentFullScreenCover(_ cover: AppFullScreenRoute) {
