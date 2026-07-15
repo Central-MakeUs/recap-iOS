@@ -2,7 +2,6 @@ import SwiftUI
 
 struct CardOriginalPreviewSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(AppRouter.self) private var router
 
     let card: InformationCard
 
@@ -18,14 +17,6 @@ struct CardOriginalPreviewSheet: View {
                 .buttonStyle(.plain)
 
                 Spacer()
-
-                Button(action: goHome) {
-                    Image(systemName: "house")
-                        .font(.system(size: 19, weight: .regular))
-                        .foregroundStyle(RecapTheme.ColorToken.textPrimary)
-                        .frame(width: 24, height: 24)
-                }
-                .buttonStyle(.plain)
             }
             .padding(.horizontal, 16)
             .frame(height: 35)
@@ -50,13 +41,8 @@ struct CardOriginalPreviewSheet: View {
     private func close() {
         dismiss()
     }
-
-    private func goHome() {
-        router.returnHome()
-    }
 }
 
 #Preview("원본 이미지 전체 보기") {
     CardOriginalPreviewSheet(card: SampleData.cards[0])
-        .environment(AppRouter())
 }
