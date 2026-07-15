@@ -7,37 +7,49 @@ private extension SampleData {
 }
 
 #Preview("정보카드 수정") {
-    CardEditScreen(card: SampleData.cards[1], initialDraft: SampleData.cardEditDraft, onSave: { _ in true })
+    CardEditView(
+        card: SampleData.cards[1],
+        initialDraft: SampleData.cardEditDraft,
+        onSave: { _ in true }
+    )
+    .environment(PreviewStores.recapCardStore())
 }
 
 #Preview("정보카드 수정 - 필수 입력 오류") {
     var draft = SampleData.cardEditDraft
     draft.title = ""
-    return CardEditScreen(
+    return CardEditView(
         card: SampleData.cards[1],
         initialDraft: draft,
         onSave: { _ in true }
     )
+    .environment(PreviewStores.recapCardStore())
 }
 
 #Preview("정보카드 수정 - 완료 비활성화") {
     var draft = SampleData.cardEditDraft
     draft.title = ""
-    return CardEditScreen(
+    return CardEditView(
         card: SampleData.cards[1],
         initialDraft: draft,
         onSave: { _ in true }
     )
+    .environment(PreviewStores.recapCardStore())
 }
 
 #Preview("정보카드 수정 - 타이핑") {
     var draft = SampleData.cardEditDraft
     draft.title = "텍스"
-    return CardEditScreen(card: SampleData.cards[1], initialDraft: draft, onSave: { _ in true })
+    return CardEditView(
+        card: SampleData.cards[1],
+        initialDraft: draft,
+        onSave: { _ in true }
+    )
+    .environment(PreviewStores.recapCardStore())
 }
 
 #Preview("정보카드 수정 - 저장 실패") {
-    CardEditScreen(
+    CardEditView(
         card: SampleData.cards[1],
         initialDraft: SampleData.cardEditDraft,
         initialFeedback: CardFeedback(
@@ -46,13 +58,15 @@ private extension SampleData {
         ),
         onSave: { _ in false }
     )
+    .environment(PreviewStores.recapCardStore())
 }
 
 #Preview("정보카드 수정 - 그만두기 확인") {
-    CardEditScreen(
+    CardEditView(
         card: SampleData.cards[1],
         initialDraft: SampleData.cardEditDraft,
         initiallyShowsDiscardConfirmation: true,
         onSave: { _ in true }
     )
+    .environment(PreviewStores.recapCardStore())
 }

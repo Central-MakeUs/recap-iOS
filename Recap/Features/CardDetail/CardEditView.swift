@@ -6,58 +6,28 @@ struct CardEditView: View {
 
     let card: InformationCard
 
-    @State private var isOriginalPresented = false
-
-    var body: some View {
-        CardEditScreen(
-            card: card,
-            onSave: save,
-            onOpenOriginal: showOriginal,
-            onClose: dismiss.callAsFunction
-        )
-        .fullScreenCover(isPresented: $isOriginalPresented) {
-            CardOriginalPreviewSheet(card: card)
-        }
-    }
-
-    private func save(_ draft: CardEditDraft) -> Bool {
-        cardStore.updateCard(id: card.id, with: draft.normalized())
-        dismiss()
-        return true
-    }
-
-    private func showOriginal() {
-        isOriginalPresented = true
-    }
-}
-
-struct CardEditScreen: View {
-    let card: InformationCard
-    let onSave: (CardEditDraft) -> Bool
-    let onOpenOriginal: () -> Void
-    let onClose: () -> Void
+    private let originalDraft: CardEditDraft
+    private let saveAction: ((CardEditDraft) -> Bool)?
+    private let closeAction: (() -> Void)?
 
     @State private var draft: CardEditDraft
     @State private var isDiscardConfirmationPresented: Bool
     @State private var feedback: CardFeedback?
-
-    private let originalDraft: CardEditDraft
+    @State private var isOriginalPresented = false
 
     init(
         card: InformationCard,
         initialDraft: CardEditDraft? = nil,
         initiallyShowsDiscardConfirmation: Bool = false,
         initialFeedback: CardFeedback? = nil,
-        onSave: @escaping (CardEditDraft) -> Bool,
-        onOpenOriginal: @escaping () -> Void = {},
-        onClose: @escaping () -> Void = {}
+        onSave: ((CardEditDraft) -> Bool)? = nil,
+        onClose: (() -> Void)? = nil
     ) {
         let sourceDraft = initialDraft ?? CardEditDraft(card: card)
         self.card = card
-        self.onSave = onSave
-        self.onOpenOriginal = onOpenOriginal
-        self.onClose = onClose
         originalDraft = CardEditDraft(card: card)
+        saveAction = onSave
+        closeAction = onClose
         _draft = State(initialValue: sourceDraft)
         _isDiscardConfirmationPresented = State(initialValue: initiallyShowsDiscardConfirmation)
         _feedback = State(initialValue: initialFeedback)
@@ -70,7 +40,11 @@ struct CardEditScreen: View {
                 onCancel: cancel,
                 onSave: save
             )
-            editForm
+            CardEditForm(
+                card: card,
+                draft: $draft,
+                onOpenOriginal: showOriginal
+            )
         }
         .background(RecapTheme.ColorToken.background)
         .navigationBarBackButtonHidden(true)
@@ -87,39 +61,8 @@ struct CardEditScreen: View {
         .task(id: feedback) {
             await clearFeedbackIfNeeded()
         }
-    }
-
-    private var editForm: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                CardEditOriginalPreview(card: card, onOpenOriginal: onOpenOriginal)
-
-                CardEditTypeField(collection: $draft.collection)
-                    .padding(.top, 23)
-
-                CardEditTextFieldGroup(
-                    title: "제목",
-                    text: $draft.title,
-                    limit: CardEditDraft.titleLimit,
-                    placeholder: "텍스트",
-                    showsRequiredError: draft.trimmedTitle.isEmpty
-                )
-                .padding(.top, 29)
-
-                CardEditTextFieldGroup(
-                    title: "한 줄 요약",
-                    text: $draft.summary,
-                    limit: CardEditDraft.summaryLimit,
-                    placeholder: "텍스트",
-                    showsRequiredError: draft.trimmedSummary.isEmpty
-                )
-                .padding(.top, 27)
-
-                CardEditBodyField(body: $draft.body)
-                    .padding(.top, 27)
-            }
-            .padding(.horizontal, CardDetailStyle.horizontalPadding)
-            .padding(.bottom, 28)
+        .fullScreenCover(isPresented: $isOriginalPresented) {
+            CardOriginalPreviewSheet(card: card)
         }
     }
 
@@ -133,16 +76,34 @@ struct CardEditScreen: View {
 
     private func save() {
         guard draft.isSavable else { return }
-        if !onSave(draft) {
+        guard persist(draft) else {
             feedback = CardFeedback(
                 kind: .failure,
                 message: "스크린샷 정보를 저장하지 못했어요. 다시 시도해주세요."
             )
+            return
         }
+        close()
+    }
+
+    private func persist(_ draft: CardEditDraft) -> Bool {
+        if let saveAction {
+            return saveAction(draft)
+        }
+        cardStore.updateCard(id: card.id, with: draft.normalized())
+        return true
     }
 
     private func close() {
-        onClose()
+        if let closeAction {
+            closeAction()
+        } else {
+            dismiss()
+        }
+    }
+
+    private func showOriginal() {
+        isOriginalPresented = true
     }
 
     private func clearFeedbackIfNeeded() async {
@@ -151,4 +112,11 @@ struct CardEditScreen: View {
         guard !Task.isCancelled else { return }
         feedback = nil
     }
+}
+
+#Preview("정보카드 수정 화면") {
+    NavigationStack {
+        CardEditView(card: SampleData.cards[1])
+    }
+    .environment(PreviewStores.recapCardStore())
 }
