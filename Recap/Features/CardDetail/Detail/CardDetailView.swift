@@ -6,6 +6,7 @@ struct CardDetailView: View {
 
     let card: InformationCard
     let imageState: CardDetailImageState
+    let onDeleted: () -> Void
 
     @State private var isDeleteConfirmationPresented: Bool
     @State private var toast: RecapToastContent?
@@ -26,10 +27,12 @@ struct CardDetailView: View {
         card: InformationCard,
         imageState: CardDetailImageState = .loaded,
         initiallyShowsDeleteConfirmation: Bool = false,
-        initialToast: RecapToastContent? = nil
+        initialToast: RecapToastContent? = nil,
+        onDeleted: @escaping () -> Void = {}
     ) {
         self.card = card
         self.imageState = imageState
+        self.onDeleted = onDeleted
         _isDeleteConfirmationPresented = State(initialValue: initiallyShowsDeleteConfirmation)
         _toast = State(initialValue: initialToast)
         _pendingPanelAction = State(initialValue: nil)
@@ -134,6 +137,7 @@ struct CardDetailView: View {
 
     private func deleteCard() {
         cardStore.removeCard(id: card.id)
+        onDeleted()
         dismiss()
     }
 

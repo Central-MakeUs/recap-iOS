@@ -2,15 +2,26 @@ import SwiftUI
 
 extension View {
     @MainActor
-    func withAppNavigationDestinations(cardStore: RecapCardStore) -> some View {
+    func withAppNavigationDestinations(
+        cardStore: RecapCardStore,
+        onCardDeleted: @escaping () -> Void
+    ) -> some View {
         navigationDestination(for: AppRoute.self) { route in
-            destination(for: route, cardStore: cardStore)
+            destination(
+                for: route,
+                cardStore: cardStore,
+                onCardDeleted: onCardDeleted
+            )
         }
     }
 
     @MainActor
     @ViewBuilder
-    private func destination(for route: AppRoute, cardStore: RecapCardStore) -> some View {
+    private func destination(
+        for route: AppRoute,
+        cardStore: RecapCardStore,
+        onCardDeleted: @escaping () -> Void
+    ) -> some View {
         switch route {
         case .search:
             SearchContainerView()
@@ -20,7 +31,7 @@ extension View {
             CollectionDetailContainerView(kind: kind)
         case .cardDetail(let id):
             if let card = cardStore.card(id: id) {
-                CardDetailView(card: card)
+                CardDetailView(card: card, onDeleted: onCardDeleted)
             }
         case .cardCreationStart:
             CardCreationFlowView()
