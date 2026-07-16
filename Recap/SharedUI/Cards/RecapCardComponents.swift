@@ -13,7 +13,7 @@ struct RecentRecapCard: View {
                 Text(card.title)
                     .font(RecapFont.pretendard(size: 13, weight: .medium))
                     .tracking(-0.26)
-                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                    .foregroundStyle(Color.recapGray900)
                     .lineLimit(1)
 
                 RecapChip(configuration: .category(card.collection, size: .small))
@@ -34,13 +34,13 @@ struct ArchiveListCard: View {
                 Text(card.title)
                     .font(RecapFont.pretendard(size: 13, weight: .medium))
                     .tracking(-0.26)
-                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                    .foregroundStyle(Color.recapGray900)
                     .lineLimit(1)
 
                 Text(card.summary)
                     .font(RecapFont.pretendard(size: 12, weight: .medium))
                     .tracking(-0.24)
-                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                    .foregroundStyle(Color.recapGray500)
                     .lineLimit(1)
             }
 
@@ -49,7 +49,7 @@ struct ArchiveListCard: View {
             if card.isFavorite {
                 Image(systemName: "star.fill")
                     .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(RecapTheme.ColorToken.primary)
+                    .foregroundStyle(Color.recapBlue300)
             }
         }
         .padding(.horizontal, 16)
@@ -57,7 +57,7 @@ struct ArchiveListCard: View {
         .background(Color.white)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(RecapTheme.ColorToken.border)
+                .fill(Color.recapGray100)
                 .frame(height: 1)
         }
     }
@@ -96,12 +96,12 @@ struct FavoriteRecapListCard: View {
                     Text(card.title)
                         .font(RecapFont.pretendard(size: 14, weight: .semibold))
                         .tracking(-0.28)
-                        .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                        .foregroundStyle(Color.recapGray900)
                         .lineLimit(1)
                     Text(card.summary)
                         .font(RecapFont.pretendard(size: 13, weight: .medium))
                         .tracking(-0.26)
-                        .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                        .foregroundStyle(Color.recapGray500)
                         .lineLimit(1)
                 }
             }
@@ -112,7 +112,7 @@ struct FavoriteRecapListCard: View {
             RecapIconView(
                 icon: .star,
                 size: 22,
-                color: isStarred ? RecapTheme.ColorToken.primary : RecapTheme.ColorToken.border
+                color: isStarred ? Color.recapBlue300 : Color.recapGray100
             )
             .padding(.top, 10)
         }
@@ -121,7 +121,7 @@ struct FavoriteRecapListCard: View {
         .background(Color.white)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(RecapTheme.ColorToken.border)
+                .fill(Color.recapGray100)
                 .frame(height: 1)
         }
     }
@@ -140,24 +140,24 @@ struct ArchiveOtherCard: View {
                 Text(card.title)
                     .font(RecapFont.pretendard(size: 14, weight: .semibold))
                     .tracking(-0.28)
-                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                    .foregroundStyle(Color.recapGray900)
                     .lineLimit(1)
                 Text(card.summary)
                     .font(RecapFont.pretendard(size: 13, weight: .medium))
                     .tracking(-0.26)
-                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                    .foregroundStyle(Color.recapGray500)
                     .lineLimit(1)
                 Text("6월 27일 정리")
                     .font(RecapFont.pretendard(size: 13, weight: .medium))
                     .tracking(-0.26)
-                    .foregroundStyle(RecapTheme.ColorToken.textTertiary)
+                    .foregroundStyle(Color.recapGray300)
             }
 
             Spacer(minLength: 0)
 
             Image(systemName: card.isFavorite ? "star.fill" : "star")
                 .font(.system(size: 24, weight: .semibold))
-                .foregroundStyle(card.isFavorite ? RecapTheme.ColorToken.primary : RecapTheme.ColorToken.border)
+                .foregroundStyle(card.isFavorite ? Color.recapBlue300 : Color.recapGray100)
                 .frame(width: 24, height: 24)
                 .alignmentGuide(.top) { _ in 3 }
         }
@@ -165,7 +165,7 @@ struct ArchiveOtherCard: View {
         .frame(height: 94)
         .background(Color.white)
         .overlay(alignment: .bottom) {
-            Rectangle().fill(RecapTheme.ColorToken.border).frame(height: 1)
+            Rectangle().fill(Color.recapGray100).frame(height: 1)
         }
     }
 }
@@ -185,12 +185,12 @@ struct RecapSearchResultCard: View {
                     Text(card.title)
                         .font(RecapFont.pretendard(size: 14, weight: .semibold))
                         .tracking(-0.28)
-                        .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                        .foregroundStyle(Color.recapGray900)
                         .lineLimit(1)
                     Text(card.summary)
                         .font(RecapFont.pretendard(size: 13, weight: .medium))
                         .tracking(-0.26)
-                        .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                        .foregroundStyle(Color.recapGray500)
                         .lineLimit(1)
                 }
             }
@@ -199,13 +199,13 @@ struct RecapSearchResultCard: View {
 
             Image(systemName: card.isFavorite ? "star.fill" : "star")
                 .font(.system(size: 24, weight: .semibold))
-                .foregroundStyle(card.isFavorite ? RecapTheme.ColorToken.primary : RecapTheme.ColorToken.border)
+                .foregroundStyle(card.isFavorite ? Color.recapBlue300 : Color.recapGray100)
         }
         .padding(.horizontal, 16)
         .frame(height: 94)
         .background(Color.white)
         .overlay(alignment: .bottom) {
-            Rectangle().fill(RecapTheme.ColorToken.border).frame(height: 1)
+            Rectangle().fill(Color.recapGray100).frame(height: 1)
         }
     }
 }
@@ -227,14 +227,14 @@ struct RecapScreenshotThumbnail: View {
         .clipped()
         .overlay {
             RoundedRectangle(cornerRadius: 5, style: .continuous)
-                .stroke(RecapTheme.ColorToken.border, lineWidth: 1)
+                .stroke(Color.recapGray100, lineWidth: 1)
         }
     }
 
     private var placeholder: some View {
         let display = RecapPresentation.collectionDisplay(for: kind)
         return RoundedRectangle(cornerRadius: 5, style: .continuous)
-            .fill(RecapTheme.ColorToken.thumbnail)
+            .fill(Color.recapThumbnail)
             .overlay(alignment: .topLeading) {
                 Rectangle()
                     .fill(display.dotColor.opacity(0.20))
@@ -250,7 +250,7 @@ struct RecapScreenshotThumbnail: View {
 
 #Preview("Figma cards") {
     ZStack {
-        RecapTheme.ColorToken.background.ignoresSafeArea()
+        Color.recapBackground.ignoresSafeArea()
         ScrollView {
             VStack(alignment: .leading, spacing: RecapTheme.Spacing.large) {
                 RecentRecapCard(card: SampleData.cards[0])

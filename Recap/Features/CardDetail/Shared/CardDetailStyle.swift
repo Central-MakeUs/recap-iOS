@@ -33,9 +33,4 @@ enum CardDetailStyle {
     static let failedImageCardTopInset: CGFloat = 145
     static let fullWidthImageMetadataSpacing: CGFloat = 22
     static let imageCardMetadataSpacing: CGFloat = 20
-
-    static let destructive = Color(red: 1, green: 100 / 255, blue: 100 / 255)
-    static let destructiveText = Color(red: 251 / 255, green: 61 / 255, blue: 61 / 255)
-    static let inputBorder = Color(red: 206 / 255, green: 210 / 255, blue: 222 / 255)
-    static let imageFailureFill = Color(red: 246 / 255, green: 246 / 255, blue: 246 / 255)
 }

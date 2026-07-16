@@ -58,7 +58,7 @@ struct SettingsView: View {
             .padding(.horizontal, 23)
             .padding(.bottom, 24)
         }
-        .background(SettingsColor.background)
+        .background(Color.settingsBackground)
         .toolbar(.hidden, for: .navigationBar)
     }
 
@@ -74,7 +74,7 @@ struct SettingsView: View {
 
                 SettingsNavigationRow(title: "계정 관리") { onNavigate(.accountManagement) }
             }
-            .recapCard(radius: 13, borderColor: SettingsColor.cardBorder)
+            .recapCard(radius: 13, borderColor: Color.recapGray100)
             .contentShape(Rectangle())
             .onTapGesture { onNavigate(.accountManagement) }
         }
@@ -91,12 +91,12 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 7) {
                         Text("사진 접근 권한")
                             .font(SettingsTypography.rowTitle)
-                            .foregroundStyle(SettingsColor.textPrimary)
+                            .foregroundStyle(Color.settingsTextPrimary)
                         HStack(spacing: 0) {
                             Text("현재 상태: ")
-                                .foregroundStyle(SettingsColor.textSecondary)
+                                .foregroundStyle(Color.settingsTextSecondary)
                             Text("허용됨")
-                                .foregroundStyle(SettingsColor.success)
+                                .foregroundStyle(Color.settingsSuccess)
                         }
                         .font(SettingsTypography.rowCaption)
                     }
@@ -114,14 +114,14 @@ struct SettingsView: View {
                                 .font(.system(size: 10, weight: .bold))
                         }
                         .font(RecapFont.pretendard(size: 12, weight: .semibold))
-                        .foregroundStyle(RecapTheme.ColorToken.primary)
+                        .foregroundStyle(Color.recapBlue300)
                     }
                     .buttonStyle(.plain)
                 }
                 .frame(height: 58)
                 .padding(.horizontal, 15)
             }
-            .recapCard(radius: 13, borderColor: SettingsColor.cardBorder)
+            .recapCard(radius: 13, borderColor: Color.recapGray100)
         }
     }
 
@@ -131,13 +131,13 @@ struct SettingsView: View {
                 HStack {
                     Text("정리된 캡처 수")
                         .font(SettingsTypography.rowTitle)
-                        .foregroundStyle(SettingsColor.textPrimary)
+                        .foregroundStyle(Color.settingsTextPrimary)
 
                     Spacer()
 
                     Text("\(captureCount)개")
                         .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                        .foregroundStyle(SettingsColor.textSecondary)
+                        .foregroundStyle(Color.settingsTextSecondary)
                 }
                 .frame(height: 43)
                 .padding(.horizontal, 15)
@@ -146,14 +146,14 @@ struct SettingsView: View {
 
                 SettingsNavigationRow(title: "데이터 관리") { onNavigate(.dataManagement) }
             }
-            .recapCard(radius: 13, borderColor: SettingsColor.cardBorder)
+            .recapCard(radius: 13, borderColor: Color.recapGray100)
         }
     }
 
     private var privacySection: some View {
         SettingsSection(title: "개인정보") {
             SettingsNavigationRow(title: "개인정보 처리 안내") { onNavigate(.privacyPolicy) }
-            .recapCard(radius: 13, borderColor: SettingsColor.cardBorder)
+            .recapCard(radius: 13, borderColor: Color.recapGray100)
         }
     }
 
@@ -167,20 +167,20 @@ struct SettingsView: View {
                 HStack(spacing: 10) {
                     Text("문의하기")
                         .font(SettingsTypography.rowTitle)
-                        .foregroundStyle(SettingsColor.textPrimary)
+                        .foregroundStyle(Color.settingsTextPrimary)
 
                     Spacer()
 
                     Text("오류나 이용 중 궁금한 점을 보내주세요")
                         .font(SettingsTypography.rowCaption)
-                        .foregroundStyle(SettingsColor.textTertiary)
+                        .foregroundStyle(Color.settingsTextTertiary)
                         .lineLimit(1)
                 }
                 .frame(height: 42)
                 .padding(.horizontal, 15)
             }
             .buttonStyle(.plain)
-            .recapCard(radius: 13, borderColor: SettingsColor.cardBorder)
+            .recapCard(radius: 13, borderColor: Color.recapGray100)
         }
     }
 

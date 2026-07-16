@@ -10,23 +10,23 @@ struct RecapButton: View {
         var foreground: Color {
             switch self {
             case .primary, .dark: .white
-            case .kakao: RecapTheme.ColorToken.textPrimary
-            case .secondary: RecapTheme.ColorToken.primary
+            case .kakao: Color.recapGray900
+            case .secondary: Color.recapBlue300
             }
         }
 
         var background: Color {
             switch self {
-            case .primary: RecapTheme.ColorToken.primary
-            case .dark: RecapTheme.ColorToken.textPrimary
-            case .kakao: RecapComponentColor.kakao
-            case .secondary: RecapTheme.ColorToken.surface
+            case .primary: Color.recapBlue300
+            case .dark: Color.recapGray900
+            case .kakao: Color.recapKakaoYellow
+            case .secondary: Color.white
             }
         }
 
         var border: Color {
             switch self {
-            case .secondary: RecapTheme.ColorToken.border
+            case .secondary: Color.recapGray100
             case .primary, .dark, .kakao: .clear
             }
         }
@@ -75,7 +75,7 @@ struct RecapIconButtonLarge: View {
 
 #Preview {
     ZStack {
-        RecapTheme.ColorToken.background.ignoresSafeArea()
+        Color.recapBackground.ignoresSafeArea()
         VStack(spacing: RecapTheme.Spacing.medium) {
             RecapButton(title: "버튼", style: .primary, action: PreviewActions.noop)
             RecapButton(title: "카카오로 로그인", systemImage: "message.fill", style: .kakao, action: PreviewActions.noop)

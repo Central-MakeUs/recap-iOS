@@ -17,12 +17,12 @@ struct CardCreationSelectionView: View {
             PhotoLibraryPicker(maxSelectionCount: 30, onLoad: handleLoadedPhotos) { isLoading in
                 Label(isLoading ? "불러오는 중" : "갤러리에서 선택", systemImage: "photo.on.rectangle.angled")
                     .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                    .foregroundStyle(RecapTheme.ColorToken.primary)
+                    .foregroundStyle(Color.recapBlue300)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
                     .overlay {
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .stroke(RecapTheme.ColorToken.primary, lineWidth: 1)
+                            .stroke(Color.recapBlue300, lineWidth: 1)
                     }
             }
             .buttonStyle(.plain)
@@ -46,7 +46,7 @@ struct CardCreationSelectionView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 31)
         }
-        .background(RecapTheme.ColorToken.background)
+        .background(Color.recapBackground)
     }
 
     private func handleLoadedPhotos(_ imageData: [Data], failedCount: Int) {
@@ -92,7 +92,7 @@ struct CardCreationConfirmationView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 31)
         }
-        .background(RecapTheme.ColorToken.background)
+        .background(Color.recapBackground)
     }
 }
 
@@ -112,27 +112,27 @@ struct CardCreationNoSelectionView: View {
             Spacer(minLength: 58)
 
             VStack(spacing: 18) {
-                CardCreationDashedIcon(systemName: "plus", tint: RecapTheme.ColorToken.textTertiary)
+                CardCreationDashedIcon(systemName: "plus", tint: Color.recapGray300)
 
                 VStack(spacing: 9) {
                     Text("선택된 이미지가 없어요")
                         .font(RecapFont.pretendard(size: 18, weight: .semibold))
                         .tracking(-0.36)
-                        .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                        .foregroundStyle(Color.recapGray900)
 
                     Text("정리할 스크린샷을 1장 이상\n선택해주세요.")
                         .font(RecapFont.pretendard(size: 14, weight: .medium))
                         .tracking(-0.28)
                         .lineSpacing(3)
                         .multilineTextAlignment(.center)
-                        .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                        .foregroundStyle(Color.recapGray500)
 
                     Text("이미지를 제외해도 원본 사진은\n삭제되지 않아요.")
                         .font(RecapFont.pretendard(size: 12, weight: .medium))
                         .tracking(-0.24)
                         .lineSpacing(2)
                         .multilineTextAlignment(.center)
-                        .foregroundStyle(RecapTheme.ColorToken.textTertiary)
+                        .foregroundStyle(Color.recapGray300)
                         .padding(.top, 6)
                 }
             }
@@ -146,7 +146,7 @@ struct CardCreationNoSelectionView: View {
             .padding(.horizontal, 26)
             .padding(.bottom, 24)
         }
-        .background(RecapTheme.ColorToken.background)
+        .background(Color.recapBackground)
     }
 }
 
@@ -163,7 +163,7 @@ struct CardCreationProcessingView: View {
                     Text("캐릭터 애니메이션")
                         .font(RecapFont.pretendard(size: 12, weight: .medium))
                         .tracking(-0.24)
-                        .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                        .foregroundStyle(Color.recapGray900)
 
                     CardCreationSpeechBubble(text: "앱을 종료해도 백그라운드에서\n정리가 계속 진행돼요!")
 
@@ -172,19 +172,19 @@ struct CardCreationProcessingView: View {
                 }
 
                 ProgressView(value: 0.75)
-                    .tint(RecapTheme.ColorToken.primary)
+                    .tint(Color.recapBlue300)
                     .padding(.horizontal, 30)
 
                 VStack(spacing: 9) {
                     Text("스크린샷을 분석 · 정리 하고있어요")
                         .font(RecapFont.pretendard(size: 18, weight: .semibold))
                         .tracking(-0.36)
-                        .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                        .foregroundStyle(Color.recapGray900)
 
                     Text("정리가 끝나면 바로 알려드릴게요!")
                         .font(RecapFont.pretendard(size: 15, weight: .medium))
                         .tracking(-0.3)
-                        .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                        .foregroundStyle(Color.recapGray500)
                 }
             }
 
@@ -194,7 +194,7 @@ struct CardCreationProcessingView: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 31)
         }
-        .background(RecapTheme.ColorToken.background)
+        .background(Color.recapBackground)
         .task {
             do {
                 try await Task.sleep(for: .seconds(1.2))

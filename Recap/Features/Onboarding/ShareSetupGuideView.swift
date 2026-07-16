@@ -25,7 +25,7 @@ struct ShareSetupGuideView: View {
                 .padding(.bottom, 19)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(RecapTheme.ColorToken.background)
+        .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
     }
 }
@@ -43,7 +43,7 @@ struct ShareSetupDetailView: View {
             Text("공유 즐겨찾기 등록하기")
                 .font(RecapFont.pretendard(size: 18, weight: .semibold))
                 .tracking(-0.36)
-                .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                .foregroundStyle(Color.recapGray900)
                 .padding(.horizontal, 16)
                 .padding(.top, 28)
 
@@ -62,7 +62,7 @@ struct ShareSetupDetailView: View {
                 .padding(.bottom, 31)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(RecapTheme.ColorToken.background)
+        .background(Color.recapBackground)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
     }
@@ -94,7 +94,7 @@ struct FirstCleanupStartView: View {
                 .padding(.bottom, 19)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(RecapTheme.ColorToken.background)
+        .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
     }
 }
@@ -108,12 +108,12 @@ private struct ShareSetupHeroText: View {
                 .font(RecapFont.pretendard(size: 22, weight: .semibold))
                 .tracking(-0.44)
                 .lineSpacing(3)
-                .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                .foregroundStyle(Color.recapGray900)
 
             Text("스크린샷 공유 시트에서 Recap을 바로 선택할 수 있어요.")
                 .font(RecapFont.pretendard(size: 15, weight: .medium))
                 .tracking(-0.3)
-                .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                .foregroundStyle(Color.recapGray500)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -128,7 +128,7 @@ private struct ShareSetupActions: View {
             Text("어떻게 등록하나요?")
                 .font(RecapFont.pretendard(size: 15, weight: .medium))
                 .tracking(-0.3)
-                .foregroundStyle(RecapTheme.ColorToken.textBody)
+                .foregroundStyle(Color.recapGray700)
                 .overlay(alignment: .top) {
                     SpeechBubble(text: "초간단 30초면 끝나요!")
                         .offset(y: -64)
@@ -139,7 +139,7 @@ private struct ShareSetupActions: View {
             Button("나중에 하기", action: onSkip)
                 .font(RecapFont.pretendard(size: 14, weight: .semibold))
                 .tracking(-0.28)
-                .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                .foregroundStyle(Color.recapGray500)
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
                 .buttonStyle(.plain)
@@ -152,7 +152,7 @@ private struct ShareSetupBackButton: View {
 
     var body: some View {
         Button(action: action) {
-            RecapIconView(icon: .back, size: 24, color: RecapTheme.ColorToken.textPrimary)
+            RecapIconView(icon: .back, size: 24, color: Color.recapGray900)
         }
         .buttonStyle(.plain)
     }
@@ -165,7 +165,7 @@ private struct ShareSetupDetailCaption: View {
                 .font(RecapFont.pretendard(size: 15, weight: .medium))
                 .tracking(-0.3)
                 .lineSpacing(3)
-                .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                .foregroundStyle(Color.recapGray500)
                 .frame(width: 262, alignment: .leading)
 
             Spacer()
@@ -173,7 +173,7 @@ private struct ShareSetupDetailCaption: View {
             Text("2 / 5")
                 .font(RecapFont.pretendard(size: 15, weight: .medium))
                 .tracking(-0.3)
-                .foregroundStyle(RecapTheme.ColorToken.textTertiary)
+                .foregroundStyle(Color.recapGray300)
         }
     }
 }
@@ -186,12 +186,12 @@ private struct FirstCleanupHeroText: View {
             Text("첫 정리를 시작해볼까요?")
                 .font(RecapFont.pretendard(size: 22, weight: .semibold))
                 .tracking(-0.44)
-                .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                .foregroundStyle(Color.recapGray900)
 
             Text("쌓아둔 스크린샷을 골라 첫 정리를 시작해보세요!")
                 .font(RecapFont.pretendard(size: 15, weight: .medium))
                 .tracking(-0.3)
-                .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                .foregroundStyle(Color.recapGray500)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -220,7 +220,7 @@ private struct FirstCleanupActions: View {
             Button("나중에 하기", action: onSkip)
                 .font(RecapFont.pretendard(size: 14, weight: .semibold))
                 .tracking(-0.28)
-                .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                .foregroundStyle(Color.recapGray500)
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
                 .buttonStyle(.plain)

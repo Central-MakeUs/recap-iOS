@@ -13,13 +13,13 @@ struct RecapConfirmationDialog: View {
             Text(title)
                 .font(RecapFont.pretendard(size: 16, weight: .semibold))
                 .tracking(-0.32)
-                .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                .foregroundStyle(Color.recapGray900)
 
             Text(message)
                 .font(RecapFont.pretendard(size: 14, weight: .regular))
                 .tracking(-0.28)
                 .multilineTextAlignment(.center)
-                .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                .foregroundStyle(Color.recapGray500)
                 .lineSpacing(4)
                 .padding(.top, 10)
 

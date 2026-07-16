@@ -1,39 +1,6 @@
 import SwiftUI
 
 enum RecapTheme {
-    enum ColorToken {
-        static let blue900 = Color("RecapBlue900")
-        static let blue500 = Color("RecapBlue500")
-        static let blue300 = Color("RecapBlue300")
-        static let blue50 = Color("RecapBlue50")
-
-        static let gray900 = Color("RecapGray900")
-        static let gray700 = Color("RecapGray700")
-        static let gray500 = Color("RecapGray500")
-        static let gray300 = Color("RecapGray300")
-        static let gray200 = Color("RecapGray200")
-        static let gray100 = Color("RecapGray100")
-        static let gray50 = Color("RecapGray50")
-
-        static let background = Color(red: 253 / 255, green: 253 / 255, blue: 253 / 255)
-        static let surface = Color.white
-        static let controlFill = Color(red: 244 / 255, green: 245 / 255, blue: 248 / 255)
-        static let primary = Color(red: 92 / 255, green: 116 / 255, blue: 255 / 255)
-        static let primaryLight = Color(red: 92 / 255, green: 116 / 255, blue: 255 / 255).opacity(0.14)
-        static let primarySoft = Color(red: 243 / 255, green: 245 / 255, blue: 255 / 255)
-        static let textPrimary = Color(red: 11 / 255, green: 17 / 255, blue: 29 / 255)
-        static let textBody = Color(red: 34 / 255, green: 43 / 255, blue: 60 / 255)
-        static let textSecondary = Color(red: 77 / 255, green: 88 / 255, blue: 108 / 255)
-        static let textTertiary = Color(red: 153 / 255, green: 160 / 255, blue: 176 / 255)
-        static let border = Color(red: 226 / 255, green: 230 / 255, blue: 237 / 255)
-        static let divider = border
-        static let warning = Color(red: 0.965, green: 0.680, blue: 0.175)
-        static let warningSoft = Color(red: 1.000, green: 0.965, blue: 0.875)
-        static let success = Color(red: 0.180, green: 0.650, blue: 0.420)
-        static let unimplemented = Color(red: 1.0, green: 0.18, blue: 0.62)
-        static let thumbnail = Color(red: 217 / 255, green: 217 / 255, blue: 217 / 255)
-    }
-
     enum Typography {
         static let heading1 = RecapFont.pretendard(size: 22, weight: .semibold)
         static let heading2 = RecapFont.pretendard(size: 18, weight: .semibold)
@@ -64,8 +31,8 @@ enum RecapTheme {
 
 struct RecapCardStyle: ViewModifier {
     var radius: CGFloat = RecapTheme.Radius.large
-    var borderColor: Color = RecapTheme.ColorToken.border
-    var fill: Color = RecapTheme.ColorToken.surface
+    var borderColor: Color = .recapGray100
+    var fill: Color = .white
 
     func body(content: Content) -> some View {
         content
@@ -82,8 +49,8 @@ struct RecapCardStyle: ViewModifier {
 extension View {
     func recapCard(
         radius: CGFloat = RecapTheme.Radius.large,
-        borderColor: Color = RecapTheme.ColorToken.border,
-        fill: Color = RecapTheme.ColorToken.surface
+        borderColor: Color = .recapGray100,
+        fill: Color = .white
     ) -> some View {
         modifier(RecapCardStyle(radius: radius, borderColor: borderColor, fill: fill))
     }
@@ -91,13 +58,13 @@ extension View {
 
 #Preview("Theme card") {
     ZStack {
-        RecapTheme.ColorToken.background.ignoresSafeArea()
+        Color.recapBackground.ignoresSafeArea()
         VStack(spacing: RecapTheme.Spacing.large) {
             Text("Recap")
                 .font(RecapTheme.Typography.heading2)
             Text("카드 스타일 미리보기")
                 .font(RecapTheme.Typography.body2)
-                .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                .foregroundStyle(Color.recapGray500)
         }
         .frame(maxWidth: .infinity)
         .padding()

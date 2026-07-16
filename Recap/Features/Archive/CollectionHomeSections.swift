@@ -116,7 +116,7 @@ struct CollectionHomeCardSection: View {
             Text("선택")
                 .font(RecapFont.pretendard(size: 14, weight: .regular))
                 .tracking(-0.28)
-                .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                .foregroundStyle(Color.recapGray500)
         }
         .padding(.horizontal, 16)
     }
@@ -142,7 +142,7 @@ struct CollectionHomeCardSection: View {
         Text("\(cards.count) recaps")
             .font(RecapFont.pretendard(size: 13, weight: .medium))
             .tracking(-0.26)
-            .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+            .foregroundStyle(Color.recapGray500)
     }
 }
 
@@ -157,7 +157,7 @@ struct CollectionHomeEmptyState: View {
                 Text("아직 즐겨찾기한 스크린샷이 없어요")
                     .font(RecapFont.pretendard(size: 16, weight: .semibold))
                     .tracking(-0.32)
-                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                    .foregroundStyle(Color.recapGray900)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 76)
@@ -167,11 +167,11 @@ struct CollectionHomeEmptyState: View {
                 Text("아직 기타 스크린샷이 없어요")
                     .font(RecapFont.pretendard(size: 16, weight: .semibold))
                     .tracking(-0.32)
-                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                    .foregroundStyle(Color.recapGray900)
                 Text("유형을 정하지 못한 항목은 이후 이 위치에 표시됩니다.")
                     .font(RecapFont.pretendard(size: 13, weight: .medium))
                     .tracking(-0.26)
-                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                    .foregroundStyle(Color.recapGray500)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 76)
@@ -186,7 +186,7 @@ private struct CollectionHomeFolderCountLabel: View {
         Text("8개의 유형 폴더")
             .font(RecapFont.pretendard(size: 13, weight: .medium))
             .tracking(-0.26)
-            .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+            .foregroundStyle(Color.recapGray500)
             .padding(.leading, 5)
     }
 }

@@ -73,7 +73,7 @@ struct CollectionDetailView: View {
         if loadState == .failed {
             RecapLoadFailureView(style: .archive, retry: onRetry)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(RecapTheme.ColorToken.background)
+                .background(Color.recapBackground)
                 .navigationTitle("보관함")
                 .navigationBarTitleDisplayMode(.inline)
         } else {
@@ -99,14 +99,14 @@ struct CollectionDetailView: View {
                     Text("\(filteredCards.count) recaps")
                         .font(RecapFont.pretendard(size: 13, weight: .medium))
                         .tracking(-0.26)
-                        .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                        .foregroundStyle(Color.recapGray500)
                     Spacer()
                     Button(isSelecting ? "완료" : "선택") {
                         isSelecting.toggle()
                         if !isSelecting { selectedIDs.removeAll() }
                     }
                     .font(RecapFont.pretendard(size: 14, weight: .regular))
-                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                    .foregroundStyle(Color.recapGray500)
                 }
 
                 VStack(spacing: 0) {
@@ -128,7 +128,7 @@ struct CollectionDetailView: View {
                                     if isSelecting {
                                         Image(systemName: selectedIDs.contains(card.id) ? "checkmark.circle.fill" : "circle")
                                             .font(.system(size: 22, weight: .medium))
-                                            .foregroundStyle(selectedIDs.contains(card.id) ? RecapTheme.ColorToken.primary : RecapTheme.ColorToken.border)
+                                            .foregroundStyle(selectedIDs.contains(card.id) ? Color.recapBlue300 : Color.recapGray100)
                                             .padding(.leading, 16)
                                     }
                                     ArchiveListCard(card: card)
@@ -142,14 +142,14 @@ struct CollectionDetailView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 .overlay {
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(RecapTheme.ColorToken.border, lineWidth: 1)
+                        .stroke(Color.recapGray100, lineWidth: 1)
                 }
             }
             .padding(.horizontal, 16)
             .padding(.top, 12)
             .padding(.bottom, 122)
         }
-        .background(RecapTheme.ColorToken.background)
+        .background(Color.recapBackground)
         .navigationTitle(collection.title)
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {
@@ -164,14 +164,14 @@ struct CollectionDetailView: View {
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
-                        .background(selectedIDs.isEmpty ? RecapTheme.ColorToken.textTertiary : Color.red)
+                        .background(selectedIDs.isEmpty ? Color.recapGray300 : Color.red)
                         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 }
                 .buttonStyle(.plain)
                 .disabled(selectedIDs.isEmpty)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .background(RecapTheme.ColorToken.background)
+                .background(Color.recapBackground)
             }
         }
     }

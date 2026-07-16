@@ -15,14 +15,14 @@ struct OnboardingIntroView: View {
                     .tracking(-0.44)
                     .lineSpacing(3)
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                    .foregroundStyle(Color.recapGray900)
 
                 Text("이제 앨범에서 헤맬 필요 없이,\n바로 찾을 수 있어요!")
                     .font(RecapFont.pretendard(size: 15, weight: .medium))
                     .tracking(-0.3)
                     .lineSpacing(3)
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                    .foregroundStyle(Color.recapGray500)
                     .padding(.top, 2)
             }
 
@@ -60,16 +60,16 @@ struct OnboardingLoginView: View {
                     .tracking(-0.44)
                     .lineSpacing(3)
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                    .foregroundStyle(Color.recapGray900)
 
                 Text("5초만에 시작하기")
                     .font(RecapFont.pretendard(size: 13, weight: .medium))
                     .tracking(-0.26)
-                    .foregroundStyle(RecapTheme.ColorToken.primary)
+                    .foregroundStyle(Color.recapBlue300)
                     .padding(.horizontal, 14)
                     .frame(height: 35)
                     .overlay {
-                        Capsule().stroke(RecapTheme.ColorToken.primary, lineWidth: 1)
+                        Capsule().stroke(Color.recapBlue300, lineWidth: 1)
                     }
                     .padding(.top, 18)
             }
@@ -80,17 +80,17 @@ struct OnboardingLoginView: View {
                 Text("간편로그인")
                     .font(RecapFont.pretendard(size: 15, weight: .medium))
                     .tracking(-0.3)
-                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                    .foregroundStyle(Color.recapGray500)
 
                 HStack(spacing: 18) {
                     Button { authenticate(with: .kakao) } label: {
                         Circle()
-                            .fill(RecapComponentColor.kakao)
+                            .fill(Color.recapKakaoYellow)
                             .frame(width: 67, height: 67)
                             .overlay {
                                 Image(systemName: "message.fill")
                                     .font(.system(size: 26, weight: .semibold))
-                                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                                    .foregroundStyle(Color.recapGray900)
                             }
                     }
                     .buttonStyle(.plain)
@@ -98,7 +98,7 @@ struct OnboardingLoginView: View {
 
                     Button { authenticate(with: .apple) } label: {
                         Circle()
-                            .fill(RecapTheme.ColorToken.textPrimary)
+                            .fill(Color.recapGray900)
                             .frame(width: 67, height: 67)
                             .overlay {
                                 Image(systemName: "apple.logo")
@@ -114,7 +114,7 @@ struct OnboardingLoginView: View {
                     .font(RecapFont.pretendard(size: 12, weight: .medium))
                     .tracking(-0.24)
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(RecapTheme.ColorToken.textTertiary)
+                    .foregroundStyle(Color.recapGray300)
                     .padding(.horizontal, 40)
             }
 
@@ -171,7 +171,7 @@ private struct OnboardingScaffold<Content: View>: View {
             content
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(RecapTheme.ColorToken.background)
+        .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
     }
 }

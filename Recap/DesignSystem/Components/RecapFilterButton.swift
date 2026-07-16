@@ -11,13 +11,13 @@ struct RecapFilterButton: View {
                 Text(title)
                     .font(RecapFont.pretendard(size: 12, weight: .medium))
                     .tracking(-0.24)
-                RecapIconView(icon: icon, size: 16, color: RecapComponentColor.filterText)
+                RecapIconView(icon: icon, size: 16, color: Color.recapFilterText)
             }
-            .foregroundStyle(RecapComponentColor.filterText)
+            .foregroundStyle(Color.recapFilterText)
             .padding(.leading, 11)
             .padding(.trailing, 11)
             .frame(height: 32)
-            .background(RecapComponentColor.controlFill)
+            .background(Color.recapControlFill)
             .clipShape(RoundedRectangle(cornerRadius: 50, style: .continuous))
         }
         .buttonStyle(.plain)

@@ -9,13 +9,13 @@ struct RecapSectionHeader: View {
             Text(title)
                 .font(RecapFont.pretendard(size: 18, weight: .semibold))
                 .tracking(-0.36)
-                .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                .foregroundStyle(Color.recapGray900)
             Spacer()
             if let trailingIcon {
                 Button(action: { action?() }) {
                     Image(systemName: trailingIcon)
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(RecapTheme.ColorToken.textTertiary)
+                        .foregroundStyle(Color.recapGray300)
                         .frame(width: 20, height: 20)
                 }
                 .buttonStyle(.plain)

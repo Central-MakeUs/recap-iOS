@@ -20,7 +20,7 @@ struct ArchiveCategoryCard: View {
         VStack(spacing: 10) {
             ZStack(alignment: .topLeading) {
                 RoundedRectangle(cornerRadius: 7.41, style: .continuous)
-                    .fill(thumbnailState == .filled ? fill : RecapTheme.ColorToken.border)
+                    .fill(thumbnailState == .filled ? fill : Color.recapGray100)
                     .frame(width: 93, height: 71)
                     .offset(x: 0, y: 0)
 
@@ -61,7 +61,7 @@ struct ArchiveCategoryCard: View {
             Text(title)
                 .font(RecapFont.pretendard(size: 14, weight: .semibold))
                 .tracking(-0.28)
-                .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                .foregroundStyle(Color.recapGray900)
                 .lineLimit(1)
                 .frame(width: 99)
         }
@@ -125,7 +125,7 @@ struct ArchiveCategoryListCard: View {
                 Text(subtitle)
                     .font(RecapFont.pretendard(size: 13, weight: .medium))
                     .tracking(-0.26)
-                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                    .foregroundStyle(Color.recapGray500)
                     .lineLimit(1)
             }
 
@@ -136,7 +136,7 @@ struct ArchiveCategoryListCard: View {
         .frame(height: 85)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(RecapTheme.ColorToken.border)
+                .fill(Color.recapGray100)
                 .frame(height: 1)
         }
     }
@@ -213,7 +213,7 @@ private struct ArchiveCategoryFolderVectorShape: Shape {
 
 #Preview("Archive category") {
     ZStack {
-        RecapTheme.ColorToken.background.ignoresSafeArea()
+        Color.recapBackground.ignoresSafeArea()
         LazyVGrid(columns: Array(repeating: GridItem(.fixed(99), spacing: 19), count: 3), spacing: 39) {
             ForEach(CollectionKind.folderCases) { kind in
                 let display = RecapPresentation.collectionDisplay(for: kind)

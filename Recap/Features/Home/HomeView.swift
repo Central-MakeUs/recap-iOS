@@ -89,7 +89,7 @@ struct HomeView: View {
             .padding(.top, 18)
             .padding(.bottom, 126)
         }
-        .background(RecapTheme.ColorToken.background)
+        .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
     }
 
@@ -102,13 +102,13 @@ struct HomeView: View {
             Button(action: openSettings) {
                 Image(systemName: "gearshape")
                     .font(.system(size: 21, weight: .regular))
-                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                    .foregroundStyle(Color.recapGray900)
                     .frame(width: 24, height: 24)
             }
             .buttonStyle(.plain)
 
             Button(action: openSearch) {
-                RecapIconView(icon: .search, size: 24, color: RecapTheme.ColorToken.textPrimary)
+                RecapIconView(icon: .search, size: 24, color: Color.recapGray900)
             }
             .buttonStyle(.plain)
         }
@@ -125,13 +125,13 @@ struct HomeView: View {
                 Text("아직 정리된 스크린샷이 없어요")
                     .font(RecapFont.pretendard(size: 16, weight: .semibold))
                     .tracking(-0.32)
-                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                    .foregroundStyle(Color.recapGray900)
                 Text("정리할 스크린샷을 불러오거나\n갤러리에서 공유해주세요")
                     .font(RecapFont.pretendard(size: 14, weight: .medium))
                     .tracking(-0.28)
                     .lineSpacing(3)
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                    .foregroundStyle(Color.recapGray500)
             }
 
             Button(action: startOrganizing) {
@@ -140,7 +140,7 @@ struct HomeView: View {
                     .tracking(-0.28)
                     .foregroundStyle(.white)
                     .frame(width: 172, height: 50)
-                    .background(RecapTheme.ColorToken.primary)
+                    .background(Color.recapBlue300)
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
             .buttonStyle(.plain)

@@ -21,7 +21,7 @@ struct CardEditTypeSelectionSheet: View {
             Text("유형 변경")
                 .font(RecapFont.pretendard(size: 16, weight: .semibold))
                 .tracking(-0.32)
-                .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                .foregroundStyle(Color.recapGray900)
                 .padding(.leading, 22)
 
             LazyVGrid(columns: columns, spacing: 20) {
@@ -53,7 +53,7 @@ struct CardEditTypeSelectionSheet: View {
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
-                    .background(RecapTheme.ColorToken.primary)
+                    .background(Color.recapBlue300)
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
             .buttonStyle(.plain)

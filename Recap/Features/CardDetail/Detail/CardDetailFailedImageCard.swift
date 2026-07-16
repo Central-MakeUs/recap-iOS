@@ -6,7 +6,7 @@ struct CardDetailFailedImageCard: View {
     var body: some View {
         CardDetailImageCard(onExpand: onExpand) {
             ZStack {
-                CardDetailStyle.imageFailureFill
+                Color.recapImageFailureFill
                 CardImageFailureView()
             }
         }

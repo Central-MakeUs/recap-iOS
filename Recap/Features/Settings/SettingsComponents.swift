@@ -11,14 +11,14 @@ struct SettingsHeader: View {
             ZStack {
                 Text(title)
                     .font(RecapFont.pretendard(size: 17, weight: .semibold))
-                    .foregroundStyle(SettingsColor.textPrimary)
+                    .foregroundStyle(Color.settingsTextPrimary)
                     .frame(maxWidth: .infinity)
 
                 HStack {
                     Button(action: leadingAction) {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 17, weight: .semibold))
-                            .foregroundStyle(SettingsColor.textSecondary)
+                            .foregroundStyle(Color.settingsTextSecondary)
                             .frame(width: 24, height: 24)
                     }
                     .buttonStyle(.plain)
@@ -31,7 +31,7 @@ struct SettingsHeader: View {
             HStack {
                 Text(title)
                     .font(RecapFont.pretendard(size: 22, weight: .bold))
-                    .foregroundStyle(SettingsColor.textPrimary)
+                    .foregroundStyle(Color.settingsTextPrimary)
 
                 if let trailingSystemName, let trailingAction {
                     Spacer()
@@ -39,7 +39,7 @@ struct SettingsHeader: View {
                     Button(action: trailingAction) {
                         Image(systemName: trailingSystemName)
                             .font(.system(size: 17, weight: .semibold))
-                            .foregroundStyle(SettingsColor.textPrimary)
+                            .foregroundStyle(Color.settingsTextPrimary)
                             .frame(width: 24, height: 24)
                     }
                     .buttonStyle(.plain)
@@ -66,7 +66,7 @@ struct SettingsSection<Content: View>: View {
         VStack(alignment: .leading, spacing: 7) {
             Text(title)
                 .font(SettingsTypography.sectionTitle)
-                .foregroundStyle(SettingsColor.textTertiary)
+                .foregroundStyle(Color.settingsTextTertiary)
                 .padding(.leading, 1)
 
             content
@@ -85,10 +85,10 @@ struct SettingsAccountSummaryRow: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
                     .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                    .foregroundStyle(SettingsColor.textPrimary)
+                    .foregroundStyle(Color.settingsTextPrimary)
                 Text(subtitle)
                     .font(SettingsTypography.rowCaption)
-                    .foregroundStyle(SettingsColor.textTertiary)
+                    .foregroundStyle(Color.settingsTextTertiary)
             }
 
             Spacer()
@@ -106,20 +106,20 @@ struct SettingsAccountSummaryCard: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text("Recap 사용자")
                     .font(RecapFont.pretendard(size: 15, weight: .semibold))
-                    .foregroundStyle(SettingsColor.textPrimary)
+                    .foregroundStyle(Color.settingsTextPrimary)
                 Text("카카오로 로그인 중")
                     .font(SettingsTypography.rowCaption)
-                    .foregroundStyle(SettingsColor.textSecondary)
+                    .foregroundStyle(Color.settingsTextSecondary)
                 Text("recap_user@kakao.com")
                     .font(SettingsTypography.rowCaption)
-                    .foregroundStyle(SettingsColor.textTertiary)
+                    .foregroundStyle(Color.settingsTextTertiary)
             }
 
             Spacer()
         }
         .frame(height: 80)
         .padding(.horizontal, 15)
-        .recapCard(radius: 13, borderColor: SettingsColor.cardBorder)
+        .recapCard(radius: 13, borderColor: Color.recapGray100)
     }
 }
 
@@ -131,13 +131,13 @@ struct SettingsNavigationRow: View {
         HStack(spacing: 10) {
             Text(title)
                 .font(SettingsTypography.rowTitle)
-                .foregroundStyle(SettingsColor.textPrimary)
+                .foregroundStyle(Color.settingsTextPrimary)
 
             Spacer()
 
             Image(systemName: "chevron.right")
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(SettingsColor.chevron)
+                .foregroundStyle(Color.settingsChevron)
         }
         .frame(height: 43)
         .padding(.horizontal, 15)
@@ -151,8 +151,8 @@ struct SettingsNavigationRow: View {
 struct SettingsActionCard: View {
     let title: String
     let message: String
-    var tint: Color = SettingsColor.textPrimary
-    var borderColor: Color = SettingsColor.cardBorder
+    var tint: Color = Color.settingsTextPrimary
+    var borderColor: Color = Color.recapGray100
     var isDestructive = false
     let action: () -> Void
 
@@ -164,7 +164,7 @@ struct SettingsActionCard: View {
                     .foregroundStyle(tint)
                 Text(message)
                     .font(SettingsTypography.rowCaption)
-                    .foregroundStyle(isDestructive ? tint.opacity(0.82) : SettingsColor.textSecondary)
+                    .foregroundStyle(isDestructive ? tint.opacity(0.82) : Color.settingsTextSecondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .frame(height: 67)
@@ -191,7 +191,7 @@ struct SettingsToggleSection<Content: View>: View {
         VStack(alignment: .leading, spacing: 26) {
             Text(title)
                 .font(RecapFont.pretendard(size: 13, weight: .regular))
-                .foregroundStyle(SettingsColor.textSecondary)
+                .foregroundStyle(Color.settingsTextSecondary)
 
             VStack(spacing: 26) {
                 content
@@ -210,17 +210,17 @@ struct SettingsToggleRow: View {
             VStack(alignment: .leading, spacing: 10) {
                 Text(title)
                     .font(RecapFont.pretendard(size: 15, weight: .semibold))
-                    .foregroundStyle(SettingsColor.textPrimary)
+                    .foregroundStyle(Color.settingsTextPrimary)
                 Text(subtitle)
                     .font(RecapFont.pretendard(size: 12, weight: .regular))
-                    .foregroundStyle(SettingsColor.textTertiary)
+                    .foregroundStyle(Color.settingsTextTertiary)
             }
 
             Spacer()
 
             Toggle("", isOn: $isOn)
                 .labelsHidden()
-                .tint(RecapTheme.ColorToken.primary)
+                .tint(Color.recapBlue300)
         }
     }
 }
@@ -229,11 +229,11 @@ struct KakaoAccountIcon: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(Color(red: 1, green: 222 / 255, blue: 0))
+                .fill(Color.recapKakaoBadgeYellow)
 
             Image(systemName: "message.fill")
                 .font(.system(size: 15, weight: .bold))
-                .foregroundStyle(Color(red: 24 / 255, green: 24 / 255, blue: 24 / 255))
+                .foregroundStyle(Color.recapKakaoText)
         }
         .frame(width: 38, height: 38)
     }
@@ -242,8 +242,7 @@ struct KakaoAccountIcon: View {
 struct SettingsDivider: View {
     var body: some View {
         Rectangle()
-            .fill(SettingsColor.divider)
+            .fill(Color.settingsDivider)
             .frame(height: 1)
     }
 }
-

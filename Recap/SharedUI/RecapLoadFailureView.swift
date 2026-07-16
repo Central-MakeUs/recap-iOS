@@ -16,7 +16,7 @@ struct RecapLoadFailureView: View {
             Text(style == .home ? "캡처를 불러오지 못했어요" : "보관함을 불러오지 못했어요")
                 .font(RecapFont.pretendard(size: 16, weight: .semibold))
                 .tracking(-0.32)
-                .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                .foregroundStyle(Color.recapGray900)
                 .padding(.top, 22)
 
             Text("네트워크 상태를 확인한 뒤\n다시 시도해주세요")
@@ -24,18 +24,18 @@ struct RecapLoadFailureView: View {
                 .tracking(-0.28)
                 .lineSpacing(4)
                 .multilineTextAlignment(.center)
-                .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                .foregroundStyle(Color.recapGray500)
                 .padding(.top, 10)
 
             Button(action: retry) {
                 Label(style == .home ? "다시 시도" : "다시 불러오기", systemImage: style == .archive ? "arrow.clockwise" : "arrow.clockwise")
                     .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                    .foregroundStyle(style == .home ? RecapTheme.ColorToken.primary : .white)
+                    .foregroundStyle(style == .home ? Color.recapBlue300 : .white)
                     .frame(width: style == .home ? 153 : 172, height: 52)
-                    .background(style == .archive ? RecapTheme.ColorToken.primary : Color.clear)
+                    .background(style == .archive ? Color.recapBlue300 : Color.clear)
                     .overlay {
                         if style == .home {
-                            RoundedRectangle(cornerRadius: 10).stroke(RecapTheme.ColorToken.primary, lineWidth: 1.5)
+                            RoundedRectangle(cornerRadius: 10).stroke(Color.recapBlue300, lineWidth: 1.5)
                         }
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
@@ -59,7 +59,7 @@ struct RecapLoadFailureView: View {
                 }
         } else {
             Circle()
-                .fill(RecapTheme.ColorToken.controlFill)
+                .fill(Color.recapControlFill)
                 .frame(width: 100, height: 100)
                 .overlay {
                     Image(systemName: "exclamationmark")

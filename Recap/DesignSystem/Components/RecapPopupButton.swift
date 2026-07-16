@@ -8,7 +8,7 @@ struct RecapPopupButton: View {
         var foregroundColor: Color {
             switch self {
             case .secondary:
-                RecapTheme.ColorToken.textBody
+                Color.recapGray700
             case .destructive:
                 .white
             }
@@ -17,9 +17,9 @@ struct RecapPopupButton: View {
         var backgroundColor: Color {
             switch self {
             case .secondary:
-                RecapComponentColor.popupSecondary
+                Color.recapGray50
             case .destructive:
-                RecapComponentColor.popupDestructive
+                Color.recapDestructive
             }
         }
     }

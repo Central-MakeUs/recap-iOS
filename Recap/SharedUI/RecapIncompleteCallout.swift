@@ -11,21 +11,21 @@ struct RecapIncompleteCallout: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
-                .background(RecapTheme.ColorToken.unimplemented)
+                .background(Color.recapUnimplemented)
                 .clipShape(Capsule())
             Text(title)
                 .font(RecapFont.pretendard(size: 15, weight: .semibold))
-                .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                .foregroundStyle(Color.recapGray900)
             Text(message)
                 .font(RecapFont.pretendard(size: 13, weight: .medium))
                 .multilineTextAlignment(.center)
-                .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                .foregroundStyle(Color.recapGray500)
         }
         .padding(18)
-        .background(RecapTheme.ColorToken.warningSoft)
+        .background(Color.recapWarningSoft)
         .overlay {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(RecapTheme.ColorToken.unimplemented, lineWidth: 2)
+                .stroke(Color.recapUnimplemented, lineWidth: 2)
         }
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }

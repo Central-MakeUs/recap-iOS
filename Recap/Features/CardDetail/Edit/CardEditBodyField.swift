@@ -14,7 +14,7 @@ struct CardEditBodyField: View {
             TextEditor(text: limitedBody)
                 .font(RecapFont.pretendard(size: 14, weight: .regular))
                 .tracking(-0.28)
-                .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                .foregroundStyle(Color.recapGray900)
                 .scrollContentBackground(.hidden)
                 .padding(.horizontal, 7)
                 .padding(.vertical, 6)
@@ -24,7 +24,7 @@ struct CardEditBodyField: View {
             Text(String(format: "%03d/%03d", bodyText.count, CardEditDraft.bodyLimit))
                 .font(RecapFont.pretendard(size: 12, weight: .medium))
                 .tracking(-0.24)
-                .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                .foregroundStyle(Color.recapGray500)
                 .frame(maxWidth: .infinity, alignment: .trailing)
         }
     }

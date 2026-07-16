@@ -22,7 +22,7 @@ struct CardDetailImageSection: View {
             CardDetailHeroView(onExpand: onOpenOriginal) {
                 ZStack {
                     LinearGradient(
-                        colors: [CardDetailStyle.imageFailureFill, .white],
+                        colors: [Color.recapImageFailureFill, .white],
                         startPoint: .top,
                         endPoint: .bottom
                     )

@@ -20,7 +20,7 @@ struct AppShellView: View {
 
     var body: some View {
         ZStack {
-            RecapTheme.ColorToken.background
+            Color.recapBackground
                 .ignoresSafeArea()
 
             activeTabStack
@@ -140,7 +140,7 @@ private struct RecapBottomNavigationBar: View {
                 }
                 .foregroundStyle(.white)
                 .frame(width: 87, height: 54)
-                .background(Color(red: 92 / 255, green: 109 / 255, blue: 255 / 255))
+                .background(Color.recapBrandBlue)
                 .clipShape(Capsule())
             }
             .buttonStyle(.plain)
@@ -151,7 +151,7 @@ private struct RecapBottomNavigationBar: View {
         .frame(maxWidth: .infinity)
         .frame(height: 111, alignment: .top)
         .background {
-            RecapTheme.ColorToken.background
+            Color.recapBackground
                 .ignoresSafeArea(edges: .bottom)
         }
     }
@@ -165,9 +165,9 @@ private struct RecapBottomNavigationBar: View {
                 .renderingMode(.template)
                 .resizable()
                 .frame(width: 24, height: 24)
-            .foregroundStyle(isSelected ? RecapTheme.ColorToken.primary : RecapTheme.ColorToken.textTertiary)
+            .foregroundStyle(isSelected ? Color.recapBlue300 : Color.recapGray300)
             .frame(width: 72, height: 46)
-            .background(isSelected ? RecapTheme.ColorToken.controlFill : Color.clear)
+            .background(isSelected ? Color.recapControlFill : Color.clear)
             .clipShape(Capsule())
         }
         .buttonStyle(.plain)

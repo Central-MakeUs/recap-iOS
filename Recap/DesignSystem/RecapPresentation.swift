@@ -63,8 +63,8 @@ enum RecapPresentation {
             CollectionDisplay(
                 title: "쇼핑 · 상품",
                 subtitle: "빅뱅 콘서트, 노트북 구매",
-                dotColor: Color(red: 169 / 255, green: 205 / 255, blue: 255 / 255),
-                textColor: Color(red: 49 / 255, green: 84 / 255, blue: 132 / 255),
+                dotColor: .categoryBlue500,
+                textColor: .categoryBlue700,
                 symbolName: "cart.fill",
                 sampleCount: 20
             )
@@ -72,8 +72,8 @@ enum RecapPresentation {
             CollectionDisplay(
                 title: "장소 · 맛집",
                 subtitle: "가게, 여행지, 맛집 후보",
-                dotColor: Color(red: 253 / 255, green: 197 / 255, blue: 197 / 255),
-                textColor: Color(red: 215 / 255, green: 123 / 255, blue: 123 / 255),
+                dotColor: .categoryRed500,
+                textColor: .categoryRed700,
                 symbolName: "mappin.circle.fill",
                 sampleCount: 23
             )
@@ -81,8 +81,8 @@ enum RecapPresentation {
             CollectionDisplay(
                 title: "일정 · 예약",
                 subtitle: "예약 확정, 병원, 일정 안내",
-                dotColor: Color(red: 168 / 255, green: 210 / 255, blue: 146 / 255),
-                textColor: Color(red: 53 / 255, green: 111 / 255, blue: 20 / 255),
+                dotColor: .categoryGreen500,
+                textColor: .categoryGreen700,
                 symbolName: "clock.fill",
                 sampleCount: 10
             )
@@ -90,8 +90,8 @@ enum RecapPresentation {
             CollectionDisplay(
                 title: "정보 · 지식",
                 subtitle: "팁, 안내, 학습 자료",
-                dotColor: Color(red: 232 / 255, green: 213 / 255, blue: 151 / 255),
-                textColor: Color(red: 129 / 255, green: 105 / 255, blue: 26 / 255),
+                dotColor: .categoryYellow500,
+                textColor: .categoryYellow700,
                 symbolName: "lightbulb.fill",
                 sampleCount: 12
             )
@@ -99,8 +99,8 @@ enum RecapPresentation {
             CollectionDisplay(
                 title: "책 · 콘텐츠",
                 subtitle: "책, 문서, 영상, 아티클",
-                dotColor: Color(red: 150 / 255, green: 150 / 255, blue: 150 / 255),
-                textColor: Color(red: 113 / 255, green: 113 / 255, blue: 113 / 255),
+                dotColor: .categoryGray500,
+                textColor: .categoryGray700,
                 symbolName: "doc.fill",
                 sampleCount: 1
             )
@@ -108,8 +108,8 @@ enum RecapPresentation {
             CollectionDisplay(
                 title: "혜택 · 이벤트",
                 subtitle: "쿠폰, 이벤트, 혜택 정보",
-                dotColor: Color(red: 148 / 255, green: 219 / 255, blue: 231 / 255),
-                textColor: Color(red: 57 / 255, green: 139 / 255, blue: 152 / 255),
+                dotColor: .categoryMint500,
+                textColor: .categoryMint700,
                 symbolName: "star.fill",
                 sampleCount: 5
             )
@@ -117,8 +117,8 @@ enum RecapPresentation {
             CollectionDisplay(
                 title: "기록 · 캡처",
                 subtitle: "메모, 대화, 보관용 캡처",
-                dotColor: Color(red: 190 / 255, green: 178 / 255, blue: 243 / 255),
-                textColor: Color(red: 99 / 255, green: 84 / 255, blue: 167 / 255),
+                dotColor: .categoryPurple500,
+                textColor: .categoryPurple700,
                 symbolName: "pencil",
                 sampleCount: 12
             )
@@ -126,8 +126,8 @@ enum RecapPresentation {
             CollectionDisplay(
                 title: "채용 · 취업",
                 subtitle: "채용 공고, 지원 일정, 취업 정보",
-                dotColor: Color(red: 255 / 255, green: 194 / 255, blue: 144 / 255),
-                textColor: Color(red: 167 / 255, green: 99 / 255, blue: 43 / 255),
+                dotColor: .categoryOrange500,
+                textColor: .categoryOrange700,
                 symbolName: "pencil",
                 sampleCount: 12
             )
@@ -135,8 +135,8 @@ enum RecapPresentation {
             CollectionDisplay(
                 title: "기타",
                 subtitle: "분류가 아직 확정되지 않은 카드",
-                dotColor: RecapTheme.ColorToken.border,
-                textColor: RecapTheme.ColorToken.textSecondary,
+                dotColor: Color.recapGray100,
+                textColor: Color.recapGray500,
                 symbolName: "folder.fill",
                 sampleCount: 0
             )
@@ -151,8 +151,8 @@ enum RecapPresentation {
                 message: "스크린샷을 불러와 필요한 정보만 카드로 정리해보세요.",
                 iconName: "sparkles",
                 progress: nil,
-                tint: RecapTheme.ColorToken.primary,
-                background: RecapTheme.ColorToken.primarySoft
+                tint: Color.recapBlue300,
+                background: Color.recapPrimarySoft
             )
         case .processing:
             StatusDisplay(
@@ -160,8 +160,8 @@ enum RecapPresentation {
                 message: "필요한 정보를 찾고 카드로 만드는 중이에요.",
                 iconName: "circle.dotted",
                 progress: 0.67,
-                tint: RecapTheme.ColorToken.primary,
-                background: RecapTheme.ColorToken.primarySoft
+                tint: Color.recapBlue300,
+                background: Color.recapPrimarySoft
             )
         case .complete:
             StatusDisplay(
@@ -169,8 +169,8 @@ enum RecapPresentation {
                 message: "완성된 정보카드를 확인해보세요.",
                 iconName: "checkmark",
                 progress: nil,
-                tint: RecapTheme.ColorToken.success,
-                background: RecapTheme.ColorToken.primarySoft
+                tint: Color.recapSuccess,
+                background: Color.recapPrimarySoft
             )
         case .waiting:
             StatusDisplay(
@@ -178,8 +178,8 @@ enum RecapPresentation {
                 message: "새 캡처가 생기면 여기서 바로 시작할 수 있어요.",
                 iconName: "clock",
                 progress: nil,
-                tint: RecapTheme.ColorToken.textTertiary,
-                background: RecapTheme.ColorToken.controlFill
+                tint: Color.recapGray300,
+                background: Color.recapControlFill
             )
         case .failed:
             StatusDisplay(

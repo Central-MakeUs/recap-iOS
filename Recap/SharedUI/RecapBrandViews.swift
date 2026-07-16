@@ -5,7 +5,7 @@ struct RecapLogoText: View {
     var body: some View {
         Text("Recap")
             .font(RecapFont.lexend(size: size, weight: .bold))
-            .foregroundStyle(RecapTheme.ColorToken.primary)
+            .foregroundStyle(Color.recapBlue300)
     }
 }
 struct RecapMascotMark: View {
@@ -17,18 +17,18 @@ struct RecapMascotMark: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color(red: 1, green: 1, blue: 1),
-                            Color(red: 92 / 255, green: 109 / 255, blue: 1)
+                            Color.white,
+                            Color.recapBrandBlue
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
                 .frame(width: size, height: size * 0.76)
-                .shadow(color: RecapTheme.ColorToken.primary.opacity(0.24), radius: size * 0.18, y: size * 0.07)
+                .shadow(color: Color.recapBlue300.opacity(0.24), radius: size * 0.18, y: size * 0.07)
 
             RoundedRectangle(cornerRadius: size * 0.045, style: .continuous)
-                .fill(Color(red: 89 / 255, green: 106 / 255, blue: 1))
+                .fill(Color.recapBrandAccent)
                 .frame(width: size * 0.70, height: size * 0.53)
                 .offset(y: -size * 0.01)
 
@@ -43,10 +43,10 @@ struct RecapMascotMark: View {
 
     private var eye: some View {
         Circle()
-            .fill(Color(red: 243 / 255, green: 243 / 255, blue: 243 / 255))
+            .fill(Color.recapBrandTrack)
             .overlay {
                 Circle()
-                    .fill(Color(red: 10 / 255, green: 10 / 255, blue: 10 / 255))
+                    .fill(Color.recapBrandInk)
                     .frame(width: size * 0.17, height: size * 0.17)
                     .offset(x: size * 0.03)
             }

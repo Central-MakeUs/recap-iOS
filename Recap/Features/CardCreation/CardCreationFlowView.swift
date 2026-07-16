@@ -57,7 +57,7 @@ struct CardCreationFlowView: View {
         }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
-        .background(RecapTheme.ColorToken.background)
+        .background(Color.recapBackground)
     }
 
     private func close() { dismiss() }

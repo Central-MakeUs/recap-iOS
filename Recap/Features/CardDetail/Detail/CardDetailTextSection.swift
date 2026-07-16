@@ -10,20 +10,20 @@ struct CardDetailTextSection: View {
             Text(card.title)
                 .font(RecapFont.pretendard(size: 22, weight: .semibold))
                 .tracking(-0.44)
-                .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                .foregroundStyle(Color.recapGray900)
                 .padding(.top, 24)
 
             Text(card.summary)
                 .font(RecapFont.pretendard(size: 15, weight: .medium))
                 .tracking(-0.3)
-                .foregroundStyle(RecapTheme.ColorToken.textBody)
+                .foregroundStyle(Color.recapGray700)
                 .padding(.top, 8)
 
             Text(card.memo)
                 .font(RecapFont.pretendard(size: 15, weight: .medium))
                 .tracking(-0.3)
                 .lineSpacing(3)
-                .foregroundStyle(RecapTheme.ColorToken.textBody)
+                .foregroundStyle(Color.recapGray700)
                 .padding(.top, 40)
         }
         .padding(.horizontal, CardDetailStyle.horizontalPadding)

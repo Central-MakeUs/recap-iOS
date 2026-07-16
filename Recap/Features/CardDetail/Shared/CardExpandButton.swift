@@ -7,7 +7,7 @@ struct CardExpandButton: View {
         Button(action: action) {
             SystemUIconsExpandShape()
                 .stroke(
-                    RecapTheme.ColorToken.textSecondary,
+                    Color.recapGray500,
                     style: StrokeStyle(lineWidth: 1, lineCap: .round, lineJoin: .round)
                 )
                 .frame(width: 21, height: 21)
@@ -17,7 +17,7 @@ struct CardExpandButton: View {
                 }
                 .overlay {
                     RoundedRectangle(cornerRadius: 2)
-                        .stroke(CardDetailStyle.inputBorder, lineWidth: 1)
+                        .stroke(Color.recapGray200, lineWidth: 1)
                 }
         }
         .buttonStyle(.plain)

@@ -25,7 +25,7 @@ struct AllRecentCardsView: View {
                         let collection = RecapPresentation.collectionDisplay(for: card.collection)
                         HStack(spacing: RecapTheme.Spacing.medium) {
                             RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous)
-                                .fill(RecapTheme.ColorToken.thumbnail)
+                                .fill(Color.recapThumbnail)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous)
                                         .fill(collection.dotColor.opacity(0.08))
@@ -40,12 +40,12 @@ struct AllRecentCardsView: View {
                             VStack(alignment: .leading, spacing: RecapTheme.Spacing.xSmall) {
                                 Text(card.title)
                                     .font(.subheadline.weight(.bold))
-                                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                                    .foregroundStyle(Color.recapGray900)
                                     .lineLimit(1)
 
                                 Text(card.summary)
                                     .font(.caption)
-                                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                                    .foregroundStyle(Color.recapGray500)
                                     .lineLimit(1)
 
                                 HStack(spacing: RecapTheme.Spacing.xSmall) {
@@ -57,7 +57,7 @@ struct AllRecentCardsView: View {
                                     Text(card.dateText)
                                 }
                                 .font(.caption2.weight(.semibold))
-                                .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                                .foregroundStyle(Color.recapGray500)
                             }
 
                             Spacer(minLength: RecapTheme.Spacing.small)
@@ -70,7 +70,7 @@ struct AllRecentCardsView: View {
             }
             .padding(RecapTheme.Spacing.large)
         }
-        .background(RecapTheme.ColorToken.background)
+        .background(Color.recapBackground)
         .navigationTitle("전체 정리된 카드")
         .navigationBarTitleDisplayMode(.inline)
     }

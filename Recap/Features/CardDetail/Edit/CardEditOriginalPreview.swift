@@ -9,7 +9,7 @@ struct CardEditOriginalPreview: View {
             Text(card.dateText)
                 .font(RecapFont.pretendard(size: 12, weight: .medium))
                 .tracking(-0.24)
-                .foregroundStyle(RecapTheme.ColorToken.textTertiary)
+                .foregroundStyle(Color.recapGray300)
                 .padding(.top, 10)
                 .padding(.bottom, 8)
 
@@ -20,7 +20,7 @@ struct CardEditOriginalPreview: View {
             Text("원본 이미지는 수정 할 수 없어요. 텍스트 정보만 편집 가능해요")
                 .font(RecapFont.pretendard(size: 10, weight: .semibold))
                 .tracking(-0.2)
-                .foregroundStyle(Color(red: 56 / 255, green: 69 / 255, blue: 199 / 255))
+                .foregroundStyle(Color.recapBlue500)
                 .padding(.top, 8)
         }
     }

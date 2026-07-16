@@ -46,7 +46,7 @@ struct CardEditView: View {
                 onOpenOriginal: showOriginal
             )
         }
-        .background(RecapTheme.ColorToken.background)
+        .background(Color.recapBackground)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .recapConfirmationDialog(

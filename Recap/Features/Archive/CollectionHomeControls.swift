@@ -15,7 +15,7 @@ struct CollectionHomeHeader: View {
             Text("보관함")
                 .font(RecapFont.pretendard(size: 22, weight: .semibold))
                 .tracking(-0.44)
-                .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                .foregroundStyle(Color.recapGray900)
 
             Spacer()
 
@@ -23,7 +23,7 @@ struct CollectionHomeHeader: View {
                 Text("보기")
                     .font(RecapFont.pretendard(size: 13, weight: .medium))
                     .tracking(-0.26)
-                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                    .foregroundStyle(Color.recapGray500)
 
                 HStack(spacing: 6) {
                     layoutButton(mode: .grid, symbol: "square.grid.2x2.fill")
@@ -31,7 +31,7 @@ struct CollectionHomeHeader: View {
                 }
                 .padding(.horizontal, 5)
                 .frame(width: 64, height: 31)
-                .background(RecapTheme.ColorToken.controlFill)
+                .background(Color.recapControlFill)
                 .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
             }
         }
@@ -44,7 +44,7 @@ struct CollectionHomeHeader: View {
         } label: {
             Image(systemName: symbol)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(layoutMode == mode ? RecapTheme.ColorToken.primary : RecapTheme.ColorToken.textTertiary)
+                .foregroundStyle(layoutMode == mode ? Color.recapBlue300 : Color.recapGray300)
                 .frame(width: 24, height: 24)
                 .background(layoutMode == mode ? Color.white : Color.clear)
                 .clipShape(RoundedRectangle(cornerRadius: 2, style: .continuous))
@@ -65,9 +65,9 @@ struct CollectionHomeSegmentControl: View {
                     Text(item.rawValue)
                         .font(RecapFont.pretendard(size: 14, weight: .semibold))
                         .tracking(-0.28)
-                        .foregroundStyle(selection == item ? .white : RecapTheme.ColorToken.textTertiary)
+                        .foregroundStyle(selection == item ? .white : Color.recapGray300)
                         .frame(width: 87, height: 35)
-                        .background(selection == item ? RecapTheme.ColorToken.primary : RecapTheme.ColorToken.controlFill)
+                        .background(selection == item ? Color.recapBlue300 : Color.recapControlFill)
                         .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
