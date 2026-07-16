@@ -15,6 +15,40 @@ enum RecapTheme {
         static let gray100 = Color("RecapGray100")
         static let gray50 = Color("RecapGray50")
 
+        enum Category {
+            static let blue300 = Color("RecapCategoryBlue300")
+            static let blue500 = Color("RecapCategoryBlue500")
+            static let blue700 = Color("RecapCategoryBlue700")
+
+            static let red300 = Color("RecapCategoryRed300")
+            static let red500 = Color("RecapCategoryRed500")
+            static let red700 = Color("RecapCategoryRed700")
+
+            static let green300 = Color("RecapCategoryGreen300")
+            static let green500 = Color("RecapCategoryGreen500")
+            static let green700 = Color("RecapCategoryGreen700")
+
+            static let yellow300 = Color("RecapCategoryYellow300")
+            static let yellow500 = Color("RecapCategoryYellow500")
+            static let yellow700 = Color("RecapCategoryYellow700")
+
+            static let gray300 = Color("RecapCategoryGray300")
+            static let gray500 = Color("RecapCategoryGray500")
+            static let gray700 = Color("RecapCategoryGray700")
+
+            static let mint300 = Color("RecapCategoryMint300")
+            static let mint500 = Color("RecapCategoryMint500")
+            static let mint700 = Color("RecapCategoryMint700")
+
+            static let purple300 = Color("RecapCategoryPurple300")
+            static let purple500 = Color("RecapCategoryPurple500")
+            static let purple700 = Color("RecapCategoryPurple700")
+
+            static let orange300 = Color("RecapCategoryOrange300")
+            static let orange500 = Color("RecapCategoryOrange500")
+            static let orange700 = Color("RecapCategoryOrange700")
+        }
+
         static let background = Color(red: 253 / 255, green: 253 / 255, blue: 253 / 255)
         static let surface = Color.white
         static let controlFill = Color(red: 244 / 255, green: 245 / 255, blue: 248 / 255)
