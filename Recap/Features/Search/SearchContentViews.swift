@@ -99,7 +99,7 @@ struct SearchResultsList: View {
                     Button {
                         openCard(card.id)
                     } label: {
-                        RecapSearchResultCard(card: card)
+                        RecapInformationCardRow(card: card)
                     }
                     .buttonStyle(.plain)
                 }

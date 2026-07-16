@@ -141,7 +141,8 @@ struct CardCreationNoSelectionView: View {
 
             VStack(spacing: 9) {
                 RecapButton(title: "사진 더 추가", style: .secondary, action: viewModel.addMore)
-                DisabledRecapButton(title: "정리 시작하기")
+                RecapButton(title: "정리 시작하기", action: {})
+                    .disabled(true)
             }
             .padding(.horizontal, 26)
             .padding(.bottom, 24)

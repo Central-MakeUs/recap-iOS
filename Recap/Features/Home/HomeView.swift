@@ -134,16 +134,13 @@ struct HomeView: View {
                     .foregroundStyle(Color.recapGray500)
             }
 
-            Button(action: startOrganizing) {
-                Text("스크린샷 불러오기")
-                    .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                    .tracking(-0.28)
-                    .foregroundStyle(.white)
-                    .frame(width: 172, height: 50)
-                    .background(Color.recapBlue300)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            }
-            .buttonStyle(.plain)
+            RecapButton(
+                title: "스크린샷 불러오기",
+                style: .primary,
+                size: .medium,
+                action: startOrganizing
+            )
+            .frame(width: 155)
             .padding(.top, 12)
 
             Spacer(minLength: 120)
@@ -165,7 +162,7 @@ struct HomeView: View {
                         Button {
                             openCard(card.id)
                         } label: {
-                            RecentRecapCard(card: card)
+                            RecapHomeRecentCard(card: card)
                         }
                         .buttonStyle(.plain)
                     }
@@ -214,7 +211,7 @@ struct HomeView: View {
                             openArchive(item.kind)
                         } label: {
                             let display = RecapPresentation.collectionDisplay(for: item.kind)
-                            ArchiveCategoryCard(
+                            RecapFolderCard(
                                 title: display.title,
                                 count: item.count,
                                 thumbnailState: .filled,

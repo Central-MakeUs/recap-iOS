@@ -69,6 +69,8 @@ struct RecapChip: View {
             .font(.system(size: 16, weight: .semibold))
             .foregroundStyle(display.textColor)
             .frame(width: 24, height: 24)
+            .background(Color.recapBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     private func recentSearchChip(keyword: String) -> some View {
@@ -103,59 +105,23 @@ private struct CategoryPalette {
     static func selected(for kind: CollectionKind) -> CategoryPalette {
         switch kind {
         case .shopping:
-            CategoryPalette(
-                background: .categoryBlue300,
-                border: .categoryBlue500,
-                text: .categoryBlue700
-            )
+            CategoryPalette(background: .categoryBlue300, border: .categoryBlue500, text: .categoryBlue700)
         case .place:
-            CategoryPalette(
-                background: .categoryRed300,
-                border: .categoryRed500,
-                text: .categoryRed700
-            )
+            CategoryPalette(background: .categoryRed300, border: .categoryRed500, text: .categoryRed700)
         case .schedule:
-            CategoryPalette(
-                background: .categoryGreen300,
-                border: .categoryGreen500,
-                text: .categoryGreen700
-            )
+            CategoryPalette(background: .categoryGreen300, border: .categoryGreen500, text: .categoryGreen700)
         case .knowledge:
-            CategoryPalette(
-                background: .categoryYellow300,
-                border: .categoryYellow500,
-                text: .categoryYellow700
-            )
+            CategoryPalette(background: .categoryYellow300, border: .categoryYellow500, text: .categoryYellow700)
         case .content:
-            CategoryPalette(
-                background: .categoryGray300,
-                border: .categoryGray500,
-                text: .categoryGray700
-            )
+            CategoryPalette(background: .categoryGray300, border: .categoryGray500, text: .categoryGray700)
         case .benefits:
-            CategoryPalette(
-                background: .categoryMint300,
-                border: .categoryMint500,
-                text: .categoryMint700
-            )
+            CategoryPalette(background: .categoryMint300, border: .categoryMint500, text: .categoryMint700)
         case .capture:
-            CategoryPalette(
-                background: .categoryPurple300,
-                border: .categoryPurple500,
-                text: .categoryPurple700
-            )
+            CategoryPalette(background: .categoryPurple300, border: .categoryPurple500, text: .categoryPurple700)
         case .career:
-            CategoryPalette(
-                background: .categoryOrange300,
-                border: .categoryOrange500,
-                text: .categoryOrange700
-            )
+            CategoryPalette(background: .categoryOrange300, border: .categoryOrange500, text: .categoryOrange700)
         case .other:
-            CategoryPalette(
-                background: .categoryGray300,
-                border: .categoryGray500,
-                text: .categoryGray700
-            )
+            CategoryPalette(background: .categoryGray300, border: .categoryGray500, text: .categoryGray700)
         }
     }
 }

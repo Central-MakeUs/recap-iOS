@@ -1,16 +1,16 @@
 import SwiftUI
 
-enum ArchiveCategoryThumbnailState: Equatable {
+enum RecapFolderThumbnailState: Equatable {
     case filled
     case empty
 }
 
-struct ArchiveCategoryCard: View {
+struct RecapFolderCard: View {
     let title: String
     let count: Int
-    var thumbnailState: ArchiveCategoryThumbnailState = .filled
+    var thumbnailState: RecapFolderThumbnailState = .filled
     var kind: CollectionKind = .shopping
-    var tint: Color? = nil
+    var tint: Color?
 
     var body: some View {
         let display = RecapPresentation.collectionDisplay(for: kind)
@@ -29,99 +29,65 @@ struct ArchiveCategoryCard: View {
                     .frame(width: 85, height: 63)
                     .offset(x: 4, y: 4)
 
-                ArchiveCategoryFolderVector(tint: fill)
+                RecapFolderVector(tint: fill)
                     .frame(width: 94, height: 79)
                     .offset(x: 5, y: 9)
 
                 Image(systemName: display.symbolName)
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(foreground)
-                    .frame(width: 16, height: 16)
-                    .offset(x: 15, y: 19)
+                    .frame(width: 30, height: 30)
+                    .background(Color.recapBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .offset(x: 13, y: 17)
 
-                Text("\(count)")
-                    .font(RecapFont.pretendard(size: 13, weight: .medium))
-                    .tracking(-0.26)
-                    .foregroundStyle(foreground)
-                    .multilineTextAlignment(.center)
-                    .frame(width: countTextWidth, height: 18)
-                    .offset(x: countTextX, y: 60)
-
-                Text("recaps")
-                    .font(RecapFont.pretendard(size: 10, weight: .medium))
-                    .tracking(-0.2)
-                    .foregroundStyle(foreground)
-                    .multilineTextAlignment(.center)
-                    .frame(width: 30, height: 14)
-                    .offset(x: 31, y: 63)
             }
             .frame(width: 99, height: 88, alignment: .topLeading)
             .opacity(thumbnailState == .filled ? 1 : 0.62)
 
-            Text(title)
-                .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                .tracking(-0.28)
-                .foregroundStyle(Color.recapGray900)
-                .lineLimit(1)
-                .frame(width: 99)
+            VStack(spacing: 3) {
+                Text(title)
+                    .font(RecapFont.pretendard(size: 14, weight: .semibold))
+                    .tracking(-0.28)
+                    .foregroundStyle(Color.recapGray900)
+                    .lineLimit(1)
+
+                Text("\(count) Recaps")
+                    .font(RecapFont.pretendard(size: 12, weight: .medium))
+                    .tracking(-0.24)
+                    .foregroundStyle(Color.recapGray300)
+            }
+            .frame(width: 99, height: 40, alignment: .top)
         }
-        .frame(width: 99, height: 118, alignment: .top)
-    }
-
-    private var countTextWidth: CGFloat {
-        if count < 10 { return 6 }
-        if count < 20 { return 14 }
-        return 16
-    }
-
-    private var countTextX: CGFloat {
-        count < 10 ? 19 : (count < 20 ? 15 : 14)
+        .frame(width: 99, height: 138, alignment: .top)
     }
 }
 
-struct ArchiveCategoryListCard: View {
+struct RecapFolderListRow: View {
     let title: String
     let subtitle: String
     let count: Int
     let kind: CollectionKind
 
     var body: some View {
-        let display = RecapPresentation.collectionDisplay(for: kind)
-
         HStack(spacing: 27) {
-            ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: 6.68, style: .continuous)
-                    .fill(display.dotColor)
-                    .frame(width: 59, height: 45)
-                RoundedRectangle(cornerRadius: 4.51, style: .continuous)
-                    .fill(Color.white)
-                    .frame(width: 55, height: 40)
-                    .offset(x: 3, y: 2.5)
-                ArchiveCategoryFolderVector(tint: display.dotColor)
-                    .frame(width: 64, height: 55.65)
-                    .offset(x: 0, y: 0)
-                Image(systemName: display.symbolName)
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(display.textColor)
-                    .frame(width: 10, height: 10)
-                    .offset(x: 8, y: 10)
-                HStack(alignment: .firstTextBaseline, spacing: 1) {
-                    Text("\(count)")
-                        .font(RecapFont.pretendard(size: 12, weight: .medium))
-                    Text("recaps")
-                        .font(RecapFont.pretendard(size: 10, weight: .medium))
-                }
-                .tracking(-0.2)
-                .foregroundStyle(display.textColor)
-                .offset(x: 8, y: 35)
-            }
-            .frame(width: 64, height: 55.65)
+            RecapCategoryIcon(kind: kind)
 
             VStack(alignment: .leading, spacing: 5) {
-                Text(title)
-                    .font(RecapFont.pretendard(size: 16, weight: .semibold))
-                    .tracking(-0.32)
-                    .foregroundStyle(Color.black)
+                HStack {
+                    Text(title)
+                        .font(RecapFont.pretendard(size: 16, weight: .semibold))
+                        .tracking(-0.32)
+                        .foregroundStyle(Color.black)
+
+                    Spacer(minLength: 8)
+
+                    Text("\(count) Recaps")
+                        .font(RecapFont.pretendard(size: 12, weight: .medium))
+                        .tracking(-0.24)
+                        .foregroundStyle(Color.recapGray300)
+                }
+
                 Text(subtitle)
                     .font(RecapFont.pretendard(size: 13, weight: .medium))
                     .tracking(-0.26)
@@ -132,8 +98,9 @@ struct ArchiveCategoryListCard: View {
             Spacer(minLength: 0)
         }
         .padding(.leading, 20)
-        .padding(.trailing, 16)
+        .padding(.trailing, 20)
         .frame(height: 85)
+        .background(Color.recapBackground)
         .overlay(alignment: .bottom) {
             Rectangle()
                 .fill(Color.recapGray100)
@@ -142,15 +109,15 @@ struct ArchiveCategoryListCard: View {
     }
 }
 
-private struct ArchiveCategoryFolderVector: View {
+private struct RecapFolderVector: View {
     let tint: Color
     private let gradientOpacity = 0.699999988079071
 
     var body: some View {
-        ArchiveCategoryFolderVectorShape()
+        RecapFolderVectorShape()
             .fill(folderGradient)
             .overlay {
-                ArchiveCategoryFolderVectorShape()
+                RecapFolderVectorShape()
                     .stroke(Color.white, lineWidth: 1)
             }
     }
@@ -167,7 +134,7 @@ private struct ArchiveCategoryFolderVector: View {
     }
 }
 
-private struct ArchiveCategoryFolderVectorShape: Shape {
+private struct RecapFolderVectorShape: Shape {
     func path(in rect: CGRect) -> Path {
         let scaleX = rect.width / 94
         let scaleY = rect.height / 79
@@ -211,13 +178,13 @@ private struct ArchiveCategoryFolderVectorShape: Shape {
     }
 }
 
-#Preview("Archive category") {
+#Preview("폴더") {
     ZStack {
         Color.recapBackground.ignoresSafeArea()
         LazyVGrid(columns: Array(repeating: GridItem(.fixed(99), spacing: 19), count: 3), spacing: 39) {
             ForEach(CollectionKind.folderCases) { kind in
                 let display = RecapPresentation.collectionDisplay(for: kind)
-                ArchiveCategoryCard(
+                RecapFolderCard(
                     title: display.title,
                     count: display.sampleCount,
                     thumbnailState: kind == .other ? .empty : .filled,

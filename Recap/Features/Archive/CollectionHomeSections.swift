@@ -18,7 +18,7 @@ struct CollectionHomeTypeGrid: View {
                         onOpenArchive(summary.kind)
                     } label: {
                         let display = RecapPresentation.collectionDisplay(for: summary.kind)
-                        ArchiveCategoryCard(
+                        RecapFolderCard(
                             title: display.title,
                             count: summary.count,
                             thumbnailState: summary.kind == .other ? .empty : .filled,
@@ -52,7 +52,7 @@ struct CollectionHomeTypeList: View {
                     onOpenArchive(summary.kind)
                 } label: {
                     let display = RecapPresentation.collectionDisplay(for: summary.kind)
-                    ArchiveCategoryListCard(
+                    RecapFolderListRow(
                         title: display.title,
                         subtitle: display.subtitle,
                         count: summary.count,
@@ -75,6 +75,9 @@ struct CollectionHomeCardSection: View {
         case favorites
         case other
     }
+
+    @State private var filterSelection = "최신순"
+    @State private var isFilterExpanded = false
 
     let cards: [InformationCard]
     let style: Style
@@ -104,8 +107,13 @@ struct CollectionHomeCardSection: View {
     private var sectionHeader: some View {
         HStack {
             if style == .other {
-                RecapFilterButton(title: "최신순") {
-                    onSelectFilter("최신순")
+                RecapFilterPicker(
+                    options: ["최신순", "즐겨찾기"],
+                    selection: $filterSelection,
+                    isExpanded: $isFilterExpanded
+                )
+                .onChange(of: filterSelection) { _, value in
+                    onSelectFilter(value)
                 }
             } else {
                 recapCountText
@@ -128,9 +136,9 @@ struct CollectionHomeCardSection: View {
                     onOpenCard(card.id)
                 } label: {
                     if style == .favorites {
-                        FavoriteRecapListCard(card: card, isStarred: true)
+                        RecapInformationCardRow(card: card)
                     } else {
-                        ArchiveOtherCard(card: card)
+                        RecapInformationCardRow(card: card, metadata: .organizedDate)
                     }
                 }
                 .buttonStyle(.plain)

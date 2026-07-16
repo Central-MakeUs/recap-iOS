@@ -46,17 +46,7 @@ struct CardEditTypeSelectionSheet: View {
 
             Spacer(minLength: 0)
 
-            Button(action: confirmSelection) {
-                Text("선택 완료")
-                    .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                    .tracking(-0.28)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(Color.recapBlue300)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            }
-            .buttonStyle(.plain)
+            RecapButton(title: "선택 완료", action: confirmSelection)
             .padding(.horizontal, 16)
             .padding(.bottom, 20)
         }

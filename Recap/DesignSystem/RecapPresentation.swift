@@ -74,7 +74,7 @@ enum RecapPresentation {
                 subtitle: "가게, 여행지, 맛집 후보",
                 dotColor: .categoryRed500,
                 textColor: .categoryRed700,
-                symbolName: "mappin.circle.fill",
+                symbolName: "key.fill",
                 sampleCount: 23
             )
         case .schedule:
@@ -101,7 +101,7 @@ enum RecapPresentation {
                 subtitle: "책, 문서, 영상, 아티클",
                 dotColor: .categoryGray500,
                 textColor: .categoryGray700,
-                symbolName: "doc.fill",
+                symbolName: "book.closed.fill",
                 sampleCount: 1
             )
         case .benefits:
