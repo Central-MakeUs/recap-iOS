@@ -278,18 +278,3 @@ struct CardCreationSpeechBubble: View {
             }
     }
 }
-
-struct DisabledRecapButton: View {
-    let title: String
-
-    var body: some View {
-        Text(title)
-            .font(RecapFont.pretendard(size: 14, weight: .semibold))
-            .tracking(-0.28)
-            .foregroundStyle(Color.recapGray300)
-            .frame(maxWidth: .infinity)
-            .frame(height: 50)
-            .background(Color.recapGray100)
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-    }
-}

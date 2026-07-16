@@ -5,31 +5,12 @@ struct CardEditTypeField: View {
     @State private var isTypeSelectionPresented = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
-            CardEditFieldLabel(title: "유형")
-
-            Button {
-                isTypeSelectionPresented = true
-            } label: {
-                HStack {
-                    Text(RecapPresentation.collectionDisplay(for: collection).title)
-                        .font(RecapFont.pretendard(size: 14, weight: .regular))
-                        .tracking(-0.28)
-                        .foregroundStyle(Color.recapGray900)
-
-                    Spacer()
-
-                    Text("변경")
-                        .font(RecapFont.pretendard(size: 13, weight: .medium))
-                        .tracking(-0.26)
-                        .foregroundStyle(Color.recapBlue500)
-                }
-                .padding(.horizontal, 12)
-                .frame(height: 46)
-                .cardEditFieldStyle()
-            }
-            .buttonStyle(.plain)
-        }
+        RecapActionInput(
+            label: "유형",
+            value: RecapPresentation.collectionDisplay(for: collection).title,
+            actionTitle: "변경",
+            action: { isTypeSelectionPresented = true }
+        )
         .sheet(isPresented: $isTypeSelectionPresented) {
             CardEditTypeSelectionSheet(selection: $collection)
                 .presentationDetents([.height(384)])

@@ -43,6 +43,8 @@ struct CollectionDetailView: View {
     @State private var query = ""
     @State private var isSelecting = false
     @State private var selectedIDs: Set<InformationCard.ID> = []
+    @State private var filterSelection = "최신순"
+    @State private var isFilterExpanded = false
 
     let kind: CollectionKind
     let cards: [InformationCard]
@@ -88,8 +90,13 @@ struct CollectionDetailView: View {
                     .padding(.top, 4)
 
                 HStack(spacing: 8) {
-                    RecapFilterButton(title: "최신순") {
-                        onAction(.selectFilter("최신순"))
+                    RecapFilterPicker(
+                        options: ["최신순", "즐겨찾기"],
+                        selection: $filterSelection,
+                        isExpanded: $isFilterExpanded
+                    )
+                    .onChange(of: filterSelection) { _, value in
+                        onAction(.selectFilter(value))
                     }
 
                     Spacer()
@@ -124,15 +131,10 @@ struct CollectionDetailView: View {
                                     openCard(card.id)
                                 }
                             } label: {
-                                HStack(spacing: 0) {
-                                    if isSelecting {
-                                        Image(systemName: selectedIDs.contains(card.id) ? "checkmark.circle.fill" : "circle")
-                                            .font(.system(size: 22, weight: .medium))
-                                            .foregroundStyle(selectedIDs.contains(card.id) ? Color.recapBlue300 : Color.recapGray100)
-                                            .padding(.leading, 16)
-                                    }
-                                    ArchiveListCard(card: card)
-                                }
+                                RecapInformationCardRow(
+                                    card: card,
+                                    selectionState: isSelecting ? selectedIDs.contains(card.id) : nil
+                                )
                             }
                             .buttonStyle(.plain)
                         }

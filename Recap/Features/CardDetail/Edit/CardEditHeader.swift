@@ -6,7 +6,7 @@ struct CardEditHeader: View {
     let onSave: () -> Void
 
     var body: some View {
-        HStack {
+        HStack(spacing: 0) {
             Text("스크린샷 정보 수정")
                 .font(RecapFont.pretendard(size: 16, weight: .semibold))
                 .tracking(-0.32)
@@ -14,13 +14,14 @@ struct CardEditHeader: View {
 
             Spacer()
 
-            Button("취소", action: onCancel)
-                .foregroundStyle(Color.recapGray500)
+            HStack(spacing: 20) {
+                Button("취소", action: onCancel)
+                    .foregroundStyle(Color.recapGray500)
 
-            Button("완료", action: onSave)
-                .foregroundStyle(isSaveEnabled ? Color.recapBlue300 : Color.recapGray200)
-                .disabled(!isSaveEnabled)
-                .padding(.leading, 20)
+                Button("완료", action: onSave)
+                    .foregroundStyle(isSaveEnabled ? Color.recapBlue500 : Color.recapGray200)
+                    .disabled(!isSaveEnabled)
+            }
         }
         .font(RecapFont.pretendard(size: 15, weight: .medium))
         .tracking(-0.3)

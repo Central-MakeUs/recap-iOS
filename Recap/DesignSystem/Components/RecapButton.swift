@@ -1,7 +1,21 @@
 import SwiftUI
 
 struct RecapButton: View {
-    enum Style {
+    enum Size {
+        case large
+        case medium
+        case small
+
+        var height: CGFloat {
+            switch self {
+            case .large: 50
+            case .medium: 45
+            case .small: 40
+            }
+        }
+    }
+
+    enum Style: Equatable {
         case primary
         case dark
         case kakao
@@ -20,22 +34,19 @@ struct RecapButton: View {
             case .primary: Color.recapBlue300
             case .dark: Color.recapGray900
             case .kakao: Color.recapKakaoYellow
-            case .secondary: Color.white
+            case .secondary: Color.recapPrimarySoft
             }
         }
 
-        var border: Color {
-            switch self {
-            case .secondary: Color.recapGray100
-            case .primary, .dark, .kakao: .clear
-            }
-        }
     }
 
     let title: String
-    var systemImage: String? = nil
+    var systemImage: String?
     var style: Style = .primary
+    var size: Size = .large
     let action: () -> Void
+
+    @Environment(\.isEnabled) private var isEnabled
 
     var body: some View {
         Button(action: action) {
@@ -48,17 +59,31 @@ struct RecapButton: View {
                     .font(RecapFont.pretendard(size: 14, weight: .semibold))
                     .tracking(-0.28)
             }
-            .foregroundStyle(style.foreground)
             .frame(maxWidth: .infinity)
-            .frame(height: 50)
-            .background(style.background)
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(style.border, lineWidth: 1)
-            )
+            .frame(height: size.height)
         }
-        .buttonStyle(.plain)
+        .foregroundStyle(isEnabled ? style.foreground : Color.recapGray300)
+        .buttonStyle(RecapButtonPressStyle(style: style, isEnabled: isEnabled))
+    }
+}
+
+private struct RecapButtonPressStyle: ButtonStyle {
+    let style: RecapButton.Style
+    let isEnabled: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        let background = if !isEnabled {
+            Color.recapGray100
+        } else if configuration.isPressed && style == .primary {
+            Color.recapBlue500
+        } else {
+            style.background
+        }
+
+        configuration.label
+            .background(background)
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .opacity(configuration.isPressed && isEnabled && style != .primary ? 0.82 : 1)
     }
 }
 
@@ -78,6 +103,12 @@ struct RecapIconButtonLarge: View {
         Color.recapBackground.ignoresSafeArea()
         VStack(spacing: RecapTheme.Spacing.medium) {
             RecapButton(title: "버튼", style: .primary, action: PreviewActions.noop)
+            RecapButton(title: "버튼", style: .secondary, size: .medium, action: PreviewActions.noop)
+                .frame(width: 155)
+            RecapButton(title: "버튼", style: .primary, size: .small, action: PreviewActions.noop)
+                .frame(width: 125)
+            RecapButton(title: "비활성 버튼", style: .primary, action: PreviewActions.noop)
+                .disabled(true)
             RecapButton(title: "카카오로 로그인", systemImage: "message.fill", style: .kakao, action: PreviewActions.noop)
             RecapButton(title: "Apple로 시작하기", systemImage: "apple.logo", style: .dark, action: PreviewActions.noop)
         }

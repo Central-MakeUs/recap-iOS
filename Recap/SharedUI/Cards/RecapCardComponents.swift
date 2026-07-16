@@ -1,82 +1,5 @@
 import SwiftUI
 
-struct RecentRecapCard: View {
-    let card: InformationCard
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
-            RecapScreenshotThumbnail(kind: card.collection, assetName: card.thumbnailAssetName)
-                .frame(width: 111, height: 111)
-                .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
-
-            VStack(alignment: .leading, spacing: 5) {
-                Text(card.title)
-                    .font(RecapFont.pretendard(size: 13, weight: .medium))
-                    .tracking(-0.26)
-                    .foregroundStyle(Color.recapGray900)
-                    .lineLimit(1)
-
-                RecapChip(configuration: .category(card.collection, size: .small))
-            }
-        }
-        .frame(width: 111, alignment: .leading)
-    }
-}
-
-struct ArchiveListCard: View {
-    let card: InformationCard
-
-    var body: some View {
-        HStack(spacing: 20) {
-            thumbnailGroup
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(card.title)
-                    .font(RecapFont.pretendard(size: 13, weight: .medium))
-                    .tracking(-0.26)
-                    .foregroundStyle(Color.recapGray900)
-                    .lineLimit(1)
-
-                Text(card.summary)
-                    .font(RecapFont.pretendard(size: 12, weight: .medium))
-                    .tracking(-0.24)
-                    .foregroundStyle(Color.recapGray500)
-                    .lineLimit(1)
-            }
-
-            Spacer(minLength: 0)
-
-            if card.isFavorite {
-                Image(systemName: "star.fill")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(Color.recapBlue300)
-            }
-        }
-        .padding(.horizontal, 16)
-        .frame(height: 94)
-        .background(Color.white)
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(Color.recapGray100)
-                .frame(height: 1)
-        }
-    }
-
-    private var thumbnailGroup: some View {
-        ZStack(alignment: .leading) {
-            RecapScreenshotThumbnail(kind: card.collection, assetName: card.thumbnailAssetName)
-                .frame(width: 59, height: 59)
-                .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
-                .offset(x: 20)
-                .opacity(0.82)
-            RecapScreenshotThumbnail(kind: card.collection, assetName: card.thumbnailAssetName)
-                .frame(width: 59, height: 59)
-                .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
-        }
-        .frame(width: 79, height: 59, alignment: .leading)
-    }
-}
-
 struct FavoriteRecapListCard: View {
     let card: InformationCard
     var isStarred = false
@@ -98,6 +21,7 @@ struct FavoriteRecapListCard: View {
                         .tracking(-0.28)
                         .foregroundStyle(Color.recapGray900)
                         .lineLimit(1)
+
                     Text(card.summary)
                         .font(RecapFont.pretendard(size: 13, weight: .medium))
                         .tracking(-0.26)
@@ -110,8 +34,8 @@ struct FavoriteRecapListCard: View {
             Spacer(minLength: 0)
 
             RecapIconView(
-                icon: .star,
-                size: 22,
+                icon: isStarred ? .star : .starEmpty,
+                size: 24,
                 color: isStarred ? Color.recapBlue300 : Color.recapGray100
             )
             .padding(.top, 10)
@@ -127,92 +51,9 @@ struct FavoriteRecapListCard: View {
     }
 }
 
-struct ArchiveOtherCard: View {
-    let card: InformationCard
-
-    var body: some View {
-        HStack(spacing: 15) {
-            RecapScreenshotThumbnail(kind: card.collection, assetName: card.thumbnailAssetName)
-                .frame(width: 68, height: 68)
-                .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(card.title)
-                    .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                    .tracking(-0.28)
-                    .foregroundStyle(Color.recapGray900)
-                    .lineLimit(1)
-                Text(card.summary)
-                    .font(RecapFont.pretendard(size: 13, weight: .medium))
-                    .tracking(-0.26)
-                    .foregroundStyle(Color.recapGray500)
-                    .lineLimit(1)
-                Text("6월 27일 정리")
-                    .font(RecapFont.pretendard(size: 13, weight: .medium))
-                    .tracking(-0.26)
-                    .foregroundStyle(Color.recapGray300)
-            }
-
-            Spacer(minLength: 0)
-
-            Image(systemName: card.isFavorite ? "star.fill" : "star")
-                .font(.system(size: 24, weight: .semibold))
-                .foregroundStyle(card.isFavorite ? Color.recapBlue300 : Color.recapGray100)
-                .frame(width: 24, height: 24)
-                .alignmentGuide(.top) { _ in 3 }
-        }
-        .padding(.horizontal, 16)
-        .frame(height: 94)
-        .background(Color.white)
-        .overlay(alignment: .bottom) {
-            Rectangle().fill(Color.recapGray100).frame(height: 1)
-        }
-    }
-}
-
-struct RecapSearchResultCard: View {
-    let card: InformationCard
-
-    var body: some View {
-        HStack(spacing: 15) {
-            RecapScreenshotThumbnail(kind: card.collection, assetName: card.thumbnailAssetName)
-                .frame(width: 68, height: 68)
-                .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
-
-            VStack(alignment: .leading, spacing: 8) {
-                RecapChip(configuration: .category(card.collection, size: .small))
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(card.title)
-                        .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                        .tracking(-0.28)
-                        .foregroundStyle(Color.recapGray900)
-                        .lineLimit(1)
-                    Text(card.summary)
-                        .font(RecapFont.pretendard(size: 13, weight: .medium))
-                        .tracking(-0.26)
-                        .foregroundStyle(Color.recapGray500)
-                        .lineLimit(1)
-                }
-            }
-
-            Spacer(minLength: 0)
-
-            Image(systemName: card.isFavorite ? "star.fill" : "star")
-                .font(.system(size: 24, weight: .semibold))
-                .foregroundStyle(card.isFavorite ? Color.recapBlue300 : Color.recapGray100)
-        }
-        .padding(.horizontal, 16)
-        .frame(height: 94)
-        .background(Color.white)
-        .overlay(alignment: .bottom) {
-            Rectangle().fill(Color.recapGray100).frame(height: 1)
-        }
-    }
-}
-
 struct RecapScreenshotThumbnail: View {
     let kind: CollectionKind
-    var assetName: String? = nil
+    var assetName: String?
 
     var body: some View {
         Group {
@@ -233,6 +74,7 @@ struct RecapScreenshotThumbnail: View {
 
     private var placeholder: some View {
         let display = RecapPresentation.collectionDisplay(for: kind)
+
         return RoundedRectangle(cornerRadius: 5, style: .continuous)
             .fill(Color.recapThumbnail)
             .overlay(alignment: .topLeading) {
@@ -248,17 +90,15 @@ struct RecapScreenshotThumbnail: View {
     }
 }
 
-#Preview("Figma cards") {
-    ZStack {
-        Color.recapBackground.ignoresSafeArea()
-        ScrollView {
-            VStack(alignment: .leading, spacing: RecapTheme.Spacing.large) {
-                RecentRecapCard(card: SampleData.cards[0])
-                ArchiveListCard(card: SampleData.cards[1])
-                FavoriteRecapListCard(card: SampleData.cards[2], isStarred: true)
-                RecapSearchResultCard(card: SampleData.cards[0])
-            }
-            .padding()
-        }
-    }
+#Preview("즐겨찾기 리스트 카드") {
+    FavoriteRecapListCard(card: SampleData.cards[3], isStarred: true)
+}
+
+#Preview("스크린샷 썸네일") {
+    RecapScreenshotThumbnail(
+        kind: .shopping,
+        assetName: SampleData.cards[0].thumbnailAssetName
+    )
+    .frame(width: 134, height: 85)
+    .padding()
 }
