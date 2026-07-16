@@ -4,9 +4,23 @@ import SwiftUI
     NavigationStack {
         CardDetailView(
             card: SampleData.cards[1],
-            initialFeedback: CardFeedback(
-                kind: .success,
+            initialToast: RecapToastContent(
+                style: .success,
                 message: "즐겨찾기에 추가했어요."
+            )
+        )
+    }
+    .environment(AppRouter())
+    .environment(PreviewStores.recapCardStore())
+}
+
+#Preview("즐겨찾기 취소") {
+    NavigationStack {
+        CardDetailView(
+            card: SampleData.cards[3],
+            initialToast: RecapToastContent(
+                style: .success,
+                message: "즐겨찾기에서 삭제했어요."
             )
         )
     }
@@ -51,8 +65,8 @@ import SwiftUI
     NavigationStack {
         CardDetailView(
             card: SampleData.cards[1],
-            initialFeedback: CardFeedback(
-                kind: .failure,
+            initialToast: RecapToastContent(
+                style: .error,
                 message: "스크린샷을 삭제하지 못했어요. 다시 시도해주세요."
             )
         )

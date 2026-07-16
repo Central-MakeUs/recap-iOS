@@ -12,14 +12,14 @@ struct CardEditView: View {
 
     @State private var draft: CardEditDraft
     @State private var isDiscardConfirmationPresented: Bool
-    @State private var feedback: CardFeedback?
+    @State private var toast: RecapToastContent?
     @State private var isOriginalPresented = false
 
     init(
         card: InformationCard,
         initialDraft: CardEditDraft? = nil,
         initiallyShowsDiscardConfirmation: Bool = false,
-        initialFeedback: CardFeedback? = nil,
+        initialToast: RecapToastContent? = nil,
         onSave: ((CardEditDraft) -> Bool)? = nil,
         onClose: (() -> Void)? = nil
     ) {
@@ -30,7 +30,7 @@ struct CardEditView: View {
         closeAction = onClose
         _draft = State(initialValue: sourceDraft)
         _isDiscardConfirmationPresented = State(initialValue: initiallyShowsDiscardConfirmation)
-        _feedback = State(initialValue: initialFeedback)
+        _toast = State(initialValue: initialToast)
     }
 
     var body: some View {
@@ -57,9 +57,9 @@ struct CardEditView: View {
             confirmTitle: "그만두기",
             onConfirm: close
         )
-        .cardFeedbackToast(feedback, horizontalPadding: 13, bottomPadding: 50)
-        .task(id: feedback) {
-            await clearFeedbackIfNeeded()
+        .recapToast(toast)
+        .task(id: toast) {
+            await clearToastIfNeeded()
         }
         .fullScreenCover(isPresented: $isOriginalPresented) {
             CardOriginalPreviewSheet(card: card)
@@ -77,8 +77,8 @@ struct CardEditView: View {
     private func save() {
         guard draft.isSavable else { return }
         guard persist(draft) else {
-            feedback = CardFeedback(
-                kind: .failure,
+            toast = RecapToastContent(
+                style: .error,
                 message: "스크린샷 정보를 저장하지 못했어요. 다시 시도해주세요."
             )
             return
@@ -106,11 +106,11 @@ struct CardEditView: View {
         isOriginalPresented = true
     }
 
-    private func clearFeedbackIfNeeded() async {
-        guard feedback != nil else { return }
+    private func clearToastIfNeeded() async {
+        guard toast != nil else { return }
         try? await Task.sleep(for: .seconds(2))
         guard !Task.isCancelled else { return }
-        feedback = nil
+        toast = nil
     }
 }
 

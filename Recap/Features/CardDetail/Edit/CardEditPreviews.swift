@@ -52,8 +52,8 @@ private extension SampleData {
     CardEditView(
         card: SampleData.cards[1],
         initialDraft: SampleData.cardEditDraft,
-        initialFeedback: CardFeedback(
-            kind: .failure,
+        initialToast: RecapToastContent(
+            style: .error,
             message: "스크린샷 정보를 저장하지 못했어요. 다시 시도해주세요."
         ),
         onSave: { _ in false }

@@ -8,7 +8,7 @@ struct CardDetailView: View {
     let imageState: CardDetailImageState
 
     @State private var isDeleteConfirmationPresented: Bool
-    @State private var feedback: CardFeedback?
+    @State private var toast: RecapToastContent?
     @State private var isActionPanelPresented = false
     @State private var isEditing = false
     @State private var isOriginalPresented = false
@@ -18,23 +18,27 @@ struct CardDetailView: View {
         imageState == .failedCard ? RecapTheme.ColorToken.textPrimary : .white
     }
 
+    private var displayedCard: InformationCard {
+        cardStore.card(id: card.id) ?? card
+    }
+
     init(
         card: InformationCard,
         imageState: CardDetailImageState = .loaded,
         initiallyShowsDeleteConfirmation: Bool = false,
-        initialFeedback: CardFeedback? = nil
+        initialToast: RecapToastContent? = nil
     ) {
         self.card = card
         self.imageState = imageState
         _isDeleteConfirmationPresented = State(initialValue: initiallyShowsDeleteConfirmation)
-        _feedback = State(initialValue: initialFeedback)
+        _toast = State(initialValue: initialToast)
         _pendingPanelAction = State(initialValue: nil)
     }
 
     var body: some View {
         ZStack(alignment: .top) {
             CardDetailContentView(
-                card: card,
+                card: displayedCard,
                 imageState: imageState,
                 onOpenOriginal: openOriginal
             )
@@ -42,7 +46,7 @@ struct CardDetailView: View {
 
             CardDetailNavigationBar(
                 title: "스크린샷 상세",
-                isFavorite: card.isFavorite,
+                isFavorite: displayedCard.isFavorite,
                 foregroundColor: navigationContentColor,
                 onBack: dismiss.callAsFunction,
                 onFavorite: favorite,
@@ -67,10 +71,10 @@ struct CardDetailView: View {
             .presentationCornerRadius(20)
         }
         .navigationDestination(isPresented: $isEditing) {
-            CardEditView(card: card)
+            CardEditView(card: displayedCard)
         }
         .fullScreenCover(isPresented: $isOriginalPresented) {
-            CardOriginalPreviewSheet(card: card)
+            CardOriginalPreviewSheet(card: displayedCard)
         }
         .recapConfirmationDialog(
             isPresented: $isDeleteConfirmationPresented,
@@ -80,9 +84,9 @@ struct CardDetailView: View {
             confirmTitle: "삭제",
             onConfirm: deleteCard
         )
-        .cardFeedbackToast(feedback, horizontalPadding: 25, bottomPadding: 49)
-        .task(id: feedback) {
-            await clearFeedbackIfNeeded()
+        .recapToast(toast)
+        .task(id: toast) {
+            await clearToastIfNeeded()
         }
     }
 
@@ -90,13 +94,14 @@ struct CardDetailView: View {
     private func showActions() { isActionPanelPresented = true }
 
     private func favorite() {
-        feedback = CardFeedback(
-            kind: .success,
-            message: card.isFavorite
+        let removesFavorite = displayedCard.isFavorite
+        cardStore.toggleFavorite(id: card.id)
+        toast = RecapToastContent(
+            style: .success,
+            message: removesFavorite
                 ? "즐겨찾기에서 삭제했어요."
                 : "즐겨찾기에 추가했어요."
         )
-        cardStore.toggleFavorite(id: card.id)
     }
 
     private func requestEdit() {
@@ -132,11 +137,11 @@ struct CardDetailView: View {
         dismiss()
     }
 
-    private func clearFeedbackIfNeeded() async {
-        guard feedback != nil else { return }
+    private func clearToastIfNeeded() async {
+        guard toast != nil else { return }
         try? await Task.sleep(for: .seconds(2))
         guard !Task.isCancelled else { return }
-        feedback = nil
+        toast = nil
     }
 }
 
