@@ -7,7 +7,7 @@ struct CardEditFieldLabel: View {
         Text(title)
             .font(RecapFont.pretendard(size: 13, weight: .medium))
             .tracking(-0.26)
-            .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+            .foregroundStyle(Color.recapGray900)
     }
 }
 
@@ -17,7 +17,7 @@ extension View {
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(CardDetailStyle.inputBorder, lineWidth: 1)
+                    .stroke(Color.recapGray200, lineWidth: 1)
             }
     }
 }

@@ -17,7 +17,7 @@ struct CardDetailCategoryAndDateRow: View {
             Text(card.dateText)
                 .font(RecapFont.pretendard(size: 12, weight: .medium))
                 .tracking(-0.24)
-                .foregroundStyle(RecapTheme.ColorToken.textTertiary)
+                .foregroundStyle(Color.recapGray300)
         }
     }
 }

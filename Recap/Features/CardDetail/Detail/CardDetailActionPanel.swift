@@ -7,21 +7,21 @@ struct CardDetailActionPanel: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            actionButton(title: "스크린샷 정보 수정", color: RecapTheme.ColorToken.textBody, action: onEdit)
-            actionButton(title: "스크린샷 삭제", color: CardDetailStyle.destructiveText, action: onDelete)
+            actionButton(title: "스크린샷 정보 수정", color: Color.recapGray700, action: onEdit)
+            actionButton(title: "스크린샷 삭제", color: Color.recapDestructiveText, action: onDelete)
                 .padding(.top, 10)
 
             Button(action: onClose) {
                 Text("닫기")
                     .font(RecapFont.pretendard(size: 15, weight: .medium))
                     .tracking(-0.3)
-                    .foregroundStyle(RecapTheme.ColorToken.textBody)
+                    .foregroundStyle(Color.recapGray700)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
                     .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                     .overlay {
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .stroke(RecapTheme.ColorToken.border, lineWidth: 1)
+                            .stroke(Color.recapGray100, lineWidth: 1)
                     }
             }
             .buttonStyle(.plain)
@@ -41,7 +41,7 @@ struct CardDetailActionPanel: View {
                 .foregroundStyle(color)
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
-                .background(Color(red: 243 / 255, green: 245 / 255, blue: 249 / 255))
+                .background(Color.recapGray50)
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .buttonStyle(.plain)

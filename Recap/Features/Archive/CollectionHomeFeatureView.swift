@@ -88,7 +88,7 @@ struct CollectionHomeView: View {
             .padding(.top, 15)
             .padding(.bottom, 122)
         }
-        .background(RecapTheme.ColorToken.background)
+        .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
     }
 

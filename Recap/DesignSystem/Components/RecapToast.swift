@@ -22,9 +22,9 @@ struct RecapToast: View {
         fileprivate var iconColor: Color {
             switch self {
             case .success:
-                Color(red: 31 / 255, green: 205 / 255, blue: 112 / 255)
+                Color.recapToastSuccess
             case .error:
-                Color(red: 1, green: 100 / 255, blue: 100 / 255)
+                Color.recapDestructive
             }
         }
     }

@@ -14,7 +14,7 @@ struct CardEditTextFieldGroup: View {
             TextField(placeholder, text: limitedText)
                 .font(RecapFont.pretendard(size: 14, weight: .regular))
                 .tracking(-0.28)
-                .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                .foregroundStyle(Color.recapGray900)
                 .padding(.horizontal, 12)
                 .frame(height: 46)
                 .cardEditFieldStyle()
@@ -33,9 +33,9 @@ struct CardEditTextFieldGroup: View {
                 Text("\(text.count)/\(limit)")
                     .font(RecapFont.pretendard(size: 12, weight: .medium))
                     .tracking(-0.24)
-                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                    .foregroundStyle(Color.recapGray500)
             }
-            .foregroundStyle(CardDetailStyle.destructive)
+            .foregroundStyle(Color.recapDestructive)
         }
     }
 

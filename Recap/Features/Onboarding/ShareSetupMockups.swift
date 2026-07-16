@@ -4,7 +4,7 @@ struct ShareSetupMockup: View {
     var body: some View {
         VStack(spacing: 0) {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(RecapTheme.ColorToken.controlFill)
+                .fill(Color.recapControlFill)
                 .frame(width: 269, height: 238)
                 .overlay(alignment: .bottom) {
                     LinearGradient(
@@ -29,7 +29,7 @@ struct ShareSetupTutorialFrame: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(RecapTheme.ColorToken.textPrimary)
+                .fill(Color.recapGray900)
                 .frame(width: 343, height: 478)
 
             ShareSheetTutorialMockup()
@@ -51,7 +51,7 @@ private struct ShareSheetTutorialMockup: View {
                 .overlay {
                     Image(systemName: "photo.fill")
                         .font(.system(size: 52, weight: .semibold))
-                        .foregroundStyle(RecapTheme.ColorToken.textTertiary)
+                        .foregroundStyle(Color.recapGray300)
                 }
 
             ShareAppIconRow(spacing: 13)
@@ -85,18 +85,18 @@ private struct ShareAppIcon: View {
     var body: some View {
         VStack(spacing: 6) {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(highlighted ? RecapTheme.ColorToken.primary : RecapTheme.ColorToken.border)
+                .fill(highlighted ? Color.recapBlue300 : Color.recapGray100)
                 .frame(width: 42, height: 42)
                 .overlay {
                     Image(systemName: systemName)
                         .font(.system(size: 19, weight: .bold))
-                        .foregroundStyle(highlighted ? .white : RecapTheme.ColorToken.textSecondary)
+                        .foregroundStyle(highlighted ? .white : Color.recapGray500)
                 }
 
             Text(title)
                 .font(RecapFont.pretendard(size: 8, weight: .medium))
                 .tracking(-0.16)
-                .foregroundStyle(highlighted ? RecapTheme.ColorToken.textPrimary : RecapTheme.ColorToken.textSecondary)
+                .foregroundStyle(highlighted ? Color.recapGray900 : Color.recapGray500)
         }
     }
 }
@@ -121,13 +121,13 @@ struct SpeechBubble: View {
         Text(text)
             .font(RecapFont.pretendard(size: 13, weight: .medium))
             .tracking(-0.26)
-            .foregroundStyle(RecapTheme.ColorToken.primary)
+            .foregroundStyle(Color.recapBlue300)
             .padding(.horizontal, 15)
             .frame(height: 41)
             .background(.white)
             .overlay {
                 RoundedRectangle(cornerRadius: 21, style: .continuous)
-                    .stroke(RecapTheme.ColorToken.primary, lineWidth: 1)
+                    .stroke(Color.recapBlue300, lineWidth: 1)
             }
             .clipShape(RoundedRectangle(cornerRadius: 21, style: .continuous))
     }

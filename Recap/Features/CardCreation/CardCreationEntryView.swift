@@ -33,14 +33,14 @@ struct CardCreationEntryView: View {
                     Text("스크린샷을 정리해볼까요?")
                         .font(RecapFont.pretendard(size: 22, weight: .semibold))
                         .tracking(-0.44)
-                        .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                        .foregroundStyle(Color.recapGray900)
 
                     Text("갤러리에서 스크린샷을 선택하면\nRE-CAP이 정보 카드로 정리해드려요.")
                         .font(RecapFont.pretendard(size: 14, weight: .medium))
                         .tracking(-0.28)
                         .lineSpacing(3)
                         .multilineTextAlignment(.center)
-                        .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                        .foregroundStyle(Color.recapGray500)
                 }
             }
             .frame(maxWidth: .infinity)
@@ -52,7 +52,7 @@ struct CardCreationEntryView: View {
                 .padding(.bottom, 31)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(RecapTheme.ColorToken.background)
+        .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
     }
 
@@ -61,10 +61,10 @@ struct CardCreationEntryView: View {
             Text("정리하기")
                 .font(RecapFont.pretendard(size: 22, weight: .semibold))
                 .tracking(-0.44)
-                .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                .foregroundStyle(Color.recapGray900)
             Spacer()
             Button(action: openSettings) {
-                RecapIconView(icon: .more, size: 24, color: RecapTheme.ColorToken.textPrimary)
+                RecapIconView(icon: .more, size: 24, color: Color.recapGray900)
             }
             .buttonStyle(.plain)
         }

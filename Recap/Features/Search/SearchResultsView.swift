@@ -46,7 +46,7 @@ struct SearchResultsView: View {
                 SearchTargetCardEmptyState()
             }
         }
-        .background(RecapTheme.ColorToken.background)
+        .background(Color.recapBackground)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
     }

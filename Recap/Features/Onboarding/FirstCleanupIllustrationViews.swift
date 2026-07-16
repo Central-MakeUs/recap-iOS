@@ -9,7 +9,7 @@ struct CleanupCardStack: View {
         ZStack {
             ForEach(0..<4, id: \.self) { index in
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(RecapTheme.ColorToken.controlFill)
+                    .fill(Color.recapControlFill)
                     .frame(width: index == 1 ? 118 : 112, height: index == 1 ? 151 : 146)
                     .rotationEffect(.degrees(rotations[index]))
                     .offset(x: xOffsets[index], y: yOffsets[index])

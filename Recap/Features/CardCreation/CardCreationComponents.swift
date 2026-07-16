@@ -16,7 +16,7 @@ struct CardCreationFlowHeader: View {
             Button(action: action) {
                 Image(systemName: leading == .back ? "chevron.left" : "xmark")
                     .font(.system(size: 17, weight: .medium))
-                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                    .foregroundStyle(Color.recapGray500)
                     .frame(width: 24, height: 24)
             }
             .buttonStyle(.plain)
@@ -25,12 +25,12 @@ struct CardCreationFlowHeader: View {
                 Text(title)
                     .font(RecapFont.pretendard(size: 16, weight: .semibold))
                     .tracking(-0.32)
-                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                    .foregroundStyle(Color.recapGray900)
 
                 Text(countText)
                     .font(RecapFont.pretendard(size: 15, weight: .semibold))
                     .tracking(-0.3)
-                    .foregroundStyle(RecapTheme.ColorToken.primary)
+                    .foregroundStyle(Color.recapBlue300)
             }
 
             Spacer()
@@ -105,7 +105,7 @@ struct CardCreationScreenshotCell: View {
 
     private var selectionBadge: some View {
         Circle()
-            .fill(mode == .select ? RecapTheme.ColorToken.primary : RecapTheme.ColorToken.textTertiary)
+            .fill(mode == .select ? Color.recapBlue300 : Color.recapGray300)
             .frame(width: mode == .select ? 18 : 18, height: mode == .select ? 18 : 18)
             .overlay {
                 Image(systemName: mode == .select ? "checkmark" : "xmark")
@@ -119,7 +119,7 @@ struct CardCreationAddSlotCell: View {
     var body: some View {
         RoundedRectangle(cornerRadius: 8, style: .continuous)
             .stroke(
-                RecapTheme.ColorToken.textTertiary,
+                Color.recapGray300,
                 style: StrokeStyle(lineWidth: 1, dash: [4, 3])
             )
             .aspectRatio(1, contentMode: .fit)
@@ -146,7 +146,7 @@ struct CardCreationFolderIllustration: View {
                 VStack(spacing: 7) {
                     ForEach(0..<4, id: \.self) { _ in
                         RoundedRectangle(cornerRadius: 3, style: .continuous)
-                            .fill(RecapTheme.ColorToken.border.opacity(0.45))
+                            .fill(Color.recapGray100.opacity(0.45))
                             .frame(width: 31, height: 31)
                     }
                 }
@@ -154,12 +154,12 @@ struct CardCreationFolderIllustration: View {
             }
 
             RoundedRectangle(cornerRadius: 7, style: .continuous)
-                .fill(RecapTheme.ColorToken.primary)
+                .fill(Color.recapBlue300)
                 .frame(width: 96, height: 73)
                 .offset(x: 8, y: style == .ready ? 0 : 7)
                 .overlay(alignment: .topLeading) {
                     RoundedRectangle(cornerRadius: 4, style: .continuous)
-                        .fill(RecapTheme.ColorToken.primary.opacity(0.75))
+                        .fill(Color.recapBlue300.opacity(0.75))
                         .frame(width: 45, height: 16)
                         .offset(x: 8, y: -5)
                 }
@@ -168,8 +168,8 @@ struct CardCreationFolderIllustration: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            RecapTheme.ColorToken.primary.opacity(0.92),
-                            RecapTheme.ColorToken.primary.opacity(0.42)
+                            Color.recapBlue300.opacity(0.92),
+                            Color.recapBlue300.opacity(0.42)
                         ],
                         startPoint: .top,
                         endPoint: .bottom
@@ -187,7 +187,7 @@ struct CardCreationFolderIllustration: View {
 
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 38, weight: .regular))
-                    .foregroundStyle(Color(red: 42 / 255, green: 62 / 255, blue: 190 / 255))
+                    .foregroundStyle(Color.recapCardCreationAccent)
                     .offset(x: -37, y: 40)
             } else {
                 HStack(spacing: 4) {
@@ -206,7 +206,7 @@ struct CardCreationFolderIllustration: View {
             .frame(width: 28, height: 28)
             .overlay {
                 Capsule()
-                    .fill(RecapTheme.ColorToken.textPrimary)
+                    .fill(Color.recapGray900)
                     .frame(width: 18, height: 6)
                     .offset(x: offset)
             }
@@ -223,7 +223,7 @@ struct CardCreationFolderIllustration: View {
         ZStack {
             ForEach(0..<8, id: \.self) { index in
                 Capsule()
-                    .fill(index.isMultiple(of: 2) ? RecapTheme.ColorToken.primary : RecapTheme.ColorToken.primaryLight)
+                    .fill(index.isMultiple(of: 2) ? Color.recapBlue300 : Color.recapBlue300.opacity(0.14))
                     .frame(width: 5, height: 14)
                     .rotationEffect(.degrees(Double(index * 28)))
                     .offset(x: CGFloat((index % 4) * 24 - 36), y: CGFloat((index / 4) * 22))
@@ -239,7 +239,7 @@ struct CardCreationDashedIcon: View {
 
     var body: some View {
         RoundedRectangle(cornerRadius: 17, style: .continuous)
-            .fill(isError ? Color(red: 1, green: 235 / 255, blue: 235 / 255) : RecapTheme.ColorToken.primarySoft)
+            .fill(isError ? Color.recapErrorSurface : Color.recapPrimarySoft)
             .frame(width: 82, height: 82)
             .overlay {
                 Image(systemName: systemName)
@@ -250,7 +250,7 @@ struct CardCreationDashedIcon: View {
                 if systemName == "plus" || systemName == "camera" {
                     RoundedRectangle(cornerRadius: 17, style: .continuous)
                         .stroke(
-                            RecapTheme.ColorToken.border,
+                            Color.recapGray100,
                             style: StrokeStyle(lineWidth: 1, dash: [3, 2])
                         )
                 }
@@ -267,14 +267,14 @@ struct CardCreationSpeechBubble: View {
             .tracking(-0.24)
             .lineSpacing(3)
             .multilineTextAlignment(.center)
-            .foregroundStyle(RecapTheme.ColorToken.primary)
+            .foregroundStyle(Color.recapBlue300)
             .padding(.horizontal, 18)
             .padding(.vertical, 11)
             .background(Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .stroke(RecapTheme.ColorToken.primary, lineWidth: 1)
+                    .stroke(Color.recapBlue300, lineWidth: 1)
             }
     }
 }
@@ -286,10 +286,10 @@ struct DisabledRecapButton: View {
         Text(title)
             .font(RecapFont.pretendard(size: 14, weight: .semibold))
             .tracking(-0.28)
-            .foregroundStyle(RecapTheme.ColorToken.textTertiary)
+            .foregroundStyle(Color.recapGray300)
             .frame(maxWidth: .infinity)
             .frame(height: 50)
-            .background(RecapTheme.ColorToken.border)
+            .background(Color.recapGray100)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 }

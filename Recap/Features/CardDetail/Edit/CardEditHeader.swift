@@ -10,15 +10,15 @@ struct CardEditHeader: View {
             Text("스크린샷 정보 수정")
                 .font(RecapFont.pretendard(size: 16, weight: .semibold))
                 .tracking(-0.32)
-                .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                .foregroundStyle(Color.recapGray900)
 
             Spacer()
 
             Button("취소", action: onCancel)
-                .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                .foregroundStyle(Color.recapGray500)
 
             Button("완료", action: onSave)
-                .foregroundStyle(isSaveEnabled ? RecapTheme.ColorToken.primary : CardDetailStyle.inputBorder)
+                .foregroundStyle(isSaveEnabled ? Color.recapBlue300 : Color.recapGray200)
                 .disabled(!isSaveEnabled)
                 .padding(.leading, 20)
         }

@@ -8,13 +8,13 @@ struct SearchRecommendationGrid: View {
             HStack(spacing: 6) {
                 Image(systemName: "lightbulb.fill")
                     .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(RecapTheme.ColorToken.warning)
+                    .foregroundStyle(Color.recapWarning)
                     .frame(width: 24, height: 24)
 
                 Text("이런 내용까지 검색가능해요!")
                     .font(RecapFont.pretendard(size: 13, weight: .medium))
                     .tracking(-0.26)
-                    .foregroundStyle(RecapTheme.ColorToken.textBody)
+                    .foregroundStyle(Color.recapGray700)
             }
 
             VStack(spacing: 24) {
@@ -32,12 +32,12 @@ struct SearchRecommendationGrid: View {
     private func recommendationItem(_ title: String) -> some View {
         HStack(spacing: 10) {
             Rectangle()
-                .fill(RecapTheme.ColorToken.thumbnail)
+                .fill(Color.recapThumbnail)
                 .frame(width: 16, height: 16)
             Text(title)
                 .font(RecapFont.pretendard(size: 13, weight: .medium))
                 .tracking(-0.26)
-                .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                .foregroundStyle(Color.recapGray500)
         }
         .frame(width: 89, height: 18, alignment: .leading)
     }

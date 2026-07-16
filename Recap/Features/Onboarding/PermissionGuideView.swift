@@ -12,12 +12,12 @@ struct PermissionGuideView: View {
                     .font(RecapFont.pretendard(size: 22, weight: .semibold))
                     .tracking(-0.44)
                     .lineSpacing(3)
-                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                    .foregroundStyle(Color.recapGray900)
 
                 Text("권한은 허용 후에도 설정에서 언제든 변경할 수 있어요.")
                     .font(RecapFont.pretendard(size: 15, weight: .medium))
                     .tracking(-0.3)
-                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                    .foregroundStyle(Color.recapGray500)
             }
             .padding(.horizontal, 22)
 
@@ -41,7 +41,7 @@ struct PermissionGuideView: View {
             .padding(22)
             .frame(maxWidth: .infinity, alignment: .leading)
             .frame(height: 185)
-            .background(RecapTheme.ColorToken.controlFill)
+            .background(Color.recapControlFill)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             .padding(.horizontal, 16)
             .padding(.top, 42)
@@ -53,7 +53,7 @@ struct PermissionGuideView: View {
                 .padding(.bottom, 31)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .background(RecapTheme.ColorToken.background)
+        .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
     }
 }
@@ -67,7 +67,7 @@ private struct PermissionGuideRow: View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: iconName)
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(RecapTheme.ColorToken.primary)
+                .foregroundStyle(Color.recapBlue300)
                 .frame(width: 36, height: 36)
                 .background(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
@@ -76,11 +76,11 @@ private struct PermissionGuideRow: View {
                 Text(title)
                     .font(RecapFont.pretendard(size: 15, weight: .semibold))
                     .tracking(-0.3)
-                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                    .foregroundStyle(Color.recapGray900)
                 Text(message)
                     .font(RecapFont.pretendard(size: 13, weight: .medium))
                     .tracking(-0.26)
-                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                    .foregroundStyle(Color.recapGray500)
             }
         }
     }

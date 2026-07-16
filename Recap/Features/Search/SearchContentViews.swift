@@ -7,7 +7,7 @@ struct SearchTopBar: View {
     var body: some View {
         HStack(spacing: 8) {
             Button(action: onClose) {
-                RecapIconView(icon: .back, size: 24, color: RecapTheme.ColorToken.textPrimary)
+                RecapIconView(icon: .back, size: 24, color: Color.recapGray900)
                     .frame(width: 24, height: 44)
             }
             .buttonStyle(.plain)
@@ -45,13 +45,13 @@ struct SearchRecentContent: View {
             Text("최근 검색어")
                 .font(RecapFont.pretendard(size: 16, weight: .semibold))
                 .tracking(-0.32)
-                .foregroundStyle(RecapTheme.ColorToken.textBody)
+                .foregroundStyle(Color.recapGray700)
             Spacer()
             if !recentKeywords.isEmpty {
                 Button("전체삭제") { recentKeywords.removeAll() }
                     .font(RecapFont.pretendard(size: 13, weight: .medium))
                     .tracking(-0.26)
-                    .foregroundStyle(RecapTheme.ColorToken.textTertiary)
+                    .foregroundStyle(Color.recapGray300)
                     .buttonStyle(.plain)
             }
         }
@@ -61,7 +61,7 @@ struct SearchRecentContent: View {
         Text("최근 검색내역이 없어요.")
             .font(RecapFont.pretendard(size: 13, weight: .medium))
             .tracking(-0.26)
-            .foregroundStyle(RecapTheme.ColorToken.textTertiary)
+            .foregroundStyle(Color.recapGray300)
             .frame(maxWidth: .infinity)
             .padding(.top, 56)
     }
@@ -92,7 +92,7 @@ struct SearchResultsList: View {
             Text("\(results.count) recaps")
                 .font(RecapFont.pretendard(size: 13, weight: .medium))
                 .tracking(-0.26)
-                .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                .foregroundStyle(Color.recapGray500)
 
             VStack(spacing: 0) {
                 ForEach(results) { card in
@@ -116,7 +116,7 @@ struct SearchIncompleteState: View {
         Text(title)
             .font(RecapFont.pretendard(size: 20, weight: .bold))
             .tracking(-0.4)
-            .foregroundStyle(Color(red: 1, green: 0, blue: 0.72))
+            .foregroundStyle(Color.recapUnimplemented)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

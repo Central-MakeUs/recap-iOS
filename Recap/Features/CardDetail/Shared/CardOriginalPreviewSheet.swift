@@ -11,7 +11,7 @@ struct CardOriginalPreviewSheet: View {
                 Button(action: close) {
                     Image(systemName: "arrow.left")
                         .font(.system(size: 20, weight: .regular))
-                        .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                        .foregroundStyle(Color.recapGray900)
                         .frame(width: 24, height: 24)
                 }
                 .buttonStyle(.plain)
@@ -34,7 +34,7 @@ struct CardOriginalPreviewSheet: View {
                 }
             }
         }
-        .background(RecapTheme.ColorToken.background)
+        .background(Color.recapBackground)
         .statusBarHidden(false)
     }
 

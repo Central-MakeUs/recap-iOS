@@ -77,8 +77,8 @@ struct AccountManagementView: View {
                 SettingsActionCard(
                     title: "회원탈퇴",
                     message: "계정과 정리된 캡처 데이터를 삭제해요.",
-                    tint: SettingsColor.destructive,
-                    borderColor: SettingsColor.destructiveBorder,
+                    tint: Color.settingsDestructive,
+                    borderColor: Color.settingsDestructiveBorder,
                     isDestructive: true,
                     action: { confirmation = .withdraw }
                 )
@@ -92,12 +92,12 @@ struct AccountManagementView: View {
                 Text("회원탈퇴 시 계정과 연결된 데이터가 삭제될 수 있어요.")
             }
             .font(SettingsTypography.note)
-            .foregroundStyle(SettingsColor.textTertiary)
+            .foregroundStyle(Color.settingsTextTertiary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 23)
             .padding(.bottom, 30)
         }
-        .background(SettingsColor.background)
+        .background(Color.settingsBackground)
         .toolbar(.hidden, for: .navigationBar)
         .confirmationDialog(
             confirmation?.title ?? "",
@@ -163,7 +163,7 @@ struct MyPageSettingsView: View {
                 }
 
                 Rectangle()
-                    .fill(SettingsColor.divider)
+                    .fill(Color.settingsDivider)
                     .frame(height: 2)
                     .padding(.horizontal, -23)
 
@@ -182,7 +182,7 @@ struct MyPageSettingsView: View {
 
             Button("로그아웃") { showsLogoutConfirmation = true }
                 .font(RecapFont.pretendard(size: 14, weight: .regular))
-                .foregroundStyle(SettingsColor.link)
+                .foregroundStyle(Color.settingsLink)
                 .frame(maxWidth: .infinity)
                 .padding(.bottom, 29)
         }
@@ -213,13 +213,13 @@ struct SettingsInformationView: View {
                     HStack(alignment: .firstTextBaseline, spacing: 12) {
                         Text(row.0)
                             .font(SettingsTypography.rowTitle)
-                            .foregroundStyle(SettingsColor.textPrimary)
+                            .foregroundStyle(Color.settingsTextPrimary)
 
                         Spacer()
 
                         Text(row.1)
                             .font(SettingsTypography.rowCaption)
-                            .foregroundStyle(SettingsColor.textSecondary)
+                            .foregroundStyle(Color.settingsTextSecondary)
                             .multilineTextAlignment(.trailing)
                     }
                     .padding(.horizontal, 15)
@@ -230,20 +230,20 @@ struct SettingsInformationView: View {
                     }
                 }
             }
-            .recapCard(radius: 13, borderColor: SettingsColor.cardBorder)
+            .recapCard(radius: 13, borderColor: Color.recapGray100)
             .padding(.horizontal, 23)
             .padding(.top, 30)
 
             Text(note)
                 .font(SettingsTypography.note)
-                .foregroundStyle(SettingsColor.textTertiary)
+                .foregroundStyle(Color.settingsTextTertiary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 23)
                 .padding(.top, 13)
 
             Spacer()
         }
-        .background(SettingsColor.background)
+        .background(Color.settingsBackground)
         .toolbar(.hidden, for: .navigationBar)
     }
 }

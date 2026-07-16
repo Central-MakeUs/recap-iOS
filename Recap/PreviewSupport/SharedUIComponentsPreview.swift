@@ -1,7 +1,7 @@
 import SwiftUI
 #Preview("Figma primitives") {
     ZStack {
-        RecapTheme.ColorToken.background.ignoresSafeArea()
+        Color.recapBackground.ignoresSafeArea()
         VStack(spacing: 24) {
             RecapLogoText()
             RecapOnboardingDots(activeIndex: 2, count: 4)

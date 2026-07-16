@@ -18,7 +18,7 @@ struct CardCreationResultView: View {
                     .tracking(-0.4)
                     .lineSpacing(3)
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                    .foregroundStyle(Color.recapGray900)
 
                 if state == .complete {
                     CardCreationFolderIllustration(style: .complete)
@@ -28,7 +28,7 @@ struct CardCreationResultView: View {
                 Text(state.message)
                     .font(RecapFont.pretendard(size: 15, weight: .medium))
                     .tracking(-0.3)
-                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                    .foregroundStyle(Color.recapGray500)
                     .padding(.top, state == .complete ? 24 : -8)
             }
 
@@ -38,7 +38,7 @@ struct CardCreationResultView: View {
                 .padding(.horizontal, 22)
                 .padding(.bottom, 25)
         }
-        .background(state == .complete ? RecapTheme.ColorToken.background : RecapTheme.ColorToken.controlFill)
+        .background(state == .complete ? Color.recapBackground : Color.recapControlFill)
     }
 
     @ViewBuilder
@@ -46,7 +46,7 @@ struct CardCreationResultView: View {
         switch state {
         case .complete:
             Circle()
-                .fill(RecapTheme.ColorToken.primary)
+                .fill(Color.recapBlue300)
                 .frame(width: 22, height: 22)
                 .overlay {
                     Image(systemName: "checkmark")
@@ -60,19 +60,19 @@ struct CardCreationResultView: View {
                 .overlay {
                     Text("!")
                         .font(RecapFont.pretendard(size: 24, weight: .semibold))
-                        .foregroundStyle(RecapTheme.ColorToken.textTertiary)
+                        .foregroundStyle(Color.recapGray300)
                 }
                 .overlay {
-                    Circle().stroke(RecapTheme.ColorToken.border, lineWidth: 1)
+                    Circle().stroke(Color.recapGray100, lineWidth: 1)
                 }
         case .failure:
             Circle()
-                .fill(Color(red: 1, green: 235 / 255, blue: 235 / 255))
+                .fill(Color.recapErrorSurface)
                 .frame(width: 57, height: 57)
                 .overlay {
                     Image(systemName: "xmark")
                         .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(Color(red: 235 / 255, green: 70 / 255, blue: 70 / 255))
+                        .foregroundStyle(Color.recapErrorText)
                 }
         }
     }
@@ -136,7 +136,7 @@ struct CardCreationUnavailableView: View {
                 Button("취소", action: secondaryAction ?? primaryAction)
                     .font(RecapFont.pretendard(size: 14, weight: .semibold))
                     .tracking(-0.28)
-                    .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                    .foregroundStyle(Color.recapGray500)
                     .buttonStyle(.plain)
                 Spacer()
             }
@@ -148,7 +148,7 @@ struct CardCreationUnavailableView: View {
             VStack(spacing: 24) {
                 CardCreationDashedIcon(
                     systemName: variant.iconName,
-                    tint: variant == .loadFailure ? Color(red: 224 / 255, green: 66 / 255, blue: 66 / 255) : RecapTheme.ColorToken.primary,
+                    tint: variant == .loadFailure ? Color.recapErrorIcon : Color.recapBlue300,
                     isError: variant == .loadFailure
                 )
 
@@ -157,14 +157,14 @@ struct CardCreationUnavailableView: View {
                         .font(RecapFont.pretendard(size: 18, weight: .semibold))
                         .tracking(-0.36)
                         .multilineTextAlignment(.center)
-                        .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                        .foregroundStyle(Color.recapGray900)
 
                     Text(variant.message)
                         .font(RecapFont.pretendard(size: 14, weight: .medium))
                         .tracking(-0.28)
                         .lineSpacing(3)
                         .multilineTextAlignment(.center)
-                        .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                        .foregroundStyle(Color.recapGray500)
                 }
 
                 RecapButton(
@@ -178,14 +178,14 @@ struct CardCreationUnavailableView: View {
                     Button("홈으로", action: secondaryAction)
                         .font(RecapFont.pretendard(size: 14, weight: .semibold))
                         .tracking(-0.28)
-                        .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+                        .foregroundStyle(Color.recapGray500)
                         .buttonStyle(.plain)
                 }
             }
 
             Spacer(minLength: 0)
         }
-        .background(RecapTheme.ColorToken.background)
+        .background(Color.recapBackground)
     }
 }
 

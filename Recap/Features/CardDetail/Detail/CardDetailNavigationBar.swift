@@ -32,7 +32,7 @@ struct CardDetailNavigationBar: View {
                     .font(.system(size: 20, weight: .regular))
                     .foregroundStyle(
                         isFavorite
-                            ? RecapTheme.ColorToken.primary
+                            ? Color.recapBlue300
                             : foregroundColor.opacity(0.70)
                     )
                     .frame(width: 24, height: 24)

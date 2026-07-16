@@ -7,7 +7,7 @@ struct RecapOnboardingDots: View {
         HStack(spacing: 9) {
             ForEach(0..<count, id: \.self) { index in
                 Capsule()
-                    .fill(index == activeIndex ? RecapTheme.ColorToken.primary : RecapTheme.ColorToken.border)
+                    .fill(index == activeIndex ? Color.recapBlue300 : Color.recapGray100)
                     .frame(width: index == activeIndex ? 17 : 8, height: 8)
             }
         }

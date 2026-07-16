@@ -35,7 +35,7 @@ struct RecapChip: View {
         case .medium:
             HStack(spacing: 8) {
                 categoryIcon(kind: kind)
-                categoryTitle(kind: kind, color: RecapTheme.ColorToken.textPrimary)
+                categoryTitle(kind: kind, color: Color.recapGray900)
             }
         case .large:
             let palette = isSelected ? CategoryPalette.selected(for: kind) : .unselected
@@ -81,10 +81,10 @@ struct RecapChip: View {
                 .font(.system(size: 10, weight: .semibold))
                 .frame(width: 16, height: 16)
         }
-        .foregroundStyle(RecapTheme.ColorToken.textSecondary)
+        .foregroundStyle(Color.recapGray500)
         .padding(.horizontal, 12)
         .frame(height: 30)
-        .background(RecapTheme.ColorToken.gray50)
+        .background(Color.recapGray50)
         .clipShape(Capsule())
     }
 }
@@ -96,8 +96,8 @@ private struct CategoryPalette {
 
     static let unselected = CategoryPalette(
         background: .white,
-        border: RecapTheme.ColorToken.border,
-        text: RecapTheme.ColorToken.textTertiary
+        border: Color.recapGray100,
+        text: Color.recapGray300
     )
 
     static func selected(for kind: CollectionKind) -> CategoryPalette {

@@ -16,7 +16,7 @@ struct CardDetailView: View {
     @State private var pendingPanelAction: CardDetailPanelAction?
 
     private var navigationContentColor: Color {
-        imageState == .failedCard ? RecapTheme.ColorToken.textPrimary : .white
+        imageState == .failedCard ? Color.recapGray900 : .white
     }
 
     private var displayedCard: InformationCard {
@@ -57,7 +57,7 @@ struct CardDetailView: View {
             )
             .padding(.top, 20)
         }
-        .background(RecapTheme.ColorToken.background)
+        .background(Color.recapBackground)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .sheet(

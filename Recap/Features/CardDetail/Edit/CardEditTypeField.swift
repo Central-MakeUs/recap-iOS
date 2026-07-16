@@ -15,14 +15,14 @@ struct CardEditTypeField: View {
                     Text(RecapPresentation.collectionDisplay(for: collection).title)
                         .font(RecapFont.pretendard(size: 14, weight: .regular))
                         .tracking(-0.28)
-                        .foregroundStyle(RecapTheme.ColorToken.textPrimary)
+                        .foregroundStyle(Color.recapGray900)
 
                     Spacer()
 
                     Text("변경")
                         .font(RecapFont.pretendard(size: 13, weight: .medium))
                         .tracking(-0.26)
-                        .foregroundStyle(Color(red: 56 / 255, green: 69 / 255, blue: 199 / 255))
+                        .foregroundStyle(Color.recapBlue500)
                 }
                 .padding(.horizontal, 12)
                 .frame(height: 46)

@@ -74,7 +74,7 @@ enum RecapIcon: String, CaseIterable, Identifiable {
 struct RecapIconView: View {
     let icon: RecapIcon
     var size: CGFloat? = nil
-    var color: Color = RecapTheme.ColorToken.textPrimary
+    var color: Color = Color.recapGray900
     var weight: Font.Weight? = nil
 
     private var resolvedSize: CGFloat { size ?? icon.defaultSize }
@@ -91,7 +91,7 @@ struct RecapIconView: View {
 
 #Preview("Recap icons") {
     ZStack {
-        RecapTheme.ColorToken.background.ignoresSafeArea()
+        Color.recapBackground.ignoresSafeArea()
         HStack(spacing: RecapTheme.Spacing.medium) {
             ForEach(RecapIcon.allCases) { icon in
                 RecapIconView(icon: icon)
