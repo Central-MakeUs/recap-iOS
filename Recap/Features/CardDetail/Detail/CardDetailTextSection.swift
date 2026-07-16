@@ -2,14 +2,10 @@ import SwiftUI
 
 struct CardDetailTextSection: View {
     let card: InformationCard
-    let displaysCategoryPill: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            CardDetailCategoryAndDateRow(
-                card: card,
-                displaysCategoryPill: displaysCategoryPill
-            )
+            CardDetailCategoryAndDateRow(card: card)
 
             Text(card.title)
                 .font(RecapFont.pretendard(size: 22, weight: .semibold))
@@ -36,8 +32,5 @@ struct CardDetailTextSection: View {
 }
 
 #Preview("정보카드 텍스트") {
-    CardDetailTextSection(
-        card: SampleData.cards[1],
-        displaysCategoryPill: false
-    )
+    CardDetailTextSection(card: SampleData.cards[1])
 }

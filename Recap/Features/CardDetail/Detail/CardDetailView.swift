@@ -14,10 +14,6 @@ struct CardDetailView: View {
     @State private var isOriginalPresented = false
     @State private var pendingPanelAction: CardDetailPanelAction?
 
-    private var usesCategoryPill: Bool {
-        isDeleteConfirmationPresented || feedback != nil
-    }
-
     private var navigationContentColor: Color {
         imageState == .failedCard ? RecapTheme.ColorToken.textPrimary : .white
     }
@@ -40,7 +36,6 @@ struct CardDetailView: View {
             CardDetailContentView(
                 card: card,
                 imageState: imageState,
-                displaysCategoryPill: usesCategoryPill,
                 onOpenOriginal: openOriginal
             )
                 .ignoresSafeArea(edges: .top)

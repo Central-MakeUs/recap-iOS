@@ -3,7 +3,6 @@ import SwiftUI
 struct CardDetailContentView: View {
     let card: InformationCard
     let imageState: CardDetailImageState
-    let displaysCategoryPill: Bool
     let onOpenOriginal: () -> Void
 
     var body: some View {
@@ -16,10 +15,7 @@ struct CardDetailContentView: View {
                 )
                 .padding(.top, imageState.imageTopInset)
 
-                CardDetailTextSection(
-                    card: card,
-                    displaysCategoryPill: displaysCategoryPill
-                )
+                CardDetailTextSection(card: card)
                 .padding(.top, imageState.metadataSpacing)
             }
         }
@@ -30,7 +26,6 @@ struct CardDetailContentView: View {
     CardDetailContentView(
         card: SampleData.cards[1],
         imageState: .loaded,
-        displaysCategoryPill: false,
         onOpenOriginal: {}
     )
 }
