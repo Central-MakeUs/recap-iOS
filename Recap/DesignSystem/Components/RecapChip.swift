@@ -104,57 +104,57 @@ private struct CategoryPalette {
         switch kind {
         case .shopping:
             CategoryPalette(
-                background: RecapTheme.ColorToken.Category.blue300,
-                border: RecapTheme.ColorToken.Category.blue500,
-                text: RecapTheme.ColorToken.Category.blue700
+                background: .categoryBlue300,
+                border: .categoryBlue500,
+                text: .categoryBlue700
             )
         case .place:
             CategoryPalette(
-                background: RecapTheme.ColorToken.Category.red300,
-                border: RecapTheme.ColorToken.Category.red500,
-                text: RecapTheme.ColorToken.Category.red700
+                background: .categoryRed300,
+                border: .categoryRed500,
+                text: .categoryRed700
             )
         case .schedule:
             CategoryPalette(
-                background: RecapTheme.ColorToken.Category.green300,
-                border: RecapTheme.ColorToken.Category.green500,
-                text: RecapTheme.ColorToken.Category.green700
+                background: .categoryGreen300,
+                border: .categoryGreen500,
+                text: .categoryGreen700
             )
         case .knowledge:
             CategoryPalette(
-                background: RecapTheme.ColorToken.Category.yellow300,
-                border: RecapTheme.ColorToken.Category.yellow500,
-                text: RecapTheme.ColorToken.Category.yellow700
+                background: .categoryYellow300,
+                border: .categoryYellow500,
+                text: .categoryYellow700
             )
         case .content:
             CategoryPalette(
-                background: RecapTheme.ColorToken.Category.gray300,
-                border: RecapTheme.ColorToken.Category.gray500,
-                text: RecapTheme.ColorToken.Category.gray700
+                background: .categoryGray300,
+                border: .categoryGray500,
+                text: .categoryGray700
             )
         case .benefits:
             CategoryPalette(
-                background: RecapTheme.ColorToken.Category.mint300,
-                border: RecapTheme.ColorToken.Category.mint500,
-                text: RecapTheme.ColorToken.Category.mint700
+                background: .categoryMint300,
+                border: .categoryMint500,
+                text: .categoryMint700
             )
         case .capture:
             CategoryPalette(
-                background: RecapTheme.ColorToken.Category.purple300,
-                border: RecapTheme.ColorToken.Category.purple500,
-                text: RecapTheme.ColorToken.Category.purple700
+                background: .categoryPurple300,
+                border: .categoryPurple500,
+                text: .categoryPurple700
             )
         case .career:
             CategoryPalette(
-                background: RecapTheme.ColorToken.Category.orange300,
-                border: RecapTheme.ColorToken.Category.orange500,
-                text: RecapTheme.ColorToken.Category.orange700
+                background: .categoryOrange300,
+                border: .categoryOrange500,
+                text: .categoryOrange700
             )
         case .other:
             CategoryPalette(
-                background: RecapTheme.ColorToken.Category.gray300,
-                border: RecapTheme.ColorToken.Category.gray500,
-                text: RecapTheme.ColorToken.Category.gray700
+                background: .categoryGray300,
+                border: .categoryGray500,
+                text: .categoryGray700
             )
         }
     }
