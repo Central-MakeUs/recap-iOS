@@ -2,18 +2,14 @@ import SwiftUI
 
 struct CardEditTypeField: View {
     @Binding var collection: CollectionKind
+    @State private var isTypeSelectionPresented = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
             CardEditFieldLabel(title: "유형")
 
-            Menu {
-                Picker("유형", selection: $collection) {
-                    ForEach(CollectionKind.folderCases) { kind in
-                        Text(RecapPresentation.collectionDisplay(for: kind).title)
-                            .tag(kind)
-                    }
-                }
+            Button {
+                isTypeSelectionPresented = true
             } label: {
                 HStack {
                     Text(RecapPresentation.collectionDisplay(for: collection).title)
@@ -32,6 +28,14 @@ struct CardEditTypeField: View {
                 .frame(height: 46)
                 .cardEditFieldStyle()
             }
+            .buttonStyle(.plain)
+        }
+        .sheet(isPresented: $isTypeSelectionPresented) {
+            CardEditTypeSelectionSheet(selection: $collection)
+                .presentationDetents([.height(384)])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(32)
+                .presentationBackground(Color.white)
         }
     }
 }
