@@ -12,16 +12,6 @@ enum RecapCardCollection {
         }
     }
 
-    static func moving(
-        cardID: InformationCard.ID,
-        in cards: [InformationCard],
-        to collection: CollectionKind
-    ) -> [InformationCard] {
-        cards.map { card in
-            card.id == cardID ? card.with(collection: collection) : card
-        }
-    }
-
     static func togglingFavorite(
         cardID: InformationCard.ID,
         in cards: [InformationCard]
@@ -80,10 +70,6 @@ final class RecapCardStore {
         RecapCardCollection.search(cards, query: query)
     }
 
-    func moveCard(id: InformationCard.ID, to collection: CollectionKind) {
-        cards = RecapCardCollection.moving(cardID: id, in: cards, to: collection)
-    }
-
     func updateCard(id: InformationCard.ID, with draft: CardEditDraft) {
         guard let index = cards.firstIndex(where: { $0.id == id }) else { return }
         cards[index] = cards[index].with(editDraft: draft)
@@ -99,24 +85,6 @@ final class RecapCardStore {
 }
 
 extension InformationCard {
-    func with(collection: CollectionKind) -> InformationCard {
-        InformationCard(
-            id: id,
-            title: title,
-            summary: summary,
-            collection: collection,
-            dateText: dateText,
-            location: location,
-            businessHours: businessHours,
-            category: RecapPresentation.collectionDisplay(for: collection).title,
-            confirmationLabel: confirmationLabel,
-            memo: memo,
-            tags: tags,
-            thumbnailAssetName: thumbnailAssetName,
-            isFavorite: isFavorite
-        )
-    }
-
     func with(editDraft draft: CardEditDraft) -> InformationCard {
         InformationCard(
             id: id,
@@ -130,6 +98,7 @@ extension InformationCard {
             confirmationLabel: confirmationLabel,
             memo: draft.body,
             tags: tags,
+            originalImageAssetName: originalImageAssetName,
             thumbnailAssetName: thumbnailAssetName,
             isFavorite: isFavorite
         )
@@ -140,7 +109,8 @@ extension InformationCard {
             id: id, title: title, summary: summary, collection: collection,
             dateText: dateText, location: location, businessHours: businessHours,
             category: category, confirmationLabel: confirmationLabel, memo: memo,
-            tags: tags, thumbnailAssetName: thumbnailAssetName, isFavorite: isFavorite
+            tags: tags, originalImageAssetName: originalImageAssetName,
+            thumbnailAssetName: thumbnailAssetName, isFavorite: isFavorite
         )
     }
 }

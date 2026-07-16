@@ -73,14 +73,7 @@ struct SearchRecentContent: View {
                     Button {
                         selectKeyword(keyword)
                     } label: {
-                        Text(keyword)
-                            .font(RecapFont.pretendard(size: 14, weight: .regular))
-                            .tracking(-0.28)
-                            .foregroundStyle(RecapTheme.ColorToken.textSecondary)
-                            .padding(.horizontal, 12)
-                            .frame(height: 30)
-                            .background(RecapTheme.ColorToken.controlFill)
-                            .clipShape(Capsule())
+                        RecapChip(configuration: .recentSearch(keyword))
                     }
                     .buttonStyle(.plain)
                 }

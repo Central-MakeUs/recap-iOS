@@ -16,7 +16,7 @@ struct RecentRecapCard: View {
                     .foregroundStyle(RecapTheme.ColorToken.textPrimary)
                     .lineLimit(1)
 
-                RecapCategoryPill(kind: card.collection)
+                RecapChip(configuration: .category(card.collection, size: .small))
             }
         }
         .frame(width: 111, alignment: .leading)
@@ -90,7 +90,7 @@ struct FavoriteRecapListCard: View {
                 .padding(.top, 13)
 
             VStack(alignment: .leading, spacing: 8) {
-                RecapCategoryPill(kind: card.collection)
+                RecapChip(configuration: .category(card.collection, size: .small))
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(card.title)
@@ -180,7 +180,7 @@ struct RecapSearchResultCard: View {
                 .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
 
             VStack(alignment: .leading, spacing: 8) {
-                RecapCategoryPill(kind: card.collection)
+                RecapChip(configuration: .category(card.collection, size: .small))
                 VStack(alignment: .leading, spacing: 3) {
                     Text(card.title)
                         .font(RecapFont.pretendard(size: 14, weight: .semibold))
@@ -207,29 +207,6 @@ struct RecapSearchResultCard: View {
         .overlay(alignment: .bottom) {
             Rectangle().fill(RecapTheme.ColorToken.border).frame(height: 1)
         }
-    }
-}
-
-struct RecapCategoryPill: View {
-    let kind: CollectionKind
-    var size: Size = .small
-
-    enum Size {
-        case small
-        case regular
-    }
-
-    var body: some View {
-        let display = RecapPresentation.collectionDisplay(for: kind)
-        Text(display.title)
-            .font(RecapFont.pretendard(size: size == .small ? 10 : 13, weight: .medium))
-            .tracking(size == .small ? -0.20 : -0.26)
-            .foregroundStyle(display.textColor)
-            .padding(.horizontal, 10)
-            .frame(height: size == .small ? 22 : 26)
-            .overlay {
-                Capsule().stroke(display.dotColor, lineWidth: 1)
-            }
     }
 }
 

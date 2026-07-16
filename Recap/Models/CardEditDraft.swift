@@ -1,6 +1,10 @@
 import Foundation
 
 struct CardEditDraft: Equatable {
+    static let titleLimit = 30
+    static let summaryLimit = 80
+    static let bodyLimit = 500
+
     var collection: CollectionKind
     var title: String
     var summary: String
@@ -33,7 +37,15 @@ struct CardEditDraft: Equatable {
     }
 
     var isSavable: Bool {
-        !trimmedTitle.isEmpty && !trimmedSummary.isEmpty
+        !trimmedTitle.isEmpty
+            && !trimmedSummary.isEmpty
+            && title.count <= Self.titleLimit
+            && summary.count <= Self.summaryLimit
+            && body.count <= Self.bodyLimit
+    }
+
+    var hasRequiredFieldError: Bool {
+        trimmedTitle.isEmpty || trimmedSummary.isEmpty
     }
 
     func normalized() -> CardEditDraft {

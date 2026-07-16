@@ -29,6 +29,7 @@ enum SampleData {
             confirmationLabel: "예약 확정",
             memo: "체크인 시간과 숙소 주소를 여행 전 다시 확인하기",
             tags: ["숙소예약", "제주", "체크인"],
+            originalImageAssetName: "InformationCardOriginal",
             thumbnailAssetName: "HomeRecentJeju",
             isFavorite: false
         ),

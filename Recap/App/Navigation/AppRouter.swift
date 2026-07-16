@@ -14,8 +14,6 @@ final class AppRouter {
     var homePath: [AppRoute] = []
     var cardCreationPath: [AppRoute] = []
     var archivePath: [AppRoute] = []
-    var presentedSheet: AppSheetRoute?
-    var presentedModal: AppModalRoute?
 
     func binding(for tab: MainTab) -> Binding<[AppRoute]> {
         Binding(
@@ -37,20 +35,9 @@ final class AppRouter {
         setPath([], for: tab)
     }
 
-    func presentSheet(_ sheet: AppSheetRoute) {
-        presentedSheet = sheet
-    }
-
-    func dismissSheet() {
-        presentedSheet = nil
-    }
-
-    func presentModal(_ modal: AppModalRoute) {
-        presentedModal = modal
-    }
-
-    func dismissModal() {
-        presentedModal = nil
+    func returnHome() {
+        selectedTab = .home
+        homePath = []
     }
 
     func path(for tab: MainTab) -> [AppRoute] {

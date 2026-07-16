@@ -5,6 +5,19 @@ struct AppShellView: View {
     let cardStore: RecapCardStore
     var onLogout: () -> Void = {}
 
+    @State private var toast: RecapToastContent?
+
+    init(
+        router: AppRouter,
+        cardStore: RecapCardStore,
+        onLogout: @escaping () -> Void = {}
+    ) {
+        self.router = router
+        self.cardStore = cardStore
+        self.onLogout = onLogout
+        _toast = State(initialValue: nil)
+    }
+
     var body: some View {
         ZStack {
             RecapTheme.ColorToken.background
@@ -27,7 +40,10 @@ struct AppShellView: View {
         .environment(router)
         .environment(cardStore)
         .environment(\.recapLogout, onLogout)
-        .withAppPresentations(router: router, cardStore: cardStore)
+        .recapToast(toast)
+        .task(id: toast) {
+            await clearToastIfNeeded()
+        }
     }
 
     @ViewBuilder
@@ -49,7 +65,10 @@ struct AppShellView: View {
     ) -> some View {
         NavigationStack(path: router.binding(for: tab)) {
             content()
-                .withAppNavigationDestinations()
+                .withAppNavigationDestinations(
+                    cardStore: cardStore,
+                    onCardDeleted: showCardDeletedToast
+                )
         }
     }
 
@@ -65,7 +84,7 @@ struct AppShellView: View {
         switch lastRoute {
         case .archiveDetail:
             return true
-        case .search, .allRecentCards, .cardDetail, .cardEdit, .cardCreationStart, .settings:
+        case .search, .allRecentCards, .cardDetail, .cardCreationStart, .settings:
             return false
         }
     }
@@ -75,6 +94,20 @@ struct AppShellView: View {
         if router.cardCreationPath.last != .cardCreationStart {
             router.cardCreationPath = [.cardCreationStart]
         }
+    }
+
+    private func showCardDeletedToast() {
+        toast = RecapToastContent(
+            style: .success,
+            message: "스크린샷을 삭제했어요."
+        )
+    }
+
+    private func clearToastIfNeeded() async {
+        guard toast != nil else { return }
+        try? await Task.sleep(for: .seconds(2))
+        guard !Task.isCancelled else { return }
+        toast = nil
     }
 }
 
