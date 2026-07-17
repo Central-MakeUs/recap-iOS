@@ -1,53 +1,40 @@
 import SwiftUI
 
-struct CollectionHomeTypeGrid: View {
+struct CollectionHomeFolderGrid: View {
     let summaries: [CollectionSummary]
     let onOpenArchive: (CollectionKind) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            CollectionHomeFolderCountLabel()
-
-            LazyVGrid(
-                columns: Array(repeating: GridItem(.fixed(99), spacing: 19), count: 3),
-                alignment: .leading,
-                spacing: 39
-            ) {
-                ForEach(folderSummaries) { summary in
-                    Button {
-                        onOpenArchive(summary.kind)
-                    } label: {
-                        let display = RecapPresentation.collectionDisplay(for: summary.kind)
-                        RecapFolderCard(
-                            title: display.title,
-                            count: summary.count,
-                            thumbnailState: summary.kind == .other ? .empty : .filled,
-                            kind: summary.kind
-                        )
-                    }
-                    .buttonStyle(.plain)
+        LazyVGrid(
+            columns: Array(repeating: GridItem(.fixed(99), spacing: 23), count: 3),
+            alignment: .leading,
+            spacing: 15
+        ) {
+            ForEach(summaries) { summary in
+                Button {
+                    onOpenArchive(summary.kind)
+                } label: {
+                    let display = RecapPresentation.collectionDisplay(for: summary.kind)
+                    RecapFolderCard(
+                        title: display.title,
+                        count: summary.count,
+                        kind: summary.kind
+                    )
                 }
+                .buttonStyle(.plain)
             }
-            .frame(width: 335, alignment: .leading)
-            .padding(.leading, 4)
         }
-    }
-
-    private var folderSummaries: [CollectionSummary] {
-        summaries.filter { CollectionKind.folderCases.contains($0.kind) }
+        .frame(width: 343, alignment: .leading)
     }
 }
 
-struct CollectionHomeTypeList: View {
+struct CollectionHomeFolderList: View {
     let summaries: [CollectionSummary]
     let onOpenArchive: (CollectionKind) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            CollectionHomeFolderCountLabel()
-                .padding(.bottom, 16)
-
-            ForEach(folderSummaries) { summary in
+        VStack(spacing: 0) {
+            ForEach(summaries) { summary in
                 Button {
                     onOpenArchive(summary.kind)
                 } label: {
@@ -64,137 +51,52 @@ struct CollectionHomeTypeList: View {
         }
         .padding(.horizontal, -16)
     }
-
-    private var folderSummaries: [CollectionSummary] {
-        summaries.filter { CollectionKind.folderCases.contains($0.kind) }
-    }
-}
-
-struct CollectionHomeCardSection: View {
-    enum Style: Equatable {
-        case favorites
-        case other
-    }
-
-    @State private var filterSelection = "최신순"
-    @State private var isFilterExpanded = false
-
-    let cards: [InformationCard]
-    let style: Style
-    let emptySegment: ArchiveSection
-    let onSelectFilter: (String) -> Void
-    let onOpenCard: (InformationCard.ID) -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
-            sectionHeader
-
-            if style == .other {
-                recapCountText
-                    .padding(.top, 5)
-                    .padding(.horizontal, 16)
-            }
-
-            if cards.isEmpty {
-                CollectionHomeEmptyState(segment: emptySegment)
-            } else {
-                cardList
-            }
-        }
-        .padding(.horizontal, -16)
-    }
-
-    private var sectionHeader: some View {
-        HStack {
-            if style == .other {
-                RecapFilterPicker(
-                    options: ["최신순", "즐겨찾기"],
-                    selection: $filterSelection,
-                    isExpanded: $isFilterExpanded
-                )
-                .onChange(of: filterSelection) { _, value in
-                    onSelectFilter(value)
-                }
-            } else {
-                recapCountText
-            }
-
-            Spacer()
-
-            Text("선택")
-                .font(RecapFont.pretendard(size: 14, weight: .regular))
-                .tracking(-0.28)
-                .foregroundStyle(Color.recapGray500)
-        }
-        .padding(.horizontal, 16)
-    }
-
-    private var cardList: some View {
-        VStack(spacing: 0) {
-            ForEach(cards) { card in
-                Button {
-                    onOpenCard(card.id)
-                } label: {
-                    if style == .favorites {
-                        RecapInformationCardRow(card: card)
-                    } else {
-                        RecapInformationCardRow(card: card, metadata: .organizedDate)
-                    }
-                }
-                .buttonStyle(.plain)
-            }
-        }
-    }
-
-    private var recapCountText: some View {
-        Text("\(cards.count) recaps")
-            .font(RecapFont.pretendard(size: 13, weight: .medium))
-            .tracking(-0.26)
-            .foregroundStyle(Color.recapGray500)
-    }
 }
 
 struct CollectionHomeEmptyState: View {
-    let segment: ArchiveSection
+    let onImportScreenshots: () -> Void
 
     var body: some View {
-        switch segment {
-        case .favorites:
-            VStack(spacing: 14) {
-                RecapArchiveEmptyIllustration(style: .favorites)
-                Text("아직 즐겨찾기한 스크린샷이 없어요")
-                    .font(RecapFont.pretendard(size: 16, weight: .semibold))
-                    .tracking(-0.32)
-                    .foregroundStyle(Color.recapGray900)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 76)
-        case .other:
-            VStack(spacing: 14) {
-                RecapArchiveEmptyIllustration(style: .other)
-                Text("아직 기타 스크린샷이 없어요")
-                    .font(RecapFont.pretendard(size: 16, weight: .semibold))
-                    .tracking(-0.32)
-                    .foregroundStyle(Color.recapGray900)
-                Text("유형을 정하지 못한 항목은 이후 이 위치에 표시됩니다.")
-                    .font(RecapFont.pretendard(size: 13, weight: .medium))
-                    .tracking(-0.26)
-                    .foregroundStyle(Color.recapGray500)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 76)
-        case .type:
-            EmptyView()
+        VStack(spacing: 0) {
+            RecapSearchEmptyIllustration(size: 123)
+
+            Text("아직 정리된 스크린샷이 없어요")
+                .font(RecapFont.pretendard(size: 16, weight: .semibold))
+                .tracking(-0.32)
+                .foregroundStyle(Color.recapGray300)
+                .padding(.top, 20)
+
+            Text("정리할 스크린샷을 불러오거나\n갤러리에서 공유해주세요")
+                .font(RecapFont.pretendard(size: 14, weight: .regular))
+                .tracking(-0.28)
+                .lineSpacing(1)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(Color.recapGray300)
+                .padding(.top, 9)
+
+            Button("스크린샷 불러오기", action: onImportScreenshots)
+                .font(RecapFont.pretendard(size: 14, weight: .semibold))
+                .tracking(-0.28)
+                .foregroundStyle(Color.recapBlue300)
+                .frame(width: 155, height: 45)
+                .background(Color.recapBlue50)
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .buttonStyle(.plain)
+                .padding(.top, 23)
         }
     }
 }
 
-private struct CollectionHomeFolderCountLabel: View {
-    var body: some View {
-        Text("8개의 유형 폴더")
-            .font(RecapFont.pretendard(size: 13, weight: .medium))
-            .tracking(-0.26)
-            .foregroundStyle(Color.recapGray500)
-            .padding(.leading, 5)
-    }
+#Preview("보관함 폴더 격자") {
+    CollectionHomeFolderGrid(
+        summaries: SampleData.collectionSummaries + [
+            CollectionSummary(kind: .other, count: 0, previewTitle: "카드 없음")
+        ],
+        onOpenArchive: { _ in }
+    )
+    .padding()
+}
+
+#Preview("보관함 빈 상태") {
+    CollectionHomeEmptyState(onImportScreenshots: {})
 }

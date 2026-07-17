@@ -1,47 +1,27 @@
 import SwiftUI
 
-struct FavoriteRecapListCard: View {
+struct ArchiveCardListRow: View {
+    enum Metadata {
+        case category
+        case organizedDate
+    }
+
     let card: InformationCard
-    var isStarred = false
+    var metadata: Metadata = .category
+    var favoriteOverride: Bool?
+    var selectionState: Bool?
+    var thumbnailCornerRadius: CGFloat = 5
 
     var body: some View {
-        HStack(alignment: .top, spacing: 15) {
-            RecapScreenshotThumbnail(kind: card.collection, assetName: card.thumbnailAssetName)
-                .frame(width: 68, height: 68)
-                .fixedSize(horizontal: true, vertical: true)
-                .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
-                .padding(.top, 13)
-
-            VStack(alignment: .leading, spacing: 8) {
-                RecapChip(configuration: .category(card.collection, size: .small))
-
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(card.title)
-                        .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                        .tracking(-0.28)
-                        .foregroundStyle(Color.recapGray900)
-                        .lineLimit(1)
-
-                    Text(card.summary)
-                        .font(RecapFont.pretendard(size: 13, weight: .medium))
-                        .tracking(-0.26)
-                        .foregroundStyle(Color.recapGray500)
-                        .lineLimit(1)
-                }
+        Group {
+            if let selectionState {
+                selectionRow(isSelected: selectionState)
+            } else {
+                browsingRow
             }
-            .padding(.top, 13)
-
-            Spacer(minLength: 0)
-
-            RecapIconView(
-                icon: isStarred ? .star : .starEmpty,
-                size: 24,
-                color: isStarred ? Color.recapBlue300 : Color.recapGray100
-            )
-            .padding(.top, 10)
         }
         .padding(.horizontal, 16)
-        .frame(height: 94, alignment: .top)
+        .frame(height: 108, alignment: .top)
         .background(Color.white)
         .overlay(alignment: .bottom) {
             Rectangle()
@@ -49,11 +29,93 @@ struct FavoriteRecapListCard: View {
                 .frame(height: 1)
         }
     }
+
+    private var browsingRow: some View {
+        HStack(alignment: .top, spacing: 0) {
+            textContent
+
+            Spacer(minLength: 0)
+
+            ZStack(alignment: .topTrailing) {
+                thumbnail
+
+                RecapIconView(
+                    icon: (favoriteOverride ?? card.isFavorite) ? .star : .starEmpty,
+                    size: 24,
+                    color: (favoriteOverride ?? card.isFavorite)
+                        ? Color.recapBlue300
+                        : Color.recapGray100
+                )
+            }
+            .padding(.top, 14)
+        }
+    }
+
+    private func selectionRow(isSelected: Bool) -> some View {
+        HStack(alignment: .top, spacing: 14) {
+            RecapIconView(
+                icon: .checkbox,
+                size: 16,
+                color: isSelected ? Color.recapBlue300 : Color.recapGray100
+            )
+            .padding(.top, 14)
+
+            textContent
+
+            thumbnail
+                .padding(.top, 14)
+        }
+    }
+
+    private var textContent: some View {
+        VStack(alignment: .leading, spacing: metadata == .category ? 4 : 2) {
+            if metadata == .category {
+                Text(RecapPresentation.collectionDisplay(for: card.collection).title)
+                    .font(RecapFont.pretendard(size: 10, weight: .semibold))
+                    .tracking(-0.2)
+                    .foregroundStyle(
+                        RecapPresentation.collectionDisplay(for: card.collection).textColor
+                    )
+            }
+
+            Text(card.title)
+                .font(RecapFont.pretendard(size: 14, weight: .semibold))
+                .tracking(-0.28)
+                .foregroundStyle(Color.recapGray900)
+                .lineLimit(1)
+
+            Text(card.summary)
+                .font(RecapFont.pretendard(size: 13, weight: .medium))
+                .tracking(-0.26)
+                .foregroundStyle(Color.recapGray500)
+                .lineLimit(2)
+
+            if metadata == .organizedDate {
+                Text(card.dateText.replacingOccurrences(of: "정리됨 ", with: "") + " 정리")
+                    .font(RecapFont.pretendard(size: 10, weight: .semibold))
+                    .tracking(-0.2)
+                    .foregroundStyle(Color.recapGray300)
+                    .padding(.top, 3)
+            }
+        }
+        .frame(width: 237, alignment: .leading)
+        .padding(.top, 14)
+    }
+
+    private var thumbnail: some View {
+        RecapScreenshotThumbnail(
+            kind: card.collection,
+            assetName: card.thumbnailAssetName,
+            cornerRadius: thumbnailCornerRadius
+        )
+        .frame(width: 62, height: 80)
+    }
 }
 
 struct RecapScreenshotThumbnail: View {
     let kind: CollectionKind
     var assetName: String?
+    var cornerRadius: CGFloat = 5
 
     var body: some View {
         Group {
@@ -65,9 +127,10 @@ struct RecapScreenshotThumbnail: View {
                 placeholder
             }
         }
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         .clipped()
         .overlay {
-            RoundedRectangle(cornerRadius: 5, style: .continuous)
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 .stroke(Color.recapGray100, lineWidth: 1)
         }
     }
@@ -91,7 +154,11 @@ struct RecapScreenshotThumbnail: View {
 }
 
 #Preview("즐겨찾기 리스트 카드") {
-    FavoriteRecapListCard(card: SampleData.cards[3], isStarred: true)
+    ArchiveCardListRow(card: SampleData.cards[3], favoriteOverride: true)
+}
+
+#Preview("보관함 날짜 리스트 카드") {
+    ArchiveCardListRow(card: SampleData.cards[0], metadata: .organizedDate)
 }
 
 #Preview("스크린샷 썸네일") {

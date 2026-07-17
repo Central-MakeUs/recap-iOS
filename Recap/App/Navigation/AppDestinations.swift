@@ -27,8 +27,10 @@ extension View {
             SearchContainerView()
         case .allRecentCards:
             AllRecentCardsContainerView()
+        case .archiveFavorites:
+            CollectionDetailContainerView(scope: .favorites)
         case .archiveDetail(let kind):
-            CollectionDetailContainerView(kind: kind)
+            CollectionDetailContainerView(scope: .category(kind))
         case .cardDetail(let id):
             if let card = cardStore.card(id: id) {
                 CardDetailView(card: card, onDeleted: onCardDeleted)

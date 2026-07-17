@@ -25,6 +25,7 @@ enum ArchiveSection: String, CaseIterable, Identifiable {
 
 enum ArchiveAction: Hashable {
     case search
+    case openFavorites
     case openArchive(CollectionKind)
     case openCard(InformationCard.ID)
     case selectFilter(String)

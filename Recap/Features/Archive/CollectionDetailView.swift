@@ -4,25 +4,31 @@ struct CollectionDetailContainerView: View {
     @Environment(AppRouter.self) private var router
     @Environment(RecapCardStore.self) private var cardStore
 
-    let kind: CollectionKind
+    let scope: ArchiveDetailScope
 
     var body: some View {
         CollectionDetailView(
-            kind: kind,
+            scope: scope,
             cards: cardsForDisplay,
-            summary: cardStore.collectionSummaries.first { $0.kind == kind },
             onAction: handleAction
         )
     }
 
     private var cardsForDisplay: [InformationCard] {
-        cardStore.cards(in: kind)
+        switch scope {
+        case .favorites:
+            cardStore.favoriteCards
+        case .category(let kind):
+            cardStore.cards(in: kind)
+        }
     }
 
     private func handleAction(_ action: ArchiveAction) {
         switch action {
         case .search:
             router.navigate(.search)
+        case .openFavorites:
+            router.navigate(.archiveFavorites)
         case .openArchive(let kind):
             router.navigate(.archiveDetail(kind))
         case .openCard(let id):
@@ -38,155 +44,186 @@ struct CollectionDetailContainerView: View {
 }
 
 struct CollectionDetailView: View {
-    enum LoadState { case loaded, failed }
+    enum InteractionMode: Equatable {
+        case browsing
+        case searching
+        case selecting(returnToSearch: Bool)
 
+        var showsSearchField: Bool {
+            switch self {
+            case .browsing:
+                false
+            case .searching:
+                true
+            case .selecting(let returnToSearch):
+                returnToSearch
+            }
+        }
+
+        var showsSearchButton: Bool {
+            self == .browsing
+        }
+
+        var isSelecting: Bool {
+            if case .selecting = self { return true }
+            return false
+        }
+
+        var returnsToSearchAfterSelection: Bool {
+            if case .selecting(let returnToSearch) = self {
+                return returnToSearch
+            }
+            return false
+        }
+    }
+
+    @Environment(\.dismiss) private var dismiss
     @Environment(RecapMainTabChromeState.self) private var mainTabChromeState
 
     @State private var query = ""
-    @State private var isSelecting = false
+    @State private var interactionMode: InteractionMode
     @State private var selectedIDs: Set<InformationCard.ID> = []
     @State private var filterSelection = "최신순"
     @State private var isFilterExpanded = false
+    @State private var isDeleteConfirmationPresented = false
+    @State private var toast: RecapToastContent?
 
-    let kind: CollectionKind
+    let scope: ArchiveDetailScope
     let cards: [InformationCard]
-    let summary: CollectionSummary?
-    var loadState: LoadState = .loaded
-    var onRetry: () -> Void = {}
     let onAction: (ArchiveAction) -> Void
 
     init(
-        kind: CollectionKind,
+        scope: ArchiveDetailScope,
         cards: [InformationCard],
-        summary: CollectionSummary?,
-        loadState: LoadState = .loaded,
-        onRetry: @escaping () -> Void = {},
+        interactionMode: InteractionMode = .browsing,
+        initialToast: RecapToastContent? = nil,
         onAction: @escaping (ArchiveAction) -> Void
     ) {
-        self.kind = kind
+        self.scope = scope
         self.cards = cards
-        self.summary = summary
-        self.loadState = loadState
-        self.onRetry = onRetry
+        _interactionMode = State(initialValue: interactionMode)
+        _toast = State(initialValue: initialToast)
         self.onAction = onAction
     }
 
     var body: some View {
-        let collection = RecapPresentation.collectionDisplay(for: kind)
+        VStack(spacing: 0) {
+            CollectionDetailNavigationHeader(
+                scope: scope,
+                query: $query,
+                showsSearchField: interactionMode.showsSearchField,
+                showsSearchButton: interactionMode.showsSearchButton,
+                onBack: { dismiss() },
+                onStartSearch: startSearch,
+                onCloseSearch: closeSearch
+            )
+            .padding(.horizontal, 16)
+            .padding(.top, interactionMode.showsSearchField ? 11 : 20)
 
-        Group {
-            if loadState == .failed {
-                RecapLoadFailureView(style: .archive, retry: onRetry)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.recapBackground)
-                    .navigationTitle("보관함")
-                    .navigationBarTitleDisplayMode(.inline)
+            controlRow
+                .padding(.top, interactionMode.showsSearchField ? 14 : 24)
+
+            Rectangle()
+                .fill(Color.recapControlFill)
+                .frame(height: 6)
+                .padding(.top, 12)
+
+            Text("\(filteredCards.count) recaps")
+                .font(RecapFont.pretendard(size: 14, weight: .regular))
+                .tracking(-0.28)
+                .foregroundStyle(Color.recapGray500)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 16)
+                .padding(.top, 15)
+
+            if filteredCards.isEmpty {
+                CollectionDetailEmptyState(scope: scope)
+                    .frame(maxHeight: .infinity)
+                    .padding(.bottom, 120)
             } else {
-                loadedContent(collection: collection)
+                cardList
+                    .padding(.top, 7)
             }
         }
-        .onAppear {
-            updateMainTabChromeVisibility(isSelecting: isSelecting)
+        .background(Color.recapBackground)
+        .toolbar(.hidden, for: .navigationBar)
+        .recapConfirmationDialog(
+            isPresented: $isDeleteConfirmationPresented,
+            title: "\(selectedIDs.count)개의 스크린샷을 삭제할까요?",
+            message: "삭제한 스크린샷 정보는\n되돌릴 수 없어요.",
+            cancelTitle: "취소",
+            confirmTitle: "삭제",
+            onConfirm: confirmDeletion
+        )
+        .recapToast(toast)
+        .task(id: toast) {
+            await clearToastIfNeeded()
         }
-        .onChange(of: isSelecting) { _, isSelecting in
-            updateMainTabChromeVisibility(isSelecting: isSelecting)
+        .onAppear {
+            mainTabChromeState.setVisible(false, for: .archive)
+        }
+        .onChange(of: query) {
+            guard isSelecting else { return }
+            selectedIDs.formIntersection(filteredCards.map(\.id))
         }
         .onDisappear {
             mainTabChromeState.reset(for: .archive)
         }
     }
 
-    private func loadedContent(collection: RecapPresentation.CollectionDisplay) -> some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 16) {
-                SearchBar(text: $query)
-                    .padding(.top, 4)
-
-                HStack(spacing: 8) {
-                    RecapFilterPicker(
-                        options: ["최신순", "즐겨찾기"],
-                        selection: $filterSelection,
-                        isExpanded: $isFilterExpanded
-                    )
-                    .onChange(of: filterSelection) { _, value in
-                        onAction(.selectFilter(value))
-                    }
-
-                    Spacer()
-                }
-
-                HStack {
-                    Text("\(filteredCards.count) recaps")
-                        .font(RecapFont.pretendard(size: 13, weight: .medium))
-                        .tracking(-0.26)
-                        .foregroundStyle(Color.recapGray500)
-                    Spacer()
-                    Button(isSelecting ? "완료" : "선택") {
-                        isSelecting.toggle()
-                        if !isSelecting { selectedIDs.removeAll() }
-                    }
-                    .font(RecapFont.pretendard(size: 14, weight: .regular))
-                    .foregroundStyle(Color.recapGray500)
-                }
-
-                VStack(spacing: 0) {
-                    if filteredCards.isEmpty {
-                        RecapInlineEmptyView(
-                            title: "아직 \(collection.title) 카드가 없어요",
-                            message: "실제 분류 데이터가 연결되면 이곳에 표시됩니다."
-                        )
-                    } else {
-                        ForEach(filteredCards) { card in
-                            Button {
-                                if isSelecting {
-                                    toggleSelection(card.id)
-                                } else {
-                                    openCard(card.id)
-                                }
-                            } label: {
-                                RecapInformationCardRow(
-                                    card: card,
-                                    selectionState: isSelecting ? selectedIDs.contains(card.id) : nil
-                                )
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                }
-                .background(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color.recapGray100, lineWidth: 1)
-                }
+    private var controlRow: some View {
+        HStack(spacing: 14) {
+            RecapFilterPicker(
+                options: ["최신순", "즐겨찾기"],
+                selection: $filterSelection,
+                isExpanded: $isFilterExpanded
+            )
+            .onChange(of: filterSelection) { _, value in
+                onAction(.selectFilter(value))
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
-        }
-        .background(Color.recapBackground)
-        .navigationTitle(collection.title)
-        .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .bottom) {
+
+            Spacer()
+
             if isSelecting {
-                Button {
-                    onAction(.deleteCards(selectedIDs))
-                    selectedIDs.removeAll()
-                    isSelecting = false
-                } label: {
-                    Text("삭제")
-                        .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 52)
-                        .background(selectedIDs.isEmpty ? Color.recapGray300 : Color.red)
-                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                Button("취소", action: cancelSelection)
+                    .foregroundStyle(Color.recapGray500)
+
+                Button("선택 삭제 (\(selectedIDs.count))", action: requestDeletion)
+                    .foregroundStyle(Color.recapBlue900)
+                    .disabled(selectedIDs.isEmpty)
+            } else {
+                Button("선택", action: beginSelection)
+                    .foregroundStyle(Color.recapGray500)
+            }
+        }
+        .font(RecapFont.pretendard(size: 14, weight: .regular))
+        .tracking(-0.28)
+        .padding(.horizontal, 16)
+        .frame(height: 35)
+    }
+
+    private var cardList: some View {
+        ScrollView(showsIndicators: false) {
+            LazyVStack(spacing: 0) {
+                ForEach(filteredCards) { card in
+                    Button {
+                        if isSelecting {
+                            toggleSelection(card.id)
+                        } else {
+                            onAction(.openCard(card.id))
+                        }
+                    } label: {
+                        ArchiveCardListRow(
+                            card: card,
+                            metadata: scope.rowMetadata,
+                            favoriteOverride: scope.favoriteOverride,
+                            selectionState: isSelecting
+                                ? selectedIDs.contains(card.id)
+                                : nil
+                        )
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
-                .disabled(selectedIDs.isEmpty)
-                .accessibilityIdentifier("archive.selection.delete")
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(Color.recapBackground)
             }
         }
     }
@@ -199,38 +236,118 @@ struct CollectionDetailView: View {
         }
     }
 
+    private var isSelecting: Bool {
+        interactionMode.isSelecting
+    }
+
+    private func startSearch() {
+        interactionMode = .searching
+    }
+
+    private func closeSearch() {
+        query = ""
+        selectedIDs.removeAll()
+        interactionMode = .browsing
+    }
+
+    private func beginSelection() {
+        interactionMode = .selecting(returnToSearch: interactionMode == .searching)
+    }
+
+    private func cancelSelection() {
+        let returnToSearch = interactionMode.returnsToSearchAfterSelection
+        selectedIDs.removeAll()
+        interactionMode = returnToSearch ? .searching : .browsing
+    }
+
     private func toggleSelection(_ id: InformationCard.ID) {
-        if selectedIDs.contains(id) { selectedIDs.remove(id) } else { selectedIDs.insert(id) }
+        if selectedIDs.contains(id) {
+            selectedIDs.remove(id)
+        } else {
+            selectedIDs.insert(id)
+        }
     }
 
-    private func openCard(_ id: InformationCard.ID) {
-        onAction(.openCard(id))
+    private func requestDeletion() {
+        guard !selectedIDs.isEmpty else { return }
+        isDeleteConfirmationPresented = true
     }
 
-    private func updateMainTabChromeVisibility(isSelecting: Bool) {
-        mainTabChromeState.setVisible(!isSelecting, for: .archive)
+    private func confirmDeletion() {
+        let deletedCount = selectedIDs.count
+        onAction(.deleteCards(selectedIDs))
+        selectedIDs.removeAll()
+        interactionMode = .browsing
+        query = ""
+        toast = RecapToastContent(
+            style: .success,
+            message: "\(deletedCount)개의 스크린샷을 삭제했어요."
+        )
+    }
+
+    private func clearToastIfNeeded() async {
+        guard toast != nil else { return }
+        try? await Task.sleep(for: .seconds(2))
+        guard !Task.isCancelled else { return }
+        toast = nil
     }
 }
 
-#Preview {
+#Preview("보관함 상세") {
     NavigationStack {
         CollectionDetailView(
-            kind: .shopping,
+            scope: .category(.shopping),
             cards: SampleData.cards(in: .shopping),
-            summary: SampleData.collectionSummaries.first { $0.kind == .shopping },
             onAction: PreviewActions.handleArchive
         )
     }
     .environment(RecapMainTabChromeState())
 }
 
-#Preview("Archive load failure") {
+#Preview("즐겨찾기 상세") {
     NavigationStack {
         CollectionDetailView(
-            kind: .shopping,
-            cards: [],
-            summary: nil,
-            loadState: .failed,
+            scope: .favorites,
+            cards: SampleData.cards.filter(\.isFavorite),
+            onAction: PreviewActions.handleArchive
+        )
+    }
+    .environment(RecapMainTabChromeState())
+}
+
+#Preview("보관함 상세 검색") {
+    NavigationStack {
+        CollectionDetailView(
+            scope: .category(.shopping),
+            cards: SampleData.cards(in: .shopping),
+            interactionMode: .searching,
+            onAction: PreviewActions.handleArchive
+        )
+    }
+    .environment(RecapMainTabChromeState())
+}
+
+#Preview("보관함 상세 선택") {
+    NavigationStack {
+        CollectionDetailView(
+            scope: .category(.shopping),
+            cards: SampleData.cards(in: .shopping),
+            interactionMode: .selecting(returnToSearch: false),
+            onAction: PreviewActions.handleArchive
+        )
+    }
+    .environment(RecapMainTabChromeState())
+}
+
+#Preview("보관함 상세 삭제 실패") {
+    NavigationStack {
+        CollectionDetailView(
+            scope: .category(.shopping),
+            cards: SampleData.cards(in: .shopping),
+            initialToast: RecapToastContent(
+                style: .error,
+                message: "스크린샷을 삭제하지 못했어요. 다시 시도해주세요."
+            ),
             onAction: PreviewActions.handleArchive
         )
     }

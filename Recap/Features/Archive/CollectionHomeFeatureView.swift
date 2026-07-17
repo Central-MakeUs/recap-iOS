@@ -5,13 +5,10 @@ struct CollectionHomeContainerView: View {
     @Environment(RecapCardStore.self) private var cardStore
 
     var body: some View {
-        @Bindable var router = router
-
         CollectionHomeView(
-            segment: $router.archiveSection,
             summaries: cardStore.collectionSummaries,
-            favoriteCards: cardStore.favoriteCards,
-            otherCards: cardStore.uncategorizedCards,
+            favoriteCount: cardStore.favoriteCards.count,
+            otherCount: cardStore.uncategorizedCards.count,
             onAction: handleAction
         )
     }
@@ -20,13 +17,13 @@ struct CollectionHomeContainerView: View {
         switch action {
         case .search:
             router.navigate(.search)
+        case .openFavorites:
+            router.navigate(.archiveFavorites)
         case .openArchive(let kind):
             router.navigate(.archiveDetail(kind))
         case .openCard(let id):
             router.navigate(.cardDetail(id))
-        case .selectFilter:
-            break
-        case .deleteCards:
+        case .selectFilter, .deleteCards:
             break
         case .openSettings:
             router.navigate(.settings)
@@ -40,88 +37,148 @@ struct CollectionHomeView: View {
         case list
     }
 
-    @Binding private var segment: ArchiveSection
-    @State private var layoutMode: LayoutMode = .grid
+    enum LoadState {
+        case loaded
+        case failed
+    }
+
+    @State private var layoutMode: LayoutMode
 
     let summaries: [CollectionSummary]
-    let favoriteCards: [InformationCard]
-    let otherCards: [InformationCard]
+    let favoriteCount: Int
+    let otherCount: Int
+    let loadState: LoadState
+    let onRetry: () -> Void
+    let onImportScreenshots: () -> Void
     let onAction: (ArchiveAction) -> Void
 
     init(
-        segment: Binding<ArchiveSection>,
         summaries: [CollectionSummary],
-        favoriteCards: [InformationCard] = SampleData.cards.filter(\.isFavorite),
-        otherCards: [InformationCard] = [],
+        favoriteCount: Int,
+        otherCount: Int = 0,
+        layoutMode: LayoutMode = .grid,
+        loadState: LoadState = .loaded,
+        onRetry: @escaping () -> Void = {},
+        onImportScreenshots: @escaping () -> Void = {},
         onAction: @escaping (ArchiveAction) -> Void
     ) {
-        _segment = segment
+        _layoutMode = State(initialValue: layoutMode)
         self.summaries = summaries
-        self.favoriteCards = favoriteCards
-        self.otherCards = otherCards
+        self.favoriteCount = favoriteCount
+        self.otherCount = otherCount
+        self.loadState = loadState
+        self.onRetry = onRetry
+        self.onImportScreenshots = onImportScreenshots
         self.onAction = onAction
     }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                CollectionHomeHeader(segment: segment, layoutMode: $layoutMode)
-
-                Button(action: openSearch) {
-                    SearchBarDisplay()
-                }
-                .buttonStyle(.plain)
-                .padding(.top, 25)
-
-                CollectionHomeSegmentControl(selection: $segment)
-                    .padding(.top, 19)
-
-                content
-                    .padding(.top, 20)
+        Group {
+            if loadState == .failed {
+                failureContent
+            } else if totalCardCount == 0 {
+                emptyContent
+            } else {
+                loadedContent
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 15)
         }
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
     }
 
-    @ViewBuilder
-    private var content: some View {
-        switch segment {
-        case .type:
-            if layoutMode == .grid {
-                CollectionHomeTypeGrid(
-                    summaries: summaries,
-                    onOpenArchive: openArchive
-                )
-            } else {
-                CollectionHomeTypeList(
-                    summaries: summaries,
-                    onOpenArchive: openArchive
-                )
+    private var loadedContent: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 0) {
+                header
+
+                searchButton
+                    .padding(.top, 20)
+
+                Button {
+                    onAction(.openFavorites)
+                } label: {
+                    CollectionHomeFavoritesLink(count: favoriteCount)
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 21)
+
+                if layoutMode == .grid {
+                    CollectionHomeFolderGrid(
+                        summaries: folderSummaries,
+                        onOpenArchive: openArchive
+                    )
+                    .padding(.top, 21)
+                } else {
+                    CollectionHomeFolderList(
+                        summaries: folderSummaries,
+                        onOpenArchive: openArchive
+                    )
+                    .padding(.top, 14)
+                }
             }
-        case .favorites:
-            CollectionHomeCardSection(
-                cards: favoriteCards,
-                style: .favorites,
-                emptySegment: segment,
-                onSelectFilter: selectFilter,
-                onOpenCard: openCard
-            )
-        case .other:
-            CollectionHomeCardSection(
-                cards: otherCards,
-                style: .other,
-                emptySegment: segment,
-                onSelectFilter: selectFilter,
-                onOpenCard: openCard
+            .padding(.horizontal, 16)
+            .padding(.top, 15)
+            .padding(.bottom, 24)
+        }
+    }
+
+    private var emptyContent: some View {
+        VStack(spacing: 0) {
+            header
+                .padding(.horizontal, 16)
+                .padding(.top, 15)
+
+            searchButton
+                .padding(.horizontal, 16)
+                .padding(.top, 20)
+
+            CollectionHomeEmptyState(onImportScreenshots: onImportScreenshots)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.bottom, 82)
+        }
+    }
+
+    private var failureContent: some View {
+        VStack(spacing: 0) {
+            header
+                .padding(.horizontal, 16)
+                .padding(.top, 15)
+
+            RecapLoadFailureView(style: .archive, retry: onRetry)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.bottom, 82)
+        }
+    }
+
+    private var header: some View {
+        CollectionHomeHeader(layoutMode: $layoutMode)
+    }
+
+    private var searchButton: some View {
+        Button {
+            onAction(.search)
+        } label: {
+            SearchBarDisplay()
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var folderSummaries: [CollectionSummary] {
+        let byKind = Dictionary(uniqueKeysWithValues: summaries.map { ($0.kind, $0) })
+        return CollectionKind.allCases.map { kind in
+            byKind[kind] ?? CollectionSummary(
+                kind: kind,
+                count: kind == .other ? otherCount : 0,
+                previewTitle: "카드 없음"
             )
         }
     }
 
-    private func openSearch() { onAction(.search) }
-    private func openArchive(_ kind: CollectionKind) { onAction(.openArchive(kind)) }
-    private func openCard(_ id: InformationCard.ID) { onAction(.openCard(id)) }
-    private func selectFilter(_ title: String) { onAction(.selectFilter(title)) }
+    private var totalCardCount: Int {
+        summaries.reduce(otherCount) { $0 + $1.count }
+    }
+
+    private func openArchive(_ kind: CollectionKind) {
+        onAction(.openArchive(kind))
+    }
 }
