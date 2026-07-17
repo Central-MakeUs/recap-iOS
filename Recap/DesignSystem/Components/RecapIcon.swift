@@ -112,6 +112,27 @@ enum RecapIcon: String, CaseIterable, Identifiable {
         case .check: "RecapIconCheck"
         }
     }
+
+    static func categoryIcon(for kind: CollectionKind) -> RecapIcon {
+        switch kind {
+        case .shopping:
+            .shopping
+        case .place:
+            .place
+        case .schedule:
+            .schedule
+        case .knowledge:
+            .idea
+        case .content:
+            .book
+        case .benefits:
+            .event
+        case .capture, .career:
+            .record
+        case .other:
+            .storage
+        }
+    }
 }
 
 struct RecapIconView: View {

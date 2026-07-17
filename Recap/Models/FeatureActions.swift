@@ -3,6 +3,7 @@ import Foundation
 enum HomeAction: Hashable {
     case search
     case startOrganizing
+    case openFavorites
     case openAllRecent
     case openCard(InformationCard.ID)
     case openArchive(CollectionKind)

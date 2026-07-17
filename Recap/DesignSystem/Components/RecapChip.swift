@@ -65,9 +65,11 @@ struct RecapChip: View {
     private func categoryIcon(kind: CollectionKind) -> some View {
         let display = RecapPresentation.collectionDisplay(for: kind)
 
-        return Image(systemName: display.symbolName)
-            .font(.system(size: 16, weight: .semibold))
-            .foregroundStyle(display.textColor)
+        return RecapIconView(
+            icon: .categoryIcon(for: kind),
+            size: 16,
+            color: display.dotColor
+        )
             .frame(width: 24, height: 24)
             .background(Color.recapBackground)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
