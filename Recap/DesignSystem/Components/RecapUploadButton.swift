@@ -18,9 +18,14 @@ struct RecapUploadButton: View {
             width: RecapMainTabBarMetrics.uploadButtonSize.width,
             height: RecapMainTabBarMetrics.uploadButtonSize.height
         )
-        .background(Color.recapBrandBlue)
+        .background {
+            Capsule()
+                .fill(Color.recapBrandBlue)
+        }
         .contentShape(Capsule())
         .clipShape(Capsule())
+        .compositingGroup()
+        .opacity(1)
         .onTapGesture(perform: action)
         .accessibilityElement()
         .accessibilityLabel("업로드")

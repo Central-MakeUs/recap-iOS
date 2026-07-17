@@ -4,6 +4,8 @@ struct RecapTabSelector: View {
     let selection: MainTab
     let onSelect: (MainTab) -> Void
 
+    @Namespace private var selectionBackground
+
     var body: some View {
         HStack(spacing: 3) {
             RecapTabButton(
@@ -11,6 +13,7 @@ struct RecapTabSelector: View {
                 iconName: "RecapTabHomeIcon",
                 label: "홈",
                 isSelected: selection == .home,
+                selectionBackground: selectionBackground,
                 action: { onSelect(.home) }
             )
             RecapTabButton(
@@ -18,6 +21,7 @@ struct RecapTabSelector: View {
                 iconName: "RecapTabArchiveIcon",
                 label: "보관함",
                 isSelected: selection == .archive,
+                selectionBackground: selectionBackground,
                 action: { onSelect(.archive) }
             )
         }
@@ -28,6 +32,7 @@ struct RecapTabSelector: View {
         )
         .background(Color.white)
         .clipShape(Capsule())
+        .animation(.snappy(duration: 0.28, extraBounce: 0), value: selection)
     }
 }
 
@@ -36,6 +41,7 @@ private struct RecapTabButton: View {
     let iconName: String
     let label: String
     let isSelected: Bool
+    let selectionBackground: Namespace.ID
     let action: () -> Void
 
     var body: some View {
@@ -49,17 +55,33 @@ private struct RecapTabButton: View {
             height: RecapMainTabBarMetrics.tabItemSize.height
         )
         .background(
-            isSelected ? Color.recapBlue50 : Color.clear
+            selectionCapsule
         )
         .contentShape(Capsule())
         .clipShape(Capsule())
-        .onTapGesture(perform: action)
+        .onTapGesture {
+            withAnimation(.snappy(duration: 0.28, extraBounce: 0)) {
+                action()
+            }
+        }
         .accessibilityElement()
         .accessibilityLabel(label)
         .accessibilityIdentifier("mainTab.\(tab.rawValue)")
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
         .accessibilityAction {
             action()
+        }
+    }
+
+    @ViewBuilder
+    private var selectionCapsule: some View {
+        if isSelected {
+            Capsule()
+                .fill(Color.recapBlue50)
+                .matchedGeometryEffect(
+                    id: "selectedMainTab",
+                    in: selectionBackground
+                )
         }
     }
 }

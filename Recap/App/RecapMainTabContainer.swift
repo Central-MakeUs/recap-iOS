@@ -75,6 +75,7 @@ struct RecapMainTabContainer: View {
                 }
                 .toolbarBackgroundVisibility(.hidden, for: .bottomBar)
         }
+        .scrollEdgeEffectHidden(true, for: .bottom)
     }
 
     private var showsBottomChrome: Bool {

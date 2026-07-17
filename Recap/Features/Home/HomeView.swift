@@ -98,10 +98,11 @@ struct HomeView: View {
             Spacer()
 
             Button(action: openSettings) {
-                Image(systemName: "gearshape")
-                    .font(.system(size: 21, weight: .regular))
-                    .foregroundStyle(Color.recapGray900)
-                    .frame(width: 24, height: 24)
+                RecapIconView(
+                    icon: .setting,
+                    size: 24,
+                    color: Color.recapGray900
+                )
             }
             .buttonStyle(.plain)
 
