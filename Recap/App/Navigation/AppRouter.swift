@@ -11,6 +11,7 @@ enum AppNavigationPath {
 @Observable
 final class AppRouter {
     var selectedTab: MainTab = .home
+    var archiveSection: ArchiveSection = .type
     var homePath: [AppRoute] = []
     var archivePath: [AppRoute] = []
 
@@ -28,6 +29,11 @@ final class AppRouter {
 
     func switchTo(_ tab: MainTab) {
         selectedTab = tab
+    }
+
+    func openArchive(section: ArchiveSection = .type) {
+        archiveSection = section
+        selectedTab = .archive
     }
 
     func reset(tab: MainTab) {

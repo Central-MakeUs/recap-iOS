@@ -1,85 +1,102 @@
 import SwiftUI
 
 struct AllRecentCardsContainerView: View {
+    @Environment(\.dismiss) private var dismiss
     @Environment(AppRouter.self) private var router
     @Environment(RecapCardStore.self) private var cardStore
 
     var body: some View {
-        AllRecentCardsView(cards: cardStore.allCards()) { cardID in
-            router.navigate(.cardDetail(cardID))
-        }
+        AllRecentCardsView(
+            cards: cardStore.allCards(),
+            onBack: dismiss.callAsFunction,
+            onSearch: { router.navigate(.search) },
+            onSelectCard: { router.navigate(.cardDetail($0)) }
+        )
     }
 }
 
 struct AllRecentCardsView: View {
     let cards: [InformationCard]
+    let onBack: () -> Void
+    let onSearch: () -> Void
     let onSelectCard: (InformationCard.ID) -> Void
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: RecapTheme.Spacing.medium) {
-                ForEach(cards) { card in
-                    Button {
-                        onSelectCard(card.id)
-                    } label: {
-                        let collection = RecapPresentation.collectionDisplay(for: card.collection)
-                        HStack(spacing: RecapTheme.Spacing.medium) {
-                            RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous)
-                                .fill(Color.recapThumbnail)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: RecapTheme.Radius.small, style: .continuous)
-                                        .fill(collection.dotColor.opacity(0.08))
-                                )
-                                .overlay(
-                                    Image(systemName: "doc.text.fill")
-                                        .font(.caption)
-                                        .foregroundStyle(collection.dotColor.opacity(0.55))
-                                )
-                                .frame(width: 54, height: 54)
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 0) {
+                AllRecentCardsNavigationBar(
+                    onBack: onBack,
+                    onSearch: onSearch
+                )
+                .padding(.horizontal, 16)
+                .padding(.top, 19)
 
-                            VStack(alignment: .leading, spacing: RecapTheme.Spacing.xSmall) {
-                                Text(card.title)
-                                    .font(.subheadline.weight(.bold))
-                                    .foregroundStyle(Color.recapGray900)
-                                    .lineLimit(1)
+                Text("\(cards.count) recaps")
+                    .font(RecapFont.pretendard(size: 14, weight: .regular))
+                    .tracking(-0.28)
+                    .foregroundStyle(Color.recapGray500)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 25)
 
-                                Text(card.summary)
-                                    .font(.caption)
-                                    .foregroundStyle(Color.recapGray500)
-                                    .lineLimit(1)
-
-                                HStack(spacing: RecapTheme.Spacing.xSmall) {
-                                    Circle()
-                                        .fill(collection.dotColor)
-                                        .frame(width: 5, height: 5)
-                                    Text(collection.title)
-                                    Text("·")
-                                    Text(card.dateText)
-                                }
-                                .font(.caption2.weight(.semibold))
-                                .foregroundStyle(Color.recapGray500)
-                            }
-
-                            Spacer(minLength: RecapTheme.Spacing.small)
+                LazyVStack(spacing: 0) {
+                    ForEach(cards) { card in
+                        Button {
+                            onSelectCard(card.id)
+                        } label: {
+                            AllRecentCardRow(card: card)
                         }
-                        .padding(RecapTheme.Spacing.medium)
-                        .recapCard(radius: RecapTheme.Radius.medium)
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
+                .padding(.top, 7)
             }
-            .padding(RecapTheme.Spacing.large)
         }
         .background(Color.recapBackground)
-        .navigationTitle("전체 정리된 카드")
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .navigationBar)
+    }
+}
+
+private struct AllRecentCardsNavigationBar: View {
+    let onBack: () -> Void
+    let onSearch: () -> Void
+
+    var body: some View {
+        HStack(spacing: 0) {
+            Button(action: onBack) {
+                RecapIconView(icon: .back, size: 24, color: Color.recapGray900)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .contentShape(Rectangle().inset(by: -10))
+            .accessibilityLabel("뒤로가기")
+
+            Text("최근 정리된 스크린샷")
+                .font(RecapFont.pretendard(size: 18, weight: .semibold))
+                .tracking(-0.36)
+                .foregroundStyle(Color.recapGray900)
+                .padding(.leading, 13)
+                .accessibilityAddTraits(.isHeader)
+
+            Spacer(minLength: 0)
+
+            Button(action: onSearch) {
+                RecapIconView(icon: .search, size: 24, color: Color.recapGray900)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .contentShape(Rectangle().inset(by: -10))
+            .accessibilityLabel("검색")
+        }
+        .frame(height: 25)
     }
 }
 
 #Preview {
     NavigationStack {
         AllRecentCardsView(
-            cards: SampleData.cards,
+            cards: SampleData.recentCards,
+            onBack: {},
+            onSearch: {},
             onSelectCard: PreviewActions.handleCardSelection
         )
     }

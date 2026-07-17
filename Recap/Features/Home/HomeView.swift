@@ -21,13 +21,13 @@ struct HomeContainerView: View {
         case .startOrganizing:
             router.navigate(.cardCreationStart)
         case .openFavorites:
-            router.selectedTab = .archive
+            router.openArchive(section: .favorites)
         case .openAllRecent:
             router.navigate(.allRecentCards)
         case .openCard(let id):
             router.navigate(.cardDetail(id))
         case .openArchive(let kind):
-            router.selectedTab = .archive
+            router.openArchive()
             router.navigate(.archiveDetail(kind), in: .archive)
         case .openSettings:
             router.navigate(.settings)

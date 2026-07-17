@@ -49,6 +49,15 @@ final class RecapTests: XCTestCase {
         XCTAssertEqual(router.selectedTab, .home)
     }
 
+    func testRouterOpensArchiveFavoritesSection() {
+        let router = AppRouter()
+
+        router.openArchive(section: .favorites)
+
+        XCTAssertEqual(router.selectedTab, .archive)
+        XCTAssertEqual(router.archiveSection, .favorites)
+    }
+
     func testMainTabChromeUsesFigmaGeometry() {
         XCTAssertEqual(RecapMainTabBarMetrics.height, 111)
         XCTAssertEqual(RecapMainTabBarMetrics.horizontalPadding, 22)

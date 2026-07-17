@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CollectionHomeHeader: View {
-    let segment: CollectionHomeView.Segment
+    let segment: ArchiveSection
     @Binding var layoutMode: CollectionHomeView.LayoutMode
 
     var body: some View {
@@ -56,11 +56,11 @@ struct CollectionHomeHeader: View {
 }
 
 struct CollectionHomeSegmentControl: View {
-    @Binding var selection: CollectionHomeView.Segment
+    @Binding var selection: ArchiveSection
 
     var body: some View {
         HStack(spacing: 6) {
-            ForEach(CollectionHomeView.Segment.allCases) { item in
+            ForEach(ArchiveSection.allCases) { item in
                 Button {
                     selection = item
                 } label: {
