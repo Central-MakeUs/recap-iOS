@@ -30,7 +30,7 @@ struct RecapHomeFavoriteCard: View {
     let card: InformationCard
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 13) {
             HStack(alignment: .top) {
                 RecapChip(configuration: .category(card.collection, size: .medium))
 
@@ -41,6 +41,7 @@ struct RecapHomeFavoriteCard: View {
                     size: 16,
                     color: Color.recapGray100
                 )
+                .padding(.top, 4)
             }
 
             Text(card.title)

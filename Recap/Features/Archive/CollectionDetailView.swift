@@ -40,6 +40,8 @@ struct CollectionDetailContainerView: View {
 struct CollectionDetailView: View {
     enum LoadState { case loaded, failed }
 
+    @Environment(RecapMainTabChromeState.self) private var mainTabChromeState
+
     @State private var query = ""
     @State private var isSelecting = false
     @State private var selectedIDs: Set<InformationCard.ID> = []
@@ -72,14 +74,25 @@ struct CollectionDetailView: View {
     var body: some View {
         let collection = RecapPresentation.collectionDisplay(for: kind)
 
-        if loadState == .failed {
-            RecapLoadFailureView(style: .archive, retry: onRetry)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.recapBackground)
-                .navigationTitle("보관함")
-                .navigationBarTitleDisplayMode(.inline)
-        } else {
-            loadedContent(collection: collection)
+        Group {
+            if loadState == .failed {
+                RecapLoadFailureView(style: .archive, retry: onRetry)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.recapBackground)
+                    .navigationTitle("보관함")
+                    .navigationBarTitleDisplayMode(.inline)
+            } else {
+                loadedContent(collection: collection)
+            }
+        }
+        .onAppear {
+            updateMainTabChromeVisibility(isSelecting: isSelecting)
+        }
+        .onChange(of: isSelecting) { _, isSelecting in
+            updateMainTabChromeVisibility(isSelecting: isSelecting)
+        }
+        .onDisappear {
+            mainTabChromeState.reset(for: .archive)
         }
     }
 
@@ -149,7 +162,6 @@ struct CollectionDetailView: View {
             }
             .padding(.horizontal, 16)
             .padding(.top, 12)
-            .padding(.bottom, 122)
         }
         .background(Color.recapBackground)
         .navigationTitle(collection.title)
@@ -171,6 +183,7 @@ struct CollectionDetailView: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(selectedIDs.isEmpty)
+                .accessibilityIdentifier("archive.selection.delete")
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
                 .background(Color.recapBackground)
@@ -193,6 +206,10 @@ struct CollectionDetailView: View {
     private func openCard(_ id: InformationCard.ID) {
         onAction(.openCard(id))
     }
+
+    private func updateMainTabChromeVisibility(isSelecting: Bool) {
+        mainTabChromeState.setVisible(!isSelecting, for: .archive)
+    }
 }
 
 #Preview {
@@ -204,6 +221,7 @@ struct CollectionDetailView: View {
             onAction: PreviewActions.handleArchive
         )
     }
+    .environment(RecapMainTabChromeState())
 }
 
 #Preview("Archive load failure") {
@@ -216,4 +234,5 @@ struct CollectionDetailView: View {
             onAction: PreviewActions.handleArchive
         )
     }
+    .environment(RecapMainTabChromeState())
 }

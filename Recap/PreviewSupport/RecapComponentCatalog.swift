@@ -1,11 +1,11 @@
 import SwiftUI
 
 struct RecapComponentCatalog: View {
+    @State private var selectedTab = MainTab.home
     @State private var searchText = "검색어"
     @State private var inputText = "텍스트"
     @State private var filterSelection = "최신순"
     @State private var isFilterExpanded = true
-    @State private var selectedTab = MainTab.home
 
     var body: some View {
         ScrollView {
@@ -178,7 +178,14 @@ struct RecapComponentCatalog: View {
     private var bottomNavigation: some View {
         VStack(alignment: .leading, spacing: 12) {
             catalogTitle("bottom nav")
-            RecapBottomNavigationBar(selectedTab: $selectedTab, onCardCreation: {})
+            HStack {
+                RecapTabSelector(
+                    selection: selectedTab,
+                    onSelect: { selectedTab = $0 }
+                )
+                Spacer()
+                RecapUploadButton(action: {})
+            }
         }
     }
 

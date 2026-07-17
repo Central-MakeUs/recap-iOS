@@ -32,39 +32,6 @@ enum RecapIcon: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var systemName: String {
-        switch self {
-        case .star: "star.fill"
-        case .starEmpty: "star"
-        case .cancel: "xmark"
-        case .cancelCircle: "xmark.circle.fill"
-        case .back: "chevron.left"
-        case .forward: "chevron.right"
-        case .search: "magnifyingglass"
-        case .home: "house.fill"
-        case .storage: "archivebox.fill"
-        case .plus: "plus"
-        case .more: "ellipsis"
-        case .dropdown: "chevron.down"
-        case .checkbox: "checkmark.square.fill"
-        case .setting: "gearshape"
-        case .information: "info.bubble.fill"
-        case .grid: "square.grid.2x2.fill"
-        case .list: "list.bullet"
-        case .error: "exclamationmark.circle.fill"
-        case .success: "checkmark.circle.fill"
-        case .shopping: "cart.fill"
-        case .place: "key.fill"
-        case .schedule: "clock.fill"
-        case .idea: "lightbulb.fill"
-        case .book: "book.closed.fill"
-        case .event: "star.fill"
-        case .record: "pencil"
-        case .noImage: "photo"
-        case .check: "checkmark"
-        }
-    }
-
     var figmaName: String {
         switch self {
         case .star: "icon/star/selected"
@@ -109,37 +76,61 @@ enum RecapIcon: String, CaseIterable, Identifiable {
         }
     }
 
-    var symbolScale: CGFloat {
+    func assetName(for size: CGFloat) -> String {
         switch self {
-        case .cancelCircle: 1.00
-        case .plus: 0.62
-        case .dropdown: 0.68
-        case .more: 0.78
-        case .back, .forward: 0.78
-        case .search: 0.82
-        case .home, .storage: 0.86
-        case .star, .starEmpty: 0.92
-        case .cancel, .checkbox, .setting, .information, .grid, .list, .error, .success,
-             .shopping, .place, .schedule, .idea, .book, .event, .record, .noImage, .check:
-            0.86
+        case .star: "RecapIconStar"
+        case .starEmpty: "RecapIconStarEmpty"
+        case .cancel: "RecapIconCancel"
+        case .cancelCircle:
+            size <= 16 ? "RecapIconCancelCircleS" : "RecapIconCancelCircleM"
+        case .back: "RecapIconBack"
+        case .forward:
+            size <= 16 ? "RecapIconForwardS" : "RecapIconForwardM"
+        case .search: "RecapIconSearch"
+        case .home: "RecapIconHome"
+        case .storage: "RecapIconStorage"
+        case .plus:
+            size <= 24 ? "RecapIconPlusM" : "RecapIconPlusL"
+        case .more: "RecapIconMore"
+        case .dropdown: "RecapIconDropdown"
+        case .checkbox: "RecapIconCheckbox"
+        case .setting: "RecapIconSetting"
+        case .information: "RecapIconInformation"
+        case .grid: "RecapIconGrid"
+        case .list: "RecapIconList"
+        case .error:
+            size <= 16 ? "RecapIconErrorS" : "RecapIconErrorM"
+        case .success: "RecapIconSuccess"
+        case .shopping: "RecapIconShopping"
+        case .place: "RecapIconPlace"
+        case .schedule: "RecapIconSchedule"
+        case .idea: "RecapIconIdea"
+        case .book: "RecapIconBook"
+        case .event: "RecapIconEvent"
+        case .record: "RecapIconRecord"
+        case .noImage: "RecapIconNoImage"
+        case .check: "RecapIconCheck"
         }
     }
 
-    var defaultWeight: Font.Weight {
-        switch self {
-        case .plus, .back, .forward, .dropdown, .check: .semibold
-        case .cancel, .cancelCircle, .star, .starEmpty, .home, .storage, .more, .search,
-             .checkbox, .setting, .information, .grid, .list, .error, .success,
-             .shopping, .place, .schedule, .idea, .book, .event, .record, .noImage:
-            .regular
-        }
-    }
-
-    var assetName: String? {
-        switch self {
-        case .home: "RecapTabHomeIcon"
-        case .storage: "RecapTabArchiveIcon"
-        default: nil
+    static func categoryIcon(for kind: CollectionKind) -> RecapIcon {
+        switch kind {
+        case .shopping:
+            .shopping
+        case .place:
+            .place
+        case .schedule:
+            .schedule
+        case .knowledge:
+            .idea
+        case .content:
+            .book
+        case .benefits:
+            .event
+        case .capture, .career:
+            .record
+        case .other:
+            .storage
         }
     }
 }
@@ -148,27 +139,17 @@ struct RecapIconView: View {
     let icon: RecapIcon
     var size: CGFloat?
     var color: Color = Color.recapGray900
-    var weight: Font.Weight?
 
     private var resolvedSize: CGFloat { size ?? icon.defaultSize }
-    private var resolvedWeight: Font.Weight { weight ?? icon.defaultWeight }
 
     var body: some View {
-        Group {
-            if let assetName = icon.assetName {
-                Image(assetName)
-                    .renderingMode(.template)
-                    .resizable()
-                    .scaledToFit()
-                    .padding(resolvedSize * 0.07)
-            } else {
-                Image(systemName: icon.systemName)
-                    .font(.system(size: resolvedSize * icon.symbolScale, weight: resolvedWeight))
-            }
-        }
-        .foregroundStyle(color)
-        .frame(width: resolvedSize, height: resolvedSize)
-        .accessibilityLabel(icon.figmaName)
+        Image(icon.assetName(for: resolvedSize))
+            .renderingMode(.template)
+            .resizable()
+            .scaledToFit()
+            .foregroundStyle(color)
+            .frame(width: resolvedSize, height: resolvedSize)
+            .accessibilityLabel(icon.figmaName)
     }
 }
 

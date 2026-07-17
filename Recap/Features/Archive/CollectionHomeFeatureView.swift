@@ -5,7 +5,10 @@ struct CollectionHomeContainerView: View {
     @Environment(RecapCardStore.self) private var cardStore
 
     var body: some View {
+        @Bindable var router = router
+
         CollectionHomeView(
+            segment: $router.archiveSection,
             summaries: cardStore.collectionSummaries,
             favoriteCards: cardStore.favoriteCards,
             otherCards: cardStore.uncategorizedCards,
@@ -37,15 +40,7 @@ struct CollectionHomeView: View {
         case list
     }
 
-    enum Segment: String, CaseIterable, Identifiable {
-        case favorites = "즐겨찾기"
-        case type = "유형별 보기"
-        case other = "기타"
-
-        var id: String { rawValue }
-    }
-
-    @State private var segment: Segment = .type
+    @Binding private var segment: ArchiveSection
     @State private var layoutMode: LayoutMode = .grid
 
     let summaries: [CollectionSummary]
@@ -54,17 +49,17 @@ struct CollectionHomeView: View {
     let onAction: (ArchiveAction) -> Void
 
     init(
+        segment: Binding<ArchiveSection>,
         summaries: [CollectionSummary],
         favoriteCards: [InformationCard] = SampleData.cards.filter(\.isFavorite),
         otherCards: [InformationCard] = [],
-        initialSegment: Segment = .type,
         onAction: @escaping (ArchiveAction) -> Void
     ) {
+        _segment = segment
         self.summaries = summaries
         self.favoriteCards = favoriteCards
         self.otherCards = otherCards
         self.onAction = onAction
-        _segment = State(initialValue: initialSegment)
     }
 
     var body: some View {
@@ -86,7 +81,6 @@ struct CollectionHomeView: View {
             }
             .padding(.horizontal, 16)
             .padding(.top, 15)
-            .padding(.bottom, 122)
         }
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)

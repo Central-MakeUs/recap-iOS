@@ -21,9 +21,11 @@ struct RecapCategoryIcon: View {
     var body: some View {
         let display = RecapPresentation.collectionDisplay(for: kind)
 
-        Image(systemName: display.symbolName)
-            .font(.system(size: size.symbol, weight: .bold))
-            .foregroundStyle(display.dotColor)
+        RecapIconView(
+            icon: .categoryIcon(for: kind),
+            size: size.symbol,
+            color: display.dotColor
+        )
             .frame(width: size.container, height: size.container)
             .background(Color.recapCategorySurface)
             .clipShape(RoundedRectangle(cornerRadius: 27, style: .continuous))

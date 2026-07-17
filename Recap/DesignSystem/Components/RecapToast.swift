@@ -10,12 +10,12 @@ struct RecapToast: View {
         case success
         case error
 
-        fileprivate var iconName: String {
+        fileprivate var icon: RecapIcon {
             switch self {
             case .success:
-                "checkmark.circle.fill"
+                .success
             case .error:
-                "exclamationmark.circle.fill"
+                .error
             }
         }
 
@@ -34,10 +34,11 @@ struct RecapToast: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Image(systemName: style.iconName)
-                .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(style.iconColor)
-                .frame(width: 24, height: 24)
+            RecapIconView(
+                icon: style.icon,
+                size: 24,
+                color: style.iconColor
+            )
 
             Text(message)
                 .font(RecapFont.pretendard(size: 13, weight: .medium))

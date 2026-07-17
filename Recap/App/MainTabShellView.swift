@@ -23,20 +23,13 @@ struct AppShellView: View {
             Color.recapBackground
                 .ignoresSafeArea()
 
-            activeTabStack
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .safeAreaInset(edge: .bottom, spacing: 0) {
-                    if showsBottomBar {
-                        RecapBottomNavigationBar(
-                            selectedTab: selectedTab,
-                            onCardCreation: openCardCreationFlow
-                        )
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                    }
-                }
-            }
-        .animation(.easeInOut(duration: 0.18), value: router.selectedTab)
-        .animation(.easeInOut(duration: 0.18), value: showsBottomBar)
+            RecapMainTabContainer(
+                router: router,
+                cardStore: cardStore,
+                onUpload: openCardCreationFlow,
+                onCardDeleted: showCardDeletedToast
+            )
+        }
         .environment(router)
         .environment(cardStore)
         .environment(\.recapLogout, onLogout)
@@ -46,53 +39,10 @@ struct AppShellView: View {
         }
     }
 
-    @ViewBuilder
-    private var activeTabStack: some View {
-        switch router.selectedTab {
-        case .home:
-            tabStack(for: .home) { HomeContainerView() }
-        case .archive:
-            tabStack(for: .archive) { CollectionHomeContainerView() }
-        case .cardCreation:
-            tabStack(for: .cardCreation) { CardCreationContainerView() }
-        }
-    }
-
-    @ViewBuilder
-    private func tabStack<Content: View>(
-        for tab: MainTab,
-        @ViewBuilder content: () -> Content
-    ) -> some View {
-        NavigationStack(path: router.binding(for: tab)) {
-            content()
-                .withAppNavigationDestinations(
-                    cardStore: cardStore,
-                    onCardDeleted: showCardDeletedToast
-                )
-        }
-    }
-
-    private var selectedTab: Binding<MainTab> {
-        Binding(
-            get: { router.selectedTab },
-            set: { router.selectedTab = $0 }
-        )
-    }
-
-    private var showsBottomBar: Bool {
-        guard let lastRoute = router.path(for: router.selectedTab).last else { return true }
-        switch lastRoute {
-        case .archiveDetail:
-            return true
-        case .search, .allRecentCards, .cardDetail, .cardCreationStart, .settings:
-            return false
-        }
-    }
-
     private func openCardCreationFlow() {
-        router.selectedTab = .cardCreation
-        if router.cardCreationPath.last != .cardCreationStart {
-            router.cardCreationPath = [.cardCreationStart]
+        let activePath = router.path(for: router.selectedTab)
+        if activePath.last != .cardCreationStart {
+            router.navigate(.cardCreationStart)
         }
     }
 

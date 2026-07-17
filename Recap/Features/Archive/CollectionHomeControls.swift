@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CollectionHomeHeader: View {
-    let segment: CollectionHomeView.Segment
+    let segment: ArchiveSection
     @Binding var layoutMode: CollectionHomeView.LayoutMode
 
     var body: some View {
@@ -26,8 +26,8 @@ struct CollectionHomeHeader: View {
                     .foregroundStyle(Color.recapGray500)
 
                 HStack(spacing: 6) {
-                    layoutButton(mode: .grid, symbol: "square.grid.2x2.fill")
-                    layoutButton(mode: .list, symbol: "list.bullet")
+                    layoutButton(mode: .grid, icon: .grid)
+                    layoutButton(mode: .list, icon: .list)
                 }
                 .padding(.horizontal, 5)
                 .frame(width: 64, height: 31)
@@ -38,13 +38,15 @@ struct CollectionHomeHeader: View {
         .frame(height: 31)
     }
 
-    private func layoutButton(mode: CollectionHomeView.LayoutMode, symbol: String) -> some View {
+    private func layoutButton(mode: CollectionHomeView.LayoutMode, icon: RecapIcon) -> some View {
         Button {
             layoutMode = mode
         } label: {
-            Image(systemName: symbol)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(layoutMode == mode ? Color.recapBlue300 : Color.recapGray300)
+            RecapIconView(
+                icon: icon,
+                size: 16,
+                color: layoutMode == mode ? Color.recapBlue300 : Color.recapGray300
+            )
                 .frame(width: 24, height: 24)
                 .background(layoutMode == mode ? Color.white : Color.clear)
                 .clipShape(RoundedRectangle(cornerRadius: 2, style: .continuous))
@@ -54,11 +56,11 @@ struct CollectionHomeHeader: View {
 }
 
 struct CollectionHomeSegmentControl: View {
-    @Binding var selection: CollectionHomeView.Segment
+    @Binding var selection: ArchiveSection
 
     var body: some View {
         HStack(spacing: 6) {
-            ForEach(CollectionHomeView.Segment.allCases) { item in
+            ForEach(ArchiveSection.allCases) { item in
                 Button {
                     selection = item
                 } label: {

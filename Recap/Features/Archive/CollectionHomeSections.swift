@@ -81,7 +81,7 @@ struct CollectionHomeCardSection: View {
 
     let cards: [InformationCard]
     let style: Style
-    let emptySegment: CollectionHomeView.Segment
+    let emptySegment: ArchiveSection
     let onSelectFilter: (String) -> Void
     let onOpenCard: (InformationCard.ID) -> Void
 
@@ -155,7 +155,7 @@ struct CollectionHomeCardSection: View {
 }
 
 struct CollectionHomeEmptyState: View {
-    let segment: CollectionHomeView.Segment
+    let segment: ArchiveSection
 
     var body: some View {
         switch segment {

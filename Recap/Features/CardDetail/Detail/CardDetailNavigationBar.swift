@@ -28,14 +28,13 @@ struct CardDetailNavigationBar: View {
             Spacer(minLength: 0)
 
             Button(action: onFavorite) {
-                Image(systemName: "star.fill")
-                    .font(.system(size: 20, weight: .regular))
-                    .foregroundStyle(
-                        isFavorite
-                            ? Color.recapBlue300
-                            : foregroundColor.opacity(0.70)
-                    )
-                    .frame(width: 24, height: 24)
+                RecapIconView(
+                    icon: isFavorite ? .star : .starEmpty,
+                    size: 24,
+                    color: isFavorite
+                        ? Color.recapBlue300
+                        : foregroundColor.opacity(0.70)
+                )
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)

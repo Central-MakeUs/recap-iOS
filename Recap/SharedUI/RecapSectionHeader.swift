@@ -1,7 +1,8 @@
 import SwiftUI
+
 struct RecapSectionHeader: View {
     let title: String
-    var trailingIcon: String? = nil
+    var showsNavigationIndicator = false
     var action: (() -> Void)? = nil
 
     var body: some View {
@@ -11,12 +12,13 @@ struct RecapSectionHeader: View {
                 .tracking(-0.36)
                 .foregroundStyle(Color.recapGray900)
             Spacer()
-            if let trailingIcon {
+            if showsNavigationIndicator {
                 Button(action: { action?() }) {
-                    Image(systemName: trailingIcon)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(Color.recapGray300)
-                        .frame(width: 20, height: 20)
+                    RecapIconView(
+                        icon: .forward,
+                        size: 20,
+                        color: Color.recapGray300
+                    )
                 }
                 .buttonStyle(.plain)
             }

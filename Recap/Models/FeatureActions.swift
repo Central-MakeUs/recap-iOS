@@ -3,6 +3,7 @@ import Foundation
 enum HomeAction: Hashable {
     case search
     case startOrganizing
+    case openFavorites
     case openAllRecent
     case openCard(InformationCard.ID)
     case openArchive(CollectionKind)
@@ -12,6 +13,14 @@ enum HomeAction: Hashable {
 enum CardCreationAction: Hashable {
     case start
     case openSettings
+}
+
+enum ArchiveSection: String, CaseIterable, Identifiable {
+    case favorites = "즐겨찾기"
+    case type = "유형별 보기"
+    case other = "기타"
+
+    var id: String { rawValue }
 }
 
 enum ArchiveAction: Hashable {

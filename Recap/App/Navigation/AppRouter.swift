@@ -11,8 +11,8 @@ enum AppNavigationPath {
 @Observable
 final class AppRouter {
     var selectedTab: MainTab = .home
+    var archiveSection: ArchiveSection = .type
     var homePath: [AppRoute] = []
-    var cardCreationPath: [AppRoute] = []
     var archivePath: [AppRoute] = []
 
     func binding(for tab: MainTab) -> Binding<[AppRoute]> {
@@ -31,6 +31,11 @@ final class AppRouter {
         selectedTab = tab
     }
 
+    func openArchive(section: ArchiveSection = .type) {
+        archiveSection = section
+        selectedTab = .archive
+    }
+
     func reset(tab: MainTab) {
         setPath([], for: tab)
     }
@@ -44,8 +49,6 @@ final class AppRouter {
         switch tab {
         case .home:
             homePath
-        case .cardCreation:
-            cardCreationPath
         case .archive:
             archivePath
         }
@@ -55,8 +58,6 @@ final class AppRouter {
         switch tab {
         case .home:
             homePath = AppNavigationPath.appending(route, to: homePath)
-        case .cardCreation:
-            cardCreationPath = AppNavigationPath.appending(route, to: cardCreationPath)
         case .archive:
             archivePath = AppNavigationPath.appending(route, to: archivePath)
         }
@@ -66,8 +67,6 @@ final class AppRouter {
         switch tab {
         case .home:
             homePath = path
-        case .cardCreation:
-            cardCreationPath = path
         case .archive:
             archivePath = path
         }

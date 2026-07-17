@@ -39,23 +39,32 @@ struct CardDetailView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .top) {
-            CardDetailContentView(
-                card: displayedCard,
-                imageState: imageState,
-                onOpenOriginal: openOriginal
-            )
+        GeometryReader { geometry in
+            ZStack(alignment: .top) {
+                CardDetailContentView(
+                    card: displayedCard,
+                    imageState: imageState,
+                    contentWidth: geometry.size.width,
+                    onOpenOriginal: openOriginal
+                )
                 .ignoresSafeArea(edges: .top)
 
-            CardDetailNavigationBar(
-                title: "스크린샷 상세",
-                isFavorite: displayedCard.isFavorite,
-                foregroundColor: navigationContentColor,
-                onBack: dismiss.callAsFunction,
-                onFavorite: favorite,
-                onMore: showActions
+                CardDetailNavigationBar(
+                    title: "스크린샷 상세",
+                    isFavorite: displayedCard.isFavorite,
+                    foregroundColor: navigationContentColor,
+                    onBack: dismiss.callAsFunction,
+                    onFavorite: favorite,
+                    onMore: showActions
+                )
+                .frame(width: geometry.size.width)
+                .padding(.top, 20)
+            }
+            .frame(
+                width: geometry.size.width,
+                height: geometry.size.height,
+                alignment: .top
             )
-            .padding(.top, 20)
         }
         .background(Color.recapBackground)
         .navigationBarBackButtonHidden(true)
