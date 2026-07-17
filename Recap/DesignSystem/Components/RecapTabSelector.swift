@@ -30,7 +30,11 @@ struct RecapTabSelector: View {
             width: RecapMainTabBarMetrics.selectorSize.width,
             height: RecapMainTabBarMetrics.selectorSize.height
         )
-        .background(Color.white)
+        .background {
+            Capsule()
+                .fill(Color.white)
+        }
+        .glassEffect(.regular.tint(.white), in: .capsule)
         .clipShape(Capsule())
         .animation(.snappy(duration: 0.28, extraBounce: 0), value: selection)
     }
