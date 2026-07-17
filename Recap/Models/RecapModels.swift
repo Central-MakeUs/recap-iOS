@@ -17,7 +17,6 @@ enum OnboardingStep: Hashable {
 enum MainTab: String, CaseIterable, Identifiable, Hashable {
     case home
     case archive
-    case cardCreation
 
     var id: String { rawValue }
 }

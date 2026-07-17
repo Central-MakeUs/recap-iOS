@@ -39,6 +39,82 @@ final class RecapTests: XCTestCase {
         XCTAssertEqual(cardCreationPath, [.cardCreationStart])
     }
 
+    func testRouterSwitchesBetweenMainTabs() {
+        let router = AppRouter()
+
+        router.switchTo(.archive)
+        XCTAssertEqual(router.selectedTab, .archive)
+
+        router.switchTo(.home)
+        XCTAssertEqual(router.selectedTab, .home)
+    }
+
+    func testMainTabChromeUsesFigmaGeometry() {
+        XCTAssertEqual(RecapMainTabBarMetrics.height, 111)
+        XCTAssertEqual(RecapMainTabBarMetrics.horizontalPadding, 22)
+        XCTAssertEqual(RecapMainTabBarMetrics.topPadding, 28.5)
+        XCTAssertEqual(RecapMainTabBarMetrics.selectorSize, CGSize(width: 155, height: 54))
+        XCTAssertEqual(RecapMainTabBarMetrics.tabItemSize, CGSize(width: 72, height: 46))
+        XCTAssertEqual(RecapMainTabBarMetrics.uploadButtonSize, CGSize(width: 107, height: 54))
+        XCTAssertEqual(
+            RecapMainTabBarMetrics.contentHeight(bottomSafeAreaInset: 30),
+            81
+        )
+
+        let viewport = CGSize(width: 375, height: 812)
+        XCTAssertEqual(
+            RecapMainTabBarMetrics.barFrame(in: viewport),
+            CGRect(x: 0, y: 701, width: 375, height: 111)
+        )
+        XCTAssertEqual(
+            RecapMainTabBarMetrics.selectorFrame(in: viewport),
+            CGRect(x: 22, y: 729.5, width: 155, height: 54)
+        )
+        XCTAssertEqual(
+            RecapMainTabBarMetrics.uploadButtonFrame(in: viewport),
+            CGRect(x: 246, y: 729.5, width: 107, height: 54)
+        )
+    }
+
+    func testMainTabChromeRoutePolicy() {
+        XCTAssertTrue(RecapMainTabChromePolicy.routeAllowsChrome(for: nil))
+        XCTAssertTrue(RecapMainTabChromePolicy.routeAllowsChrome(for: .archiveDetail(.shopping)))
+        XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .search))
+        XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .allRecentCards))
+        XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .cardDetail(UUID())))
+        XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .cardCreationStart))
+        XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .settings))
+    }
+
+    func testCollectionSelectionChromeReplacesMainTabChrome() {
+        let state = RecapMainTabChromeState()
+        state.setVisible(false, for: .archive)
+
+        XCTAssertFalse(
+            RecapMainTabChromePolicy.showsChrome(
+                routeAllowsChrome: true,
+                contentVisibility: state.contentVisibility,
+                selectedTab: .archive
+            )
+        )
+        XCTAssertTrue(
+            RecapMainTabChromePolicy.showsChrome(
+                routeAllowsChrome: true,
+                contentVisibility: state.contentVisibility,
+                selectedTab: .home
+            )
+        )
+
+        state.reset(for: .archive)
+        XCTAssertTrue(
+            RecapMainTabChromePolicy.showsChrome(
+                routeAllowsChrome: true,
+                contentVisibility: state.contentVisibility,
+                selectedTab: .archive
+            )
+        )
+    }
+
     func testCardStoreSearchesAndUpdatesCards() {
         let card = SampleData.cards[0]
         XCTAssertEqual(

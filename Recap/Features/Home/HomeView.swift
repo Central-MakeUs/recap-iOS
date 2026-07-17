@@ -19,8 +19,7 @@ struct HomeContainerView: View {
         case .search:
             router.navigate(.search)
         case .startOrganizing:
-            router.selectedTab = .cardCreation
-            router.cardCreationPath = [.cardCreationStart]
+            router.navigate(.cardCreationStart)
         case .openAllRecent:
             router.navigate(.allRecentCards)
         case .openCard(let id):
@@ -87,7 +86,6 @@ struct HomeView: View {
             }
             .padding(.horizontal, 16)
             .padding(.top, 18)
-            .padding(.bottom, 126)
         }
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)

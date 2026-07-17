@@ -57,6 +57,7 @@ struct CardDetailView: View {
             )
             .padding(.top, 20)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color.recapBackground)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
