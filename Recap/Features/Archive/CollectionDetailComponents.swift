@@ -17,7 +17,7 @@ enum ArchiveDetailScope: Hashable {
         "\(title) 보관함 내에서 검색"
     }
 
-    var rowMetadata: ArchiveCardListRow.Metadata {
+    var rowMetadata: RecapInformationCardRow.Metadata {
         switch self {
         case .favorites:
             .category

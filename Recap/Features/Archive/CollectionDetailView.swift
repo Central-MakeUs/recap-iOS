@@ -213,7 +213,7 @@ struct CollectionDetailView: View {
                             onAction(.openCard(card.id))
                         }
                     } label: {
-                        ArchiveCardListRow(
+                        RecapInformationCardRow(
                             card: card,
                             metadata: scope.rowMetadata,
                             favoriteOverride: scope.favoriteOverride,
