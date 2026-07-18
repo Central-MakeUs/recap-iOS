@@ -21,14 +21,29 @@ struct RecapCategoryIcon: View {
     var body: some View {
         let display = RecapPresentation.collectionDisplay(for: kind)
 
-        RecapIconView(
-            icon: .categoryIcon(for: kind),
-            size: size.symbol,
-            color: display.dotColor
-        )
+        Group {
+            if kind == .other {
+                RoundedRectangle(cornerRadius: 2.5, style: .continuous)
+                    .fill(Color.recapGray200)
+                    .frame(width: otherSymbolWidth, height: 4)
+            } else {
+                RecapIconView(
+                    icon: .categoryIcon(for: kind),
+                    size: size.symbol,
+                    color: display.dotColor
+                )
+            }
+        }
             .frame(width: size.container, height: size.container)
             .background(Color.recapCategorySurface)
             .clipShape(RoundedRectangle(cornerRadius: 27, style: .continuous))
+    }
+
+    private var otherSymbolWidth: CGFloat {
+        switch size {
+        case .medium: 22
+        case .large: 24
+        }
     }
 }
 
