@@ -59,12 +59,12 @@ struct CollectionHomeFavoritesLink: View {
     let count: Int
 
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(alignment: .top, spacing: 14) {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .fill(Color.recapBackground)
                 .frame(width: 30, height: 30)
                 .overlay {
-                    RecapIconView(icon: .star, size: 16, color: Color.recapBlue300)
+                    RecapIconView(icon: .star, size: 24, color: Color.recapBlue300)
                 }
 
             VStack(alignment: .leading, spacing: 4) {
@@ -73,7 +73,9 @@ struct CollectionHomeFavoritesLink: View {
                     .tracking(-0.32)
                     .foregroundStyle(Color.recapGray900)
 
-                Text("\(count) recaps")
+                Text(
+                    "\(Text("\(count)").font(RecapFont.pretendard(size: 14, weight: .semibold))) recaps"
+                )
                     .font(RecapFont.pretendard(size: 14, weight: .regular))
                     .tracking(-0.28)
                     .foregroundStyle(Color.recapGray500)
