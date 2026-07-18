@@ -8,6 +8,7 @@ struct CollectionHomeHeader: View {
             Image("RecapArchiveIcon")
                 .resizable()
                 .interpolation(.high)
+                .frame(width: 16, height: 14)
                 .frame(width: 24, height: 24)
 
             Text("보관함")
@@ -43,7 +44,7 @@ struct CollectionHomeHeader: View {
         } label: {
             RecapIconView(
                 icon: icon,
-                size: 16,
+                size: 24,
                 color: layoutMode == mode ? Color.recapGray700 : Color.recapGray200
             )
             .frame(width: 24, height: 24)
