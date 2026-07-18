@@ -97,8 +97,8 @@ enum RecapPresentation {
             CollectionDisplay(
                 title: "책 · 콘텐츠",
                 subtitle: "쇼코의 미소 독후감",
-                dotColor: .categoryGray500,
-                textColor: .categoryGray700,
+                dotColor: .categoryPink500,
+                textColor: .categoryPink700,
                 symbolName: "book.closed.fill",
                 sampleCount: 1
             )
@@ -126,7 +126,7 @@ enum RecapPresentation {
                 subtitle: "채용 공고, 지원 일정, 취업 정보",
                 dotColor: .categoryOrange500,
                 textColor: .categoryOrange700,
-                symbolName: "pencil",
+                symbolName: "person.fill",
                 sampleCount: 12
             )
         case .other:

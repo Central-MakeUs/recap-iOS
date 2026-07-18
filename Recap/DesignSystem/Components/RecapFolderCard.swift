@@ -101,17 +101,19 @@ private struct RecapFolderArtwork: View {
                 .frame(width: 94 * size.scale, height: 79 * size.scale)
                 .offset(x: 5 * size.scale, y: 9 * size.scale)
 
-            RoundedRectangle(cornerRadius: 10 * size.scale, style: .continuous)
-                .fill(Color.recapBackground)
-                .frame(width: 30 * size.scale, height: 30 * size.scale)
-                .overlay {
-                    RecapIconView(
-                        icon: RecapIcon.categoryIcon(for: kind),
-                        size: 16 * size.scale,
-                        color: display.dotColor
-                    )
-                }
-                .offset(x: 13 * size.scale, y: 17 * size.scale)
+            if kind != .other {
+                RoundedRectangle(cornerRadius: 10 * size.scale, style: .continuous)
+                    .fill(Color.recapBackground)
+                    .frame(width: 30 * size.scale, height: 30 * size.scale)
+                    .overlay {
+                        RecapIconView(
+                            icon: RecapIcon.categoryIcon(for: kind),
+                            size: 16 * size.scale,
+                            color: display.dotColor
+                        )
+                    }
+                    .offset(x: 13 * size.scale, y: 17 * size.scale)
+            }
         }
         .frame(width: 99 * size.scale, height: 88 * size.scale, alignment: .topLeading)
     }

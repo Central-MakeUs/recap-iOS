@@ -27,6 +27,7 @@ enum RecapIcon: String, CaseIterable, Identifiable {
     case book
     case event
     case record
+    case career
     case noImage
     case check
 
@@ -60,6 +61,7 @@ enum RecapIcon: String, CaseIterable, Identifiable {
         case .book: "icon/book"
         case .event: "icon/event"
         case .record: "icon/record"
+        case .career: "icon/career"
         case .noImage: "icon/noimage"
         case .check: "icon/check"
         }
@@ -67,7 +69,7 @@ enum RecapIcon: String, CaseIterable, Identifiable {
 
     var defaultSize: CGFloat {
         switch self {
-        case .cancelCircle, .dropdown, .checkbox, .shopping, .place, .schedule, .idea, .book, .event, .record:
+        case .cancelCircle, .dropdown, .checkbox, .shopping, .place, .schedule, .idea, .book, .event, .record, .career:
             16
         case .plus: 30
         case .star, .starEmpty, .cancel, .back, .forward, .search, .home, .storage, .more,
@@ -108,6 +110,7 @@ enum RecapIcon: String, CaseIterable, Identifiable {
         case .book: "RecapIconBook"
         case .event: "RecapIconEvent"
         case .record: "RecapIconRecord"
+        case .career: "RecapIconCareer"
         case .noImage: "RecapIconNoImage"
         case .check: "RecapIconCheck"
         }
@@ -127,8 +130,10 @@ enum RecapIcon: String, CaseIterable, Identifiable {
             .book
         case .benefits:
             .event
-        case .capture, .career:
+        case .capture:
             .record
+        case .career:
+            .career
         case .other:
             .storage
         }

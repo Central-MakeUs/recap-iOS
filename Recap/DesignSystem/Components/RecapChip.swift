@@ -115,7 +115,7 @@ private struct CategoryPalette {
         case .knowledge:
             CategoryPalette(background: .categoryYellow300, border: .categoryYellow500, text: .categoryYellow700)
         case .content:
-            CategoryPalette(background: .categoryGray300, border: .categoryGray500, text: .categoryGray700)
+            CategoryPalette(background: .categoryPink300, border: .categoryPink500, text: .categoryPink700)
         case .benefits:
             CategoryPalette(background: .categoryMint300, border: .categoryMint500, text: .categoryMint700)
         case .capture:
