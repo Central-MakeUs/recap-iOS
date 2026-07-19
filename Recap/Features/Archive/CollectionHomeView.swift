@@ -1,36 +1,5 @@
 import SwiftUI
 
-struct CollectionHomeContainerView: View {
-    @Environment(AppRouter.self) private var router
-    @Environment(RecapCardStore.self) private var cardStore
-
-    var body: some View {
-        CollectionHomeView(
-            summaries: cardStore.collectionSummaries,
-            favoriteCount: cardStore.favoriteCards.count,
-            otherCount: cardStore.uncategorizedCards.count,
-            onAction: handleAction
-        )
-    }
-
-    private func handleAction(_ action: ArchiveAction) {
-        switch action {
-        case .search:
-            router.navigate(.search)
-        case .openFavorites:
-            router.navigate(.archiveFavorites)
-        case .openArchive(let kind):
-            router.navigate(.archiveDetail(kind))
-        case .openCard(let id):
-            router.navigate(.cardDetail(id))
-        case .selectFilter, .deleteCards:
-            break
-        case .openSettings:
-            router.navigate(.settings)
-        }
-    }
-}
-
 struct CollectionHomeView: View {
     enum LayoutMode {
         case grid
@@ -113,6 +82,7 @@ struct CollectionHomeView: View {
                         summaries: folderSummaries,
                         onOpenArchive: openArchive
                     )
+                    .padding(.horizontal, -16)
                     .padding(.top, 14)
                 }
             }
@@ -180,5 +150,49 @@ struct CollectionHomeView: View {
 
     private func openArchive(_ kind: CollectionKind) {
         onAction(.openArchive(kind))
+    }
+}
+
+#Preview("보관함 홈 폴더형") {
+    NavigationStack {
+        CollectionHomeView(
+            summaries: SampleData.collectionSummaries,
+            favoriteCount: SampleData.cards.filter(\.isFavorite).count,
+            otherCount: SampleData.cards(in: .other).count,
+            onAction: PreviewActions.handleArchive
+        )
+    }
+}
+
+#Preview("보관함 홈 리스트형") {
+    NavigationStack {
+        CollectionHomeView(
+            summaries: SampleData.collectionSummaries,
+            favoriteCount: SampleData.cards.filter(\.isFavorite).count,
+            otherCount: SampleData.cards(in: .other).count,
+            layoutMode: .list,
+            onAction: PreviewActions.handleArchive
+        )
+    }
+}
+
+#Preview("보관함 항목 없음") {
+    NavigationStack {
+        CollectionHomeView(
+            summaries: [],
+            favoriteCount: 0,
+            onAction: PreviewActions.handleArchive
+        )
+    }
+}
+
+#Preview("보관함 리스트 로딩 실패") {
+    NavigationStack {
+        CollectionHomeView(
+            summaries: [],
+            favoriteCount: 0,
+            loadState: .failed,
+            onAction: PreviewActions.handleArchive
+        )
     }
 }

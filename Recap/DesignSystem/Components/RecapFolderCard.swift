@@ -7,7 +7,7 @@ struct RecapFolderCard: View {
 
     var body: some View {
         VStack(spacing: 10) {
-            RecapFolderArtwork(kind: kind, size: .grid)
+            RecapFolderArtwork(kind: kind)
 
             VStack(spacing: 3) {
                 Text(title)
@@ -27,97 +27,41 @@ struct RecapFolderCard: View {
     }
 }
 
-struct RecapFolderListRow: View {
-    let title: String
-    let subtitle: String
-    let count: Int
-    let kind: CollectionKind
-
-    var body: some View {
-        HStack(spacing: 27) {
-            RecapCategoryIcon(kind: kind, size: .medium)
-
-            VStack(alignment: .leading, spacing: 5) {
-                HStack(spacing: 8) {
-                    Text(title)
-                        .font(RecapFont.pretendard(size: 16, weight: .semibold))
-                        .tracking(-0.32)
-                        .foregroundStyle(Color.recapGray900)
-
-                    Spacer(minLength: 0)
-
-                    Text("\(count) Recaps")
-                        .font(RecapFont.pretendard(size: 12, weight: .medium))
-                        .tracking(-0.24)
-                        .foregroundStyle(Color.recapGray300)
-                }
-
-                Text(subtitle)
-                    .font(RecapFont.pretendard(size: 13, weight: .medium))
-                    .tracking(-0.26)
-                    .foregroundStyle(Color.recapGray500)
-                    .lineLimit(1)
-            }
-        }
-        .padding(.horizontal, 20)
-        .frame(height: 85)
-        .background(Color.recapBackground)
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(Color.recapGray100)
-                .frame(height: 1)
-        }
-    }
-}
-
 private struct RecapFolderArtwork: View {
-    enum Size {
-        case grid
-        case list
-
-        var scale: CGFloat {
-            switch self {
-            case .grid: 1
-            case .list: 0.72
-            }
-        }
-    }
-
     let kind: CollectionKind
-    let size: Size
 
     var body: some View {
         let display = RecapPresentation.collectionDisplay(for: kind)
 
         ZStack(alignment: .topLeading) {
-            RoundedRectangle(cornerRadius: 7.409886837005615 * size.scale, style: .continuous)
+            RoundedRectangle(cornerRadius: 7.409886837005615, style: .continuous)
                 .fill(Color.recapFolderBack)
-                .frame(width: 93 * size.scale, height: 71 * size.scale)
+                .frame(width: 93, height: 71)
 
-            RoundedRectangle(cornerRadius: 5 * size.scale, style: .continuous)
+            RoundedRectangle(cornerRadius: 5, style: .continuous)
                 .fill(Color.white)
-                .frame(width: 85 * size.scale, height: 63 * size.scale)
-                .offset(x: 4 * size.scale, y: 4 * size.scale)
+                .frame(width: 85, height: 63)
+                .offset(x: 4, y: 4)
 
             RecapFolderFront()
-                .frame(width: 94 * size.scale, height: 79 * size.scale)
-                .offset(x: 5 * size.scale, y: 9 * size.scale)
+                .frame(width: 94, height: 79)
+                .offset(x: 5, y: 9)
 
             if kind != .other {
-                RoundedRectangle(cornerRadius: 10 * size.scale, style: .continuous)
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .fill(Color.recapBackground)
-                    .frame(width: 30 * size.scale, height: 30 * size.scale)
+                    .frame(width: 30, height: 30)
                     .overlay {
                         RecapIconView(
                             icon: RecapIcon.categoryIcon(for: kind),
-                            size: 16 * size.scale,
+                            size: 16,
                             color: display.dotColor
                         )
                     }
-                    .offset(x: 13 * size.scale, y: 17 * size.scale)
+                    .offset(x: 13, y: 17)
             }
         }
-        .frame(width: 99 * size.scale, height: 88 * size.scale, alignment: .topLeading)
+        .frame(width: 99, height: 88, alignment: .topLeading)
     }
 }
 
@@ -186,7 +130,7 @@ private struct RecapFolderFrontShape: Shape {
     }
 }
 
-#Preview("폴더") {
+#Preview("폴더 카드") {
     ZStack {
         Color.recapBackground.ignoresSafeArea()
         LazyVGrid(
@@ -203,23 +147,5 @@ private struct RecapFolderFrontShape: Shape {
             }
         }
         .padding()
-    }
-}
-
-#Preview("폴더 목록") {
-    VStack(spacing: 0) {
-        RecapFolderListRow(
-            title: "쇼핑 · 상품",
-            subtitle: "택배 반품 절차 · 노트북 가격 비교",
-            count: 12,
-            kind: .shopping
-        )
-
-        RecapFolderListRow(
-            title: "기타",
-            subtitle: "분류가 아직 확정되지 않은 카드",
-            count: 0,
-            kind: .other
-        )
     }
 }
