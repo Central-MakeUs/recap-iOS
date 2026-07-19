@@ -189,7 +189,7 @@ struct CollectionDetailView: View {
                     .foregroundStyle(Color.recapGray500)
 
                 Button("선택 삭제 (\(selectedIDs.count))", action: requestDeletion)
-                    .foregroundStyle(Color.recapBlue900)
+                    .foregroundStyle(Color.recapBlue500)
                     .disabled(selectedIDs.isEmpty)
             } else {
                 Button("선택", action: beginSelection)
