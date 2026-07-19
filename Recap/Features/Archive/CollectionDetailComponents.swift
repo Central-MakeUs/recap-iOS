@@ -138,7 +138,7 @@ struct CollectionDetailEmptyState: View {
                     .foregroundStyle(Color.recapGray300)
                     .padding(.top, 9)
             } else {
-                RecapSearchEmptyIllustration(size: 123)
+                RecapFolderEmptyIllustration()
 
                 Text("이 폴더에 정리된 스크린샷이 없어요")
                     .padding(.top, 20)

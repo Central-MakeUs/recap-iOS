@@ -1,4 +1,5 @@
 import SwiftUI
+
 struct RecapSearchEmptyIllustration: View {
     var size: CGFloat = 175
 
@@ -51,6 +52,21 @@ struct RecapSearchEmptyIllustration: View {
                     .frame(width: size * 0.07, height: size * 0.07)
             }
     }
+}
+
+struct RecapFolderEmptyIllustration: View {
+    var body: some View {
+        Image("RecapFolderEmptyIllustration")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 123, height: 89)
+            .accessibilityHidden(true)
+    }
+}
+
+#Preview("폴더 빈 상태 일러스트") {
+    RecapFolderEmptyIllustration()
+        .padding()
 }
 
 struct RecapArchiveEmptyIllustration: View {
