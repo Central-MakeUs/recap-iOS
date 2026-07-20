@@ -34,6 +34,11 @@ final class AppRouter {
     func openArchive(section: ArchiveSection = .type) {
         archiveSection = section
         selectedTab = .archive
+        if section == .favorites {
+            archivePath = [.archiveFavorites]
+        } else {
+            archivePath = []
+        }
     }
 
     func reset(tab: MainTab) {
