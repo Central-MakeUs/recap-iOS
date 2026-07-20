@@ -1,59 +1,10 @@
 import SwiftUI
 
-struct FavoriteRecapListCard: View {
-    let card: InformationCard
-    var isStarred = false
-
-    var body: some View {
-        HStack(alignment: .top, spacing: 15) {
-            RecapScreenshotThumbnail(kind: card.collection, assetName: card.thumbnailAssetName)
-                .frame(width: 68, height: 68)
-                .fixedSize(horizontal: true, vertical: true)
-                .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
-                .padding(.top, 13)
-
-            VStack(alignment: .leading, spacing: 8) {
-                RecapChip(configuration: .category(card.collection, size: .small))
-
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(card.title)
-                        .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                        .tracking(-0.28)
-                        .foregroundStyle(Color.recapGray900)
-                        .lineLimit(1)
-
-                    Text(card.summary)
-                        .font(RecapFont.pretendard(size: 13, weight: .medium))
-                        .tracking(-0.26)
-                        .foregroundStyle(Color.recapGray500)
-                        .lineLimit(1)
-                }
-            }
-            .padding(.top, 13)
-
-            Spacer(minLength: 0)
-
-            RecapIconView(
-                icon: isStarred ? .star : .starEmpty,
-                size: 24,
-                color: isStarred ? Color.recapBlue300 : Color.recapGray100
-            )
-            .padding(.top, 10)
-        }
-        .padding(.horizontal, 16)
-        .frame(height: 94, alignment: .top)
-        .background(Color.white)
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(Color.recapGray100)
-                .frame(height: 1)
-        }
-    }
-}
-
 struct RecapScreenshotThumbnail: View {
     let kind: CollectionKind
     var assetName: String?
+    var cornerRadius: CGFloat = 5
+    var hasFavoriteFold = false
 
     var body: some View {
         Group {
@@ -65,11 +16,19 @@ struct RecapScreenshotThumbnail: View {
                 placeholder
             }
         }
+        .clipShape(thumbnailShape)
         .clipped()
         .overlay {
-            RoundedRectangle(cornerRadius: 5, style: .continuous)
+            thumbnailShape
                 .stroke(Color.recapGray100, lineWidth: 1)
         }
+    }
+
+    private var thumbnailShape: RecapScreenshotThumbnailShape {
+        RecapScreenshotThumbnailShape(
+            cornerRadius: cornerRadius,
+            hasFavoriteFold: hasFavoriteFold
+        )
     }
 
     private var placeholder: some View {
@@ -90,8 +49,64 @@ struct RecapScreenshotThumbnail: View {
     }
 }
 
-#Preview("즐겨찾기 리스트 카드") {
-    FavoriteRecapListCard(card: SampleData.cards[3], isStarred: true)
+private struct RecapScreenshotThumbnailShape: Shape {
+    let cornerRadius: CGFloat
+    let hasFavoriteFold: Bool
+
+    func path(in rect: CGRect) -> Path {
+        guard hasFavoriteFold else {
+            return RoundedRectangle(
+                cornerRadius: cornerRadius,
+                style: .continuous
+            )
+            .path(in: rect)
+        }
+
+        let scaleX = rect.width / 62
+        let scaleY = rect.height / 80
+        let radius = 5 * min(scaleX, scaleY)
+        let foldTopEndX = rect.minX + (31 * scaleX)
+        let foldVerticalX = rect.minX + (36 * scaleX)
+        let foldBottomStartX = rect.minX + (41 * scaleX)
+        let foldBottomY = rect.minY + (24 * scaleY)
+        let rightFoldStartX = rect.maxX - radius
+        let rightFoldBottomY = foldBottomY + radius
+
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX + radius, y: rect.minY))
+        path.addLine(to: CGPoint(x: foldTopEndX, y: rect.minY))
+        path.addQuadCurve(
+            to: CGPoint(x: foldVerticalX, y: rect.minY + radius),
+            control: CGPoint(x: foldVerticalX, y: rect.minY)
+        )
+        path.addLine(to: CGPoint(x: foldVerticalX, y: foldBottomY - radius))
+        path.addQuadCurve(
+            to: CGPoint(x: foldBottomStartX, y: foldBottomY),
+            control: CGPoint(x: foldVerticalX, y: foldBottomY)
+        )
+        path.addLine(to: CGPoint(x: rightFoldStartX, y: foldBottomY))
+        path.addQuadCurve(
+            to: CGPoint(x: rect.maxX, y: rightFoldBottomY),
+            control: CGPoint(x: rect.maxX, y: foldBottomY)
+        )
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - radius))
+        path.addQuadCurve(
+            to: CGPoint(x: rect.maxX - radius, y: rect.maxY),
+            control: CGPoint(x: rect.maxX, y: rect.maxY)
+        )
+        path.addLine(to: CGPoint(x: rect.minX + radius, y: rect.maxY))
+        path.addQuadCurve(
+            to: CGPoint(x: rect.minX, y: rect.maxY - radius),
+            control: CGPoint(x: rect.minX, y: rect.maxY)
+        )
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + radius))
+        path.addQuadCurve(
+            to: CGPoint(x: rect.minX + radius, y: rect.minY),
+            control: CGPoint(x: rect.minX, y: rect.minY)
+        )
+        path.closeSubpath()
+        return path
+    }
 }
 
 #Preview("스크린샷 썸네일") {

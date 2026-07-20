@@ -60,7 +60,7 @@ enum RecapPresentation {
         case .shopping:
             CollectionDisplay(
                 title: "쇼핑 · 상품",
-                subtitle: "빅뱅 콘서트, 노트북 구매",
+                subtitle: "택배 반품 절차 · 노트북 가격 비교",
                 dotColor: .categoryBlue500,
                 textColor: .categoryBlue700,
                 symbolName: "cart.fill",
@@ -69,7 +69,7 @@ enum RecapPresentation {
         case .place:
             CollectionDisplay(
                 title: "장소 · 맛집",
-                subtitle: "가게, 여행지, 맛집 후보",
+                subtitle: "성수 카페 리스트 · 제주 맛집 후보",
                 dotColor: .categoryRed500,
                 textColor: .categoryRed700,
                 symbolName: "key.fill",
@@ -78,7 +78,7 @@ enum RecapPresentation {
         case .schedule:
             CollectionDisplay(
                 title: "일정 · 예약",
-                subtitle: "예약 확정, 병원, 일정 안내",
+                subtitle: "제주 숙소 예약 · 병원 예약 안내",
                 dotColor: .categoryGreen500,
                 textColor: .categoryGreen700,
                 symbolName: "clock.fill",
@@ -87,7 +87,7 @@ enum RecapPresentation {
         case .knowledge:
             CollectionDisplay(
                 title: "정보 · 지식",
-                subtitle: "팁, 안내, 학습 자료",
+                subtitle: "연말정산 서류목록 · 파스타레시피",
                 dotColor: .categoryYellow500,
                 textColor: .categoryYellow700,
                 symbolName: "lightbulb.fill",
@@ -96,16 +96,16 @@ enum RecapPresentation {
         case .content:
             CollectionDisplay(
                 title: "책 · 콘텐츠",
-                subtitle: "책, 문서, 영상, 아티클",
-                dotColor: .categoryGray500,
-                textColor: .categoryGray700,
+                subtitle: "쇼코의 미소 독후감",
+                dotColor: .categoryPink500,
+                textColor: .categoryPink700,
                 symbolName: "book.closed.fill",
                 sampleCount: 1
             )
         case .benefits:
             CollectionDisplay(
                 title: "혜택 · 이벤트",
-                subtitle: "쿠폰, 이벤트, 혜택 정보",
+                subtitle: "올리브영 팝업스토어 이벤트 · SKT 할인혜택",
                 dotColor: .categoryMint500,
                 textColor: .categoryMint700,
                 symbolName: "star.fill",
@@ -114,7 +114,7 @@ enum RecapPresentation {
         case .capture:
             CollectionDisplay(
                 title: "기록 · 캡처",
-                subtitle: "메모, 대화, 보관용 캡처",
+                subtitle: "주간 운동기록 · 헬스장 머신 사용법",
                 dotColor: .categoryPurple500,
                 textColor: .categoryPurple700,
                 symbolName: "pencil",
@@ -126,7 +126,7 @@ enum RecapPresentation {
                 subtitle: "채용 공고, 지원 일정, 취업 정보",
                 dotColor: .categoryOrange500,
                 textColor: .categoryOrange700,
-                symbolName: "pencil",
+                symbolName: "person.fill",
                 sampleCount: 12
             )
         case .other:

@@ -92,9 +92,10 @@ struct RecapMainTabContainer: View {
 enum RecapMainTabChromePolicy {
     static func routeAllowsChrome(for route: AppRoute?) -> Bool {
         switch route {
-        case nil, .archiveDetail:
+        case nil:
             true
-        case .search, .allRecentCards, .cardDetail, .cardCreationStart, .settings:
+        case .search, .allRecentCards, .archiveFavorites, .archiveDetail,
+             .cardDetail, .cardCreationStart, .settings:
             false
         }
     }

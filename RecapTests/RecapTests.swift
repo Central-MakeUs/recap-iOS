@@ -56,6 +56,7 @@ final class RecapTests: XCTestCase {
 
         XCTAssertEqual(router.selectedTab, .archive)
         XCTAssertEqual(router.archiveSection, .favorites)
+        XCTAssertEqual(router.archivePath, [.archiveFavorites])
     }
 
     func testMainTabChromeUsesFigmaGeometry() {
@@ -87,7 +88,8 @@ final class RecapTests: XCTestCase {
 
     func testMainTabChromeRoutePolicy() {
         XCTAssertTrue(RecapMainTabChromePolicy.routeAllowsChrome(for: nil))
-        XCTAssertTrue(RecapMainTabChromePolicy.routeAllowsChrome(for: .archiveDetail(.shopping)))
+        XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .archiveFavorites))
+        XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .archiveDetail(.shopping)))
         XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .search))
         XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .allRecentCards))
         XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .cardDetail(UUID())))
