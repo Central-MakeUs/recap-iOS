@@ -74,7 +74,7 @@ struct CollectionHomeFavoritesLink: View {
                     .foregroundStyle(Color.recapGray900)
 
                 Text(
-                    "\(Text("\(count)").font(RecapFont.pretendard(size: 14, weight: .semibold))) recaps"
+                    "\(Text("\(count)").font(RecapFont.pretendard(size: 14, weight: .semibold)).foregroundStyle(Color.recapGray700)) recaps"
                 )
                     .font(RecapFont.pretendard(size: 14, weight: .regular))
                     .tracking(-0.28)

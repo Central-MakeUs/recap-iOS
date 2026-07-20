@@ -10,6 +10,7 @@ struct CollectionDetailContainerView: View {
         CollectionDetailView(
             scope: scope,
             cards: cardsForDisplay,
+            onImportScreenshots: { router.navigate(.cardCreationStart) },
             onAction: handleAction
         )
     }
@@ -90,6 +91,7 @@ struct CollectionDetailView: View {
 
     let scope: ArchiveDetailScope
     let cards: [InformationCard]
+    let onImportScreenshots: () -> Void
     let onAction: (ArchiveAction) -> Void
 
     init(
@@ -97,12 +99,14 @@ struct CollectionDetailView: View {
         cards: [InformationCard],
         interactionMode: InteractionMode = .browsing,
         initialToast: RecapToastContent? = nil,
+        onImportScreenshots: @escaping () -> Void = {},
         onAction: @escaping (ArchiveAction) -> Void
     ) {
         self.scope = scope
         self.cards = cards
         _interactionMode = State(initialValue: interactionMode)
         _toast = State(initialValue: initialToast)
+        self.onImportScreenshots = onImportScreenshots
         self.onAction = onAction
     }
 
@@ -128,7 +132,9 @@ struct CollectionDetailView: View {
                 .frame(height: 6)
                 .padding(.top, 12)
 
-            Text("\(filteredCards.count) recaps")
+            Text(
+                "\(Text("\(filteredCards.count)").font(RecapFont.pretendard(size: 14, weight: .semibold)).foregroundStyle(Color.recapGray700)) recaps"
+            )
                 .font(RecapFont.pretendard(size: 14, weight: .regular))
                 .tracking(-0.28)
                 .foregroundStyle(Color.recapGray500)
@@ -137,7 +143,10 @@ struct CollectionDetailView: View {
                 .padding(.top, 15)
 
             if filteredCards.isEmpty {
-                CollectionDetailEmptyState(scope: scope)
+                CollectionDetailEmptyState(
+                    scope: scope,
+                    onImportScreenshots: onImportScreenshots
+                )
                     .frame(maxHeight: .infinity)
                     .padding(.bottom, 120)
             } else {

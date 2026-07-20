@@ -9,6 +9,7 @@ struct CollectionHomeContainerView: View {
             summaries: cardStore.collectionSummaries,
             favoriteCount: cardStore.favoriteCards.count,
             otherCount: cardStore.uncategorizedCards.count,
+            onImportScreenshots: { router.navigate(.cardCreationStart) },
             onAction: handleAction
         )
     }

@@ -69,91 +69,19 @@ struct RecapFolderEmptyIllustration: View {
         .padding()
 }
 
-struct RecapArchiveEmptyIllustration: View {
-    enum Style {
-        case favorites
-        case other
-    }
-
-    let style: Style
-
+struct RecapFavoriteEmptyIllustration: View {
     var body: some View {
-        ZStack {
-            if style == .other {
-                RecapSearchEmptyIllustration(size: 175)
-            } else {
-                favoriteDocument
-                starField
-            }
-        }
-        .frame(width: 175, height: 128)
-    }
-
-    private var favoriteDocument: some View {
-        RecapEmptyDocumentShape()
-            .fill(Color.recapGray100)
-            .frame(width: 85, height: 97)
-            .overlay(alignment: .bottomTrailing) {
-                HStack(spacing: -2) {
-                    emptyEye
-                    emptyEye
-                }
-                .offset(x: -8, y: -30)
-            }
-            .offset(y: 18)
-    }
-
-    private var emptyEye: some View {
-        Circle()
-            .fill(.white)
-            .frame(width: 24, height: 24)
-            .overlay {
-                Capsule()
-                    .stroke(Color.recapGray100, lineWidth: 2)
-                    .frame(width: 12, height: 6)
-            }
-    }
-
-    private var starField: some View {
-        ZStack {
-            RecapIconView(icon: .star, size: 20, color: Color.recapGray100)
-                .offset(x: -55, y: -29)
-            RecapIconView(icon: .star, size: 20, color: Color.recapGray100)
-                .offset(x: 0, y: -50)
-            RecapIconView(icon: .star, size: 20, color: Color.recapGray100)
-                .offset(x: 55, y: -29)
-        }
+        Image("RecapFavoriteEmptyIllustration")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 106, height: 103)
+            .accessibilityHidden(true)
     }
 }
 
-private struct RecapEmptyDocumentShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        let foldWidth = rect.width * 0.29
-        let foldHeight = rect.height * 0.25
-        let radius = rect.width * 0.06
-
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX + radius, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.maxX - foldWidth, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + foldHeight))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - radius))
-        path.addQuadCurve(
-            to: CGPoint(x: rect.maxX - radius, y: rect.maxY),
-            control: CGPoint(x: rect.maxX, y: rect.maxY)
-        )
-        path.addLine(to: CGPoint(x: rect.minX + radius, y: rect.maxY))
-        path.addQuadCurve(
-            to: CGPoint(x: rect.minX, y: rect.maxY - radius),
-            control: CGPoint(x: rect.minX, y: rect.maxY)
-        )
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + radius))
-        path.addQuadCurve(
-            to: CGPoint(x: rect.minX + radius, y: rect.minY),
-            control: CGPoint(x: rect.minX, y: rect.minY)
-        )
-        path.closeSubpath()
-        return path
-    }
+#Preview("즐겨찾기 빈 상태 일러스트") {
+    RecapFavoriteEmptyIllustration()
+        .padding()
 }
 
 private struct RecapEmptyFolderTabShape: Shape {

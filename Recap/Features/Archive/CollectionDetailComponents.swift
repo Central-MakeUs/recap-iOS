@@ -122,21 +122,26 @@ struct CollectionDetailNavigationHeader: View {
 
 struct CollectionDetailEmptyState: View {
     let scope: ArchiveDetailScope
+    var onImportScreenshots: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 0) {
             if scope == .favorites {
-                RecapArchiveEmptyIllustration(style: .favorites)
-                    .frame(width: 106, height: 103)
+                RecapFavoriteEmptyIllustration()
 
                 Text("아직 즐겨찾기한 스크린샷이 없어요")
                     .padding(.top, 20)
 
-                Text("별 아이콘을 눌러 즐겨찾기해보세요!")
+                Text("정리할 스크린샷을 불러오거나\n갤러리에서 공유해주세요")
                     .font(RecapFont.pretendard(size: 14, weight: .regular))
                     .tracking(-0.28)
+                    .lineSpacing(1)
+                    .multilineTextAlignment(.center)
                     .foregroundStyle(Color.recapGray300)
-                    .padding(.top, 9)
+                    .padding(.top, 13)
+
+                ArchiveScreenshotImportButton(action: onImportScreenshots)
+                    .padding(.top, 23)
             } else {
                 RecapFolderEmptyIllustration()
 
