@@ -5,7 +5,7 @@ struct CollectionHomeEmptyState: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            RecapSearchEmptyIllustration(size: 123)
+            RecapArchiveEmptyIllustration()
 
             Text("아직 정리된 스크린샷이 없어요")
                 .font(RecapFont.pretendard(size: 16, weight: .semibold))
@@ -19,7 +19,7 @@ struct CollectionHomeEmptyState: View {
                 .lineSpacing(1)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Color.recapGray300)
-                .padding(.top, 9)
+                .padding(.top, 13)
 
             ArchiveScreenshotImportButton(action: onImportScreenshots)
                 .padding(.top, 23)

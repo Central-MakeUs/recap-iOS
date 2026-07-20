@@ -104,7 +104,7 @@ struct CollectionHomeView: View {
 
             CollectionHomeEmptyState(onImportScreenshots: onImportScreenshots)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(.bottom, 82)
+                .padding(.bottom, 30)
         }
     }
 

@@ -69,6 +69,21 @@ struct RecapFolderEmptyIllustration: View {
         .padding()
 }
 
+struct RecapArchiveEmptyIllustration: View {
+    var body: some View {
+        Image("RecapArchiveEmptyIllustration")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 123, height: 89)
+            .accessibilityHidden(true)
+    }
+}
+
+#Preview("보관함 빈 상태 일러스트") {
+    RecapArchiveEmptyIllustration()
+        .padding()
+}
+
 struct RecapFavoriteEmptyIllustration: View {
     var body: some View {
         Image("RecapFavoriteEmptyIllustration")
