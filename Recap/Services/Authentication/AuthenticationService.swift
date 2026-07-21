@@ -24,13 +24,13 @@ final class AuthenticationService {
             deviceId: deviceID,
             providerToken: providerToken
         )
-        let response: AuthTokenResponse = try await networkClient.send(endpoint)
+        let response: AuthLoginResponse = try await networkClient.send(endpoint)
         try Task.checkCancellation()
 
         let tokenRecord = ServerTokenRecord(
-            accessToken: response.accessToken,
-            refreshToken: response.refreshToken,
-            accessTokenExpiresAt: response.accessTokenExpiresAt
+            accessToken: response.data.accessToken,
+            refreshToken: response.data.refreshToken,
+            accessTokenExpiresAt: response.data.accessTokenExpiresAt
         )
 
         do {

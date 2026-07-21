@@ -2,9 +2,32 @@ import XCTest
 @testable import Recap
 
 final class AppConfigurationTests: XCTestCase {
-    func testLiveConfigurationUsesApprovedBackendURL() {
+    func testLiveConfigurationUsesBundledBackendURL() throws {
+        let bundledBackendURL = try XCTUnwrap(
+            Bundle.main.object(forInfoDictionaryKey: "BACKEND_BASE_URL") as? String
+        )
+
         XCTAssertEqual(
             AppConfiguration.live().backendBaseURL.absoluteString,
+            bundledBackendURL
+        )
+    }
+
+    func testInjectedBackendURLIsPreserved() {
+        let configuration = AppConfiguration(
+            infoDictionary: ["BACKEND_BASE_URL": "  http://localhost:8080  "]
+        )
+
+        XCTAssertEqual(configuration.backendBaseURL.absoluteString, "http://localhost:8080")
+    }
+
+    func testInvalidBackendURLFallsBackToProduction() {
+        let configuration = AppConfiguration(
+            infoDictionary: ["BACKEND_BASE_URL": "not a URL"]
+        )
+
+        XCTAssertEqual(
+            configuration.backendBaseURL.absoluteString,
             "https://re-cap.duckdns.org"
         )
     }

@@ -45,21 +45,29 @@ final class NetworkAuthenticationTests: XCTestCase {
             statusCode: 200,
             body: """
             {
-              "accessToken": "access-token",
-              "refreshToken": "refresh-token",
-              "accessTokenExpiresAt": "2026-07-13T10:30:00Z"
+              "success": true,
+              "data": {
+                "accessToken": "access-token",
+                "refreshToken": "refresh-token",
+                "accessTokenExpiresAt": "2026-07-13T10:30:00Z"
+              },
+              "error": null
             }
             """.data(using: .utf8)!
         )
 
         let client = makeClient()
-        let response: AuthTokenResponse = try await client.send(
+        let response: AuthLoginResponse = try await client.send(
             AuthEndpoint.kakaoLogin(deviceId: "device", providerToken: "provider")
         )
 
-        XCTAssertEqual(response.accessToken, "access-token")
-        XCTAssertEqual(response.refreshToken, "refresh-token")
-        XCTAssertEqual(response.accessTokenExpiresAt, ISO8601DateFormatter().date(from: "2026-07-13T10:30:00Z"))
+        XCTAssertTrue(response.success)
+        XCTAssertEqual(response.data.accessToken, "access-token")
+        XCTAssertEqual(response.data.refreshToken, "refresh-token")
+        XCTAssertEqual(
+            response.data.accessTokenExpiresAt,
+            ISO8601DateFormatter().date(from: "2026-07-13T10:30:00Z")
+        )
     }
 
     func testKnownOAuthVerificationFailureEnvelopeIsNormalized() async throws {

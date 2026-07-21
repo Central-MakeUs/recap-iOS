@@ -28,11 +28,19 @@ build/
 
 # Local secrets / signing
 *.mobileprovision
+*.provisionprofile
 *.p12
+*.pfx
+*.p8
+*.pem
+*.key
 *.cer
 .env
 .env.*
 !.env.example
+/Config/Secrets*.xcconfig
+!/Config/Secrets.xcconfig.example
+*.xcconfig.local
 
 # OMX local state
 .omx/state/

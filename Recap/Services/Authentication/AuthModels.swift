@@ -27,3 +27,8 @@ nonisolated struct AuthTokenResponse: Decodable, Equatable, Sendable {
     let refreshToken: String
     let accessTokenExpiresAt: Date
 }
+
+nonisolated struct AuthLoginResponse: Decodable, Equatable, Sendable {
+    let success: Bool
+    let data: AuthTokenResponse
+}

@@ -27,10 +27,13 @@ final class AuthenticationServiceTests: XCTestCase {
     func testProviderTokenIsSentToTheMatchingBackendEndpointAndStored() async throws {
         let expiry = Date(timeIntervalSince1970: 1_800)
         let networkClient = AuthenticationNetworkClientSpy(
-            response: AuthTokenResponse(
-                accessToken: "server-access",
-                refreshToken: "server-refresh",
-                accessTokenExpiresAt: expiry
+            response: AuthLoginResponse(
+                success: true,
+                data: AuthTokenResponse(
+                    accessToken: "server-access",
+                    refreshToken: "server-refresh",
+                    accessTokenExpiresAt: expiry
+                )
             )
         )
         let secureStore = AuthenticationSecureStoreSpy(deviceID: "installation-id")
@@ -58,10 +61,13 @@ final class AuthenticationServiceTests: XCTestCase {
 
     func testStorageFailurePreventsSuccessAndCleansPartialTokenRecord() async {
         let networkClient = AuthenticationNetworkClientSpy(
-            response: AuthTokenResponse(
-                accessToken: "server-access",
-                refreshToken: "server-refresh",
-                accessTokenExpiresAt: Date(timeIntervalSince1970: 1_800)
+            response: AuthLoginResponse(
+                success: true,
+                data: AuthTokenResponse(
+                    accessToken: "server-access",
+                    refreshToken: "server-refresh",
+                    accessTokenExpiresAt: Date(timeIntervalSince1970: 1_800)
+                )
             )
         )
         let secureStore = AuthenticationSecureStoreSpy(saveError: .keychain(status: errSecNotAvailable))
