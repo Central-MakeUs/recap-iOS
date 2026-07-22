@@ -90,6 +90,73 @@ final class AuthenticationServiceTests: XCTestCase {
         XCTAssertNil(secureStore.savedRecord)
         XCTAssertEqual(secureStore.deleteCount, 1)
     }
+
+    func testLogoutSendsStoredRefreshTokenThenDeletesTokenRecord() async throws {
+        let tokenRecord = ServerTokenRecord(
+            accessToken: "access-token",
+            refreshToken: "refresh-token",
+            accessTokenExpiresAt: .distantFuture
+        )
+        let networkClient = AuthenticationNetworkClientSpy(
+            response: AuthLogoutResponse(success: true)
+        )
+        let secureStore = AuthenticationSecureStoreSpy(token: tokenRecord)
+        let service = AuthenticationService(
+            networkClient: networkClient,
+            secureSessionStore: secureStore
+        )
+
+        try await service.logout()
+
+        let request = try XCTUnwrap(networkClient.lastEndpoint).urlRequest(
+            baseURL: URL(string: "https://re-cap.duckdns.org")!
+        )
+        let body = try XCTUnwrap(request.httpBody)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: String])
+
+        XCTAssertEqual(request.url?.path, "/api/v1/auth/logout")
+        XCTAssertEqual(json["refreshToken"], "refresh-token")
+        XCTAssertNil(secureStore.savedRecord)
+        XCTAssertEqual(secureStore.deleteCount, 1)
+    }
+
+    func testLogoutFailureKeepsTokenRecordForRetry() async {
+        let tokenRecord = ServerTokenRecord(
+            accessToken: "access-token",
+            refreshToken: "refresh-token",
+            accessTokenExpiresAt: .distantFuture
+        )
+        let networkClient = AuthenticationNetworkClientSpy(error: APIError.offline)
+        let secureStore = AuthenticationSecureStoreSpy(token: tokenRecord)
+        let service = AuthenticationService(
+            networkClient: networkClient,
+            secureSessionStore: secureStore
+        )
+
+        do {
+            try await service.logout()
+            XCTFail("Expected logout failure")
+        } catch let error as APIError {
+            XCTAssertEqual(error, .offline)
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+
+        XCTAssertEqual(secureStore.savedRecord, tokenRecord)
+        XCTAssertEqual(secureStore.deleteCount, 0)
+    }
+
+    func testLogoutWithoutStoredTokenDoesNotSendRequest() async throws {
+        let networkClient = AuthenticationNetworkClientSpy()
+        let service = AuthenticationService(
+            networkClient: networkClient,
+            secureSessionStore: AuthenticationSecureStoreSpy()
+        )
+
+        try await service.logout()
+
+        XCTAssertEqual(networkClient.sendCount, 0)
+    }
 }
 
 @MainActor
@@ -111,9 +178,11 @@ private final class AuthenticationNetworkClientSpy: NetworkClient, @unchecked Se
     var sendCount = 0
     var lastEndpoint: APIEndpoint?
     private let response: Any?
+    private let error: Error?
 
-    init(response: Any? = nil) {
+    init(response: Any? = nil, error: Error? = nil) {
         self.response = response
+        self.error = error
     }
 
     func send<Response: Decodable>(
@@ -122,6 +191,10 @@ private final class AuthenticationNetworkClientSpy: NetworkClient, @unchecked Se
     ) async throws -> Response {
         sendCount += 1
         lastEndpoint = endpoint
+
+        if let error {
+            throw error
+        }
 
         guard let response = response as? Response else {
             throw APIError.decoding
@@ -139,9 +212,11 @@ private final class AuthenticationSecureStoreSpy: SecureSessionStoring {
 
     init(
         deviceID: String = "device-id",
+        token: ServerTokenRecord? = nil,
         saveError: SecureStorageError? = nil
     ) {
         self.storedDeviceID = deviceID
+        self.savedRecord = token
         self.saveError = saveError
     }
 

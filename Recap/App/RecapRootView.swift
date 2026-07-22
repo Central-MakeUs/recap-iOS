@@ -110,8 +110,12 @@ struct RecapRootView: View {
     }
 
     private func logout() {
-        MainTab.allCases.forEach(router.reset)
-        sessionStore.logout()
+        Task {
+            let outcome = await sessionStore.logout()
+            if outcome == .success {
+                MainTab.allCases.forEach(router.reset)
+            }
+        }
     }
 }
 

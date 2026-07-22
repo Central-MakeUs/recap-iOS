@@ -26,6 +26,14 @@ enum AuthEndpoint {
         try login(provider: .apple, deviceId: deviceId, providerToken: providerToken)
     }
 
+    static func logout(refreshToken: String) throws -> APIEndpoint {
+        try APIEndpoint.postJSON(
+            path: "/api/v1/auth/logout",
+            body: AuthLogoutRequest(refreshToken: refreshToken),
+            cachePolicy: .reloadIgnoringLocalCacheData
+        )
+    }
+
     private static func path(for provider: AuthProvider) -> String {
         switch provider {
         case .kakao:

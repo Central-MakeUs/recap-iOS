@@ -40,6 +40,35 @@ final class NetworkAuthenticationTests: XCTestCase {
         XCTAssertEqual(json["platform"], "IOS")
     }
 
+    func testLogoutEndpointUsesContractPathRefreshTokenAndNoCachePolicy() throws {
+        let endpoint = try AuthEndpoint.logout(refreshToken: "refresh-token")
+        let request = try endpoint.urlRequest(
+            baseURL: URL(string: "https://re-cap.duckdns.org")!,
+            requestID: "request-logout"
+        )
+        let body = try XCTUnwrap(request.httpBody)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: String])
+
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertEqual(request.url?.path, "/api/v1/auth/logout")
+        XCTAssertEqual(request.cachePolicy, .reloadIgnoringLocalCacheData)
+        XCTAssertEqual(json["refreshToken"], "refresh-token")
+    }
+
+    func testAlamofireNetworkClientDecodesLogoutResponseWithNullData() async throws {
+        StubURLProtocol.response = .http(
+            statusCode: 200,
+            body: #"{"success":true,"data":null,"error":null}"#.data(using: .utf8)!
+        )
+
+        let client = makeClient()
+        let response: AuthLogoutResponse = try await client.send(
+            AuthEndpoint.logout(refreshToken: "refresh-token")
+        )
+
+        XCTAssertTrue(response.success)
+    }
+
     func testAlamofireNetworkClientDecodesISO8601AuthResponse() async throws {
         StubURLProtocol.response = .http(
             statusCode: 200,

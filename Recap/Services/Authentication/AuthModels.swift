@@ -32,3 +32,11 @@ nonisolated struct AuthLoginResponse: Decodable, Equatable, Sendable {
     let success: Bool
     let data: AuthTokenResponse
 }
+
+nonisolated struct AuthLogoutRequest: Encodable, Equatable, Sendable {
+    let refreshToken: String
+}
+
+nonisolated struct AuthLogoutResponse: Decodable, Equatable, Sendable {
+    let success: Bool
+}

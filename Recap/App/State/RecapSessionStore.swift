@@ -22,6 +22,12 @@ nonisolated enum LoginAttemptOutcome: Equatable, Sendable {
     case ignored
 }
 
+nonisolated enum LogoutAttemptOutcome: Equatable, Sendable {
+    case success
+    case failure
+    case ignored
+}
+
 @MainActor
 @Observable
 final class RecapSessionStore {
@@ -107,6 +113,9 @@ final class RecapSessionStore {
             finishAuthenticationAttempt(attemptID)
             return .cancelled
         } catch {
+            #if DEBUG
+            print("[Recap.Authentication] provider=\(provider.provider) error=\(String(reflecting: error))")
+            #endif
             if authenticationAttemptID == attemptID {
                 state = .signedOut(.authenticationFailed)
             } else {
@@ -124,17 +133,36 @@ final class RecapSessionStore {
         }
     }
 
-    func logout() {
+    func logout() async -> LogoutAttemptOutcome {
+        guard state != .signingOut else { return .ignored }
+
+        let authenticatedToken: ServerTokenRecord?
+        if case .authenticated(let tokenRecord) = state {
+            authenticatedToken = tokenRecord
+        } else {
+            authenticatedToken = nil
+        }
+
         state = .signingOut
         authenticationAttemptID = nil
         authenticationTask?.cancel()
         authenticationTask = nil
 
         do {
-            try secureSessionStore.deleteServerTokenRecord()
+            try await authenticationService.logout()
             state = .signedOut(nil)
+            return .success
         } catch {
-            state = .signedOut(.secureStorageFailed)
+            #if DEBUG
+            print("[Recap.Authentication] logout error=\(String(reflecting: error))")
+            #endif
+
+            if let authenticatedToken {
+                state = .authenticated(authenticatedToken)
+            } else {
+                state = .signedOut(.secureStorageFailed)
+            }
+            return .failure
         }
     }
 }

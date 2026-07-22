@@ -61,7 +61,7 @@ final class RecapSessionStoreTests: XCTestCase {
     func testDuplicateLoginAttemptsOnlySendOneRequest() async {
         let gate = SessionLoginGate()
         let provider = SessionLoginProviderStub(gate: gate)
-        let network = SessionNetworkClientStub(response: validToken)
+        let network = SessionNetworkClientStub(loginResponse: validToken)
         let secureStore = SessionSecureStoreStub()
         let store = makeStore(secureStore: secureStore, network: network)
 
@@ -76,27 +76,51 @@ final class RecapSessionStoreTests: XCTestCase {
         XCTAssertEqual(duplicateOutcome, .ignored)
     }
 
-    func testLogoutDeletesServerTokenButKeepsDeviceID() {
+    func testLogoutRevokesServerSessionDeletesTokenAndKeepsDeviceID() async {
         let secureStore = SessionSecureStoreStub(token: validToken, deviceID: "installation")
-        let store = makeStore(secureStore: secureStore, initialState: .authenticated(validToken))
+        let network = SessionNetworkClientStub(loginResponse: nil)
+        let store = makeStore(
+            secureStore: secureStore,
+            network: network,
+            initialState: .authenticated(validToken)
+        )
 
-        store.logout()
+        let outcome = await store.logout()
 
+        XCTAssertEqual(outcome, .success)
         XCTAssertEqual(store.state, .signedOut(nil))
         XCTAssertNil(secureStore.token)
         XCTAssertEqual(try secureStore.deviceID(), "installation")
+        XCTAssertEqual(network.logoutSendCount, 1)
+    }
+
+    func testLogoutFailureKeepsAuthenticatedSession() async {
+        let secureStore = SessionSecureStoreStub(token: validToken)
+        let network = SessionNetworkClientStub(loginResponse: nil, logoutError: APIError.offline)
+        let store = makeStore(
+            secureStore: secureStore,
+            network: network,
+            initialState: .authenticated(validToken)
+        )
+
+        let outcome = await store.logout()
+
+        XCTAssertEqual(outcome, .failure)
+        XCTAssertEqual(store.state, .authenticated(validToken))
+        XCTAssertEqual(secureStore.token, validToken)
+        XCTAssertEqual(secureStore.deleteCount, 0)
     }
 
     func testLogoutDuringLoginPreventsLateAuthentication() async {
         let gate = SessionLoginGate()
         let secureStore = SessionSecureStoreStub()
-        let network = SessionNetworkClientStub(response: validToken)
+        let network = SessionNetworkClientStub(loginResponse: validToken)
         let store = makeStore(secureStore: secureStore, network: network)
         let provider = SessionLoginProviderStub(gate: gate)
 
         let login = Task { await store.login(using: provider) }
         await gate.waitUntilStarted()
-        store.logout()
+        _ = await store.logout()
         await gate.resume()
         _ = await login.value
 
@@ -112,7 +136,7 @@ final class RecapSessionStoreTests: XCTestCase {
         network: SessionNetworkClientStub? = nil,
         initialState: RecapSessionState = .launching
     ) -> RecapSessionStore {
-        let client = network ?? SessionNetworkClientStub(response: response)
+        let client = network ?? SessionNetworkClientStub(loginResponse: response)
         return RecapSessionStore(
             authenticationService: AuthenticationService(
                 networkClient: client,
@@ -164,18 +188,36 @@ private actor SessionLoginGate {
 }
 
 private final class SessionNetworkClientStub: NetworkClient, @unchecked Sendable {
-    private let response: ServerTokenRecord?
+    private let loginResponse: ServerTokenRecord?
+    private let logoutError: Error?
     private(set) var sendCount = 0
+    private(set) var logoutSendCount = 0
 
-    init(response: ServerTokenRecord?) { self.response = response }
+    init(loginResponse: ServerTokenRecord?, logoutError: Error? = nil) {
+        self.loginResponse = loginResponse
+        self.logoutError = logoutError
+    }
 
     func send<Response: Decodable>(_ endpoint: APIEndpoint, as responseType: Response.Type) async throws -> Response {
         sendCount += 1
-        guard let response else { throw APIError.offline }
-        let dto = AuthTokenResponse(
-            accessToken: response.accessToken,
-            refreshToken: response.refreshToken,
-            accessTokenExpiresAt: response.accessTokenExpiresAt
+
+        if endpoint.path == "/api/v1/auth/logout" {
+            logoutSendCount += 1
+            if let logoutError { throw logoutError }
+            guard let typed = AuthLogoutResponse(success: true) as? Response else {
+                throw APIError.decoding
+            }
+            return typed
+        }
+
+        guard let loginResponse else { throw APIError.offline }
+        let dto = AuthLoginResponse(
+            success: true,
+            data: AuthTokenResponse(
+                accessToken: loginResponse.accessToken,
+                refreshToken: loginResponse.refreshToken,
+                accessTokenExpiresAt: loginResponse.accessTokenExpiresAt
+            )
         )
         guard let typed = dto as? Response else { throw APIError.decoding }
         return typed

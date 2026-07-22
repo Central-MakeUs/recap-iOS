@@ -32,7 +32,12 @@ final class RecapDependencies {
     static func live(configuration: AppConfiguration) -> RecapDependencies {
         let secureSessionStore = KeychainSessionStore()
         let networkClient = AlamofireNetworkClient(
-            configuration: NetworkConfiguration(baseURL: configuration.backendBaseURL)
+            configuration: NetworkConfiguration(baseURL: configuration.backendBaseURL),
+            eventRecorder: { record in
+                #if DEBUG
+                print("[Recap.Network] \(record)")
+                #endif
+            }
         )
         let authenticationService = AuthenticationService(
             networkClient: networkClient,

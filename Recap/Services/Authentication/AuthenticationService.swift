@@ -43,4 +43,19 @@ final class AuthenticationService {
 
         return tokenRecord
     }
+
+    func logout() async throws {
+        guard let tokenRecord = try secureSessionStore.loadServerTokenRecord() else {
+            return
+        }
+
+        let endpoint = try AuthEndpoint.logout(refreshToken: tokenRecord.refreshToken)
+        let response: AuthLogoutResponse = try await networkClient.send(endpoint)
+
+        guard response.success else {
+            throw APIError.decoding
+        }
+
+        try secureSessionStore.deleteServerTokenRecord()
+    }
 }

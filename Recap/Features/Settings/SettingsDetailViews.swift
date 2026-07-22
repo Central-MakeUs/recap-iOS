@@ -93,7 +93,7 @@ struct AccountManagementView: View {
 
             VStack(alignment: .leading, spacing: 10) {
                 Text("로그아웃해도 정리된 캡처 데이터는 삭제되지 않아요.")
-                Text("현재 로그아웃은 이 기기에 저장된 로그인 정보만 삭제해요.")
+                Text("로그아웃하면 서버 세션과 이 기기의 로그인 정보가 함께 종료돼요.")
             }
             .font(SettingsTypography.note)
             .foregroundStyle(Color.settingsTextTertiary)
@@ -113,7 +113,7 @@ struct AccountManagementView: View {
             }
             Button("취소", role: .cancel) {}
         } message: {
-            Text("현재 기기에서 계정 연결을 종료합니다.")
+            Text("서버 세션과 현재 기기의 로그인을 종료합니다.")
         }
     }
 }
