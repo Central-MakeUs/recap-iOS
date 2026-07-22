@@ -4,6 +4,7 @@ import Foundation
 final class AuthenticationService {
     private let networkClient: any NetworkClient
     private let secureSessionStore: any SecureSessionStoring
+    private var refreshTask: Task<ServerTokenRecord, Error>?
 
     init(
         networkClient: any NetworkClient,
@@ -44,7 +45,44 @@ final class AuthenticationService {
         return tokenRecord
     }
 
+    func refreshSession() async throws -> ServerTokenRecord {
+        if let refreshTask {
+            return try await refreshTask.value
+        }
+
+        let task = Task { @MainActor [networkClient, secureSessionStore] in
+            guard let currentToken = try secureSessionStore.loadServerTokenRecord() else {
+                throw AuthenticationSessionError.missingRefreshToken
+            }
+
+            let endpoint = try AuthEndpoint.refresh(refreshToken: currentToken.refreshToken)
+            let response: AuthLoginResponse = try await networkClient.send(endpoint)
+            let refreshedToken = ServerTokenRecord(
+                accessToken: response.data.accessToken,
+                refreshToken: response.data.refreshToken,
+                accessTokenExpiresAt: response.data.accessTokenExpiresAt
+            )
+
+            do {
+                try secureSessionStore.saveServerTokenRecord(refreshedToken)
+            } catch {
+                try? secureSessionStore.deleteServerTokenRecord()
+                throw error
+            }
+
+            return refreshedToken
+        }
+
+        refreshTask = task
+        defer { refreshTask = nil }
+        return try await task.value
+    }
+
     func logout() async throws {
+        if let refreshTask {
+            _ = try? await refreshTask.value
+        }
+
         guard let tokenRecord = try secureSessionStore.loadServerTokenRecord() else {
             return
         }
@@ -58,4 +96,8 @@ final class AuthenticationService {
 
         try secureSessionStore.deleteServerTokenRecord()
     }
+}
+
+nonisolated enum AuthenticationSessionError: Error, Equatable, Sendable {
+    case missingRefreshToken
 }

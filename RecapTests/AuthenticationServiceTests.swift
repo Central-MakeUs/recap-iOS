@@ -91,6 +91,88 @@ final class AuthenticationServiceTests: XCTestCase {
         XCTAssertEqual(secureStore.deleteCount, 1)
     }
 
+    func testRefreshRotatesStoredTokensUsingCurrentRefreshToken() async throws {
+        let currentToken = ServerTokenRecord(
+            accessToken: "old-access",
+            refreshToken: "old-refresh",
+            accessTokenExpiresAt: .distantPast
+        )
+        let expiry = Date(timeIntervalSince1970: 3_600)
+        let networkClient = AuthenticationNetworkClientSpy(
+            response: AuthLoginResponse(
+                success: true,
+                data: AuthTokenResponse(
+                    accessToken: "new-access",
+                    refreshToken: "new-refresh",
+                    accessTokenExpiresAt: expiry
+                )
+            )
+        )
+        let secureStore = AuthenticationSecureStoreSpy(token: currentToken)
+        let service = AuthenticationService(
+            networkClient: networkClient,
+            secureSessionStore: secureStore
+        )
+
+        let refreshedToken = try await service.refreshSession()
+
+        let request = try XCTUnwrap(networkClient.lastEndpoint).urlRequest(
+            baseURL: URL(string: "https://re-cap.duckdns.org")!
+        )
+        let body = try XCTUnwrap(request.httpBody)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: String])
+
+        XCTAssertEqual(request.url?.path, "/api/v1/auth/refresh")
+        XCTAssertEqual(json["refreshToken"], "old-refresh")
+        XCTAssertEqual(
+            refreshedToken,
+            ServerTokenRecord(
+                accessToken: "new-access",
+                refreshToken: "new-refresh",
+                accessTokenExpiresAt: expiry
+            )
+        )
+        XCTAssertEqual(secureStore.savedRecord, refreshedToken)
+    }
+
+    func testRefreshStorageFailureDeletesRevokedTokenRecord() async {
+        let currentToken = ServerTokenRecord(
+            accessToken: "old-access",
+            refreshToken: "old-refresh",
+            accessTokenExpiresAt: .distantPast
+        )
+        let networkClient = AuthenticationNetworkClientSpy(
+            response: AuthLoginResponse(
+                success: true,
+                data: AuthTokenResponse(
+                    accessToken: "new-access",
+                    refreshToken: "new-refresh",
+                    accessTokenExpiresAt: .distantFuture
+                )
+            )
+        )
+        let secureStore = AuthenticationSecureStoreSpy(
+            token: currentToken,
+            saveError: .keychain(status: errSecNotAvailable)
+        )
+        let service = AuthenticationService(
+            networkClient: networkClient,
+            secureSessionStore: secureStore
+        )
+
+        do {
+            _ = try await service.refreshSession()
+            XCTFail("Expected storage failure")
+        } catch let error as SecureStorageError {
+            XCTAssertEqual(error, .keychain(status: errSecNotAvailable))
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+
+        XCTAssertNil(secureStore.savedRecord)
+        XCTAssertEqual(secureStore.deleteCount, 1)
+    }
+
     func testLogoutSendsStoredRefreshTokenThenDeletesTokenRecord() async throws {
         let tokenRecord = ServerTokenRecord(
             accessToken: "access-token",

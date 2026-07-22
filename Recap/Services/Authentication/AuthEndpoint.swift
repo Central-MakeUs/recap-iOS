@@ -26,6 +26,14 @@ enum AuthEndpoint {
         try login(provider: .apple, deviceId: deviceId, providerToken: providerToken)
     }
 
+    static func refresh(refreshToken: String) throws -> APIEndpoint {
+        try APIEndpoint.postJSON(
+            path: "/api/v1/auth/refresh",
+            body: AuthRefreshRequest(refreshToken: refreshToken),
+            cachePolicy: .reloadIgnoringLocalCacheData
+        )
+    }
+
     static func logout(refreshToken: String) throws -> APIEndpoint {
         try APIEndpoint.postJSON(
             path: "/api/v1/auth/logout",

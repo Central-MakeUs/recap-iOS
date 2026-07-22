@@ -76,8 +76,11 @@ struct RecapRootView: View {
         .animation(.easeInOut(duration: 0.22), value: destination)
         .task {
             if sessionStore.state == .launching {
-                sessionStore.restore()
+                await sessionStore.restore()
             }
+        }
+        .task(id: sessionStore.state) {
+            await sessionStore.refreshAccessTokenWhenNeeded()
         }
     }
 
@@ -98,6 +101,8 @@ struct RecapRootView: View {
         switch reason {
         case .sessionExpired:
             return "로그인 세션이 만료됐어요. 다시 로그인해주세요."
+        case .sessionRefreshFailed:
+            return "로그인 세션을 갱신하지 못했어요. 네트워크를 확인해주세요."
         case .secureStorageFailed:
             return "로그인 정보를 불러오지 못했어요. 다시 로그인해주세요."
         case .authenticationFailed, nil:

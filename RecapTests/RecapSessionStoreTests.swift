@@ -9,32 +9,82 @@ final class RecapSessionStoreTests: XCTestCase {
         accessTokenExpiresAt: Date(timeIntervalSince1970: 2_000)
     )
 
-    func testRestoreWithValidTokenAuthenticates() {
+    func testRestoreWithValidTokenAuthenticates() async {
         let secureStore = SessionSecureStoreStub(token: validToken)
         let store = makeStore(secureStore: secureStore)
 
-        store.restore(now: Date(timeIntervalSince1970: 1_000))
+        await store.restore(now: Date(timeIntervalSince1970: 1_000))
 
         XCTAssertEqual(store.state, .authenticated(validToken))
     }
 
-    func testRestoreWithoutTokenSignsOut() {
+    func testRestoreWithoutTokenSignsOut() async {
         let store = makeStore(secureStore: SessionSecureStoreStub())
 
-        store.restore()
+        await store.restore()
 
         XCTAssertEqual(store.state, .signedOut(nil))
     }
 
-    func testRestoreWithExpiredTokenDeletesItAndReportsExpiry() {
+    func testRestoreWithExpiredAccessTokenRefreshesSession() async {
         let secureStore = SessionSecureStoreStub(token: validToken)
-        let store = makeStore(secureStore: secureStore)
+        let refreshedToken = ServerTokenRecord(
+            accessToken: "new-access",
+            refreshToken: "new-refresh",
+            accessTokenExpiresAt: Date(timeIntervalSince1970: 4_000)
+        )
+        let store = makeStore(secureStore: secureStore, response: refreshedToken)
 
-        store.restore(now: Date(timeIntervalSince1970: 1_990))
+        await store.restore(now: Date(timeIntervalSince1970: 1_990))
+
+        XCTAssertEqual(store.state, .authenticated(refreshedToken))
+        XCTAssertEqual(secureStore.token, refreshedToken)
+    }
+
+    func testRestoreWithRejectedRefreshDeletesSessionAndReportsExpiry() async {
+        let secureStore = SessionSecureStoreStub(token: validToken)
+        let network = SessionNetworkClientStub(
+            loginResponse: nil,
+            refreshError: APIError.statusCode(401, serverCode: "EXPIRED_REFRESH_TOKEN")
+        )
+        let store = makeStore(secureStore: secureStore, network: network)
+
+        await store.restore(now: Date(timeIntervalSince1970: 1_990))
 
         XCTAssertEqual(store.state, .signedOut(.sessionExpired))
         XCTAssertNil(secureStore.token)
         XCTAssertEqual(secureStore.deleteCount, 1)
+    }
+
+    func testRestoreWithOfflineRefreshKeepsTokenForRetry() async {
+        let secureStore = SessionSecureStoreStub(token: validToken)
+        let network = SessionNetworkClientStub(loginResponse: nil, refreshError: APIError.offline)
+        let store = makeStore(secureStore: secureStore, network: network)
+
+        await store.restore(now: Date(timeIntervalSince1970: 1_990))
+
+        XCTAssertEqual(store.state, .signedOut(.sessionRefreshFailed))
+        XCTAssertEqual(secureStore.token, validToken)
+        XCTAssertEqual(secureStore.deleteCount, 0)
+    }
+
+    func testAuthenticatedSessionRefreshesWhenAccessTokenIsNearExpiry() async {
+        let secureStore = SessionSecureStoreStub(token: validToken)
+        let refreshedToken = ServerTokenRecord(
+            accessToken: "scheduled-access",
+            refreshToken: "scheduled-refresh",
+            accessTokenExpiresAt: Date(timeIntervalSince1970: 4_000)
+        )
+        let store = makeStore(
+            secureStore: secureStore,
+            response: refreshedToken,
+            initialState: .authenticated(validToken)
+        )
+
+        await store.refreshAccessTokenWhenNeeded(now: Date(timeIntervalSince1970: 1_990))
+
+        XCTAssertEqual(store.state, .authenticated(refreshedToken))
+        XCTAssertEqual(secureStore.token, refreshedToken)
     }
 
     func testLoginSuccessAuthenticates() async {
@@ -189,12 +239,18 @@ private actor SessionLoginGate {
 
 private final class SessionNetworkClientStub: NetworkClient, @unchecked Sendable {
     private let loginResponse: ServerTokenRecord?
+    private let refreshError: Error?
     private let logoutError: Error?
     private(set) var sendCount = 0
     private(set) var logoutSendCount = 0
 
-    init(loginResponse: ServerTokenRecord?, logoutError: Error? = nil) {
+    init(
+        loginResponse: ServerTokenRecord?,
+        refreshError: Error? = nil,
+        logoutError: Error? = nil
+    ) {
         self.loginResponse = loginResponse
+        self.refreshError = refreshError
         self.logoutError = logoutError
     }
 
@@ -208,6 +264,10 @@ private final class SessionNetworkClientStub: NetworkClient, @unchecked Sendable
                 throw APIError.decoding
             }
             return typed
+        }
+
+        if endpoint.path == "/api/v1/auth/refresh", let refreshError {
+            throw refreshError
         }
 
         guard let loginResponse else { throw APIError.offline }

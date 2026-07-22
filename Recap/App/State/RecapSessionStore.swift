@@ -3,6 +3,7 @@ import Observation
 
 nonisolated enum SessionSignOutReason: Equatable, Sendable {
     case sessionExpired
+    case sessionRefreshFailed
     case authenticationFailed
     case secureStorageFailed
 }
@@ -55,7 +56,7 @@ final class RecapSessionStore {
         self.state = initialState
     }
 
-    func restore(now: Date = Date()) {
+    func restore(now: Date = Date()) async {
         state = .launching
 
         do {
@@ -64,17 +65,71 @@ final class RecapSessionStore {
                 return
             }
 
-            guard tokenRecord.accessTokenExpiresAt.timeIntervalSince(now) > minimumAccessTokenValidity else {
-                try secureSessionStore.deleteServerTokenRecord()
-                state = .signedOut(.sessionExpired)
+            guard tokenRecord.accessTokenExpiresAt.timeIntervalSince(now) <= minimumAccessTokenValidity else {
+                state = .authenticated(tokenRecord)
                 return
             }
 
-            state = .authenticated(tokenRecord)
+            await refreshExpiredSession()
         } catch {
             try? secureSessionStore.deleteServerTokenRecord()
             state = .signedOut(.secureStorageFailed)
         }
+    }
+
+    func refreshAccessTokenWhenNeeded(now: Date = Date()) async {
+        guard case .authenticated(let tokenRecord) = state else { return }
+
+        let refreshDelay = tokenRecord.accessTokenExpiresAt.timeIntervalSince(now)
+            - minimumAccessTokenValidity
+
+        if refreshDelay > 0 {
+            do {
+                try await Task.sleep(for: .seconds(refreshDelay))
+            } catch {
+                return
+            }
+        }
+
+        guard !Task.isCancelled, state == .authenticated(tokenRecord) else { return }
+        await refreshExpiredSession()
+    }
+
+    private func refreshExpiredSession() async {
+        do {
+            let refreshedToken = try await authenticationService.refreshSession()
+            guard state != .signingOut else { return }
+            state = .authenticated(refreshedToken)
+        } catch let error as SecureStorageError {
+            guard state != .signingOut else { return }
+            try? secureSessionStore.deleteServerTokenRecord()
+            state = .signedOut(.secureStorageFailed)
+            #if DEBUG
+            print("[Recap.Authentication] refresh storage error=\(String(reflecting: error))")
+            #endif
+        } catch {
+            guard state != .signingOut else { return }
+            if isTerminalRefreshFailure(error) {
+                try? secureSessionStore.deleteServerTokenRecord()
+                state = .signedOut(.sessionExpired)
+            } else {
+                state = .signedOut(.sessionRefreshFailed)
+            }
+            #if DEBUG
+            print("[Recap.Authentication] refresh error=\(String(reflecting: error))")
+            #endif
+        }
+    }
+
+    private func isTerminalRefreshFailure(_ error: Error) -> Bool {
+        guard case let APIError.statusCode(statusCode, serverCode) = error else {
+            return error is AuthenticationSessionError
+        }
+
+        return statusCode == 401
+            || serverCode == "INVALID_REFRESH_TOKEN"
+            || serverCode == "EXPIRED_REFRESH_TOKEN"
+            || serverCode == "USER_NOT_FOUND"
     }
 
     func login(using provider: any SocialLoginProviding) async -> LoginAttemptOutcome {

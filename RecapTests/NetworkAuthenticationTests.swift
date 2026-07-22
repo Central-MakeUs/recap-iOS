@@ -55,6 +55,46 @@ final class NetworkAuthenticationTests: XCTestCase {
         XCTAssertEqual(json["refreshToken"], "refresh-token")
     }
 
+    func testRefreshEndpointUsesContractPathRefreshTokenAndNoCachePolicy() throws {
+        let endpoint = try AuthEndpoint.refresh(refreshToken: "refresh-token")
+        let request = try endpoint.urlRequest(
+            baseURL: URL(string: "https://re-cap.duckdns.org")!,
+            requestID: "request-refresh"
+        )
+        let body = try XCTUnwrap(request.httpBody)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: String])
+
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertEqual(request.url?.path, "/api/v1/auth/refresh")
+        XCTAssertEqual(request.cachePolicy, .reloadIgnoringLocalCacheData)
+        XCTAssertEqual(json["refreshToken"], "refresh-token")
+    }
+
+    func testAlamofireNetworkClientDecodesRotatedRefreshResponse() async throws {
+        StubURLProtocol.response = .http(
+            statusCode: 200,
+            body: """
+            {
+              "success": true,
+              "data": {
+                "accessToken": "new-access",
+                "refreshToken": "new-refresh",
+                "accessTokenExpiresAt": "2026-07-23T10:30:00Z"
+              },
+              "error": null
+            }
+            """.data(using: .utf8)!
+        )
+
+        let client = makeClient()
+        let response: AuthLoginResponse = try await client.send(
+            AuthEndpoint.refresh(refreshToken: "old-refresh")
+        )
+
+        XCTAssertEqual(response.data.accessToken, "new-access")
+        XCTAssertEqual(response.data.refreshToken, "new-refresh")
+    }
+
     func testAlamofireNetworkClientDecodesLogoutResponseWithNullData() async throws {
         StubURLProtocol.response = .http(
             statusCode: 200,
