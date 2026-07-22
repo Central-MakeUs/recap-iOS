@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C20000010000000000000001 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000005 /* Alamofire */; };
+		C20000010000000000000002 /* KakaoSDKUser in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000006 /* KakaoSDKUser */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		B10000010000000000000002 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -19,11 +24,27 @@
 /* Begin PBXFileReference section */
 		A7BB44142FF2A90B00752373 /* Recap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Recap.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B10000010000000000000001 /* RecapTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RecapTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C40000010000000000000001 /* App.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = App.xcconfig; sourceTree = "<group>"; };
+		C40000010000000000000002 /* Secrets.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig.example; sourceTree = "<group>"; };
+		C40000010000000000000004 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		C30000010000000000000001 /* Exceptions for "Recap" folder in "Recap" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A7BB44132FF2A90B00752373 /* Recap */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A7BB44162FF2A90B00752373 /* Recap */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				C30000010000000000000001 /* Exceptions for "Recap" folder in "Recap" target */,
+			);
 			path = Recap;
 			sourceTree = "<group>";
 		};
@@ -39,6 +60,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C20000010000000000000001 /* Alamofire in Frameworks */,
+				C20000010000000000000002 /* KakaoSDKUser in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -55,6 +78,7 @@
 		A7BB440B2FF2A90B00752373 = {
 			isa = PBXGroup;
 			children = (
+				C40000010000000000000003 /* Config */,
 				A7BB44162FF2A90B00752373 /* Recap */,
 				B10000010000000000000003 /* RecapTests */,
 				A7BB44152FF2A90B00752373 /* Products */,
@@ -68,6 +92,16 @@
 				B10000010000000000000001 /* RecapTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		C40000010000000000000003 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				C40000010000000000000001 /* App.xcconfig */,
+				C40000010000000000000004 /* Secrets.xcconfig */,
+				C40000010000000000000002 /* Secrets.xcconfig.example */,
+			);
+			path = Config;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -90,6 +124,8 @@
 			);
 			name = Recap;
 			packageProductDependencies = (
+				C20000010000000000000005 /* Alamofire */,
+				C20000010000000000000006 /* KakaoSDKUser */,
 			);
 			productName = Recap;
 			productReference = A7BB44142FF2A90B00752373 /* Recap.app */;
@@ -130,6 +166,11 @@
 				TargetAttributes = {
 					A7BB44132FF2A90B00752373 = {
 						CreatedOnToolsVersion = 26.5;
+						SystemCapabilities = {
+							com.apple.SignInWithApple = {
+								enabled = 1;
+							};
+						};
 					};
 					B10000010000000000000005 = {
 						CreatedOnToolsVersion = 26.5;
@@ -146,6 +187,10 @@
 			);
 			mainGroup = A7BB440B2FF2A90B00752373;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C20000010000000000000003 /* XCRemoteSwiftPackageReference "Alamofire" */,
+				C20000010000000000000004 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A7BB44152FF2A90B00752373 /* Products */;
 			projectDirPath = "";
@@ -323,26 +368,30 @@
 		};
 		A7BB44202FF2A90D00752373 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C40000010000000000000001 /* App.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				BACKEND_BASE_URL = "https://re-cap.duckdns.org";
+				"BACKEND_BASE_URL[sdk=iphonesimulator*]" = "http://localhost:8080";
+				CODE_SIGN_ENTITLEMENTS = Recap/Recap.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = JMAUFK6U82;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 6A2Z7YP3KV;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Recap/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.centralmakeus.recap;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cmc.recap;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = RecapProfile00;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -355,26 +404,29 @@
 		};
 		A7BB44212FF2A90D00752373 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C40000010000000000000001 /* App.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				BACKEND_BASE_URL = "https://re-cap.duckdns.org";
+				CODE_SIGN_ENTITLEMENTS = Recap/Recap.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = JMAUFK6U82;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 6A2Z7YP3KV;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Recap/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.centralmakeus.recap;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cmc.recap;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = RecapProfile00;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -454,6 +506,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C20000010000000000000003 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = exactVersion;
+				version = 5.12.0;
+			};
+		};
+		C20000010000000000000004 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kakao/kakao-ios-sdk.git";
+			requirement = {
+				kind = exactVersion;
+				version = 2.28.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C20000010000000000000005 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C20000010000000000000003 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+		C20000010000000000000006 /* KakaoSDKUser */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C20000010000000000000004 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */;
+			productName = KakaoSDKUser;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A7BB440C2FF2A90B00752373 /* Project object */;
 }

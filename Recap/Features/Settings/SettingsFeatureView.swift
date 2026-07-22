@@ -65,10 +65,7 @@ struct SettingsView: View {
     private var accountSection: some View {
         SettingsSection(title: "계정") {
             VStack(spacing: 0) {
-                SettingsAccountSummaryRow(
-                    title: "카카오로 로그인 중",
-                    subtitle: "recap_user@kakao.com"
-                )
+                SettingsAccountSummaryRow()
 
                 SettingsDivider()
 

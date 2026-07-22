@@ -1,19 +1,5 @@
 import Foundation
 
-enum AppPhase: Hashable {
-    case onboarding(OnboardingStep)
-    case main
-}
-
-enum OnboardingStep: Hashable {
-    case serviceIntro
-    case login
-    case permissionGuide
-    case shareSetup
-    case shareSetupDetail
-    case firstCleanup
-}
-
 enum MainTab: String, CaseIterable, Identifiable, Hashable {
     case home
     case archive

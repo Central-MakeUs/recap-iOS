@@ -38,7 +38,7 @@ extension View {
         case .cardCreationStart:
             CardCreationFlowView()
         case .settings:
-            SettingsContainerView()
+            AccountManagementView()
         }
     }
 }

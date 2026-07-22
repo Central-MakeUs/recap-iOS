@@ -75,21 +75,13 @@ struct SettingsSection<Content: View>: View {
 }
 
 struct SettingsAccountSummaryRow: View {
-    let title: String
-    let subtitle: String
-
     var body: some View {
         HStack(spacing: 13) {
-            KakaoAccountIcon()
+            SessionAccountIcon()
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title)
-                    .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                    .foregroundStyle(Color.settingsTextPrimary)
-                Text(subtitle)
-                    .font(SettingsTypography.rowCaption)
-                    .foregroundStyle(Color.settingsTextTertiary)
-            }
+            Text("로그인됨")
+                .font(RecapFont.pretendard(size: 14, weight: .semibold))
+                .foregroundStyle(Color.settingsTextPrimary)
 
             Spacer()
         }
@@ -101,19 +93,11 @@ struct SettingsAccountSummaryRow: View {
 struct SettingsAccountSummaryCard: View {
     var body: some View {
         HStack(spacing: 13) {
-            KakaoAccountIcon()
+            SessionAccountIcon()
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text("Recap 사용자")
-                    .font(RecapFont.pretendard(size: 15, weight: .semibold))
-                    .foregroundStyle(Color.settingsTextPrimary)
-                Text("카카오로 로그인 중")
-                    .font(SettingsTypography.rowCaption)
-                    .foregroundStyle(Color.settingsTextSecondary)
-                Text("recap_user@kakao.com")
-                    .font(SettingsTypography.rowCaption)
-                    .foregroundStyle(Color.settingsTextTertiary)
-            }
+            Text("로그인됨")
+                .font(RecapFont.pretendard(size: 15, weight: .semibold))
+                .foregroundStyle(Color.settingsTextPrimary)
 
             Spacer()
         }
@@ -225,15 +209,15 @@ struct SettingsToggleRow: View {
     }
 }
 
-struct KakaoAccountIcon: View {
+struct SessionAccountIcon: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(Color.recapKakaoBadgeYellow)
+                .fill(Color.recapBlue300.opacity(0.12))
 
-            Image(systemName: "message.fill")
-                .font(.system(size: 15, weight: .bold))
-                .foregroundStyle(Color.recapKakaoText)
+            Image(systemName: "person.fill")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(Color.recapBlue300)
         }
         .frame(width: 38, height: 38)
     }

@@ -45,8 +45,9 @@ struct OnboardingLoginView: View {
     @State private var isLoggingIn = false
     @State private var showsLoginFailure = false
 
+    var notice: String?
     let onStart: () -> Void
-    var login: (Provider) async -> Bool = { _ in true }
+    var login: (Provider) async -> LoginAttemptOutcome = { _ in .success }
 
     var body: some View {
         OnboardingScaffold {
@@ -77,6 +78,14 @@ struct OnboardingLoginView: View {
             Spacer(minLength: 120)
 
             VStack(spacing: 28) {
+                if let notice {
+                    Text(notice)
+                        .font(RecapFont.pretendard(size: 13, weight: .medium))
+                        .foregroundStyle(Color.recapGray500)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 32)
+                }
+
                 Text("간편로그인")
                     .font(RecapFont.pretendard(size: 15, weight: .medium))
                     .tracking(-0.3)
@@ -146,13 +155,16 @@ struct OnboardingLoginView: View {
         isLoggingIn = true
         showsLoginFailure = false
         Task {
-            let succeeded = await login(provider)
+            let outcome = await login(provider)
             await MainActor.run {
                 isLoggingIn = false
-                if succeeded {
+                switch outcome {
+                case .success:
                     onStart()
-                } else {
+                case .failure:
                     showsLoginFailure = true
+                case .cancelled, .ignored:
+                    break
                 }
             }
         }
@@ -181,9 +193,9 @@ private struct OnboardingScaffold<Content: View>: View {
 }
 
 #Preview("Onboarding login") {
-    OnboardingLoginView(onStart: {})
+    OnboardingLoginView(notice: nil, onStart: {})
 }
 
 #Preview("Onboarding login failure") {
-    OnboardingLoginView(onStart: {}, login: { _ in false })
+    OnboardingLoginView(notice: nil, onStart: {}, login: { _ in .failure })
 }
