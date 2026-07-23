@@ -2,25 +2,35 @@ import SwiftUI
 
 struct CollectionDetailContainerView: View {
     @Environment(AppRouter.self) private var router
-    @Environment(RecapCardStore.self) private var cardStore
 
     let scope: ArchiveDetailScope
+
+    @State private var model: ArchiveDetailFeatureModel
+
+    init(
+        scope: ArchiveDetailScope,
+        loader: any ArchiveLoading
+    ) {
+        self.scope = scope
+        _model = State(
+            initialValue: ArchiveDetailFeatureModel(
+                scope: scope,
+                loader: loader
+            )
+        )
+    }
 
     var body: some View {
         CollectionDetailView(
             scope: scope,
-            cards: cardsForDisplay,
+            cards: cards,
+            loadState: loadState,
+            onRetry: retry,
             onImportScreenshots: { router.navigate(.cardCreationStart) },
             onAction: handleAction
         )
-    }
-
-    private var cardsForDisplay: [InformationCard] {
-        switch scope {
-        case .favorites:
-            cardStore.favoriteCards
-        case .category(let kind):
-            cardStore.cards(in: kind)
+        .task {
+            await model.loadIfNeeded()
         }
     }
 
@@ -32,19 +42,53 @@ struct CollectionDetailContainerView: View {
             router.navigate(.archiveFavorites)
         case .openArchive(let kind):
             router.navigate(.archiveDetail(kind))
-        case .openCard(let id):
-            router.navigate(.cardDetail(id))
-        case .selectFilter:
+        case .openCard(let card):
+            router.navigate(.remoteCardDetail(card))
+        case .selectFilter(let value):
+            guard let sort = ArchiveSort.allCases.first(where: { $0.title == value }) else {
+                return
+            }
+            Task {
+                await model.selectSort(sort)
+            }
+        case .deleteCards:
             break
-        case .deleteCards(let ids):
-            ids.forEach(cardStore.removeCard)
         case .openSettings:
             router.navigate(.settings)
+        }
+    }
+
+    private var cards: [InformationCard] {
+        guard case .loaded(let cards) = model.state else {
+            return []
+        }
+        return cards
+    }
+
+    private var loadState: CollectionDetailView.LoadState {
+        switch model.state {
+        case .idle, .loading:
+            .loaded
+        case .loaded:
+            .loaded
+        case .failed:
+            .failed
+        }
+    }
+
+    private func retry() {
+        Task {
+            await model.retry()
         }
     }
 }
 
 struct CollectionDetailView: View {
+    enum LoadState {
+        case loaded
+        case failed
+    }
+
     enum InteractionMode: Equatable {
         case browsing
         case searching
@@ -91,21 +135,27 @@ struct CollectionDetailView: View {
 
     let scope: ArchiveDetailScope
     let cards: [InformationCard]
+    let loadState: LoadState
+    let onRetry: () -> Void
     let onImportScreenshots: () -> Void
     let onAction: (ArchiveAction) -> Void
 
     init(
         scope: ArchiveDetailScope,
         cards: [InformationCard],
+        loadState: LoadState = .loaded,
         interactionMode: InteractionMode = .browsing,
         initialToast: RecapToastContent? = nil,
+        onRetry: @escaping () -> Void = {},
         onImportScreenshots: @escaping () -> Void = {},
         onAction: @escaping (ArchiveAction) -> Void
     ) {
         self.scope = scope
         self.cards = cards
+        self.loadState = loadState
         _interactionMode = State(initialValue: interactionMode)
         _toast = State(initialValue: initialToast)
+        self.onRetry = onRetry
         self.onImportScreenshots = onImportScreenshots
         self.onAction = onAction
     }
@@ -132,27 +182,7 @@ struct CollectionDetailView: View {
                 .frame(height: 6)
                 .padding(.top, 12)
 
-            Text(
-                "\(Text("\(filteredCards.count)").font(RecapFont.pretendard(size: 14, weight: .semibold)).foregroundStyle(Color.recapGray700)) recaps"
-            )
-                .font(RecapFont.pretendard(size: 14, weight: .regular))
-                .tracking(-0.28)
-                .foregroundStyle(Color.recapGray500)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
-                .padding(.top, 15)
-
-            if filteredCards.isEmpty {
-                CollectionDetailEmptyState(
-                    scope: scope,
-                    onImportScreenshots: onImportScreenshots
-                )
-                    .frame(maxHeight: .infinity)
-                    .padding(.bottom, 120)
-            } else {
-                cardList
-                    .padding(.top, 7)
-            }
+            detailContent
         }
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
@@ -211,6 +241,42 @@ struct CollectionDetailView: View {
         .frame(height: 35)
     }
 
+    @ViewBuilder
+    private var detailContent: some View {
+        switch loadState {
+        case .failed:
+            RecapLoadFailureView(style: .archive, retry: onRetry)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.bottom, 82)
+        case .loaded:
+            recapCount
+
+            if filteredCards.isEmpty {
+                CollectionDetailEmptyState(
+                    scope: scope,
+                    onImportScreenshots: onImportScreenshots
+                )
+                .frame(maxHeight: .infinity)
+                .padding(.bottom, 120)
+            } else {
+                cardList
+                    .padding(.top, 7)
+            }
+        }
+    }
+
+    private var recapCount: some View {
+        Text(
+            "\(Text("\(filteredCards.count)").font(RecapFont.pretendard(size: 14, weight: .semibold)).foregroundStyle(Color.recapGray700)) recaps"
+        )
+        .font(RecapFont.pretendard(size: 14, weight: .regular))
+        .tracking(-0.28)
+        .foregroundStyle(Color.recapGray500)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 16)
+        .padding(.top, 15)
+    }
+
     private var cardList: some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 0) {
@@ -219,7 +285,7 @@ struct CollectionDetailView: View {
                         if isSelecting {
                             toggleSelection(card.id)
                         } else {
-                            onAction(.openCard(card.id))
+                            onAction(.openCard(card))
                         }
                     } label: {
                         RecapInformationCardRow(

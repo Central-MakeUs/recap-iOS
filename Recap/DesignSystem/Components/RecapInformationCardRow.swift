@@ -62,6 +62,7 @@ struct RecapInformationCardRow: View {
             RecapScreenshotThumbnail(
                 kind: card.collection,
                 assetName: card.thumbnailAssetName,
+                remoteURL: card.thumbnailURL,
                 hasFavoriteFold: true
             )
             .frame(width: 62, height: 80)
@@ -80,6 +81,7 @@ struct RecapInformationCardRow: View {
         RecapScreenshotThumbnail(
             kind: card.collection,
             assetName: card.thumbnailAssetName,
+            remoteURL: card.thumbnailURL,
             cornerRadius: 0
         )
         .frame(width: 62, height: 80)

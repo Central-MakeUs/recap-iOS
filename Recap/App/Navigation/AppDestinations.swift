@@ -4,12 +4,14 @@ extension View {
     @MainActor
     func withAppNavigationDestinations(
         cardStore: RecapCardStore,
+        archiveLoader: any ArchiveLoading,
         onCardDeleted: @escaping () -> Void
     ) -> some View {
         navigationDestination(for: AppRoute.self) { route in
             destination(
                 for: route,
                 cardStore: cardStore,
+                archiveLoader: archiveLoader,
                 onCardDeleted: onCardDeleted
             )
         }
@@ -20,6 +22,7 @@ extension View {
     private func destination(
         for route: AppRoute,
         cardStore: RecapCardStore,
+        archiveLoader: any ArchiveLoading,
         onCardDeleted: @escaping () -> Void
     ) -> some View {
         switch route {
@@ -28,15 +31,21 @@ extension View {
         case .allRecentCards:
             AllRecentCardsContainerView()
         case .archiveFavorites:
-            CollectionDetailContainerView(scope: .favorites)
+            CollectionDetailContainerView(
+                scope: .favorites,
+                loader: archiveLoader
+            )
         case .archiveDetail(let kind):
-            CollectionDetailContainerView(scope: .category(kind))
+            CollectionDetailContainerView(
+                scope: .category(kind),
+                loader: archiveLoader
+            )
         case .cardDetail(let id):
             if let card = cardStore.card(id: id) {
                 CardDetailView(card: card, onDeleted: onCardDeleted)
             }
-        case .homeCardDetail(let card):
-            HomeCardDetailDestination(
+        case .remoteCardDetail(let card):
+            RemoteCardDetailDestination(
                 card: card,
                 onDeleted: onCardDeleted
             )
@@ -48,7 +57,7 @@ extension View {
     }
 }
 
-private struct HomeCardDetailDestination: View {
+private struct RemoteCardDetailDestination: View {
     @Environment(RecapCardStore.self) private var cardStore
 
     let card: InformationCard

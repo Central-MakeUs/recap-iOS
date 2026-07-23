@@ -4,6 +4,7 @@ struct AppShellView: View {
     let router: AppRouter
     let cardStore: RecapCardStore
     let homeSummaryLoader: any HomeSummaryLoading
+    let archiveLoader: any ArchiveLoading
     var onLogout: () -> Void = {}
 
     @State private var toast: RecapToastContent?
@@ -12,11 +13,13 @@ struct AppShellView: View {
         router: AppRouter,
         cardStore: RecapCardStore,
         homeSummaryLoader: any HomeSummaryLoading,
+        archiveLoader: any ArchiveLoading,
         onLogout: @escaping () -> Void = {}
     ) {
         self.router = router
         self.cardStore = cardStore
         self.homeSummaryLoader = homeSummaryLoader
+        self.archiveLoader = archiveLoader
         self.onLogout = onLogout
         _toast = State(initialValue: nil)
     }
@@ -30,6 +33,7 @@ struct AppShellView: View {
                 router: router,
                 cardStore: cardStore,
                 homeSummaryLoader: homeSummaryLoader,
+                archiveLoader: archiveLoader,
                 onUpload: openCardCreationFlow,
                 onCardDeleted: showCardDeletedToast
             )
@@ -69,7 +73,8 @@ struct AppShellView: View {
     AppShellView(
         router: AppRouter(),
         cardStore: PreviewStores.recapCardStore(),
-        homeSummaryLoader: PreviewHomeSummaryLoaderForAppShell()
+        homeSummaryLoader: PreviewHomeSummaryLoaderForAppShell(),
+        archiveLoader: PreviewArchiveLoader()
     )
 }
 

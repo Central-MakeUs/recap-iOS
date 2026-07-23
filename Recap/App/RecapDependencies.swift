@@ -6,6 +6,7 @@ final class RecapDependencies {
     let onboardingProgressStore: OnboardingProgressStore
     let networkClient: any NetworkClient
     let homeSummaryLoader: any HomeSummaryLoading
+    let archiveLoader: any ArchiveLoading
 
     private let kakaoLoginProvider: any SocialLoginProviding
     private let appleLoginProvider: any SocialLoginProviding
@@ -15,6 +16,7 @@ final class RecapDependencies {
         onboardingProgressStore: OnboardingProgressStore,
         networkClient: any NetworkClient,
         homeSummaryLoader: any HomeSummaryLoading,
+        archiveLoader: any ArchiveLoading,
         kakaoLoginProvider: any SocialLoginProviding,
         appleLoginProvider: any SocialLoginProviding
     ) {
@@ -22,6 +24,7 @@ final class RecapDependencies {
         self.onboardingProgressStore = onboardingProgressStore
         self.networkClient = networkClient
         self.homeSummaryLoader = homeSummaryLoader
+        self.archiveLoader = archiveLoader
         self.kakaoLoginProvider = kakaoLoginProvider
         self.appleLoginProvider = appleLoginProvider
     }
@@ -73,6 +76,7 @@ final class RecapDependencies {
             ),
             networkClient: authenticatedNetworkClient,
             homeSummaryLoader: HomeSummaryService(networkClient: authenticatedNetworkClient),
+            archiveLoader: ArchiveService(networkClient: authenticatedNetworkClient),
             kakaoLoginProvider: KakaoLoginProvider(),
             appleLoginProvider: AppleLoginProvider()
         )
@@ -100,6 +104,7 @@ final class RecapDependencies {
             ),
             networkClient: previewNetworkClient,
             homeSummaryLoader: PreviewHomeSummaryLoader(),
+            archiveLoader: PreviewArchiveLoader(),
             kakaoLoginProvider: PreviewSocialLoginProvider(provider: .kakao),
             appleLoginProvider: PreviewSocialLoginProvider(provider: .apple)
         )

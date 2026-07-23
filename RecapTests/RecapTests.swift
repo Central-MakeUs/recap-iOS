@@ -95,7 +95,7 @@ final class RecapTests: XCTestCase {
         XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .cardDetail(UUID())))
         XCTAssertFalse(
             RecapMainTabChromePolicy.routeAllowsChrome(
-                for: .homeCardDetail(SampleData.cards[0])
+                for: .remoteCardDetail(SampleData.cards[0])
             )
         )
         XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .cardCreationStart))

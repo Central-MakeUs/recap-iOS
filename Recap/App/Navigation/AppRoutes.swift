@@ -6,7 +6,7 @@ enum AppRoute: Hashable {
     case archiveFavorites
     case archiveDetail(CollectionKind)
     case cardDetail(InformationCard.ID)
-    case homeCardDetail(InformationCard)
+    case remoteCardDetail(InformationCard)
     case cardCreationStart
     case settings
 }

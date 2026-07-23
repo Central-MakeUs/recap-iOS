@@ -19,6 +19,7 @@ struct RecapMainTabContainer: View {
     let router: AppRouter
     let cardStore: RecapCardStore
     let homeSummaryLoader: any HomeSummaryLoading
+    let archiveLoader: any ArchiveLoading
     let onUpload: () -> Void
     let onCardDeleted: () -> Void
 
@@ -37,7 +38,7 @@ struct RecapMainTabContainer: View {
 
             Tab("보관함", image: "RecapTabArchiveIcon", value: MainTab.archive) {
                 tabStack(for: .archive) {
-                    CollectionHomeContainerView()
+                    CollectionHomeContainerView(loader: archiveLoader)
                 }
                 .toolbar(.hidden, for: .tabBar)
             }
@@ -54,6 +55,7 @@ struct RecapMainTabContainer: View {
             content()
                 .withAppNavigationDestinations(
                     cardStore: cardStore,
+                    archiveLoader: archiveLoader,
                     onCardDeleted: onCardDeleted
                 )
                 .toolbar {
@@ -96,7 +98,7 @@ enum RecapMainTabChromePolicy {
         case nil:
             true
         case .search, .allRecentCards, .archiveFavorites, .archiveDetail,
-             .cardDetail, .homeCardDetail, .cardCreationStart, .settings:
+             .cardDetail, .remoteCardDetail, .cardCreationStart, .settings:
             false
         }
     }
