@@ -7,7 +7,8 @@ struct RecapHomeRecentCard: View {
         VStack(alignment: .leading, spacing: 7) {
             RecapScreenshotThumbnail(
                 kind: card.collection,
-                assetName: card.thumbnailAssetName
+                assetName: card.thumbnailAssetName,
+                remoteURL: card.thumbnailURL
             )
             .frame(width: 134, height: 85)
             .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))

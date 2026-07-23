@@ -2,16 +2,43 @@ import SwiftUI
 
 struct HomeContainerView: View {
     @Environment(AppRouter.self) private var router
-    @Environment(RecapCardStore.self) private var cardStore
+
+    @State private var model: HomeFeatureModel
+
+    init(summaryLoader: any HomeSummaryLoading) {
+        _model = State(initialValue: HomeFeatureModel(summaryLoader: summaryLoader))
+    }
 
     var body: some View {
         HomeView(
-            status: .ready,
-            recentCards: cardStore.recentCards,
-            favoriteCards: cardStore.favoriteCards,
-            collectionSummaries: cardStore.collectionSummaries,
-            onAction: handleAction
+            status: homeStatus,
+            recentCards: content.recentCards,
+            favoriteCards: content.favoriteCards,
+            collectionSummaries: content.frequentTypes,
+            onAction: handleAction,
+            onRetry: retry
         )
+        .task {
+            await model.loadIfNeeded()
+        }
+    }
+
+    private var content: HomeSummaryContent {
+        guard case .loaded(let content) = model.state else {
+            return .empty
+        }
+        return content
+    }
+
+    private var homeStatus: HomeStatus {
+        switch model.state {
+        case .idle, .loading:
+            .loading
+        case .loaded(let content):
+            content.hasAnyCapture ? .ready : .waiting
+        case .failed:
+            .failed
+        }
     }
 
     private func handleAction(_ action: HomeAction) {
@@ -24,13 +51,19 @@ struct HomeContainerView: View {
             router.openArchive(section: .favorites)
         case .openAllRecent:
             router.navigate(.allRecentCards)
-        case .openCard(let id):
-            router.navigate(.cardDetail(id))
+        case .openCard(let card):
+            router.navigate(.homeCardDetail(card))
         case .openArchive(let kind):
             router.openArchive()
             router.navigate(.archiveDetail(kind), in: .archive)
         case .openSettings:
             router.navigate(.settings)
+        }
+    }
+
+    private func retry() {
+        Task {
+            await model.retry()
         }
     }
 }
@@ -67,7 +100,12 @@ struct HomeView: View {
                     openSearch: { onAction(.search) }
                 )
 
-                if status == .failed {
+                if status == .loading {
+                    ProgressView()
+                        .tint(Color.recapBlue300)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 131)
+                } else if status == .failed {
                     RecapLoadFailureView(style: .home, retry: onRetry)
                         .padding(.top, 131)
                 } else {
@@ -140,6 +178,18 @@ struct HomeView: View {
     NavigationStack {
         HomeView(
             status: .failed,
+            recentCards: [],
+            favoriteCards: [],
+            collectionSummaries: [],
+            onAction: PreviewActions.handleHome
+        )
+    }
+}
+
+#Preview("Home loading") {
+    NavigationStack {
+        HomeView(
+            status: .loading,
             recentCards: [],
             favoriteCards: [],
             collectionSummaries: [],

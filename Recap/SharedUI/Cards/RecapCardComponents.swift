@@ -3,6 +3,7 @@ import SwiftUI
 struct RecapScreenshotThumbnail: View {
     let kind: CollectionKind
     var assetName: String?
+    var remoteURL: URL? = nil
     var cornerRadius: CGFloat = 5
     var hasFavoriteFold = false
 
@@ -12,6 +13,23 @@ struct RecapScreenshotThumbnail: View {
                 Image(assetName)
                     .resizable()
                     .scaledToFill()
+            } else if let remoteURL {
+                AsyncImage(url: remoteURL) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    case .empty:
+                        ProgressView()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background(Color.recapThumbnail)
+                    case .failure:
+                        placeholder
+                    @unknown default:
+                        placeholder
+                    }
+                }
             } else {
                 placeholder
             }

@@ -175,15 +175,15 @@ private struct RecapCharacterCounter: View {
     let limit: Int
 
     var body: some View {
-        (
-            Text("\(currentCount)")
-                .font(RecapFont.pretendard(size: 12, weight: .bold))
-                .foregroundStyle(Color.recapGray900)
-            + Text("/\(limit)")
-                .font(RecapFont.pretendard(size: 12, weight: .medium))
-                .foregroundStyle(Color.recapGray300)
-        )
-        .tracking(-0.24)
+        let currentText = Text("\(currentCount)")
+            .font(RecapFont.pretendard(size: 12, weight: .bold))
+            .foregroundStyle(Color.recapGray900)
+        let limitText = Text("/\(limit)")
+            .font(RecapFont.pretendard(size: 12, weight: .medium))
+            .foregroundStyle(Color.recapGray300)
+
+        Text("\(currentText)\(limitText)")
+            .tracking(-0.24)
     }
 }
 

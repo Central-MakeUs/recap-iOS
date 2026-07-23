@@ -5,6 +5,7 @@ final class RecapDependencies {
     let sessionStore: RecapSessionStore
     let onboardingProgressStore: OnboardingProgressStore
     let networkClient: any NetworkClient
+    let homeSummaryLoader: any HomeSummaryLoading
 
     private let kakaoLoginProvider: any SocialLoginProviding
     private let appleLoginProvider: any SocialLoginProviding
@@ -13,12 +14,14 @@ final class RecapDependencies {
         sessionStore: RecapSessionStore,
         onboardingProgressStore: OnboardingProgressStore,
         networkClient: any NetworkClient,
+        homeSummaryLoader: any HomeSummaryLoading,
         kakaoLoginProvider: any SocialLoginProviding,
         appleLoginProvider: any SocialLoginProviding
     ) {
         self.sessionStore = sessionStore
         self.onboardingProgressStore = onboardingProgressStore
         self.networkClient = networkClient
+        self.homeSummaryLoader = homeSummaryLoader
         self.kakaoLoginProvider = kakaoLoginProvider
         self.appleLoginProvider = appleLoginProvider
     }
@@ -69,6 +72,7 @@ final class RecapDependencies {
                 persistence: UserDefaultsOnboardingProgressPersistence()
             ),
             networkClient: authenticatedNetworkClient,
+            homeSummaryLoader: HomeSummaryService(networkClient: authenticatedNetworkClient),
             kakaoLoginProvider: KakaoLoginProvider(),
             appleLoginProvider: AppleLoginProvider()
         )
@@ -95,8 +99,21 @@ final class RecapDependencies {
                 persistence: PreviewOnboardingProgressPersistence(onboardingProgress)
             ),
             networkClient: previewNetworkClient,
+            homeSummaryLoader: PreviewHomeSummaryLoader(),
             kakaoLoginProvider: PreviewSocialLoginProvider(provider: .kakao),
             appleLoginProvider: PreviewSocialLoginProvider(provider: .apple)
+        )
+    }
+}
+
+@MainActor
+private final class PreviewHomeSummaryLoader: HomeSummaryLoading {
+    func fetchSummary() async throws -> HomeSummaryContent {
+        HomeSummaryContent(
+            recentCards: SampleData.recentCards,
+            favoriteCards: SampleData.cards.filter(\.isFavorite),
+            frequentTypes: SampleData.collectionSummaries,
+            hasAnyCapture: true
         )
     }
 }

@@ -143,6 +143,15 @@ enum RecapPresentation {
 
     static func statusDisplay(for status: HomeStatus) -> StatusDisplay {
         switch status {
+        case .loading:
+            StatusDisplay(
+                title: "홈 정보를 불러오고 있어요",
+                message: "",
+                iconName: "arrow.trianglehead.2.clockwise.rotate.90",
+                progress: nil,
+                tint: Color.recapGray300,
+                background: Color.recapBackground
+            )
         case .ready:
             StatusDisplay(
                 title: "새 스크린샷을 정리할 준비가 됐어요",
