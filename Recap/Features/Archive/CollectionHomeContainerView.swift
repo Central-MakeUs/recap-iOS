@@ -2,16 +2,44 @@ import SwiftUI
 
 struct CollectionHomeContainerView: View {
     @Environment(AppRouter.self) private var router
-    @Environment(RecapCardStore.self) private var cardStore
+
+    @State private var model: ArchiveHomeFeatureModel
+
+    init(loader: any ArchiveLoading) {
+        _model = State(initialValue: ArchiveHomeFeatureModel(loader: loader))
+    }
 
     var body: some View {
         CollectionHomeView(
-            summaries: cardStore.collectionSummaries,
-            favoriteCount: cardStore.favoriteCards.count,
-            otherCount: cardStore.uncategorizedCards.count,
+            summaries: content.summaries,
+            favoriteCount: content.favoriteCount,
+            otherCount: content.otherCount,
+            loadState: loadState,
+            onRetry: retry,
             onImportScreenshots: { router.navigate(.cardCreationStart) },
             onAction: handleAction
         )
+        .task {
+            await model.loadIfNeeded()
+        }
+    }
+
+    private var content: ArchiveHomeContent {
+        guard case .loaded(let content) = model.state else {
+            return .empty
+        }
+        return content
+    }
+
+    private var loadState: CollectionHomeView.LoadState {
+        switch model.state {
+        case .idle, .loading:
+            .loaded
+        case .loaded:
+            .loaded
+        case .failed:
+            .failed
+        }
     }
 
     private func handleAction(_ action: ArchiveAction) {
@@ -22,12 +50,18 @@ struct CollectionHomeContainerView: View {
             router.navigate(.archiveFavorites)
         case .openArchive(let kind):
             router.navigate(.archiveDetail(kind))
-        case .openCard(let id):
-            router.navigate(.cardDetail(id))
+        case .openCard(let card):
+            router.navigate(.remoteCardDetail(card))
         case .selectFilter, .deleteCards:
             break
         case .openSettings:
             router.navigate(.settings)
+        }
+    }
+
+    private func retry() {
+        Task {
+            await model.retry()
         }
     }
 }

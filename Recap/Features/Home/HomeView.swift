@@ -52,7 +52,7 @@ struct HomeContainerView: View {
         case .openAllRecent:
             router.navigate(.allRecentCards)
         case .openCard(let card):
-            router.navigate(.homeCardDetail(card))
+            router.navigate(.remoteCardDetail(card))
         case .openArchive(let kind):
             router.openArchive()
             router.navigate(.archiveDetail(kind), in: .archive)

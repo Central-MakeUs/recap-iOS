@@ -70,6 +70,7 @@ struct RecapRootView: View {
                     router: router,
                     cardStore: cardStore,
                     homeSummaryLoader: dependencies.homeSummaryLoader,
+                    archiveLoader: dependencies.archiveLoader,
                     onLogout: logout
                 )
             }

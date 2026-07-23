@@ -27,7 +27,7 @@ enum ArchiveAction: Hashable {
     case search
     case openFavorites
     case openArchive(CollectionKind)
-    case openCard(InformationCard.ID)
+    case openCard(InformationCard)
     case selectFilter(String)
     case deleteCards(Set<InformationCard.ID>)
     case openSettings
