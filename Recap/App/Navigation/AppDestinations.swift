@@ -35,10 +35,29 @@ extension View {
             if let card = cardStore.card(id: id) {
                 CardDetailView(card: card, onDeleted: onCardDeleted)
             }
+        case .homeCardDetail(let card):
+            HomeCardDetailDestination(
+                card: card,
+                onDeleted: onCardDeleted
+            )
         case .cardCreationStart:
             CardCreationFlowView()
         case .settings:
             AccountManagementView()
         }
+    }
+}
+
+private struct HomeCardDetailDestination: View {
+    @Environment(RecapCardStore.self) private var cardStore
+
+    let card: InformationCard
+    let onDeleted: () -> Void
+
+    var body: some View {
+        CardDetailView(card: card, onDeleted: onDeleted)
+            .onAppear {
+                cardStore.cacheRemoteCards([card])
+            }
     }
 }

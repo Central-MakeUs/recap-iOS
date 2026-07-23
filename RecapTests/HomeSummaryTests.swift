@@ -75,6 +75,26 @@ final class HomeSummaryTests: XCTestCase {
         XCTAssertEqual(loader.requestCount, 2)
     }
 
+    func testCancelledInitialLoadCanRestartWhenHomeReappears() async {
+        let expected = HomeSummaryContent.empty
+        let loader = CancellationThenSuccessHomeSummaryLoader(success: expected)
+        let model = HomeFeatureModel(summaryLoader: loader)
+        let initialLoad = Task {
+            await model.loadIfNeeded()
+        }
+
+        await loader.waitUntilFirstRequest()
+        initialLoad.cancel()
+        await initialLoad.value
+
+        XCTAssertEqual(model.state, .idle)
+
+        await model.loadIfNeeded()
+
+        XCTAssertEqual(model.state, .loaded(expected))
+        XCTAssertEqual(loader.requestCount, 2)
+    }
+
     func testURLProtocolIntegrationAddsBearerAndDecodesSummary() async throws {
         HomeSummaryURLProtocol.handler = { request in
             XCTAssertEqual(request.url?.path, "/api/v1/home/summary")
@@ -197,6 +217,36 @@ private final class SequencedHomeSummaryLoader: HomeSummaryLoading {
             throw APIError.transport
         }
         return try results.removeFirst().get()
+    }
+}
+
+@MainActor
+private final class CancellationThenSuccessHomeSummaryLoader: HomeSummaryLoading {
+    private let success: HomeSummaryContent
+    private var firstRequestWaiters: [CheckedContinuation<Void, Never>] = []
+    private(set) var requestCount = 0
+
+    init(success: HomeSummaryContent) {
+        self.success = success
+    }
+
+    func fetchSummary() async throws -> HomeSummaryContent {
+        requestCount += 1
+
+        if requestCount == 1 {
+            firstRequestWaiters.forEach { $0.resume() }
+            firstRequestWaiters.removeAll()
+            try await Task.sleep(for: .seconds(30))
+        }
+
+        return success
+    }
+
+    func waitUntilFirstRequest() async {
+        guard requestCount == 0 else { return }
+        await withCheckedContinuation { continuation in
+            firstRequestWaiters.append(continuation)
+        }
     }
 }
 

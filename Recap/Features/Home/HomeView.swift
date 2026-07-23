@@ -2,7 +2,6 @@ import SwiftUI
 
 struct HomeContainerView: View {
     @Environment(AppRouter.self) private var router
-    @Environment(RecapCardStore.self) private var cardStore
 
     @State private var model: HomeFeatureModel
 
@@ -21,7 +20,6 @@ struct HomeContainerView: View {
         )
         .task {
             await model.loadIfNeeded()
-            cacheLoadedCards()
         }
     }
 
@@ -53,8 +51,8 @@ struct HomeContainerView: View {
             router.openArchive(section: .favorites)
         case .openAllRecent:
             router.navigate(.allRecentCards)
-        case .openCard(let id):
-            router.navigate(.cardDetail(id))
+        case .openCard(let card):
+            router.navigate(.homeCardDetail(card))
         case .openArchive(let kind):
             router.openArchive()
             router.navigate(.archiveDetail(kind), in: .archive)
@@ -66,13 +64,7 @@ struct HomeContainerView: View {
     private func retry() {
         Task {
             await model.retry()
-            cacheLoadedCards()
         }
-    }
-
-    private func cacheLoadedCards() {
-        guard case .loaded(let content) = model.state else { return }
-        cardStore.cacheRemoteCards(content.allCards)
     }
 }
 

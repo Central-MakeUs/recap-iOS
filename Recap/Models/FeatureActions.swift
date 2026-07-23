@@ -5,7 +5,7 @@ enum HomeAction: Hashable {
     case startOrganizing
     case openFavorites
     case openAllRecent
-    case openCard(InformationCard.ID)
+    case openCard(InformationCard)
     case openArchive(CollectionKind)
     case openSettings
 }

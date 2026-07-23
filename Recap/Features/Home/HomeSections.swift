@@ -3,7 +3,7 @@ import SwiftUI
 struct HomeFavoritesSection: View {
     let cards: [InformationCard]
     let openFavorites: () -> Void
-    let openCard: (InformationCard.ID) -> Void
+    let openCard: (InformationCard) -> Void
 
     private let columns = [
         GridItem(.flexible(), spacing: 11),
@@ -28,7 +28,7 @@ struct HomeFavoritesSection: View {
                     LazyVGrid(columns: columns, alignment: .leading, spacing: 11) {
                         ForEach(cards.prefix(4)) { card in
                             Button {
-                                openCard(card.id)
+                                openCard(card)
                             } label: {
                                 RecapHomeFavoriteCard(card: card)
                             }
@@ -45,7 +45,7 @@ struct HomeFavoritesSection: View {
 struct HomeRecentSection: View {
     let cards: [InformationCard]
     let openAllRecent: () -> Void
-    let openCard: (InformationCard.ID) -> Void
+    let openCard: (InformationCard) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -64,7 +64,7 @@ struct HomeRecentSection: View {
                         HStack(spacing: 10) {
                             ForEach(cards.prefix(3)) { card in
                                 Button {
-                                    openCard(card.id)
+                                    openCard(card)
                                 } label: {
                                     RecapHomeRecentCard(card: card)
                                 }

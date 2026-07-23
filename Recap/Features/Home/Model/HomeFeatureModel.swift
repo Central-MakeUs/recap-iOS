@@ -33,7 +33,7 @@ final class HomeFeatureModel {
         do {
             state = .loaded(try await summaryLoader.fetchSummary())
         } catch is CancellationError {
-            return
+            state = .idle
         } catch {
             state = .failed
         }
