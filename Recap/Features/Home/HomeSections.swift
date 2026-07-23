@@ -114,9 +114,7 @@ struct HomeFrequentTypesSection: View {
     }
 
     private var frequentTypes: [CollectionKind] {
-        [.shopping, .place, .knowledge, .content].filter { kind in
-            summaries.contains(where: { $0.kind == kind })
-        }
+        Array(summaries.prefix(4).map(\.kind))
     }
 }
 

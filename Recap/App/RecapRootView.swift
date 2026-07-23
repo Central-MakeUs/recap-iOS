@@ -69,6 +69,7 @@ struct RecapRootView: View {
                 AppShellView(
                     router: router,
                     cardStore: cardStore,
+                    homeSummaryLoader: dependencies.homeSummaryLoader,
                     onLogout: logout
                 )
             }

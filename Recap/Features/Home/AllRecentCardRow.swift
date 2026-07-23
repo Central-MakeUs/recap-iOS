@@ -28,7 +28,8 @@ struct AllRecentCardRow: View {
 
             RecapScreenshotThumbnail(
                 kind: card.collection,
-                assetName: card.thumbnailAssetName
+                assetName: card.thumbnailAssetName,
+                remoteURL: card.thumbnailURL
             )
             .frame(width: 62, height: 80)
             .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))

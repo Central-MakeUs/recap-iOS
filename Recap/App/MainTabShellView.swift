@@ -3,6 +3,7 @@ import SwiftUI
 struct AppShellView: View {
     let router: AppRouter
     let cardStore: RecapCardStore
+    let homeSummaryLoader: any HomeSummaryLoading
     var onLogout: () -> Void = {}
 
     @State private var toast: RecapToastContent?
@@ -10,10 +11,12 @@ struct AppShellView: View {
     init(
         router: AppRouter,
         cardStore: RecapCardStore,
+        homeSummaryLoader: any HomeSummaryLoading,
         onLogout: @escaping () -> Void = {}
     ) {
         self.router = router
         self.cardStore = cardStore
+        self.homeSummaryLoader = homeSummaryLoader
         self.onLogout = onLogout
         _toast = State(initialValue: nil)
     }
@@ -26,6 +29,7 @@ struct AppShellView: View {
             RecapMainTabContainer(
                 router: router,
                 cardStore: cardStore,
+                homeSummaryLoader: homeSummaryLoader,
                 onUpload: openCardCreationFlow,
                 onCardDeleted: showCardDeletedToast
             )
@@ -64,6 +68,19 @@ struct AppShellView: View {
 #Preview("App shell") {
     AppShellView(
         router: AppRouter(),
-        cardStore: PreviewStores.recapCardStore()
+        cardStore: PreviewStores.recapCardStore(),
+        homeSummaryLoader: PreviewHomeSummaryLoaderForAppShell()
     )
+}
+
+@MainActor
+private final class PreviewHomeSummaryLoaderForAppShell: HomeSummaryLoading {
+    func fetchSummary() async throws -> HomeSummaryContent {
+        HomeSummaryContent(
+            recentCards: SampleData.recentCards,
+            favoriteCards: SampleData.cards.filter(\.isFavorite),
+            frequentTypes: SampleData.collectionSummaries,
+            hasAnyCapture: true
+        )
+    }
 }

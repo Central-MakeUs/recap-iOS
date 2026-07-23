@@ -82,15 +82,29 @@ final class RecapCardStore {
     func removeCard(id: InformationCard.ID) {
         cards.removeAll { $0.id == id }
     }
+
+    func cacheRemoteCards(_ remoteCards: [InformationCard]) {
+        for remoteCard in remoteCards {
+            guard let captureID = remoteCard.captureID else { continue }
+
+            if let index = cards.firstIndex(where: { $0.captureID == captureID }) {
+                cards[index] = remoteCard
+            } else {
+                cards.append(remoteCard)
+            }
+        }
+    }
 }
 
 extension InformationCard {
     func with(editDraft draft: CardEditDraft) -> InformationCard {
         InformationCard(
             id: id,
+            captureID: captureID,
             title: draft.title,
             summary: draft.summary,
             collection: draft.collection,
+            organizedAt: organizedAt,
             dateText: dateText,
             location: location,
             businessHours: businessHours,
@@ -100,17 +114,20 @@ extension InformationCard {
             tags: tags,
             originalImageAssetName: originalImageAssetName,
             thumbnailAssetName: thumbnailAssetName,
+            thumbnailURL: thumbnailURL,
             isFavorite: isFavorite
         )
     }
 
     func with(isFavorite: Bool) -> InformationCard {
         InformationCard(
-            id: id, title: title, summary: summary, collection: collection,
+            id: id, captureID: captureID, title: title, summary: summary, collection: collection,
+            organizedAt: organizedAt,
             dateText: dateText, location: location, businessHours: businessHours,
             category: category, confirmationLabel: confirmationLabel, memo: memo,
             tags: tags, originalImageAssetName: originalImageAssetName,
-            thumbnailAssetName: thumbnailAssetName, isFavorite: isFavorite
+            thumbnailAssetName: thumbnailAssetName, thumbnailURL: thumbnailURL,
+            isFavorite: isFavorite
         )
     }
 }

@@ -26,7 +26,7 @@ enum InitialRange: String, CaseIterable, Identifiable, Hashable {
     var id: String { rawValue }
 }
 
-enum CollectionKind: String, CaseIterable, Identifiable, Hashable {
+nonisolated enum CollectionKind: String, CaseIterable, Identifiable, Hashable, Sendable {
     case shopping
     case place
     case schedule
@@ -52,6 +52,7 @@ enum CollectionKind: String, CaseIterable, Identifiable, Hashable {
 }
 
 enum HomeStatus: String, CaseIterable, Identifiable, Hashable {
+    case loading
     case ready
     case processing
     case complete
@@ -61,11 +62,13 @@ enum HomeStatus: String, CaseIterable, Identifiable, Hashable {
     var id: String { rawValue }
 }
 
-struct InformationCard: Identifiable, Hashable {
+nonisolated struct InformationCard: Identifiable, Hashable, Sendable {
     let id: UUID
+    let captureID: Int64?
     let title: String
     let summary: String
     let collection: CollectionKind
+    let organizedAt: Date?
     let dateText: String
     let location: String
     let businessHours: String
@@ -75,13 +78,16 @@ struct InformationCard: Identifiable, Hashable {
     let tags: [String]
     let originalImageAssetName: String?
     let thumbnailAssetName: String?
+    let thumbnailURL: URL?
     var isFavorite: Bool
 
     init(
         id: UUID,
+        captureID: Int64? = nil,
         title: String,
         summary: String,
         collection: CollectionKind,
+        organizedAt: Date? = nil,
         dateText: String,
         location: String,
         businessHours: String,
@@ -91,12 +97,15 @@ struct InformationCard: Identifiable, Hashable {
         tags: [String],
         originalImageAssetName: String? = nil,
         thumbnailAssetName: String? = nil,
+        thumbnailURL: URL? = nil,
         isFavorite: Bool
     ) {
         self.id = id
+        self.captureID = captureID
         self.title = title
         self.summary = summary
         self.collection = collection
+        self.organizedAt = organizedAt
         self.dateText = dateText
         self.location = location
         self.businessHours = businessHours
@@ -106,14 +115,28 @@ struct InformationCard: Identifiable, Hashable {
         self.tags = tags
         self.originalImageAssetName = originalImageAssetName
         self.thumbnailAssetName = thumbnailAssetName
+        self.thumbnailURL = thumbnailURL
         self.isFavorite = isFavorite
     }
 }
 
-struct CollectionSummary: Identifiable, Hashable {
+nonisolated struct CollectionSummary: Identifiable, Hashable, Sendable {
     let kind: CollectionKind
     let count: Int
     let previewTitle: String
+    let representativeThumbnailURL: URL?
+
+    init(
+        kind: CollectionKind,
+        count: Int,
+        previewTitle: String,
+        representativeThumbnailURL: URL? = nil
+    ) {
+        self.kind = kind
+        self.count = count
+        self.previewTitle = previewTitle
+        self.representativeThumbnailURL = representativeThumbnailURL
+    }
 
     var id: CollectionKind { kind }
 }

@@ -18,6 +18,7 @@ final class RecapMainTabChromeState {
 struct RecapMainTabContainer: View {
     let router: AppRouter
     let cardStore: RecapCardStore
+    let homeSummaryLoader: any HomeSummaryLoading
     let onUpload: () -> Void
     let onCardDeleted: () -> Void
 
@@ -29,7 +30,7 @@ struct RecapMainTabContainer: View {
         TabView(selection: $router.selectedTab) {
             Tab("홈", image: "RecapTabHomeIcon", value: MainTab.home) {
                 tabStack(for: .home) {
-                    HomeContainerView()
+                    HomeContainerView(summaryLoader: homeSummaryLoader)
                 }
                 .toolbar(.hidden, for: .tabBar)
             }
