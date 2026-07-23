@@ -28,10 +28,12 @@ final class AuthenticationService {
         let response: AuthLoginResponse = try await networkClient.send(endpoint)
         try Task.checkCancellation()
 
+        let responseData = try response.requiredData()
+
         let tokenRecord = ServerTokenRecord(
-            accessToken: response.data.accessToken,
-            refreshToken: response.data.refreshToken,
-            accessTokenExpiresAt: response.data.accessTokenExpiresAt
+            accessToken: responseData.accessToken,
+            refreshToken: responseData.refreshToken,
+            accessTokenExpiresAt: responseData.accessTokenExpiresAt
         )
 
         do {
@@ -57,10 +59,11 @@ final class AuthenticationService {
 
             let endpoint = try AuthEndpoint.refresh(refreshToken: currentToken.refreshToken)
             let response: AuthLoginResponse = try await networkClient.send(endpoint)
+            let responseData = try response.requiredData()
             let refreshedToken = ServerTokenRecord(
-                accessToken: response.data.accessToken,
-                refreshToken: response.data.refreshToken,
-                accessTokenExpiresAt: response.data.accessTokenExpiresAt
+                accessToken: responseData.accessToken,
+                refreshToken: responseData.refreshToken,
+                accessTokenExpiresAt: responseData.accessTokenExpiresAt
             )
 
             do {
@@ -76,6 +79,19 @@ final class AuthenticationService {
         refreshTask = task
         defer { refreshTask = nil }
         return try await task.value
+    }
+
+    func currentAccessToken() throws -> String {
+        guard let tokenRecord = try secureSessionStore.loadServerTokenRecord() else {
+            throw AuthenticationSessionError.missingRefreshToken
+        }
+        return tokenRecord.accessToken
+    }
+
+    func invalidateSession() {
+        refreshTask?.cancel()
+        refreshTask = nil
+        try? secureSessionStore.deleteServerTokenRecord()
     }
 
     func logout() async throws {

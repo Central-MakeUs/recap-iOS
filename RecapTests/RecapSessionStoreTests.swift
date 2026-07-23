@@ -45,7 +45,11 @@ final class RecapSessionStoreTests: XCTestCase {
         let secureStore = SessionSecureStoreStub(token: validToken)
         let network = SessionNetworkClientStub(
             loginResponse: nil,
-            refreshError: APIError.statusCode(401, serverCode: "EXPIRED_REFRESH_TOKEN")
+            refreshError: APIError.statusCode(
+                401,
+                serverCode: "EXPIRED_REFRESH_TOKEN",
+                message: nil
+            )
         )
         let store = makeStore(secureStore: secureStore, network: network)
 
@@ -178,6 +182,20 @@ final class RecapSessionStoreTests: XCTestCase {
         XCTAssertNil(secureStore.token)
         XCTAssertEqual(network.sendCount, 0)
         XCTAssertEqual(secureStore.saveCount, 0)
+    }
+
+    func testAuthorizationFailureDeletesSessionAndSignsOut() {
+        let secureStore = SessionSecureStoreStub(token: validToken)
+        let store = makeStore(
+            secureStore: secureStore,
+            initialState: .authenticated(validToken)
+        )
+
+        store.invalidateSessionAfterAuthorizationFailure()
+
+        XCTAssertEqual(store.state, .signedOut(.sessionExpired))
+        XCTAssertNil(secureStore.token)
+        XCTAssertEqual(secureStore.deleteCount, 1)
     }
 
     private func makeStore(

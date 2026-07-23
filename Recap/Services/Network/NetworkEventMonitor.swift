@@ -6,7 +6,7 @@
 import Alamofire
 import Foundation
 
-struct NetworkLogRecord: Equatable, Sendable, CustomStringConvertible {
+nonisolated struct NetworkLogRecord: Equatable, Sendable, CustomStringConvertible {
     var url: URL?
     var statusCode: Int?
     var duration: TimeInterval
