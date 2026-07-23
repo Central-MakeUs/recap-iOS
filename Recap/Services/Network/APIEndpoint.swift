@@ -6,6 +6,11 @@
 import Foundation
 
 nonisolated struct APIEndpoint: Sendable {
+    enum Authorization: Sendable {
+        case none
+        case bearer
+    }
+
     enum Method: String, Sendable {
         case get = "GET"
         case post = "POST"
@@ -24,6 +29,7 @@ nonisolated struct APIEndpoint: Sendable {
     var headers: [String: String]
     var body: Body?
     var cachePolicy: URLRequest.CachePolicy
+    var authorization: Authorization
 
     init(
         method: Method,
@@ -31,7 +37,8 @@ nonisolated struct APIEndpoint: Sendable {
         queryItems: [URLQueryItem] = [],
         headers: [String: String] = [:],
         body: Body? = nil,
-        cachePolicy: URLRequest.CachePolicy = .useProtocolCachePolicy
+        cachePolicy: URLRequest.CachePolicy = .useProtocolCachePolicy,
+        authorization: Authorization = .none
     ) {
         self.method = method
         self.path = path
@@ -39,6 +46,19 @@ nonisolated struct APIEndpoint: Sendable {
         self.headers = headers
         self.body = body
         self.cachePolicy = cachePolicy
+        self.authorization = authorization
+    }
+
+    func authorized() -> APIEndpoint {
+        var endpoint = self
+        endpoint.authorization = .bearer
+        return endpoint
+    }
+
+    func addingHeader(name: String, value: String) -> APIEndpoint {
+        var endpoint = self
+        endpoint.headers[name] = value
+        return endpoint
     }
 
     static func postJSON<Payload: Encodable>(

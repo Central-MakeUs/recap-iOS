@@ -4,6 +4,7 @@ import Foundation
 final class RecapDependencies {
     let sessionStore: RecapSessionStore
     let onboardingProgressStore: OnboardingProgressStore
+    let networkClient: any NetworkClient
 
     private let kakaoLoginProvider: any SocialLoginProviding
     private let appleLoginProvider: any SocialLoginProviding
@@ -11,11 +12,13 @@ final class RecapDependencies {
     init(
         sessionStore: RecapSessionStore,
         onboardingProgressStore: OnboardingProgressStore,
+        networkClient: any NetworkClient,
         kakaoLoginProvider: any SocialLoginProviding,
         appleLoginProvider: any SocialLoginProviding
     ) {
         self.sessionStore = sessionStore
         self.onboardingProgressStore = onboardingProgressStore
+        self.networkClient = networkClient
         self.kakaoLoginProvider = kakaoLoginProvider
         self.appleLoginProvider = appleLoginProvider
     }
@@ -31,7 +34,7 @@ final class RecapDependencies {
 
     static func live(configuration: AppConfiguration) -> RecapDependencies {
         let secureSessionStore = KeychainSessionStore()
-        let networkClient = AlamofireNetworkClient(
+        let rawNetworkClient = AlamofireNetworkClient(
             configuration: NetworkConfiguration(baseURL: configuration.backendBaseURL),
             eventRecorder: { record in
                 #if DEBUG
@@ -40,18 +43,32 @@ final class RecapDependencies {
             }
         )
         let authenticationService = AuthenticationService(
-            networkClient: networkClient,
+            networkClient: rawNetworkClient,
             secureSessionStore: secureSessionStore
+        )
+        let sessionStore = RecapSessionStore(
+            authenticationService: authenticationService,
+            secureSessionStore: secureSessionStore
+        )
+        let authenticatedNetworkClient = AuthenticatedNetworkClient(
+            networkClient: rawNetworkClient,
+            accessTokenProvider: {
+                try authenticationService.currentAccessToken()
+            },
+            sessionRefresher: {
+                try await authenticationService.refreshSession()
+            },
+            sessionInvalidationHandler: {
+                sessionStore.invalidateSessionAfterAuthorizationFailure()
+            }
         )
 
         return RecapDependencies(
-            sessionStore: RecapSessionStore(
-                authenticationService: authenticationService,
-                secureSessionStore: secureSessionStore
-            ),
+            sessionStore: sessionStore,
             onboardingProgressStore: OnboardingProgressStore(
                 persistence: UserDefaultsOnboardingProgressPersistence()
             ),
+            networkClient: authenticatedNetworkClient,
             kakaoLoginProvider: KakaoLoginProvider(),
             appleLoginProvider: AppleLoginProvider()
         )
@@ -62,8 +79,9 @@ final class RecapDependencies {
         onboardingProgress: OnboardingProgress
     ) -> RecapDependencies {
         let secureSessionStore = PreviewSecureSessionStore()
+        let previewNetworkClient = PreviewNetworkClient()
         let authenticationService = AuthenticationService(
-            networkClient: PreviewNetworkClient(),
+            networkClient: previewNetworkClient,
             secureSessionStore: secureSessionStore
         )
 
@@ -76,6 +94,7 @@ final class RecapDependencies {
             onboardingProgressStore: OnboardingProgressStore(
                 persistence: PreviewOnboardingProgressPersistence(onboardingProgress)
             ),
+            networkClient: previewNetworkClient,
             kakaoLoginProvider: PreviewSocialLoginProvider(provider: .kakao),
             appleLoginProvider: PreviewSocialLoginProvider(provider: .apple)
         )

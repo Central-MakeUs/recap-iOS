@@ -91,8 +91,8 @@ final class NetworkAuthenticationTests: XCTestCase {
             AuthEndpoint.refresh(refreshToken: "old-refresh")
         )
 
-        XCTAssertEqual(response.data.accessToken, "new-access")
-        XCTAssertEqual(response.data.refreshToken, "new-refresh")
+        XCTAssertEqual(response.data?.accessToken, "new-access")
+        XCTAssertEqual(response.data?.refreshToken, "new-refresh")
     }
 
     func testAlamofireNetworkClientDecodesLogoutResponseWithNullData() async throws {
@@ -131,11 +131,75 @@ final class NetworkAuthenticationTests: XCTestCase {
         )
 
         XCTAssertTrue(response.success)
-        XCTAssertEqual(response.data.accessToken, "access-token")
-        XCTAssertEqual(response.data.refreshToken, "refresh-token")
+        XCTAssertEqual(response.data?.accessToken, "access-token")
+        XCTAssertEqual(response.data?.refreshToken, "refresh-token")
         XCTAssertEqual(
-            response.data.accessTokenExpiresAt,
+            response.data?.accessTokenExpiresAt,
             ISO8601DateFormatter().date(from: "2026-07-13T10:30:00Z")
+        )
+    }
+
+    func testAPIResponseDecodesNullData() throws {
+        let data = #"{"success":true,"data":null,"error":null}"#.data(using: .utf8)!
+
+        let response = try JSONDecoder.recapAPI.decode(APIResponse<EmptyResponse>.self, from: data)
+
+        XCTAssertTrue(response.success)
+        XCTAssertNil(response.data)
+        XCTAssertNil(response.error)
+    }
+
+    func testAlamofireNetworkClientAccepts204NoContent() async throws {
+        StubURLProtocol.response = .http(statusCode: 204, body: Data())
+        let client = makeClient()
+
+        let response: EmptyResponse = try await client.send(
+            APIEndpoint(method: .delete, path: "/api/v1/captures/1")
+        )
+
+        XCTAssertEqual(response, EmptyResponse())
+    }
+
+    @MainActor
+    func testAuthenticatedClientRefreshesAndRetriesThroughURLProtocol() async throws {
+        StubURLProtocol.responses = [
+            .http(
+                statusCode: 401,
+                body: #"{"success":false,"data":null,"error":{"code":"UNAUTHORIZED","message":"expired"}}"#.data(using: .utf8)!
+            ),
+            .http(statusCode: 200, body: #"{"ok":true}"#.data(using: .utf8)!)
+        ]
+
+        struct Response: Decodable, Equatable {
+            let ok: Bool
+        }
+
+        let client = AuthenticatedNetworkClient(
+            networkClient: makeClient(),
+            accessTokenProvider: { "expired-access" },
+            sessionRefresher: {
+                ServerTokenRecord(
+                    accessToken: "refreshed-access",
+                    refreshToken: "rotated-refresh",
+                    accessTokenExpiresAt: .distantFuture
+                )
+            },
+            sessionInvalidationHandler: {}
+        )
+
+        let response: Response = try await client.send(
+            APIEndpoint(method: .get, path: "/api/v1/protected").authorized()
+        )
+
+        XCTAssertTrue(response.ok)
+        XCTAssertEqual(StubURLProtocol.requests.count, 2)
+        XCTAssertEqual(
+            StubURLProtocol.requests[0].value(forHTTPHeaderField: "Authorization"),
+            "Bearer expired-access"
+        )
+        XCTAssertEqual(
+            StubURLProtocol.requests[1].value(forHTTPHeaderField: "Authorization"),
+            "Bearer refreshed-access"
         )
     }
 
@@ -219,7 +283,7 @@ final class NetworkAuthenticationTests: XCTestCase {
 
         StubURLProtocol.response = .http(
             statusCode: 500,
-            body: #"{"code":"SERVER_BUSY"}"#.data(using: .utf8)!
+            body: #"{"code":"SERVER_BUSY","message":"잠시 후 다시 시도해주세요"}"#.data(using: .utf8)!
         )
         do {
             let _: AuthTokenResponse = try await client.send(
@@ -227,7 +291,14 @@ final class NetworkAuthenticationTests: XCTestCase {
             )
             XCTFail("Expected status error")
         } catch let error as APIError {
-            XCTAssertEqual(error, .statusCode(500, serverCode: "SERVER_BUSY"))
+            XCTAssertEqual(
+                error,
+                .statusCode(
+                    500,
+                    serverCode: "SERVER_BUSY",
+                    message: "잠시 후 다시 시도해주세요"
+                )
+            )
         }
     }
 
@@ -345,7 +416,9 @@ private final class StubURLProtocol: URLProtocol {
 
     private static let lock = NSLock()
     private static var lockedResponse: Response = .http(statusCode: 200, body: Data())
+    private static var lockedResponses: [Response] = []
     private static var lockedLastRequest: URLRequest?
+    private static var lockedRequests: [URLRequest] = []
 
     static var response: Response {
         get {
@@ -356,6 +429,23 @@ private final class StubURLProtocol: URLProtocol {
         set {
             lock.lock()
             lockedResponse = newValue
+            lockedResponses = [newValue]
+            lock.unlock()
+        }
+    }
+
+    static var responses: [Response] {
+        get {
+            lock.lock()
+            defer { lock.unlock() }
+            return lockedResponses
+        }
+        set {
+            lock.lock()
+            lockedResponses = newValue
+            if let last = newValue.last {
+                lockedResponse = last
+            }
             lock.unlock()
         }
     }
@@ -366,10 +456,18 @@ private final class StubURLProtocol: URLProtocol {
         return lockedLastRequest
     }
 
+    static var requests: [URLRequest] {
+        lock.lock()
+        defer { lock.unlock() }
+        return lockedRequests
+    }
+
     static func reset() {
         lock.lock()
         lockedResponse = .http(statusCode: 200, body: Data())
+        lockedResponses = []
         lockedLastRequest = nil
+        lockedRequests = []
         lock.unlock()
     }
 
@@ -384,7 +482,10 @@ private final class StubURLProtocol: URLProtocol {
     override func startLoading() {
         Self.lock.lock()
         Self.lockedLastRequest = request
-        let response = Self.lockedResponse
+        Self.lockedRequests.append(request)
+        let response = Self.lockedResponses.isEmpty
+            ? Self.lockedResponse
+            : Self.lockedResponses.removeFirst()
         Self.lock.unlock()
 
         switch response {

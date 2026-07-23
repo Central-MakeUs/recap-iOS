@@ -122,7 +122,7 @@ final class RecapSessionStore {
     }
 
     private func isTerminalRefreshFailure(_ error: Error) -> Bool {
-        guard case let APIError.statusCode(statusCode, serverCode) = error else {
+        guard case let APIError.statusCode(statusCode, serverCode, _) = error else {
             return error is AuthenticationSessionError
         }
 
@@ -130,6 +130,14 @@ final class RecapSessionStore {
             || serverCode == "INVALID_REFRESH_TOKEN"
             || serverCode == "EXPIRED_REFRESH_TOKEN"
             || serverCode == "USER_NOT_FOUND"
+    }
+
+    func invalidateSessionAfterAuthorizationFailure() {
+        authenticationTask?.cancel()
+        authenticationTask = nil
+        authenticationAttemptID = nil
+        authenticationService.invalidateSession()
+        state = .signedOut(.sessionExpired)
     }
 
     func login(using provider: any SocialLoginProviding) async -> LoginAttemptOutcome {

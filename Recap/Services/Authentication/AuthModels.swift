@@ -28,10 +28,7 @@ nonisolated struct AuthTokenResponse: Decodable, Equatable, Sendable {
     let accessTokenExpiresAt: Date
 }
 
-nonisolated struct AuthLoginResponse: Decodable, Equatable, Sendable {
-    let success: Bool
-    let data: AuthTokenResponse
-}
+typealias AuthLoginResponse = APIResponse<AuthTokenResponse>
 
 nonisolated struct AuthRefreshRequest: Encodable, Equatable, Sendable {
     let refreshToken: String
@@ -41,6 +38,4 @@ nonisolated struct AuthLogoutRequest: Encodable, Equatable, Sendable {
     let refreshToken: String
 }
 
-nonisolated struct AuthLogoutResponse: Decodable, Equatable, Sendable {
-    let success: Bool
-}
+typealias AuthLogoutResponse = APIResponse<EmptyResponse>

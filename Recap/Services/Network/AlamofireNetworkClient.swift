@@ -86,6 +86,11 @@ final class AlamofireNetworkClient: NetworkClient, @unchecked Sendable {
             throw APIError.status(httpResponse.statusCode, data: response.data ?? Data(), decoder: decoder)
         }
 
+        if httpResponse.statusCode == 204,
+           let emptyResponse = EmptyResponse() as? Response {
+            return emptyResponse
+        }
+
         do {
             return try decoder.decode(Response.self, from: response.data ?? Data())
         } catch {
