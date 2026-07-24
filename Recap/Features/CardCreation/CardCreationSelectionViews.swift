@@ -14,7 +14,7 @@ struct CardCreationSelectionView: View {
                 action: onClose
             )
 
-            PhotoLibraryPicker(maxSelectionCount: 30, onLoad: handleLoadedPhotos) { isLoading in
+            PhotoLibraryPicker(maxSelectionCount: 20, onLoad: handleLoadedPhotos) { isLoading in
                 Label(isLoading ? "불러오는 중" : "갤러리에서 선택", systemImage: "photo.on.rectangle.angled")
                     .font(RecapFont.pretendard(size: 14, weight: .semibold))
                     .foregroundStyle(Color.recapBlue300)
@@ -153,7 +153,6 @@ struct CardCreationNoSelectionView: View {
 
 struct CardCreationProcessingView: View {
     let onCancel: () -> Void
-    let onComplete: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -196,13 +195,5 @@ struct CardCreationProcessingView: View {
                 .padding(.bottom, 31)
         }
         .background(Color.recapBackground)
-        .task {
-            do {
-                try await Task.sleep(for: .seconds(1.2))
-            } catch {
-                return
-            }
-            onComplete()
-        }
     }
 }

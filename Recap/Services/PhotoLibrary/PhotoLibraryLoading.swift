@@ -1,6 +1,7 @@
 import Foundation
 import PhotosUI
 import SwiftUI
+import UIKit
 
 struct PhotoLibraryLoadResult {
     let imageData: [Data]
@@ -18,8 +19,12 @@ struct LivePhotoLibraryLoader: PhotoLibraryLoading {
 
         for item in items {
             do {
-                if let data = try await item.loadTransferable(type: Data.self) {
-                    imageData.append(data)
+                if
+                    let sourceData = try await item.loadTransferable(type: Data.self),
+                    let image = UIImage(data: sourceData),
+                    let jpegData = image.jpegData(compressionQuality: 0.9)
+                {
+                    imageData.append(jpegData)
                 } else {
                     failedCount += 1
                 }

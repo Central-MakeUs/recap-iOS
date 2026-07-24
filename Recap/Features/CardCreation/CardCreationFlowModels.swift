@@ -82,15 +82,21 @@ final class CardCreationFlowViewModel {
     private(set) var screenshots: [CardCreationScreenshot]
     var selectedIDs: Set<CardCreationScreenshot.ID>
     private(set) var failedLoadCount = 0
+    private let processor: any CardCreationProcessing
+    private let invalidationCenter: CardDataInvalidationCenter?
 
     init(
         step: CardCreationFlowStep = .selecting,
         screenshots: [CardCreationScreenshot]? = nil,
-        selectedIDs: Set<CardCreationScreenshot.ID>? = nil
+        selectedIDs: Set<CardCreationScreenshot.ID>? = nil,
+        processor: (any CardCreationProcessing)? = nil,
+        invalidationCenter: CardDataInvalidationCenter? = nil
     ) {
         let screenshots = screenshots ?? []
         self.step = step
         self.screenshots = screenshots
+        self.processor = processor ?? PreviewCardCreationPipeline()
+        self.invalidationCenter = invalidationCenter
         if let selectedIDs {
             self.selectedIDs = selectedIDs
         } else {
@@ -153,15 +159,38 @@ final class CardCreationFlowViewModel {
         step = .processing
     }
 
-    func cancelProcessing() {
+    func cancelProcessing() async {
+        await processor.cancelCurrentProcess()
         step = .confirming
     }
 
-    func finishProcessing() {
-        step = CardCreationFlowDecision.processingResult(
-            failedCount: failedLoadCount,
-            hasScreenshots: hasImages
-        )
+    func processSelectedScreenshots() async {
+        let selected = selectedScreenshots
+        let images = selected.map { $0.imageData ?? Data() }
+
+        do {
+            let result = try await processor.process(images: images)
+            failedLoadCount = result.failCount
+            if result.successCount > 0 {
+                invalidationCenter?.invalidate()
+            }
+
+            switch result.status {
+            case .completed:
+                step = .complete
+            case .partialFailed:
+                step = .partialFailure
+            case .failed, .cancelled:
+                step = .failure
+            case .processing:
+                step = .failure
+            }
+        } catch is CancellationError {
+            return
+        } catch {
+            failedLoadCount = max(failedLoadCount, selected.count)
+            step = .failure
+        }
     }
 
     func showPartialFailure() {

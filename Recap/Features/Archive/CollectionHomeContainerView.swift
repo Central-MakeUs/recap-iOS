@@ -4,8 +4,13 @@ struct CollectionHomeContainerView: View {
     @Environment(AppRouter.self) private var router
 
     @State private var model: ArchiveHomeFeatureModel
+    let invalidationCenter: CardDataInvalidationCenter
 
-    init(loader: any ArchiveLoading) {
+    init(
+        loader: any ArchiveLoading,
+        invalidationCenter: CardDataInvalidationCenter
+    ) {
+        self.invalidationCenter = invalidationCenter
         _model = State(initialValue: ArchiveHomeFeatureModel(loader: loader))
     }
 
@@ -19,8 +24,12 @@ struct CollectionHomeContainerView: View {
             onImportScreenshots: { router.navigate(.cardCreationStart) },
             onAction: handleAction
         )
-        .task {
-            await model.loadIfNeeded()
+        .task(id: invalidationCenter.revision) {
+            if invalidationCenter.revision == 0 {
+                await model.loadIfNeeded()
+            } else {
+                await model.reload()
+            }
         }
     }
 

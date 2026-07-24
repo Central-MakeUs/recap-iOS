@@ -6,6 +6,7 @@ struct RecapScreenshotThumbnail: View {
     var remoteURL: URL? = nil
     var cornerRadius: CGFloat = 5
     var hasFavoriteFold = false
+    var onRemoteLoadFailure: (URL) -> Void = { _ in }
 
     var body: some View {
         Group {
@@ -26,6 +27,9 @@ struct RecapScreenshotThumbnail: View {
                             .background(Color.recapThumbnail)
                     case .failure:
                         placeholder
+                            .task {
+                                onRemoteLoadFailure(remoteURL)
+                            }
                     @unknown default:
                         placeholder
                     }

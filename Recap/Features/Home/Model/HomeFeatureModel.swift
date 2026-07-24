@@ -27,6 +27,10 @@ final class HomeFeatureModel {
         await load()
     }
 
+    func reload() async {
+        await load()
+    }
+
     private func load() async {
         state = .loading
 

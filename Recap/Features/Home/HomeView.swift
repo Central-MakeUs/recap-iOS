@@ -4,8 +4,13 @@ struct HomeContainerView: View {
     @Environment(AppRouter.self) private var router
 
     @State private var model: HomeFeatureModel
+    let invalidationCenter: CardDataInvalidationCenter
 
-    init(summaryLoader: any HomeSummaryLoading) {
+    init(
+        summaryLoader: any HomeSummaryLoading,
+        invalidationCenter: CardDataInvalidationCenter
+    ) {
+        self.invalidationCenter = invalidationCenter
         _model = State(initialValue: HomeFeatureModel(summaryLoader: summaryLoader))
     }
 
@@ -18,8 +23,12 @@ struct HomeContainerView: View {
             onAction: handleAction,
             onRetry: retry
         )
-        .task {
-            await model.loadIfNeeded()
+        .task(id: invalidationCenter.revision) {
+            if invalidationCenter.revision == 0 {
+                await model.loadIfNeeded()
+            } else {
+                await model.reload()
+            }
         }
     }
 

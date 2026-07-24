@@ -1,10 +1,15 @@
 import SwiftUI
 
 struct AppShellView: View {
+    @Environment(\.scenePhase) private var scenePhase
+
     let router: AppRouter
     let cardStore: RecapCardStore
     let homeSummaryLoader: any HomeSummaryLoading
     let archiveLoader: any ArchiveLoading
+    let captureService: any CaptureServing
+    let cardCreationProcessor: any CardCreationProcessing
+    let cardDataInvalidationCenter: CardDataInvalidationCenter
     var onLogout: () -> Void = {}
 
     @State private var toast: RecapToastContent?
@@ -14,12 +19,18 @@ struct AppShellView: View {
         cardStore: RecapCardStore,
         homeSummaryLoader: any HomeSummaryLoading,
         archiveLoader: any ArchiveLoading,
+        captureService: any CaptureServing,
+        cardCreationProcessor: any CardCreationProcessing,
+        cardDataInvalidationCenter: CardDataInvalidationCenter,
         onLogout: @escaping () -> Void = {}
     ) {
         self.router = router
         self.cardStore = cardStore
         self.homeSummaryLoader = homeSummaryLoader
         self.archiveLoader = archiveLoader
+        self.captureService = captureService
+        self.cardCreationProcessor = cardCreationProcessor
+        self.cardDataInvalidationCenter = cardDataInvalidationCenter
         self.onLogout = onLogout
         _toast = State(initialValue: nil)
     }
@@ -34,6 +45,9 @@ struct AppShellView: View {
                 cardStore: cardStore,
                 homeSummaryLoader: homeSummaryLoader,
                 archiveLoader: archiveLoader,
+                captureService: captureService,
+                cardCreationProcessor: cardCreationProcessor,
+                cardDataInvalidationCenter: cardDataInvalidationCenter,
                 onUpload: openCardCreationFlow,
                 onCardDeleted: showCardDeletedToast
             )
@@ -44,6 +58,10 @@ struct AppShellView: View {
         .recapToast(toast)
         .task(id: toast) {
             await clearToastIfNeeded()
+        }
+        .task(id: scenePhase) {
+            guard scenePhase == .active else { return }
+            await showPendingOrganizeResultIfNeeded()
         }
     }
 
@@ -67,6 +85,41 @@ struct AppShellView: View {
         guard !Task.isCancelled else { return }
         toast = nil
     }
+
+    private func showPendingOrganizeResultIfNeeded() async {
+        guard let result = try? await captureService.pendingOrganizeResult() else {
+            return
+        }
+
+        switch result.status {
+        case .completed:
+            toast = RecapToastContent(
+                style: .success,
+                message: "\(result.successCount)개의 스크린샷을 정리했어요."
+            )
+        case .partialFailed:
+            toast = RecapToastContent(
+                style: .error,
+                message: "\(result.failCount)개의 스크린샷을 정리하지 못했어요."
+            )
+        case .failed:
+            toast = RecapToastContent(
+                style: .error,
+                message: "스크린샷을 정리하지 못했어요."
+            )
+        case .cancelled, .processing:
+            return
+        }
+
+        await Task.yield()
+
+        do {
+            try await captureService.acknowledgeOrganizeResult(batchID: result.batchId)
+            cardDataInvalidationCenter.invalidate()
+        } catch {
+            // 다음 active 진입에서 같은 결과를 다시 조회한다.
+        }
+    }
 }
 
 #Preview("App shell") {
@@ -74,7 +127,10 @@ struct AppShellView: View {
         router: AppRouter(),
         cardStore: PreviewStores.recapCardStore(),
         homeSummaryLoader: PreviewHomeSummaryLoaderForAppShell(),
-        archiveLoader: PreviewArchiveLoader()
+        archiveLoader: PreviewArchiveLoader(),
+        captureService: PreviewCaptureService(),
+        cardCreationProcessor: PreviewCardCreationPipeline(),
+        cardDataInvalidationCenter: CardDataInvalidationCenter()
     )
 }
 

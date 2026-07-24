@@ -24,9 +24,11 @@ struct CardCreationFlowView: View {
                 CardCreationConfirmationView(viewModel: viewModel, onBack: viewModel.startSelection)
             case .processing:
                 CardCreationProcessingView(
-                    onCancel: viewModel.cancelProcessing,
-                    onComplete: viewModel.finishProcessing
+                    onCancel: cancelProcessing
                 )
+                .task {
+                    await viewModel.processSelectedScreenshots()
+                }
             case .complete:
                 CardCreationResultView(state: .complete, selectedCount: viewModel.selectedCount, failedCount: 0, onDone: close)
             case .partialFailure:
@@ -61,6 +63,12 @@ struct CardCreationFlowView: View {
     }
 
     private func close() { dismiss() }
+
+    private func cancelProcessing() {
+        Task {
+            await viewModel.cancelProcessing()
+        }
+    }
 }
 
 

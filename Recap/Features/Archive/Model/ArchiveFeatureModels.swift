@@ -26,6 +26,10 @@ final class ArchiveHomeFeatureModel {
         await load()
     }
 
+    func reload() async {
+        await load()
+    }
+
     private func load() async {
         state = .loading
 
@@ -69,6 +73,10 @@ final class ArchiveDetailFeatureModel {
     }
 
     func retry() async {
+        await load()
+    }
+
+    func reload() async {
         await load()
     }
 

@@ -4,14 +4,17 @@ struct CollectionDetailContainerView: View {
     @Environment(AppRouter.self) private var router
 
     let scope: ArchiveDetailScope
+    let invalidationCenter: CardDataInvalidationCenter
 
     @State private var model: ArchiveDetailFeatureModel
 
     init(
         scope: ArchiveDetailScope,
-        loader: any ArchiveLoading
+        loader: any ArchiveLoading,
+        invalidationCenter: CardDataInvalidationCenter
     ) {
         self.scope = scope
+        self.invalidationCenter = invalidationCenter
         _model = State(
             initialValue: ArchiveDetailFeatureModel(
                 scope: scope,
@@ -29,8 +32,12 @@ struct CollectionDetailContainerView: View {
             onImportScreenshots: { router.navigate(.cardCreationStart) },
             onAction: handleAction
         )
-        .task {
-            await model.loadIfNeeded()
+        .task(id: invalidationCenter.revision) {
+            if invalidationCenter.revision == 0 {
+                await model.loadIfNeeded()
+            } else {
+                await model.reload()
+            }
         }
     }
 
