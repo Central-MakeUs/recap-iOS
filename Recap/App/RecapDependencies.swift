@@ -7,6 +7,9 @@ final class RecapDependencies {
     let networkClient: any NetworkClient
     let homeSummaryLoader: any HomeSummaryLoading
     let archiveLoader: any ArchiveLoading
+    let captureService: any CaptureServing
+    let cardCreationProcessor: any CardCreationProcessing
+    let cardDataInvalidationCenter: CardDataInvalidationCenter
 
     private let kakaoLoginProvider: any SocialLoginProviding
     private let appleLoginProvider: any SocialLoginProviding
@@ -17,6 +20,9 @@ final class RecapDependencies {
         networkClient: any NetworkClient,
         homeSummaryLoader: any HomeSummaryLoading,
         archiveLoader: any ArchiveLoading,
+        captureService: any CaptureServing,
+        cardCreationProcessor: any CardCreationProcessing,
+        cardDataInvalidationCenter: CardDataInvalidationCenter,
         kakaoLoginProvider: any SocialLoginProviding,
         appleLoginProvider: any SocialLoginProviding
     ) {
@@ -25,6 +31,9 @@ final class RecapDependencies {
         self.networkClient = networkClient
         self.homeSummaryLoader = homeSummaryLoader
         self.archiveLoader = archiveLoader
+        self.captureService = captureService
+        self.cardCreationProcessor = cardCreationProcessor
+        self.cardDataInvalidationCenter = cardDataInvalidationCenter
         self.kakaoLoginProvider = kakaoLoginProvider
         self.appleLoginProvider = appleLoginProvider
     }
@@ -68,6 +77,7 @@ final class RecapDependencies {
                 sessionStore.invalidateSessionAfterAuthorizationFailure()
             }
         )
+        let captureService = CaptureService(networkClient: authenticatedNetworkClient)
 
         return RecapDependencies(
             sessionStore: sessionStore,
@@ -77,6 +87,12 @@ final class RecapDependencies {
             networkClient: authenticatedNetworkClient,
             homeSummaryLoader: HomeSummaryService(networkClient: authenticatedNetworkClient),
             archiveLoader: ArchiveService(networkClient: authenticatedNetworkClient),
+            captureService: captureService,
+            cardCreationProcessor: CardCreationPipeline(
+                captureService: captureService,
+                imageUploader: URLSessionPresignedImageUploader()
+            ),
+            cardDataInvalidationCenter: CardDataInvalidationCenter(),
             kakaoLoginProvider: KakaoLoginProvider(),
             appleLoginProvider: AppleLoginProvider()
         )
@@ -92,6 +108,7 @@ final class RecapDependencies {
             networkClient: previewNetworkClient,
             secureSessionStore: secureSessionStore
         )
+        let previewCaptureService = PreviewCaptureService()
 
         return RecapDependencies(
             sessionStore: RecapSessionStore(
@@ -105,6 +122,9 @@ final class RecapDependencies {
             networkClient: previewNetworkClient,
             homeSummaryLoader: PreviewHomeSummaryLoader(),
             archiveLoader: PreviewArchiveLoader(),
+            captureService: previewCaptureService,
+            cardCreationProcessor: PreviewCardCreationPipeline(),
+            cardDataInvalidationCenter: CardDataInvalidationCenter(),
             kakaoLoginProvider: PreviewSocialLoginProvider(provider: .kakao),
             appleLoginProvider: PreviewSocialLoginProvider(provider: .apple)
         )

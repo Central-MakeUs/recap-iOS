@@ -5,6 +5,7 @@ struct CardDetailContentView: View {
     let imageState: CardDetailImageState
     let contentWidth: CGFloat
     let onOpenOriginal: () -> Void
+    var onRemoteImageFailure: (URL) -> Void = { _ in }
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -12,7 +13,8 @@ struct CardDetailContentView: View {
                 CardDetailImageSection(
                     card: card,
                     imageState: imageState,
-                    onOpenOriginal: onOpenOriginal
+                    onOpenOriginal: onOpenOriginal,
+                    onRemoteImageFailure: onRemoteImageFailure
                 )
                 .frame(width: contentWidth)
                 .padding(.top, imageState.imageTopInset)

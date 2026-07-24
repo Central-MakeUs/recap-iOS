@@ -4,6 +4,7 @@ struct CardDetailImageSection: View {
     let card: InformationCard
     let imageState: CardDetailImageState
     let onOpenOriginal: () -> Void
+    var onRemoteImageFailure: (URL) -> Void = { _ in }
 
     @ViewBuilder
     var body: some View {
@@ -12,7 +13,9 @@ struct CardDetailImageSection: View {
             CardDetailHeroView(onExpand: onOpenOriginal) {
                 RecapScreenshotThumbnail(
                     kind: card.collection,
-                    assetName: card.detailImageAssetName
+                    assetName: card.detailImageAssetName,
+                    remoteURL: card.originalImageURL ?? card.thumbnailURL,
+                    onRemoteLoadFailure: onRemoteImageFailure
                 )
                 .frame(height: CardDetailStyle.heroHeight)
                 .frame(maxWidth: .infinity)

@@ -20,6 +20,9 @@ struct RecapMainTabContainer: View {
     let cardStore: RecapCardStore
     let homeSummaryLoader: any HomeSummaryLoading
     let archiveLoader: any ArchiveLoading
+    let captureService: any CaptureServing
+    let cardCreationProcessor: any CardCreationProcessing
+    let cardDataInvalidationCenter: CardDataInvalidationCenter
     let onUpload: () -> Void
     let onCardDeleted: () -> Void
 
@@ -31,14 +34,20 @@ struct RecapMainTabContainer: View {
         TabView(selection: $router.selectedTab) {
             Tab("홈", image: "RecapTabHomeIcon", value: MainTab.home) {
                 tabStack(for: .home) {
-                    HomeContainerView(summaryLoader: homeSummaryLoader)
+                    HomeContainerView(
+                        summaryLoader: homeSummaryLoader,
+                        invalidationCenter: cardDataInvalidationCenter
+                    )
                 }
                 .toolbar(.hidden, for: .tabBar)
             }
 
             Tab("보관함", image: "RecapTabArchiveIcon", value: MainTab.archive) {
                 tabStack(for: .archive) {
-                    CollectionHomeContainerView(loader: archiveLoader)
+                    CollectionHomeContainerView(
+                        loader: archiveLoader,
+                        invalidationCenter: cardDataInvalidationCenter
+                    )
                 }
                 .toolbar(.hidden, for: .tabBar)
             }
@@ -56,6 +65,9 @@ struct RecapMainTabContainer: View {
                 .withAppNavigationDestinations(
                     cardStore: cardStore,
                     archiveLoader: archiveLoader,
+                    captureService: captureService,
+                    cardCreationProcessor: cardCreationProcessor,
+                    cardDataInvalidationCenter: cardDataInvalidationCenter,
                     onCardDeleted: onCardDeleted
                 )
                 .toolbar {

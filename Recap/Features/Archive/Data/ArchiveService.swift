@@ -3,10 +3,23 @@ import Foundation
 @MainActor
 protocol ArchiveLoading {
     func fetchHome() async throws -> ArchiveHomeContent
+    func refreshHome(
+        _ current: ArchiveHomeContent,
+        scopes: ArchiveHomeRefreshScope
+    ) async throws -> ArchiveHomeContent
     func fetchCards(
         scope: ArchiveDetailScope,
         sort: ArchiveSort
     ) async throws -> [InformationCard]
+}
+
+extension ArchiveLoading {
+    func refreshHome(
+        _ current: ArchiveHomeContent,
+        scopes: ArchiveHomeRefreshScope
+    ) async throws -> ArchiveHomeContent {
+        try await fetchHome()
+    }
 }
 
 @MainActor
@@ -26,6 +39,38 @@ final class ArchiveService: ArchiveLoading {
             summaries: types.map(CollectionSummary.init(archiveDTO:)),
             favoriteCount: favorites.count,
             otherCount: other.count
+        )
+    }
+
+    func refreshHome(
+        _ current: ArchiveHomeContent,
+        scopes: ArchiveHomeRefreshScope
+    ) async throws -> ArchiveHomeContent {
+        guard !scopes.isEmpty else {
+            return current
+        }
+        guard scopes != .all else {
+            return try await fetchHome()
+        }
+
+        var summaries = current.summaries
+        var favoriteCount = current.favoriteCount
+        var otherCount = current.otherCount
+
+        if scopes.contains(.types) {
+            summaries = try await fetchTypes().map(CollectionSummary.init(archiveDTO:))
+        }
+        if scopes.contains(.favorites) {
+            favoriteCount = try await fetchFavorites().count
+        }
+        if scopes.contains(.other) {
+            otherCount = try await fetchOther(sort: .latest).count
+        }
+
+        return ArchiveHomeContent(
+            summaries: summaries,
+            favoriteCount: favoriteCount,
+            otherCount: otherCount
         )
     }
 

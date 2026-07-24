@@ -4,25 +4,51 @@ struct CardDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(RecapCardStore.self) private var cardStore
 
-    let card: InformationCard
     let imageState: CardDetailImageState
     let onDeleted: () -> Void
 
+    @State private var model: CaptureDetailFeatureModel
     @State private var isDeleteConfirmationPresented: Bool
     @State private var toast: RecapToastContent?
     @State private var isActionPanelPresented = false
     @State private var isEditing = false
     @State private var isOriginalPresented = false
     @State private var pendingPanelAction: CardDetailPanelAction?
+    @State private var isFavoriteMutationRunning = false
 
     private var navigationContentColor: Color {
         imageState == .failedCard ? Color.recapGray900 : .white
     }
 
     private var displayedCard: InformationCard {
-        cardStore.card(id: card.id) ?? card
+        model.card
     }
 
+    @MainActor
+    init(
+        card: InformationCard,
+        captureService: any CaptureServing,
+        invalidationCenter: CardDataInvalidationCenter,
+        imageState: CardDetailImageState = .loaded,
+        initiallyShowsDeleteConfirmation: Bool = false,
+        initialToast: RecapToastContent? = nil,
+        onDeleted: @escaping () -> Void = {}
+    ) {
+        self.imageState = imageState
+        self.onDeleted = onDeleted
+        _model = State(
+            initialValue: CaptureDetailFeatureModel(
+                card: card,
+                captureService: captureService,
+                invalidationCenter: invalidationCenter
+            )
+        )
+        _isDeleteConfirmationPresented = State(initialValue: initiallyShowsDeleteConfirmation)
+        _toast = State(initialValue: initialToast)
+        _pendingPanelAction = State(initialValue: nil)
+    }
+
+    @MainActor
     init(
         card: InformationCard,
         imageState: CardDetailImageState = .loaded,
@@ -30,12 +56,15 @@ struct CardDetailView: View {
         initialToast: RecapToastContent? = nil,
         onDeleted: @escaping () -> Void = {}
     ) {
-        self.card = card
-        self.imageState = imageState
-        self.onDeleted = onDeleted
-        _isDeleteConfirmationPresented = State(initialValue: initiallyShowsDeleteConfirmation)
-        _toast = State(initialValue: initialToast)
-        _pendingPanelAction = State(initialValue: nil)
+        self.init(
+            card: card,
+            captureService: PreviewCaptureService(),
+            invalidationCenter: CardDataInvalidationCenter(),
+            imageState: imageState,
+            initiallyShowsDeleteConfirmation: initiallyShowsDeleteConfirmation,
+            initialToast: initialToast,
+            onDeleted: onDeleted
+        )
     }
 
     var body: some View {
@@ -45,7 +74,8 @@ struct CardDetailView: View {
                     card: displayedCard,
                     imageState: imageState,
                     contentWidth: geometry.size.width,
-                    onOpenOriginal: openOriginal
+                    onOpenOriginal: openOriginal,
+                    onRemoteImageFailure: refreshRemoteImageURL
                 )
                 .ignoresSafeArea(edges: .top)
 
@@ -86,7 +116,10 @@ struct CardDetailView: View {
             CardEditView(card: displayedCard)
         }
         .fullScreenCover(isPresented: $isOriginalPresented) {
-            CardOriginalPreviewSheet(card: displayedCard)
+            CardOriginalPreviewSheet(
+                card: displayedCard,
+                onRemoteImageFailure: refreshRemoteImageURL
+            )
         }
         .recapConfirmationDialog(
             isPresented: $isDeleteConfirmationPresented,
@@ -100,20 +133,45 @@ struct CardDetailView: View {
         .task(id: toast) {
             await clearToastIfNeeded()
         }
+        .task {
+            await model.loadDetail()
+            cardStore.cacheRemoteCards([model.card])
+        }
     }
 
     private func openOriginal() { isOriginalPresented = true }
     private func showActions() { isActionPanelPresented = true }
 
+    private func refreshRemoteImageURL(_ failedURL: URL) {
+        Task {
+            await model.refreshImageURLAfterFailure(failedURL)
+            cardStore.cacheRemoteCards([model.card])
+        }
+    }
+
     private func favorite() {
-        let removesFavorite = displayedCard.isFavorite
-        cardStore.toggleFavorite(id: card.id)
-        toast = RecapToastContent(
-            style: .success,
-            message: removesFavorite
-                ? "즐겨찾기에서 삭제했어요."
-                : "즐겨찾기에 추가했어요."
-        )
+        guard !isFavoriteMutationRunning else { return }
+        isFavoriteMutationRunning = true
+
+        Task {
+            defer { isFavoriteMutationRunning = false }
+
+            do {
+                let isFavorite = try await model.toggleFavorite()
+                cardStore.cacheRemoteCards([model.card])
+                toast = RecapToastContent(
+                    style: .success,
+                    message: isFavorite
+                        ? "즐겨찾기에 추가했어요."
+                        : "즐겨찾기에서 삭제했어요."
+                )
+            } catch {
+                toast = RecapToastContent(
+                    style: .error,
+                    message: "즐겨찾기를 변경하지 못했어요. 다시 시도해주세요."
+                )
+            }
+        }
     }
 
     private func requestEdit() {
@@ -145,9 +203,19 @@ struct CardDetailView: View {
     }
 
     private func deleteCard() {
-        cardStore.removeCard(id: card.id)
-        onDeleted()
-        dismiss()
+        Task {
+            do {
+                try await model.delete()
+                cardStore.removeCard(id: displayedCard.id)
+                onDeleted()
+                dismiss()
+            } catch {
+                toast = RecapToastContent(
+                    style: .error,
+                    message: "스크린샷을 삭제하지 못했어요. 다시 시도해주세요."
+                )
+            }
+        }
     }
 
     private func clearToastIfNeeded() async {

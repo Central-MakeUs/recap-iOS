@@ -4,6 +4,7 @@ struct CardOriginalPreviewSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     let card: InformationCard
+    var onRemoteImageFailure: (URL) -> Void = { _ in }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -27,6 +28,27 @@ struct CardOriginalPreviewSheet: View {
                         .resizable()
                         .scaledToFit()
                         .frame(maxWidth: .infinity, alignment: .top)
+                } else if let imageURL = card.originalImageURL ?? card.thumbnailURL {
+                    RecapRemoteImage(
+                        url: imageURL,
+                        onExpiredURL: onRemoteImageFailure,
+                        imageContent: { image in
+                            image
+                                .resizable()
+                                .scaledToFit()
+                        },
+                        loadingContent: {
+                            ProgressView()
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 300)
+                        },
+                        failureContent: {
+                            CardImageFailureView()
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 300)
+                        }
+                    )
+                    .frame(maxWidth: .infinity, alignment: .top)
                 } else {
                     CardImageFailureView()
                         .frame(maxWidth: .infinity)

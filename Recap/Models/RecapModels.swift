@@ -78,6 +78,7 @@ nonisolated struct InformationCard: Identifiable, Hashable, Sendable {
     let tags: [String]
     let originalImageAssetName: String?
     let thumbnailAssetName: String?
+    let originalImageURL: URL?
     let thumbnailURL: URL?
     var isFavorite: Bool
 
@@ -97,6 +98,7 @@ nonisolated struct InformationCard: Identifiable, Hashable, Sendable {
         tags: [String],
         originalImageAssetName: String? = nil,
         thumbnailAssetName: String? = nil,
+        originalImageURL: URL? = nil,
         thumbnailURL: URL? = nil,
         isFavorite: Bool
     ) {
@@ -115,6 +117,7 @@ nonisolated struct InformationCard: Identifiable, Hashable, Sendable {
         self.tags = tags
         self.originalImageAssetName = originalImageAssetName
         self.thumbnailAssetName = thumbnailAssetName
+        self.originalImageURL = originalImageURL
         self.thumbnailURL = thumbnailURL
         self.isFavorite = isFavorite
     }

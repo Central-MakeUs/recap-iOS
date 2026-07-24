@@ -6,6 +6,7 @@ struct RecapScreenshotThumbnail: View {
     var remoteURL: URL? = nil
     var cornerRadius: CGFloat = 5
     var hasFavoriteFold = false
+    var onRemoteLoadFailure: (URL) -> Void = { _ in }
 
     var body: some View {
         Group {
@@ -14,22 +15,23 @@ struct RecapScreenshotThumbnail: View {
                     .resizable()
                     .scaledToFill()
             } else if let remoteURL {
-                AsyncImage(url: remoteURL) { phase in
-                    switch phase {
-                    case .success(let image):
+                RecapRemoteImage(
+                    url: remoteURL,
+                    onExpiredURL: onRemoteLoadFailure,
+                    imageContent: { image in
                         image
                             .resizable()
                             .scaledToFill()
-                    case .empty:
+                    },
+                    loadingContent: {
                         ProgressView()
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .background(Color.recapThumbnail)
-                    case .failure:
-                        placeholder
-                    @unknown default:
+                    },
+                    failureContent: {
                         placeholder
                     }
-                }
+                )
             } else {
                 placeholder
             }

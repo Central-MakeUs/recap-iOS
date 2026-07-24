@@ -4,8 +4,14 @@ struct HomeContainerView: View {
     @Environment(AppRouter.self) private var router
 
     @State private var model: HomeFeatureModel
+    @State private var loadedRevision: Int?
+    let invalidationCenter: CardDataInvalidationCenter
 
-    init(summaryLoader: any HomeSummaryLoading) {
+    init(
+        summaryLoader: any HomeSummaryLoading,
+        invalidationCenter: CardDataInvalidationCenter
+    ) {
+        self.invalidationCenter = invalidationCenter
         _model = State(initialValue: HomeFeatureModel(summaryLoader: summaryLoader))
     }
 
@@ -18,9 +24,25 @@ struct HomeContainerView: View {
             onAction: handleAction,
             onRetry: retry
         )
-        .task {
-            await model.loadIfNeeded()
+        .task(id: reloadTrigger) {
+            guard reloadTrigger.isActive else { return }
+
+            let revision = invalidationCenter.homeRevision
+            if loadedRevision == nil {
+                await model.loadIfNeeded()
+            } else if loadedRevision != revision {
+                await model.reload()
+            }
+            guard !Task.isCancelled else { return }
+            loadedRevision = revision
         }
+    }
+
+    private var reloadTrigger: HomeReloadTrigger {
+        HomeReloadTrigger(
+            revision: invalidationCenter.homeRevision,
+            isActive: router.selectedTab == .home && router.path(for: .home).isEmpty
+        )
     }
 
     private var content: HomeSummaryContent {
@@ -66,6 +88,11 @@ struct HomeContainerView: View {
             await model.retry()
         }
     }
+}
+
+private struct HomeReloadTrigger: Hashable {
+    let revision: Int
+    let isActive: Bool
 }
 
 struct HomeView: View {

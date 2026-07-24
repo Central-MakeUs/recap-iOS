@@ -4,14 +4,18 @@ struct CollectionDetailContainerView: View {
     @Environment(AppRouter.self) private var router
 
     let scope: ArchiveDetailScope
+    let invalidationCenter: CardDataInvalidationCenter
 
     @State private var model: ArchiveDetailFeatureModel
+    @State private var loadedRevision: Int?
 
     init(
         scope: ArchiveDetailScope,
-        loader: any ArchiveLoading
+        loader: any ArchiveLoading,
+        invalidationCenter: CardDataInvalidationCenter
     ) {
         self.scope = scope
+        self.invalidationCenter = invalidationCenter
         _model = State(
             initialValue: ArchiveDetailFeatureModel(
                 scope: scope,
@@ -29,8 +33,34 @@ struct CollectionDetailContainerView: View {
             onImportScreenshots: { router.navigate(.cardCreationStart) },
             onAction: handleAction
         )
-        .task {
-            await model.loadIfNeeded()
+        .task(id: reloadTrigger) {
+            guard reloadTrigger.isActive else { return }
+
+            let revision = invalidationCenter.archiveDetailRevision
+            if loadedRevision == nil {
+                await model.loadIfNeeded()
+            } else if loadedRevision != revision {
+                await model.reload()
+            }
+            guard !Task.isCancelled else { return }
+            loadedRevision = revision
+        }
+    }
+
+    private var reloadTrigger: ArchiveDetailReloadTrigger {
+        ArchiveDetailReloadTrigger(
+            revision: invalidationCenter.archiveDetailRevision,
+            isActive: router.selectedTab == .archive
+                && router.path(for: .archive).last == route
+        )
+    }
+
+    private var route: AppRoute {
+        switch scope {
+        case .favorites:
+            .archiveFavorites
+        case .category(let kind):
+            .archiveDetail(kind)
         }
     }
 
@@ -81,6 +111,11 @@ struct CollectionDetailContainerView: View {
             await model.retry()
         }
     }
+}
+
+private struct ArchiveDetailReloadTrigger: Hashable {
+    let revision: Int
+    let isActive: Bool
 }
 
 struct CollectionDetailView: View {

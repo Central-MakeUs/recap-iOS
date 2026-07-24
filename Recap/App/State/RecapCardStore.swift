@@ -114,6 +114,7 @@ extension InformationCard {
             tags: tags,
             originalImageAssetName: originalImageAssetName,
             thumbnailAssetName: thumbnailAssetName,
+            originalImageURL: originalImageURL,
             thumbnailURL: thumbnailURL,
             isFavorite: isFavorite
         )
@@ -126,7 +127,8 @@ extension InformationCard {
             dateText: dateText, location: location, businessHours: businessHours,
             category: category, confirmationLabel: confirmationLabel, memo: memo,
             tags: tags, originalImageAssetName: originalImageAssetName,
-            thumbnailAssetName: thumbnailAssetName, thumbnailURL: thumbnailURL,
+            thumbnailAssetName: thumbnailAssetName, originalImageURL: originalImageURL,
+            thumbnailURL: thumbnailURL,
             isFavorite: isFavorite
         )
     }
