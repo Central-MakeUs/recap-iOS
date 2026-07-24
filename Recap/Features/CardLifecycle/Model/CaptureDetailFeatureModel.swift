@@ -9,7 +9,7 @@ final class CaptureDetailFeatureModel {
 
     private let captureService: any CaptureServing
     private let invalidationCenter: CardDataInvalidationCenter
-    private var refreshedImageURLs: Set<URL> = []
+    private var hasRefreshedImageURL = false
 
     init(
         card: InformationCard,
@@ -67,7 +67,7 @@ final class CaptureDetailFeatureModel {
                 captureID: captureID,
                 isFavorite: targetValue
             )
-            invalidationCenter.invalidate()
+            invalidationCenter.invalidate(.favoriteChanged)
             return targetValue
         } catch {
             card = card.with(isFavorite: previousValue)
@@ -81,17 +81,18 @@ final class CaptureDetailFeatureModel {
         }
 
         try await captureService.deleteCapture(captureID: captureID)
-        invalidationCenter.invalidate()
+        invalidationCenter.invalidate(.captureDeleted)
     }
 
     func refreshImageURLAfterFailure(_ failedURL: URL) async {
         guard
             failedURL == card.originalImageURL || failedURL == card.thumbnailURL,
-            refreshedImageURLs.insert(failedURL).inserted
+            !hasRefreshedImageURL
         else {
             return
         }
 
+        hasRefreshedImageURL = true
         await loadDetail()
     }
 }

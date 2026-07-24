@@ -25,6 +25,26 @@ final class ArchiveAPITests: XCTestCase {
         XCTAssertEqual(content.summaries.first?.previewTitle, "대표 제목")
     }
 
+    func testArchiveHomeFavoriteRefreshRequestsOnlyFavorites() async throws {
+        let client = ArchiveNetworkClientStub()
+        let service = ArchiveService(networkClient: client)
+        let current = ArchiveHomeContent(
+            summaries: [CollectionSummary(kind: .shopping, count: 7, previewTitle: "기존 제목")],
+            favoriteCount: 99,
+            otherCount: 5
+        )
+
+        let refreshed = try await service.refreshHome(
+            current,
+            scopes: [.favorites]
+        )
+
+        XCTAssertEqual(client.endpoints.map(\.path), ["/api/v1/storage/favorites"])
+        XCTAssertEqual(refreshed.summaries, current.summaries)
+        XCTAssertEqual(refreshed.favoriteCount, 1)
+        XCTAssertEqual(refreshed.otherCount, current.otherCount)
+    }
+
     func testFavoritesDoesNotSendSortQuery() async throws {
         let client = ArchiveNetworkClientStub()
         let service = ArchiveService(networkClient: client)

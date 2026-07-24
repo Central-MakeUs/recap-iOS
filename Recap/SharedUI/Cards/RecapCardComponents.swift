@@ -15,25 +15,23 @@ struct RecapScreenshotThumbnail: View {
                     .resizable()
                     .scaledToFill()
             } else if let remoteURL {
-                AsyncImage(url: remoteURL) { phase in
-                    switch phase {
-                    case .success(let image):
+                RecapRemoteImage(
+                    url: remoteURL,
+                    onExpiredURL: onRemoteLoadFailure,
+                    imageContent: { image in
                         image
                             .resizable()
                             .scaledToFill()
-                    case .empty:
+                    },
+                    loadingContent: {
                         ProgressView()
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .background(Color.recapThumbnail)
-                    case .failure:
-                        placeholder
-                            .task {
-                                onRemoteLoadFailure(remoteURL)
-                            }
-                    @unknown default:
+                    },
+                    failureContent: {
                         placeholder
                     }
-                }
+                )
             } else {
                 placeholder
             }

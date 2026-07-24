@@ -172,7 +172,7 @@ final class CardCreationFlowViewModel {
             let result = try await processor.process(images: images)
             failedLoadCount = result.failCount
             if result.successCount > 0 {
-                invalidationCenter?.invalidate()
+                invalidationCenter?.invalidate(.captureCreated)
             }
 
             switch result.status {

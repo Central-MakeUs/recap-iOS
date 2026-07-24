@@ -1,5 +1,14 @@
 import Foundation
 
+nonisolated struct ArchiveHomeRefreshScope: OptionSet, Sendable {
+    let rawValue: Int
+
+    static let types = Self(rawValue: 1 << 0)
+    static let favorites = Self(rawValue: 1 << 1)
+    static let other = Self(rawValue: 1 << 2)
+    static let all: Self = [.types, .favorites, .other]
+}
+
 nonisolated struct ArchiveHomeContent: Equatable, Sendable {
     let summaries: [CollectionSummary]
     let favoriteCount: Int

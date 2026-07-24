@@ -115,7 +115,7 @@ struct AppShellView: View {
 
         do {
             try await captureService.acknowledgeOrganizeResult(batchID: result.batchId)
-            cardDataInvalidationCenter.invalidate()
+            cardDataInvalidationCenter.invalidate(.organizeResultAcknowledged)
         } catch {
             // 다음 active 진입에서 같은 결과를 다시 조회한다.
         }

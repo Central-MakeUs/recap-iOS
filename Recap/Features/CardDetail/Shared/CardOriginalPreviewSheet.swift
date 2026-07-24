@@ -29,29 +29,25 @@ struct CardOriginalPreviewSheet: View {
                         .scaledToFit()
                         .frame(maxWidth: .infinity, alignment: .top)
                 } else if let imageURL = card.originalImageURL ?? card.thumbnailURL {
-                    AsyncImage(url: imageURL) { phase in
-                        switch phase {
-                        case .success(let image):
+                    RecapRemoteImage(
+                        url: imageURL,
+                        onExpiredURL: onRemoteImageFailure,
+                        imageContent: { image in
                             image
                                 .resizable()
                                 .scaledToFit()
-                        case .empty:
+                        },
+                        loadingContent: {
                             ProgressView()
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 300)
-                        case .failure:
-                            CardImageFailureView()
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 300)
-                                .task {
-                                    onRemoteImageFailure(imageURL)
-                                }
-                        @unknown default:
+                        },
+                        failureContent: {
                             CardImageFailureView()
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 300)
                         }
-                    }
+                    )
                     .frame(maxWidth: .infinity, alignment: .top)
                 } else {
                     CardImageFailureView()

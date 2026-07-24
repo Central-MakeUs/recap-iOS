@@ -30,6 +30,24 @@ final class ArchiveHomeFeatureModel {
         await load()
     }
 
+    func reload(scopes: ArchiveHomeRefreshScope) async {
+        guard case .loaded(let current) = state else {
+            await load()
+            return
+        }
+        guard !scopes.isEmpty else { return }
+
+        do {
+            state = .loaded(
+                try await loader.refreshHome(current, scopes: scopes)
+            )
+        } catch is CancellationError {
+            return
+        } catch {
+            state = .failed
+        }
+    }
+
     private func load() async {
         state = .loading
 

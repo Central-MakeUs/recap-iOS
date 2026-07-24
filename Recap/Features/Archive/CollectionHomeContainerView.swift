@@ -4,6 +4,7 @@ struct CollectionHomeContainerView: View {
     @Environment(AppRouter.self) private var router
 
     @State private var model: ArchiveHomeFeatureModel
+    @State private var loadedRevision: ArchiveHomeRevision?
     let invalidationCenter: CardDataInvalidationCenter
 
     init(
@@ -24,13 +25,27 @@ struct CollectionHomeContainerView: View {
             onImportScreenshots: { router.navigate(.cardCreationStart) },
             onAction: handleAction
         )
-        .task(id: invalidationCenter.revision) {
-            if invalidationCenter.revision == 0 {
-                await model.loadIfNeeded()
+        .task(id: reloadTrigger) {
+            guard reloadTrigger.isActive else { return }
+
+            let revision = invalidationCenter.archiveHomeRevision
+            if let loadedRevision {
+                await model.reload(
+                    scopes: revision.changedScopes(since: loadedRevision)
+                )
             } else {
-                await model.reload()
+                await model.loadIfNeeded()
             }
+            guard !Task.isCancelled else { return }
+            loadedRevision = revision
         }
+    }
+
+    private var reloadTrigger: ArchiveHomeReloadTrigger {
+        ArchiveHomeReloadTrigger(
+            revision: invalidationCenter.archiveHomeRevision,
+            isActive: router.selectedTab == .archive && router.path(for: .archive).isEmpty
+        )
     }
 
     private var content: ArchiveHomeContent {
@@ -73,4 +88,9 @@ struct CollectionHomeContainerView: View {
             await model.retry()
         }
     }
+}
+
+private struct ArchiveHomeReloadTrigger: Hashable {
+    let revision: ArchiveHomeRevision
+    let isActive: Bool
 }

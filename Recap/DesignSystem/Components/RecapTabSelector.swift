@@ -49,32 +49,30 @@ private struct RecapTabButton: View {
     let action: () -> Void
 
     var body: some View {
-        Image(iconName)
-            .renderingMode(.template)
-            .resizable()
-            .frame(width: 24, height: 24)
-            .foregroundStyle(isSelected ? Color.recapBrandBlue : Color.recapGray200)
-        .frame(
-            width: RecapMainTabBarMetrics.tabItemSize.width,
-            height: RecapMainTabBarMetrics.tabItemSize.height
-        )
-        .background(
-            selectionCapsule
-        )
-        .contentShape(Capsule())
-        .clipShape(Capsule())
-        .onTapGesture {
+        Button {
             withAnimation(.snappy(duration: 0.28, extraBounce: 0)) {
                 action()
             }
+        } label: {
+            Image(iconName)
+                .renderingMode(.template)
+                .resizable()
+                .frame(width: 24, height: 24)
+                .foregroundStyle(isSelected ? Color.recapBrandBlue : Color.recapGray200)
+                .frame(
+                    width: RecapMainTabBarMetrics.tabItemSize.width,
+                    height: RecapMainTabBarMetrics.tabItemSize.height
+                )
+                .background(
+                    selectionCapsule
+                )
+                .contentShape(Capsule())
+                .clipShape(Capsule())
         }
-        .accessibilityElement()
+        .buttonStyle(.plain)
         .accessibilityLabel(label)
         .accessibilityIdentifier("mainTab.\(tab.rawValue)")
-        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
-        .accessibilityAction {
-            action()
-        }
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     @ViewBuilder

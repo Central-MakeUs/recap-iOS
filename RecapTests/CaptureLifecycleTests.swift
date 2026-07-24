@@ -259,7 +259,9 @@ final class CaptureDetailFeatureModelTests: XCTestCase {
         } catch {}
 
         XCTAssertFalse(model.card.isFavorite)
-        XCTAssertEqual(invalidationCenter.revision, 0)
+        XCTAssertEqual(invalidationCenter.homeRevision, 0)
+        XCTAssertEqual(invalidationCenter.archiveHomeRevision, ArchiveHomeRevision())
+        XCTAssertEqual(invalidationCenter.archiveDetailRevision, 0)
     }
 
     func testDeleteInvalidatesHomeAndArchiveData() async throws {
@@ -274,7 +276,12 @@ final class CaptureDetailFeatureModelTests: XCTestCase {
         try await model.delete()
 
         XCTAssertEqual(service.deletedCaptureID, 42)
-        XCTAssertEqual(invalidationCenter.revision, 1)
+        XCTAssertEqual(invalidationCenter.homeRevision, 1)
+        XCTAssertEqual(
+            invalidationCenter.archiveHomeRevision,
+            ArchiveHomeRevision(types: 1, favorites: 1, other: 1)
+        )
+        XCTAssertEqual(invalidationCenter.archiveDetailRevision, 1)
     }
 
     func testExpiredImageURLRefreshesDetailOnceAndPreservesCardIdentity() async {
@@ -297,11 +304,48 @@ final class CaptureDetailFeatureModelTests: XCTestCase {
         )
 
         await model.refreshImageURLAfterFailure(oldURL)
-        await model.refreshImageURLAfterFailure(oldURL)
+        await model.refreshImageURLAfterFailure(refreshedURL)
 
         XCTAssertEqual(service.detailRequestCount, 1)
         XCTAssertEqual(model.card.id, originalCard.id)
         XCTAssertEqual(model.card.originalImageURL, refreshedURL)
+    }
+
+    func testFavoriteChangeInvalidatesOnlyRelatedData() {
+        let invalidationCenter = CardDataInvalidationCenter()
+
+        invalidationCenter.invalidate(.favoriteChanged)
+
+        XCTAssertEqual(invalidationCenter.homeRevision, 1)
+        XCTAssertEqual(invalidationCenter.archiveHomeRevision.types, 0)
+        XCTAssertEqual(invalidationCenter.archiveHomeRevision.favorites, 1)
+        XCTAssertEqual(invalidationCenter.archiveHomeRevision.other, 0)
+        XCTAssertEqual(invalidationCenter.archiveDetailRevision, 1)
+    }
+
+    func testCaptureCreationInvalidatesAllCardCollections() {
+        let invalidationCenter = CardDataInvalidationCenter()
+
+        invalidationCenter.invalidate(.captureCreated)
+
+        XCTAssertEqual(invalidationCenter.homeRevision, 1)
+        XCTAssertEqual(
+            invalidationCenter.archiveHomeRevision,
+            ArchiveHomeRevision(types: 1, favorites: 1, other: 1)
+        )
+        XCTAssertEqual(invalidationCenter.archiveDetailRevision, 1)
+    }
+
+    func testRemoteImageRefreshesOnlyForExpiredAuthorizationResponse() {
+        XCTAssertEqual(
+            RecapRemoteImageResponsePolicy.failure(for: 403),
+            .expiredURL
+        )
+        XCTAssertEqual(
+            RecapRemoteImageResponsePolicy.failure(for: 500),
+            .unavailable
+        )
+        XCTAssertNil(RecapRemoteImageResponsePolicy.failure(for: 200))
     }
 
     private static func card(
