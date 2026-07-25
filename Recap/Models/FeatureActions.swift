@@ -34,5 +34,5 @@ enum ArchiveAction: Hashable {
 }
 
 enum SearchAction: Hashable {
-    case openCard(InformationCard.ID)
+    case openCard(InformationCard)
 }

@@ -5,6 +5,7 @@ extension View {
     func withAppNavigationDestinations(
         cardStore: RecapCardStore,
         archiveLoader: any ArchiveLoading,
+        searchLoader: any SearchLoading,
         captureService: any CaptureServing,
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
@@ -15,6 +16,7 @@ extension View {
                 for: route,
                 cardStore: cardStore,
                 archiveLoader: archiveLoader,
+                searchLoader: searchLoader,
                 captureService: captureService,
                 cardCreationProcessor: cardCreationProcessor,
                 cardDataInvalidationCenter: cardDataInvalidationCenter,
@@ -29,6 +31,7 @@ extension View {
         for route: AppRoute,
         cardStore: RecapCardStore,
         archiveLoader: any ArchiveLoading,
+        searchLoader: any SearchLoading,
         captureService: any CaptureServing,
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
@@ -36,7 +39,7 @@ extension View {
     ) -> some View {
         switch route {
         case .search:
-            SearchContainerView()
+            SearchContainerView(loader: searchLoader)
         case .allRecentCards:
             AllRecentCardsContainerView()
         case .archiveFavorites:

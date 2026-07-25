@@ -7,6 +7,7 @@ final class RecapDependencies {
     let networkClient: any NetworkClient
     let homeSummaryLoader: any HomeSummaryLoading
     let archiveLoader: any ArchiveLoading
+    let searchLoader: any SearchLoading
     let captureService: any CaptureServing
     let cardCreationProcessor: any CardCreationProcessing
     let cardDataInvalidationCenter: CardDataInvalidationCenter
@@ -20,6 +21,7 @@ final class RecapDependencies {
         networkClient: any NetworkClient,
         homeSummaryLoader: any HomeSummaryLoading,
         archiveLoader: any ArchiveLoading,
+        searchLoader: any SearchLoading,
         captureService: any CaptureServing,
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
@@ -31,6 +33,7 @@ final class RecapDependencies {
         self.networkClient = networkClient
         self.homeSummaryLoader = homeSummaryLoader
         self.archiveLoader = archiveLoader
+        self.searchLoader = searchLoader
         self.captureService = captureService
         self.cardCreationProcessor = cardCreationProcessor
         self.cardDataInvalidationCenter = cardDataInvalidationCenter
@@ -87,6 +90,7 @@ final class RecapDependencies {
             networkClient: authenticatedNetworkClient,
             homeSummaryLoader: HomeSummaryService(networkClient: authenticatedNetworkClient),
             archiveLoader: ArchiveService(networkClient: authenticatedNetworkClient),
+            searchLoader: SearchService(networkClient: authenticatedNetworkClient),
             captureService: captureService,
             cardCreationProcessor: CardCreationPipeline(
                 captureService: captureService,
@@ -122,6 +126,7 @@ final class RecapDependencies {
             networkClient: previewNetworkClient,
             homeSummaryLoader: PreviewHomeSummaryLoader(),
             archiveLoader: PreviewArchiveLoader(),
+            searchLoader: PreviewSearchLoader(),
             captureService: previewCaptureService,
             cardCreationProcessor: PreviewCardCreationPipeline(),
             cardDataInvalidationCenter: CardDataInvalidationCenter(),

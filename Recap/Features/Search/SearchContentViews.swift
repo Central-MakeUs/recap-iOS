@@ -84,28 +84,57 @@ struct SearchRecentContent: View {
 }
 
 struct SearchResultsList: View {
-    let results: [InformationCard]
+    let totalCount: Int
+    let results: [SearchResult]
     let openCard: (InformationCard.ID) -> Void
+    let loadNextPageIfNeeded: (SearchResult.ID) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("\(results.count) recaps")
+            Text("\(totalCount) recaps")
                 .font(RecapFont.pretendard(size: 13, weight: .medium))
                 .tracking(-0.26)
                 .foregroundStyle(Color.recapGray500)
 
             VStack(spacing: 0) {
-                ForEach(results) { card in
+                ForEach(results) { result in
                     Button {
-                        openCard(card.id)
+                        openCard(result.card.id)
                     } label: {
-                        RecapInformationCardRow(card: card)
+                        RecapInformationCardRow(
+                            card: result.card,
+                            titleText: result.title.styledText(
+                                defaultColor: Color.recapGray900
+                            ),
+                            summaryText: result.summary.styledText(
+                                defaultColor: Color.recapGray500
+                            )
+                        )
                     }
                     .buttonStyle(.plain)
+                    .onAppear {
+                        loadNextPageIfNeeded(result.id)
+                    }
                 }
             }
         }
         .padding(.top, 1)
+    }
+}
+
+private extension SearchHighlightedString {
+    func styledText(defaultColor: Color) -> Text {
+        var attributedString = AttributedString()
+
+        for segment in segments {
+            var part = AttributedString(segment.text)
+            part.foregroundColor = segment.isHighlighted
+                ? Color.recapBlue300
+                : defaultColor
+            attributedString.append(part)
+        }
+
+        return Text(attributedString)
     }
 }
 

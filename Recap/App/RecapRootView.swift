@@ -71,6 +71,7 @@ struct RecapRootView: View {
                     cardStore: cardStore,
                     homeSummaryLoader: dependencies.homeSummaryLoader,
                     archiveLoader: dependencies.archiveLoader,
+                    searchLoader: dependencies.searchLoader,
                     captureService: dependencies.captureService,
                     cardCreationProcessor: dependencies.cardCreationProcessor,
                     cardDataInvalidationCenter: dependencies.cardDataInvalidationCenter,
