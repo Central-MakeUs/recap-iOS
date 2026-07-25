@@ -17,9 +17,10 @@ final class AppLaunchDestinationResolverTests: XCTestCase {
     }
 
     func testAuthenticatedOnboardingDestinations() {
-        XCTAssertEqual(resolve(.authenticated(token), .notStarted), .permissionGuide)
-        XCTAssertEqual(resolve(.authenticated(token), .loginReady), .permissionGuide)
-        XCTAssertEqual(resolve(.authenticated(token), .permissionGuide), .permissionGuide)
+        XCTAssertEqual(resolve(.authenticated(token), .notStarted), .uploadGuide)
+        XCTAssertEqual(resolve(.authenticated(token), .loginReady), .uploadGuide)
+        XCTAssertEqual(resolve(.authenticated(token), .permissionGuide), .uploadGuide)
+        XCTAssertEqual(resolve(.authenticated(token), .uploadGuide), .uploadGuide)
         XCTAssertEqual(resolve(.authenticated(token), .shareSetup), .shareSetup)
         XCTAssertEqual(resolve(.authenticated(token), .shareSetupDetail), .shareSetupDetail)
         XCTAssertEqual(resolve(.authenticated(token), .firstCardCreation), .firstCardCreation)

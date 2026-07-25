@@ -1,11 +1,11 @@
 import SwiftUI
 
 #Preview("Share setup guide") {
-    ShareSetupGuideView(onNext: {}, onSkip: {})
+    ShareSetupGuideView(onShowTutorial: {}, onSkip: {})
 }
 
 #Preview("Share setup detail") {
-    ShareSetupDetailView(onBack: {}, onNext: {})
+    ShareSetupDetailView(onBack: {})
 }
 
 #Preview("First cleanup start") {

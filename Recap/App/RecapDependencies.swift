@@ -134,6 +134,36 @@ final class RecapDependencies {
             appleLoginProvider: PreviewSocialLoginProvider(provider: .apple)
         )
     }
+
+    static func mock() -> RecapDependencies {
+        let secureSessionStore = MockSecureSessionStore()
+        let networkClient = MockAuthenticationNetworkClient()
+        let authenticationService = AuthenticationService(
+            networkClient: networkClient,
+            secureSessionStore: secureSessionStore
+        )
+        let captureService = PreviewCaptureService()
+
+        return RecapDependencies(
+            sessionStore: RecapSessionStore(
+                authenticationService: authenticationService,
+                secureSessionStore: secureSessionStore,
+                initialState: .signedOut(nil)
+            ),
+            onboardingProgressStore: OnboardingProgressStore(
+                persistence: PreviewOnboardingProgressPersistence(.notStarted)
+            ),
+            networkClient: networkClient,
+            homeSummaryLoader: PreviewHomeSummaryLoader(),
+            archiveLoader: PreviewArchiveLoader(),
+            searchLoader: PreviewSearchLoader(),
+            captureService: captureService,
+            cardCreationProcessor: PreviewCardCreationPipeline(),
+            cardDataInvalidationCenter: CardDataInvalidationCenter(),
+            kakaoLoginProvider: MockSocialLoginProvider(provider: .kakao),
+            appleLoginProvider: MockSocialLoginProvider(provider: .apple)
+        )
+    }
 }
 
 @MainActor
@@ -175,6 +205,47 @@ private final class PreviewOnboardingProgressPersistence: OnboardingProgressPers
     func save(_ progress: OnboardingProgress) throws { self.progress = progress }
 }
 
+private final class MockSecureSessionStore: SecureSessionStoring {
+    private var tokenRecord: ServerTokenRecord?
+
+    func deviceID() throws -> String { "mock-device" }
+    func saveServerTokenRecord(_ record: ServerTokenRecord) throws { tokenRecord = record }
+    func loadServerTokenRecord() throws -> ServerTokenRecord? { tokenRecord }
+    func deleteServerTokenRecord() throws { tokenRecord = nil }
+}
+
+private final class MockAuthenticationNetworkClient: NetworkClient, @unchecked Sendable {
+    func send<Response: Decodable>(
+        _ endpoint: APIEndpoint,
+        as responseType: Response.Type
+    ) async throws -> Response {
+        let response: Any
+
+        switch endpoint.path {
+        case "/api/v1/auth/oauth/kakao/login",
+             "/api/v1/auth/oauth/apple/login",
+             "/api/v1/auth/refresh":
+            response = AuthLoginResponse(
+                success: true,
+                data: AuthTokenResponse(
+                    accessToken: "mock-access-token",
+                    refreshToken: "mock-refresh-token",
+                    accessTokenExpiresAt: .distantFuture
+                )
+            )
+        case "/api/v1/auth/logout":
+            response = AuthLogoutResponse(success: true)
+        default:
+            throw APIError.offline
+        }
+
+        guard let typedResponse = response as? Response else {
+            throw APIError.decoding
+        }
+        return typedResponse
+    }
+}
+
 @MainActor
 private final class PreviewSocialLoginProvider: SocialLoginProviding {
     let provider: AuthProvider
@@ -185,5 +256,18 @@ private final class PreviewSocialLoginProvider: SocialLoginProviding {
 
     func providerToken() async throws -> String {
         throw SocialLoginError.unavailable
+    }
+}
+
+@MainActor
+private final class MockSocialLoginProvider: SocialLoginProviding {
+    let provider: AuthProvider
+
+    init(provider: AuthProvider) {
+        self.provider = provider
+    }
+
+    func providerToken() async throws -> String {
+        "mock-provider-token"
     }
 }

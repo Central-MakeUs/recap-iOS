@@ -5,6 +5,7 @@ nonisolated enum OnboardingProgress: String, Codable, Equatable, Sendable {
     case notStarted
     case loginReady
     case permissionGuide
+    case uploadGuide
     case shareSetup
     case shareSetupDetail
     case firstCardCreation

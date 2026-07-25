@@ -6,6 +6,7 @@ struct RecapLogoText: View {
         Text("Recap")
             .font(RecapFont.lexend(size: size, weight: .bold))
             .foregroundStyle(Color.recapBlue300)
+            .fixedSize()
     }
 }
 struct RecapMascotMark: View {

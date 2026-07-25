@@ -5,9 +5,15 @@
 
 import Foundation
 
+enum AppRuntimeProfile: String, Sendable {
+    case mock
+    case live
+}
+
 struct AppConfiguration: Sendable {
     private static let productionBackendBaseURL = URL(string: "https://re-cap.duckdns.org")!
 
+    let runtimeProfile: AppRuntimeProfile
     let backendBaseURL: URL
     let kakaoNativeAppKey: String?
 
@@ -16,12 +22,26 @@ struct AppConfiguration: Sendable {
     }
 
     init(infoDictionary: [String: Any]) {
+        runtimeProfile = Self.runtimeProfile(
+            from: infoDictionary["APP_RUNTIME_PROFILE"] as? String
+        )
         backendBaseURL = Self.backendBaseURL(
             from: infoDictionary["BACKEND_BASE_URL"] as? String
         )
         kakaoNativeAppKey = Self.nonEmptyString(
             infoDictionary["KAKAO_NATIVE_APP_KEY"] as? String
         )
+    }
+
+    private static func runtimeProfile(from value: String?) -> AppRuntimeProfile {
+        guard
+            let value = nonEmptyString(value)?.lowercased(),
+            let profile = AppRuntimeProfile(rawValue: value)
+        else {
+            return .live
+        }
+
+        return profile
     }
 
     private static func backendBaseURL(from value: String?) -> URL {

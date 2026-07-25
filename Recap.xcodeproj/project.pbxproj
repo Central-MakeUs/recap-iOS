@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		C20000010000000000000001 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000005 /* Alamofire */; };
 		C20000010000000000000002 /* KakaoSDKUser in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000006 /* KakaoSDKUser */; };
+		C20000010000000000000007 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000009 /* Lottie */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +63,7 @@
 			files = (
 				C20000010000000000000001 /* Alamofire in Frameworks */,
 				C20000010000000000000002 /* KakaoSDKUser in Frameworks */,
+				C20000010000000000000007 /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -126,6 +128,7 @@
 			packageProductDependencies = (
 				C20000010000000000000005 /* Alamofire */,
 				C20000010000000000000006 /* KakaoSDKUser */,
+				C20000010000000000000009 /* Lottie */,
 			);
 			productName = Recap;
 			productReference = A7BB44142FF2A90B00752373 /* Recap.app */;
@@ -190,6 +193,7 @@
 			packageReferences = (
 				C20000010000000000000003 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				C20000010000000000000004 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */,
+				C20000010000000000000008 /* XCRemoteSwiftPackageReference "lottie-spm" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A7BB44152FF2A90B00752373 /* Products */;
@@ -370,6 +374,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C40000010000000000000001 /* App.xcconfig */;
 			buildSettings = {
+				APP_RUNTIME_PROFILE = mock;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				BACKEND_BASE_URL = "https://re-cap.duckdns.org";
@@ -406,6 +411,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C40000010000000000000001 /* App.xcconfig */;
 			buildSettings = {
+				APP_RUNTIME_PROFILE = live;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				BACKEND_BASE_URL = "https://re-cap.duckdns.org";
@@ -524,6 +530,14 @@
 				version = 2.28.0;
 			};
 		};
+		C20000010000000000000008 /* XCRemoteSwiftPackageReference "lottie-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-spm.git";
+			requirement = {
+				kind = exactVersion;
+				version = 4.6.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -536,6 +550,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C20000010000000000000004 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */;
 			productName = KakaoSDKUser;
+		};
+		C20000010000000000000009 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C20000010000000000000008 /* XCRemoteSwiftPackageReference "lottie-spm" */;
+			productName = Lottie;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

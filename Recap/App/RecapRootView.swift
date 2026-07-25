@@ -46,23 +46,22 @@ struct RecapRootView: View {
                 }
             case .login(let reason):
                 loginView(signOutReason: reason)
-            case .permissionGuide:
-                PermissionGuideView {
+            case .uploadGuide:
+                UploadMethodGuideView {
                     onboardingStore.move(to: .shareSetup)
                 }
             case .shareSetup:
                 ShareSetupGuideView(
-                    onNext: { onboardingStore.move(to: .shareSetupDetail) },
+                    onShowTutorial: { onboardingStore.move(to: .shareSetupDetail) },
                     onSkip: { onboardingStore.move(to: .firstCardCreation) }
                 )
             case .shareSetupDetail:
                 ShareSetupDetailView(
-                    onBack: { onboardingStore.move(to: .shareSetup) },
-                    onNext: { onboardingStore.move(to: .firstCardCreation) }
+                    onBack: { onboardingStore.move(to: .shareSetup) }
                 )
             case .firstCardCreation:
                 FirstCleanupStartView(
-                    onStart: completeOnboarding,
+                    onStart: completeOnboardingAndStartCardCreation,
                     onSkip: completeOnboarding
                 )
             case .main:
@@ -93,7 +92,7 @@ struct RecapRootView: View {
     private func loginView(signOutReason: SessionSignOutReason?) -> some View {
         OnboardingLoginView(
             notice: loginNotice(for: signOutReason),
-            onStart: { onboardingStore.move(to: .permissionGuide) },
+            onStart: { onboardingStore.move(to: .uploadGuide) },
             login: { provider in
                 let authProvider: AuthProvider = provider == .kakao ? .kakao : .apple
                 return await sessionStore.login(
@@ -118,6 +117,11 @@ struct RecapRootView: View {
 
     private func completeOnboarding() {
         onboardingStore.move(to: .completed)
+    }
+
+    private func completeOnboardingAndStartCardCreation() {
+        onboardingStore.move(to: .completed)
+        router.navigate(.cardCreationStart)
     }
 
     private func logout() {
