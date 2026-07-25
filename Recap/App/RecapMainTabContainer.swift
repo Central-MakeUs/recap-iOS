@@ -20,6 +20,7 @@ struct RecapMainTabContainer: View {
     let cardStore: RecapCardStore
     let homeSummaryLoader: any HomeSummaryLoading
     let archiveLoader: any ArchiveLoading
+    let searchLoader: any SearchLoading
     let captureService: any CaptureServing
     let cardCreationProcessor: any CardCreationProcessing
     let cardDataInvalidationCenter: CardDataInvalidationCenter
@@ -65,6 +66,7 @@ struct RecapMainTabContainer: View {
                 .withAppNavigationDestinations(
                     cardStore: cardStore,
                     archiveLoader: archiveLoader,
+                    searchLoader: searchLoader,
                     captureService: captureService,
                     cardCreationProcessor: cardCreationProcessor,
                     cardDataInvalidationCenter: cardDataInvalidationCenter,

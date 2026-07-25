@@ -12,25 +12,21 @@ struct SearchResultsView: View {
     @State private var recentKeywords: [String]
 
     let mode: ScreenMode
-    let search: (String) -> [InformationCard]
+    let model: SearchFeatureModel
     let onAction: (SearchAction) -> Void
 
     init(
         initialQuery: String = "",
         recentKeywords: [String] = ["검색어", "검색어 01234", "검색검색검색", "검색어검색어"],
         mode: ScreenMode = .normal,
-        search: @escaping (String) -> [InformationCard],
+        model: SearchFeatureModel,
         onAction: @escaping (SearchAction) -> Void
     ) {
         _query = State(initialValue: initialQuery)
         _recentKeywords = State(initialValue: recentKeywords)
         self.mode = mode
-        self.search = search
+        self.model = model
         self.onAction = onAction
-    }
-
-    private var results: [InformationCard] {
-        search(query)
     }
 
     var body: some View {
@@ -49,6 +45,10 @@ struct SearchResultsView: View {
         .background(Color.recapBackground)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
+        .task(id: query) {
+            guard mode == .normal else { return }
+            await model.search(query: query)
+        }
     }
 
     private var normalContent: some View {
@@ -59,10 +59,8 @@ struct SearchResultsView: View {
                         recentKeywords: $recentKeywords,
                         selectKeyword: selectRecentKeyword
                     )
-                } else if results.isEmpty {
-                    SearchIncompleteState(title: "미구현: 검색 결과 없음")
                 } else {
-                    SearchResultsList(results: results, openCard: openCard)
+                    searchStateContent
                 }
             }
             .padding(.horizontal, 16)
@@ -75,14 +73,47 @@ struct SearchResultsView: View {
         query = keyword == "검색어 01234" ? "숙소예약" : keyword
     }
 
+    @ViewBuilder
+    private var searchStateContent: some View {
+        switch model.state {
+        case .idle, .loading:
+            Color.clear
+        case .failed:
+            SearchIncompleteState(title: "미구현: 검색 실패")
+        case .loaded(let content) where content.results.isEmpty:
+            SearchIncompleteState(title: "미구현: 검색 결과 없음")
+        case .loaded(let content):
+            SearchResultsList(
+                totalCount: content.totalCount,
+                results: content.results,
+                openCard: openCard,
+                loadNextPageIfNeeded: loadNextPageIfNeeded
+            )
+        }
+    }
+
     private func close() { dismiss() }
-    private func openCard(_ id: InformationCard.ID) { onAction(.openCard(id)) }
+    private func openCard(_ id: InformationCard.ID) {
+        guard
+            case .loaded(let content) = model.state,
+            let card = content.results.first(where: { $0.card.id == id })?.card
+        else {
+            return
+        }
+        onAction(.openCard(card))
+    }
+
+    private func loadNextPageIfNeeded(_ resultID: SearchResult.ID) {
+        Task {
+            await model.loadNextPageIfNeeded(after: resultID)
+        }
+    }
 }
 
 #Preview("Search home - recent terms") {
     NavigationStack {
         SearchResultsView(
-            search: SampleData.search,
+            model: previewSearchModel(),
             onAction: PreviewActions.handleSearch
         )
     }
@@ -92,7 +123,7 @@ struct SearchResultsView: View {
     NavigationStack {
         SearchResultsView(
             recentKeywords: [],
-            search: SampleData.search,
+            model: previewSearchModel(),
             onAction: PreviewActions.handleSearch
         )
     }
@@ -102,7 +133,7 @@ struct SearchResultsView: View {
     NavigationStack {
         SearchResultsView(
             initialQuery: "숙소예약",
-            search: SampleData.search,
+            model: previewSearchModel(query: "숙소예약"),
             onAction: PreviewActions.handleSearch
         )
     }
@@ -112,7 +143,7 @@ struct SearchResultsView: View {
     NavigationStack {
         SearchResultsView(
             initialQuery: "없는검색어",
-            search: SampleData.search,
+            model: previewSearchModel(query: "없는검색어"),
             onAction: PreviewActions.handleSearch
         )
     }
@@ -122,8 +153,34 @@ struct SearchResultsView: View {
     NavigationStack {
         SearchResultsView(
             mode: .failureBlank,
-            search: SampleData.search,
+            model: previewSearchModel(state: .failed),
             onAction: PreviewActions.handleSearch
         )
     }
+}
+
+@MainActor
+private func previewSearchModel(
+    query: String = "",
+    state: SearchFeatureModel.State? = nil
+) -> SearchFeatureModel {
+    let cards = SampleData.search(query)
+    let initialState = state ?? (
+        query.isEmpty
+            ? .idle
+            : .loaded(
+                SearchContent(
+                    query: query,
+                    totalCount: cards.count,
+                    hasNext: false,
+                    nextPage: 1,
+                    results: cards.map(SearchResult.init(card:))
+                )
+            )
+    )
+
+    return SearchFeatureModel(
+        loader: PreviewSearchLoader(),
+        initialState: initialState
+    )
 }

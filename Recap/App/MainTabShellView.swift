@@ -7,6 +7,7 @@ struct AppShellView: View {
     let cardStore: RecapCardStore
     let homeSummaryLoader: any HomeSummaryLoading
     let archiveLoader: any ArchiveLoading
+    let searchLoader: any SearchLoading
     let captureService: any CaptureServing
     let cardCreationProcessor: any CardCreationProcessing
     let cardDataInvalidationCenter: CardDataInvalidationCenter
@@ -19,6 +20,7 @@ struct AppShellView: View {
         cardStore: RecapCardStore,
         homeSummaryLoader: any HomeSummaryLoading,
         archiveLoader: any ArchiveLoading,
+        searchLoader: any SearchLoading,
         captureService: any CaptureServing,
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
@@ -28,6 +30,7 @@ struct AppShellView: View {
         self.cardStore = cardStore
         self.homeSummaryLoader = homeSummaryLoader
         self.archiveLoader = archiveLoader
+        self.searchLoader = searchLoader
         self.captureService = captureService
         self.cardCreationProcessor = cardCreationProcessor
         self.cardDataInvalidationCenter = cardDataInvalidationCenter
@@ -45,6 +48,7 @@ struct AppShellView: View {
                 cardStore: cardStore,
                 homeSummaryLoader: homeSummaryLoader,
                 archiveLoader: archiveLoader,
+                searchLoader: searchLoader,
                 captureService: captureService,
                 cardCreationProcessor: cardCreationProcessor,
                 cardDataInvalidationCenter: cardDataInvalidationCenter,
@@ -128,6 +132,7 @@ struct AppShellView: View {
         cardStore: PreviewStores.recapCardStore(),
         homeSummaryLoader: PreviewHomeSummaryLoaderForAppShell(),
         archiveLoader: PreviewArchiveLoader(),
+        searchLoader: PreviewSearchLoader(),
         captureService: PreviewCaptureService(),
         cardCreationProcessor: PreviewCardCreationPipeline(),
         cardDataInvalidationCenter: CardDataInvalidationCenter()

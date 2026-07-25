@@ -10,6 +10,8 @@ struct RecapInformationCardRow: View {
     var metadata: Metadata = .category
     var favoriteOverride: Bool?
     var selectionState: Bool?
+    var titleText: Text?
+    var summaryText: Text?
 
     var body: some View {
         Group {
@@ -111,14 +113,14 @@ struct RecapInformationCardRow: View {
 
     private var titleAndSummary: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(card.title)
+            (titleText ?? Text(card.title))
                 .font(RecapFont.pretendard(size: 14, weight: .semibold))
                 .tracking(-0.28)
                 .foregroundStyle(Color.recapGray900)
                 .lineLimit(1)
                 .frame(height: 20, alignment: .topLeading)
 
-            Text(card.summary)
+            (summaryText ?? Text(card.summary))
                 .font(RecapFont.pretendard(size: 13, weight: .medium))
                 .tracking(-0.26)
                 .foregroundStyle(Color.recapGray500)
