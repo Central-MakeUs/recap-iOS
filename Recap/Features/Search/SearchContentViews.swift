@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SearchTopBar: View {
     @Binding var query: String
+    let onSubmit: () -> Void
     let onClose: () -> Void
 
     var body: some View {
@@ -12,7 +13,11 @@ struct SearchTopBar: View {
             }
             .buttonStyle(.plain)
 
-            SearchBar(text: $query, showsClearButton: true)
+            SearchBar(
+                text: $query,
+                showsClearButton: true,
+                onSubmit: onSubmit
+            )
                 .frame(height: 44)
         }
         .padding(.horizontal, 16)
@@ -22,7 +27,8 @@ struct SearchTopBar: View {
 }
 
 struct SearchRecentContent: View {
-    @Binding var recentKeywords: [String]
+    let recentKeywords: [String]
+    let clearKeywords: () -> Void
     let selectKeyword: (String) -> Void
 
     var body: some View {
@@ -34,9 +40,6 @@ struct SearchRecentContent: View {
             } else {
                 recentKeywordChips
             }
-
-            SearchRecommendationGrid()
-                .padding(.top, recentKeywords.isEmpty ? 120 : 69)
         }
     }
 
@@ -48,7 +51,7 @@ struct SearchRecentContent: View {
                 .foregroundStyle(Color.recapGray700)
             Spacer()
             if !recentKeywords.isEmpty {
-                Button("전체삭제") { recentKeywords.removeAll() }
+                Button("전체삭제", action: clearKeywords)
                     .font(RecapFont.pretendard(size: 13, weight: .medium))
                     .tracking(-0.26)
                     .foregroundStyle(Color.recapGray300)
