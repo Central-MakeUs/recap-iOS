@@ -3,13 +3,14 @@ import SwiftUI
 struct RecapPopupButton: View {
     enum Style {
         case secondary
+        case primary
         case destructive
 
         var foregroundColor: Color {
             switch self {
             case .secondary:
                 Color.recapGray700
-            case .destructive:
+            case .primary, .destructive:
                 .white
             }
         }
@@ -18,6 +19,8 @@ struct RecapPopupButton: View {
             switch self {
             case .secondary:
                 Color.recapGray50
+            case .primary:
+                Color.recapBlue300
             case .destructive:
                 Color.recapDestructive
             }

@@ -214,6 +214,8 @@ enum RecapPresentation {
             SettingsItem(title: "개인정보 처리 안내", systemImage: "lock.shield")
         case .support:
             SettingsItem(title: "문의하기", systemImage: "envelope")
+        case .openSourceLicenses:
+            SettingsItem(title: "오픈소스 라이선스", systemImage: "doc.text")
         }
     }
 }

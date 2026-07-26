@@ -78,7 +78,7 @@ extension View {
                 )
             )
         case .settings:
-            AccountManagementView()
+            SettingsContainerView()
         }
     }
 }

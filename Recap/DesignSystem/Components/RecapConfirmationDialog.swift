@@ -5,8 +5,30 @@ struct RecapConfirmationDialog: View {
     let message: String
     let cancelTitle: String
     let confirmTitle: String
+    let confirmStyle: RecapPopupButton.Style
+    let height: CGFloat
     let onCancel: () -> Void
     let onConfirm: () -> Void
+
+    init(
+        title: String,
+        message: String,
+        cancelTitle: String,
+        confirmTitle: String,
+        confirmStyle: RecapPopupButton.Style = .destructive,
+        height: CGFloat = 181,
+        onCancel: @escaping () -> Void,
+        onConfirm: @escaping () -> Void
+    ) {
+        self.title = title
+        self.message = message
+        self.cancelTitle = cancelTitle
+        self.confirmTitle = confirmTitle
+        self.confirmStyle = confirmStyle
+        self.height = height
+        self.onCancel = onCancel
+        self.onConfirm = onConfirm
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -32,7 +54,7 @@ struct RecapConfirmationDialog: View {
 
                 RecapPopupButton(
                     title: confirmTitle,
-                    style: .destructive,
+                    style: confirmStyle,
                     action: onConfirm
                 )
             }
@@ -40,7 +62,7 @@ struct RecapConfirmationDialog: View {
         }
         .padding(.horizontal, 21)
         .padding(.top, 25)
-        .frame(width: 292, height: 181, alignment: .top)
+        .frame(width: 292, height: height, alignment: .top)
         .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
@@ -53,6 +75,8 @@ extension View {
         message: String,
         cancelTitle: String,
         confirmTitle: String,
+        confirmStyle: RecapPopupButton.Style = .destructive,
+        height: CGFloat = 181,
         onConfirm: @escaping () -> Void
     ) -> some View {
         modifier(
@@ -62,6 +86,8 @@ extension View {
                 message: message,
                 cancelTitle: cancelTitle,
                 confirmTitle: confirmTitle,
+                confirmStyle: confirmStyle,
+                height: height,
                 onConfirm: onConfirm
             )
         )
@@ -75,6 +101,8 @@ private struct RecapConfirmationDialogModifier: ViewModifier {
     let message: String
     let cancelTitle: String
     let confirmTitle: String
+    let confirmStyle: RecapPopupButton.Style
+    let height: CGFloat
     let onConfirm: () -> Void
 
     func body(content: Content) -> some View {
@@ -89,6 +117,8 @@ private struct RecapConfirmationDialogModifier: ViewModifier {
                         message: message,
                         cancelTitle: cancelTitle,
                         confirmTitle: confirmTitle,
+                        confirmStyle: confirmStyle,
+                        height: height,
                         onCancel: dismiss,
                         onConfirm: confirm
                     )
@@ -113,6 +143,8 @@ private struct RecapConfirmationDialogModifier: ViewModifier {
         message: "삭제한 스크린샷 정보는\n되돌릴 수 없어요.",
         cancelTitle: "취소",
         confirmTitle: "삭제",
+        confirmStyle: .destructive,
+        height: 181,
         onCancel: {},
         onConfirm: {}
     )

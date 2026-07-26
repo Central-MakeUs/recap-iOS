@@ -14,6 +14,7 @@ enum SettingsRoute: String, CaseIterable, Hashable, Identifiable {
     case usageGuide
     case privacyPolicy
     case support
+    case openSourceLicenses
 
     var id: String { rawValue }
 }

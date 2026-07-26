@@ -1,54 +1,32 @@
 import SwiftUI
+import UIKit
+import UserNotifications
 
 struct SettingsDetailView: View {
     let route: SettingsRoute
+    let captureCount: Int
+
+    init(route: SettingsRoute, captureCount: Int = 0) {
+        self.route = route
+        self.captureCount = captureCount
+    }
 
     var body: some View {
         switch route {
         case .accountManagement:
             AccountManagementView()
         case .notificationSettings:
-            MyPageSettingsView()
+            NotificationSettingsView()
         case .dataManagement:
-            SettingsInformationView(
-                title: "데이터 관리",
-                rows: [
-                    ("정리된 캡처", "42개"),
-                    ("원본 이미지", "서버에 저장하지 않음"),
-                    ("삭제 범위", "정리 결과와 연결 데이터")
-                ],
-                note: "데이터 삭제 기능은 삭제 확인 화면에서 다시 한번 확인한 뒤 실행돼요."
-            )
+            DataManagementView(captureCount: captureCount)
         case .usageGuide:
-            SettingsInformationView(
-                title: "이용 안내",
-                rows: [
-                    ("선택 업로드", "사용자가 고른 이미지만 정리해요"),
-                    ("공유 업로드", "갤러리 공유로 바로 정리할 수 있어요"),
-                    ("자동 업로드", "자동 전체 업로드는 하지 않아요")
-                ],
-                note: "사진 권한은 선택한 스크린샷을 불러오는 용도로만 사용돼요."
-            )
+            UsageGuideView()
         case .privacyPolicy:
-            SettingsInformationView(
-                title: "개인정보 처리 안내",
-                rows: [
-                    ("이미지 처리", "정리 요청한 이미지에 한해 처리해요"),
-                    ("원본 보관", "원본 이미지는 서버에 저장하지 않아요"),
-                    ("민감정보", "정리 전 사용자가 직접 확인할 수 있어요")
-                ],
-                note: "정리 결과는 앱 안에서 확인하고 필요할 때 삭제할 수 있어요."
-            )
+            PrivacyInformationView()
         case .support:
-            SettingsInformationView(
-                title: "문의하기",
-                rows: [
-                    ("메일", "support@recap.app"),
-                    ("제목", "[Recap 문의]"),
-                    ("포함 정보", "앱 버전, 기기, OS, 문의 내용")
-                ],
-                note: "메일 앱을 열 수 없으면 support@recap.app 으로 직접 문의해주세요."
-            )
+            SettingsUnavailableView(title: "문의하기")
+        case .openSourceLicenses:
+            SettingsUnavailableView(title: "오픈소스 라이선스")
         }
     }
 }
@@ -57,178 +35,258 @@ struct AccountManagementView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.recapLogout) private var logout
     @State private var showsLogoutConfirmation = false
+    @State private var showsWithdrawalConfirmation = false
 
     var body: some View {
         VStack(spacing: 0) {
-            SettingsHeader(title: "계정 관리", leadingAction: { dismiss() })
-                .padding(.horizontal, 23)
-                .padding(.top, 14)
+            SettingsNavigationHeader(title: "계정 관리", dismiss: { dismiss() })
 
-            VStack(spacing: 24) {
-                SettingsAccountSummaryCard()
-                    .padding(.top, 30)
-
-                SettingsActionCard(
-                    title: "로그아웃",
-                    message: "이 기기에서 Recap 계정이 로그아웃돼요.",
-                    action: { showsLogoutConfirmation = true }
+            SettingsListSection(title: "로그인 정보", isFirst: true) {
+                SettingsAccountProviderRow(
+                    providerName: "카카오로 로그인중",
+                    joinedDateText: "2026.6.12 가입",
+                    showsKakaoIcon: true
                 )
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("회원탈퇴 준비 중")
-                        .font(SettingsTypography.rowTitle)
-                        .foregroundStyle(Color.settingsTextSecondary)
-                    Text("서버의 계정 삭제 계약이 확정되면 제공할 예정이에요.")
-                        .font(SettingsTypography.rowCaption)
-                        .foregroundStyle(Color.settingsTextTertiary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .frame(height: 67)
-                .padding(.horizontal, 15)
-                .recapCard(radius: 13, borderColor: Color.recapGray100)
             }
-            .padding(.horizontal, 23)
+            .padding(.bottom, -SettingsLayout.sectionBottomPadding)
 
-            Spacer()
+            SettingsSectionDivider()
 
-            VStack(alignment: .leading, spacing: 10) {
-                Text("로그아웃해도 정리된 캡처 데이터는 삭제되지 않아요.")
-                Text("로그아웃하면 서버 세션과 이 기기의 로그인 정보가 함께 종료돼요.")
+            SettingsNavigationRow(title: "로그아웃") {
+                showsLogoutConfirmation = true
             }
-            .font(SettingsTypography.note)
-            .foregroundStyle(Color.settingsTextTertiary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 23)
-            .padding(.bottom, 30)
+            .padding(.horizontal, SettingsLayout.horizontalPadding)
+            .padding(.top, 23)
+
+            Spacer(minLength: 0)
+
+            Button("회원 탈퇴") {
+                showsWithdrawalConfirmation = true
+            }
+            .buttonStyle(.plain)
+            .font(SettingsTypography.rowTitle)
+            .foregroundStyle(Color.recapDestructive)
+            .frame(maxWidth: .infinity)
+            .padding(.bottom, 40)
         }
-        .background(Color.settingsBackground)
+        .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
-        .confirmationDialog(
-            "로그아웃할까요?",
+        .recapConfirmationDialog(
             isPresented: $showsLogoutConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("로그아웃", role: .destructive) {
-                logout()
-            }
-            Button("취소", role: .cancel) {}
-        } message: {
-            Text("서버 세션과 현재 기기의 로그인을 종료합니다.")
-        }
+            title: "로그아웃할까요?",
+            message: "정리된 캡처는 유지되며,\n다시 로그인하면 확인할 수 있어요.",
+            cancelTitle: "취소",
+            confirmTitle: "로그아웃",
+            confirmStyle: .primary,
+            onConfirm: logout
+        )
+        .recapConfirmationDialog(
+            isPresented: $showsWithdrawalConfirmation,
+            title: "정말 탈퇴할까요?",
+            message: "계정과 정리된 모든 스크린샷, 서버에 저장된 원본\n이미지가 삭제되며 복구할 수 없어요.\n기기 앨범의 사진은 삭제되지 않아요.",
+            cancelTitle: "취소",
+            confirmTitle: "탈퇴하기",
+            height: 210,
+            onConfirm: {}
+        )
     }
 }
 
-struct MyPageSettingsView: View {
+struct DataManagementView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.recapLogout) private var logout
-    @State private var completionNotification = true
-    @State private var confirmationNotification = true
-    @State private var marketingNotification = false
-    @State private var showsLogoutConfirmation = false
+    @State private var showsDeleteConfirmation = false
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            SettingsHeader(title: "알림 설정", leadingAction: { dismiss() })
-                .padding(.horizontal, 23)
-                .padding(.top, 42)
-
-            VStack(alignment: .leading, spacing: 32) {
-                SettingsToggleSection(title: "서비스 알림") {
-                    SettingsToggleRow(
-                        title: "정리 완료 알림",
-                        subtitle: "스크린샷 정리가 완료되면 알림을 보내요",
-                        isOn: $completionNotification
-                    )
-
-                    SettingsToggleRow(
-                        title: "확인 필요 알림",
-                        subtitle: "확인이 필요한 스크린샷이 생기면 알림을 보내요",
-                        isOn: $confirmationNotification
-                    )
-                }
-
-                Rectangle()
-                    .fill(Color.settingsDivider)
-                    .frame(height: 2)
-                    .padding(.horizontal, -23)
-
-                SettingsToggleSection(title: "마케팅 알림") {
-                    SettingsToggleRow(
-                        title: "이벤트 · 서비스 소식 알림",
-                        subtitle: "업데이트와 혜택 소식을 받아요",
-                        isOn: $marketingNotification
-                    )
-                }
-            }
-            .padding(.top, 38)
-            .padding(.horizontal, 23)
-
-            Spacer()
-
-            Button("로그아웃") { showsLogoutConfirmation = true }
-                .font(RecapFont.pretendard(size: 14, weight: .regular))
-                .foregroundStyle(Color.settingsLink)
-                .frame(maxWidth: .infinity)
-                .padding(.bottom, 29)
-        }
-        .background(Color.white)
-        .toolbar(.hidden, for: .navigationBar)
-        .confirmationDialog("로그아웃할까요?", isPresented: $showsLogoutConfirmation, titleVisibility: .visible) {
-            Button("로그아웃", role: .destructive) { logout() }
-            Button("취소", role: .cancel) {}
-        }
-    }
-}
-
-struct SettingsInformationView: View {
-    @Environment(\.dismiss) private var dismiss
-
-    let title: String
-    let rows: [(String, String)]
-    let note: String
+    let captureCount: Int
 
     var body: some View {
         VStack(spacing: 0) {
-            SettingsHeader(title: title, leadingAction: { dismiss() })
-                .padding(.horizontal, 23)
-                .padding(.top, 14)
+            SettingsNavigationHeader(title: "데이터 관리", dismiss: { dismiss() })
 
             VStack(spacing: 0) {
-                ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
-                    HStack(alignment: .firstTextBaseline, spacing: 12) {
-                        Text(row.0)
-                            .font(SettingsTypography.rowTitle)
-                            .foregroundStyle(Color.settingsTextPrimary)
+                dataSummary
 
-                        Spacer()
-
-                        Text(row.1)
-                            .font(SettingsTypography.rowCaption)
-                            .foregroundStyle(Color.settingsTextSecondary)
-                            .multilineTextAlignment(.trailing)
-                    }
-                    .padding(.horizontal, 15)
-                    .frame(minHeight: 52)
-
-                    if index < rows.count - 1 {
-                        SettingsDivider()
-                    }
+                Button("데이터 삭제") {
+                    showsDeleteConfirmation = true
                 }
+                .buttonStyle(.plain)
+                .font(RecapFont.pretendard(size: 16, weight: .semibold))
+                .foregroundStyle(Color.recapDestructive)
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+                .background(
+                    Color.recapGray50,
+                    in: RoundedRectangle(cornerRadius: 10, style: .continuous)
+                )
+                .padding(.top, 19)
+
+                dataDeletionNotes
+                    .padding(.top, 32)
+
+                Spacer(minLength: 0)
             }
-            .recapCard(radius: 13, borderColor: Color.recapGray100)
-            .padding(.horizontal, 23)
-            .padding(.top, 30)
-
-            Text(note)
-                .font(SettingsTypography.note)
-                .foregroundStyle(Color.settingsTextTertiary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 23)
-                .padding(.top, 13)
-
-            Spacer()
+            .padding(.horizontal, 16)
+            .padding(.top, 21)
         }
-        .background(Color.settingsBackground)
+        .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .recapConfirmationDialog(
+            isPresented: $showsDeleteConfirmation,
+            title: "모든 데이터를 삭제할까요?",
+            message: "정리된 모든 스크린샷, 서버에 저장된 원본\n이미지가 삭제되며 복구할 수 없어요.\n기기 앨범의 사진은 삭제되지 않아요.",
+            cancelTitle: "취소",
+            confirmTitle: "삭제하기",
+            height: 210,
+            onConfirm: {}
+        )
     }
+
+    private var dataSummary: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .top, spacing: 0) {
+                VStack(alignment: .leading, spacing: 7) {
+                    Text("정리된 스크린샷")
+                        .font(RecapFont.pretendard(size: 16, weight: .semibold))
+                        .foregroundStyle(Color.recapGray900)
+
+                    Text("\(captureCount)개")
+                        .font(RecapFont.pretendard(size: 22, weight: .semibold))
+                        .foregroundStyle(Color.recapBlue300)
+                }
+
+                Spacer(minLength: 0)
+
+                Image("SettingsDataIllustration")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 61, height: 53)
+            }
+
+            Text("제목, 요약, 본문 등 정리된 정보와 원본 이미지가 서버에 보관돼요.")
+                .font(SettingsTypography.body)
+                .foregroundStyle(Color.recapGray500)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 11)
+        }
+        .padding(20)
+        .frame(height: 151, alignment: .top)
+        .background(
+            Color.recapGray50,
+            in: RoundedRectangle(cornerRadius: 10, style: .continuous)
+        )
+    }
+
+    private var dataDeletionNotes: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            Text("계정은 유지되며, 삭제 후에도 새로운 스크린샷을 정리할 수 있어요.")
+            Text("데이터를 삭제하면 정리된 스크린샷 정보와 서버에 저장된 원본 이미지가 모두 삭제되며, 복구할 수 없어요.")
+        }
+        .font(SettingsTypography.body)
+        .foregroundStyle(Color.recapGray300)
+        .fixedSize(horizontal: false, vertical: true)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+struct NotificationSettingsView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
+    @Environment(\.scenePhase) private var scenePhase
+
+    @AppStorage("settings.organizeNotificationEnabled")
+    private var isOrganizeNotificationEnabled = true
+    @State private var authorizationStatus: UNAuthorizationStatus?
+
+    var body: some View {
+        VStack(spacing: 0) {
+            SettingsNavigationHeader(title: "알림 설정", dismiss: { dismiss() })
+
+            VStack(spacing: 23) {
+                if showsPermissionBanner {
+                    SettingsNotificationPermissionBanner(
+                        enableNotifications: enableSystemNotifications
+                    )
+                }
+
+                SettingsNotificationRow(
+                    isEnabled: $isOrganizeNotificationEnabled,
+                    isSystemPermissionEnabled: isSystemPermissionEnabled
+                )
+            }
+            .padding(.horizontal, SettingsLayout.horizontalPadding)
+            .padding(.top, 19)
+
+            Spacer(minLength: 0)
+        }
+        .background(Color.recapBackground)
+        .toolbar(.hidden, for: .navigationBar)
+        .task {
+            await refreshSystemNotificationPermission()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+
+            Task {
+                await refreshSystemNotificationPermission()
+            }
+        }
+    }
+
+    private var showsPermissionBanner: Bool {
+        guard let authorizationStatus else { return false }
+        return !authorizationStatus.allowsNotifications
+    }
+
+    private var isSystemPermissionEnabled: Bool {
+        authorizationStatus?.allowsNotifications == true
+    }
+
+    private func enableSystemNotifications() {
+        if authorizationStatus == .notDetermined {
+            Task {
+                _ = try? await UNUserNotificationCenter.current().requestAuthorization(
+                    options: [.alert, .badge, .sound]
+                )
+                await refreshSystemNotificationPermission()
+            }
+        } else {
+            openSystemSettings()
+        }
+    }
+
+    private func openSystemSettings() {
+        guard let url = URL(string: UIApplication.openNotificationSettingsURLString) else {
+            return
+        }
+        openURL(url)
+    }
+
+    private func refreshSystemNotificationPermission() async {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        authorizationStatus = settings.authorizationStatus
+    }
+}
+
+private extension UNAuthorizationStatus {
+    var allowsNotifications: Bool {
+        switch self {
+        case .authorized, .provisional, .ephemeral:
+            true
+        case .notDetermined, .denied:
+            false
+        @unknown default:
+            false
+        }
+    }
+}
+
+#Preview("알림 설정") {
+    NotificationSettingsView()
+}
+
+#Preview("계정 관리") {
+    AccountManagementView()
+}
+
+#Preview("데이터 관리") {
+    DataManagementView(captureCount: 128)
 }
