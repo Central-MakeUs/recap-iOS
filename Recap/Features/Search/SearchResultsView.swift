@@ -9,29 +9,33 @@ struct SearchResultsView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var query: String
-    @State private var recentKeywords: [String]
 
     let mode: ScreenMode
     let model: SearchFeatureModel
+    let recentSearchStore: RecentSearchStore
     let onAction: (SearchAction) -> Void
 
     init(
         initialQuery: String = "",
-        recentKeywords: [String] = ["검색어", "검색어 01234", "검색검색검색", "검색어검색어"],
         mode: ScreenMode = .normal,
         model: SearchFeatureModel,
+        recentSearchStore: RecentSearchStore,
         onAction: @escaping (SearchAction) -> Void
     ) {
         _query = State(initialValue: initialQuery)
-        _recentKeywords = State(initialValue: recentKeywords)
         self.mode = mode
         self.model = model
+        self.recentSearchStore = recentSearchStore
         self.onAction = onAction
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            SearchTopBar(query: $query, onClose: close)
+            SearchTopBar(
+                query: $query,
+                onSubmit: saveCurrentQuery,
+                onClose: close
+            )
 
             switch mode {
             case .normal:
@@ -56,7 +60,8 @@ struct SearchResultsView: View {
             VStack(alignment: .leading, spacing: 22) {
                 if query.isEmpty {
                     SearchRecentContent(
-                        recentKeywords: $recentKeywords,
+                        recentKeywords: recentSearchStore.keywords,
+                        clearKeywords: recentSearchStore.removeAll,
                         selectKeyword: selectRecentKeyword
                     )
                 } else {
@@ -70,7 +75,12 @@ struct SearchResultsView: View {
     }
 
     private func selectRecentKeyword(_ keyword: String) {
-        query = keyword == "검색어 01234" ? "숙소예약" : keyword
+        recentSearchStore.record(keyword)
+        query = keyword
+    }
+
+    private func saveCurrentQuery() {
+        recentSearchStore.record(query)
     }
 
     @ViewBuilder
@@ -114,6 +124,7 @@ struct SearchResultsView: View {
     NavigationStack {
         SearchResultsView(
             model: previewSearchModel(),
+            recentSearchStore: previewRecentSearchStore(),
             onAction: PreviewActions.handleSearch
         )
     }
@@ -122,8 +133,8 @@ struct SearchResultsView: View {
 #Preview("Search home - no recent terms") {
     NavigationStack {
         SearchResultsView(
-            recentKeywords: [],
             model: previewSearchModel(),
+            recentSearchStore: previewRecentSearchStore(keywords: []),
             onAction: PreviewActions.handleSearch
         )
     }
@@ -134,6 +145,7 @@ struct SearchResultsView: View {
         SearchResultsView(
             initialQuery: "숙소예약",
             model: previewSearchModel(query: "숙소예약"),
+            recentSearchStore: previewRecentSearchStore(),
             onAction: PreviewActions.handleSearch
         )
     }
@@ -144,6 +156,7 @@ struct SearchResultsView: View {
         SearchResultsView(
             initialQuery: "없는검색어",
             model: previewSearchModel(query: "없는검색어"),
+            recentSearchStore: previewRecentSearchStore(),
             onAction: PreviewActions.handleSearch
         )
     }
@@ -154,9 +167,19 @@ struct SearchResultsView: View {
         SearchResultsView(
             mode: .failureBlank,
             model: previewSearchModel(state: .failed),
+            recentSearchStore: previewRecentSearchStore(),
             onAction: PreviewActions.handleSearch
         )
     }
+}
+
+@MainActor
+private func previewRecentSearchStore(
+    keywords: [String] = ["검색어", "검색어 01234", "검색검색검색", "검색어검색어"]
+) -> RecentSearchStore {
+    RecentSearchStore(
+        persistence: InMemoryRecentSearchPersistence(keywords: keywords)
+    )
 }
 
 @MainActor

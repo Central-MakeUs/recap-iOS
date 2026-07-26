@@ -4,6 +4,7 @@ struct SearchBar: View {
     @Binding var text: String
     var placeholder = "스크린샷 내용이나 제목으로 검색"
     var showsClearButton = false
+    var onSubmit: () -> Void = {}
 
     var body: some View {
         HStack(spacing: 4) {
@@ -15,6 +16,8 @@ struct SearchBar: View {
                 .foregroundStyle(Color.recapGray900)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
+                .submitLabel(.search)
+                .onSubmit(onSubmit)
 
             if showsClearButton && !text.isEmpty {
                 Button {
