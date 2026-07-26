@@ -91,6 +91,16 @@ final class KeychainSessionStore: SecureSessionStoring {
 }
 
 final class SystemKeychainDataStore: KeychainDataStoring {
+    private let accessGroup: String?
+
+    init(
+        accessGroup: String? = Bundle.main.object(
+            forInfoDictionaryKey: "KEYCHAIN_ACCESS_GROUP"
+        ) as? String
+    ) {
+        self.accessGroup = accessGroup?.isEmpty == false ? accessGroup : nil
+    }
+
     func read(service: String, account: String) throws -> Data? {
         var query = baseQuery(service: service, account: account)
         query[kSecReturnData as String] = true
@@ -98,6 +108,10 @@ final class SystemKeychainDataStore: KeychainDataStoring {
 
         var result: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
+
+        if status == errSecItemNotFound, accessGroup != nil {
+            return try migrateLegacyItemIfPresent(service: service, account: account)
+        }
 
         if status == errSecItemNotFound {
             return nil
@@ -144,10 +158,39 @@ final class SystemKeychainDataStore: KeychainDataStoring {
     }
 
     private func baseQuery(service: String, account: String) -> [String: Any] {
-        [
+        var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: account
         ]
+        if let accessGroup {
+            query[kSecAttrAccessGroup as String] = accessGroup
+        }
+        return query
+    }
+
+    private func migrateLegacyItemIfPresent(service: String, account: String) throws -> Data? {
+        var legacyQuery: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+
+        var result: CFTypeRef?
+        let status = SecItemCopyMatching(legacyQuery as CFDictionary, &result)
+        if status == errSecItemNotFound {
+            return nil
+        }
+        guard status == errSecSuccess, let data = result as? Data else {
+            throw SecureStorageError.keychain(status: status)
+        }
+
+        try write(data, service: service, account: account)
+        legacyQuery.removeValue(forKey: kSecReturnData as String)
+        legacyQuery.removeValue(forKey: kSecMatchLimit as String)
+        SecItemDelete(legacyQuery as CFDictionary)
+        return data
     }
 }

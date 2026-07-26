@@ -7,27 +7,55 @@ final class RecapTests: XCTestCase {
         XCTAssertTrue(true)
     }
 
-    func testCardCreationFlowStartsProcessingPhotosPickerSelection() {
+    func testCardCreationFlowShowsConfirmationAfterPhotosPickerSelection() {
         let viewModel = CardCreationFlowViewModel()
 
-        viewModel.startProcessing(
+        viewModel.receivePickerSelection(
             imageData: [Data([0x01])],
-            failedCount: 0
+            failedCount: 0,
+            appending: false
         )
 
-        XCTAssertEqual(viewModel.step, .processing)
+        XCTAssertEqual(viewModel.step, .confirmation)
         XCTAssertEqual(viewModel.selectedCount, 1)
+
+        viewModel.beginProcessing()
+        XCTAssertEqual(viewModel.step, .processing)
     }
 
     func testCardCreationFlowReportsFailureWhenPickerCannotLoadASelection() {
         let viewModel = CardCreationFlowViewModel()
 
-        viewModel.startProcessing(
+        viewModel.receivePickerSelection(
             imageData: [],
-            failedCount: 1
+            failedCount: 1,
+            appending: false
         )
 
         XCTAssertEqual(viewModel.step, .failure)
+    }
+
+    func testCardCreationFlowAppendsAndRemovesScreenshotsBeforeProcessing() throws {
+        let viewModel = CardCreationFlowViewModel()
+
+        viewModel.receivePickerSelection(
+            imageData: [Data([0x01]), Data([0x02])],
+            failedCount: 0,
+            appending: false
+        )
+        viewModel.receivePickerSelection(
+            imageData: [Data([0x03])],
+            failedCount: 0,
+            appending: true
+        )
+
+        XCTAssertEqual(viewModel.selectedCount, 3)
+
+        let removedID = try XCTUnwrap(viewModel.selectedScreenshots.first?.id)
+        viewModel.removeScreenshot(id: removedID)
+
+        XCTAssertEqual(viewModel.selectedCount, 2)
+        XCTAssertEqual(viewModel.step, .confirmation)
     }
 
     func testCardCreationFlowReportsPartialFailureWhenSomeLoadsFail() {

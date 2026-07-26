@@ -10,6 +10,7 @@
 		C20000010000000000000001 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000005 /* Alamofire */; };
 		C20000010000000000000002 /* KakaoSDKUser in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000006 /* KakaoSDKUser */; };
 		C20000010000000000000007 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000009 /* Lottie */; };
+		D50000010000000000000001 /* RecapShareExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = D50000010000000000000003 /* RecapShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -20,7 +21,28 @@
 			remoteGlobalIDString = A7BB44132FF2A90B00752373;
 			remoteInfo = Recap;
 		};
+		D50000010000000000000002 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A7BB440C2FF2A90B00752373 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D50000010000000000000008;
+			remoteInfo = RecapShareExtension;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D5000001000000000000000B /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				D50000010000000000000001 /* RecapShareExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		A7BB44142FF2A90B00752373 /* Recap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Recap.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -28,6 +50,7 @@
 		C40000010000000000000001 /* App.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = App.xcconfig; sourceTree = "<group>"; };
 		C40000010000000000000002 /* Secrets.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig.example; sourceTree = "<group>"; };
 		C40000010000000000000004 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
+		D50000010000000000000003 /* RecapShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RecapShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -37,6 +60,13 @@
 				Info.plist,
 			);
 			target = A7BB44132FF2A90B00752373 /* Recap */;
+		};
+		D50000010000000000000006 /* Exceptions for "RecapShareExtension" folder in "RecapShareExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = D50000010000000000000008 /* RecapShareExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -52,6 +82,19 @@
 		B10000010000000000000003 /* RecapTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = RecapTests;
+			sourceTree = "<group>";
+		};
+		D50000010000000000000004 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		D50000010000000000000005 /* RecapShareExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D50000010000000000000006 /* Exceptions for "RecapShareExtension" folder in "RecapShareExtension" target */,
+			);
+			path = RecapShareExtension;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -74,6 +117,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D50000010000000000000007 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -82,6 +132,8 @@
 			children = (
 				C40000010000000000000003 /* Config */,
 				A7BB44162FF2A90B00752373 /* Recap */,
+				D50000010000000000000004 /* Shared */,
+				D50000010000000000000005 /* RecapShareExtension */,
 				B10000010000000000000003 /* RecapTests */,
 				A7BB44152FF2A90B00752373 /* Products */,
 			);
@@ -91,6 +143,7 @@
 			isa = PBXGroup;
 			children = (
 				A7BB44142FF2A90B00752373 /* Recap.app */,
+				D50000010000000000000003 /* RecapShareExtension.appex */,
 				B10000010000000000000001 /* RecapTests.xctest */,
 			);
 			name = Products;
@@ -116,13 +169,16 @@
 				A7BB44102FF2A90B00752373 /* Sources */,
 				A7BB44112FF2A90B00752373 /* Frameworks */,
 				A7BB44122FF2A90B00752373 /* Resources */,
+				D5000001000000000000000B /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				D5000001000000000000000C /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				A7BB44162FF2A90B00752373 /* Recap */,
+				D50000010000000000000004 /* Shared */,
 			);
 			name = Recap;
 			packageProductDependencies = (
@@ -157,6 +213,29 @@
 			productReference = B10000010000000000000001 /* RecapTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		D50000010000000000000008 /* RecapShareExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D5000001000000000000000F /* Build configuration list for PBXNativeTarget "RecapShareExtension" */;
+			buildPhases = (
+				D5000001000000000000000A /* Sources */,
+				D50000010000000000000007 /* Frameworks */,
+				D50000010000000000000009 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				D50000010000000000000004 /* Shared */,
+				D50000010000000000000005 /* RecapShareExtension */,
+			);
+			name = RecapShareExtension;
+			packageProductDependencies = (
+			);
+			productName = RecapShareExtension;
+			productReference = D50000010000000000000003 /* RecapShareExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -178,6 +257,9 @@
 					B10000010000000000000005 = {
 						CreatedOnToolsVersion = 26.5;
 						TestTargetID = A7BB44132FF2A90B00752373;
+					};
+					D50000010000000000000008 = {
+						CreatedOnToolsVersion = 26.5;
 					};
 				};
 			};
@@ -202,6 +284,7 @@
 			targets = (
 				A7BB44132FF2A90B00752373 /* Recap */,
 				B10000010000000000000005 /* RecapTests */,
+				D50000010000000000000008 /* RecapShareExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -215,6 +298,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		B10000010000000000000008 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D50000010000000000000009 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -238,6 +328,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D5000001000000000000000A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -245,6 +342,11 @@
 			isa = PBXTargetDependency;
 			target = A7BB44132FF2A90B00752373 /* Recap */;
 			targetProxy = B10000010000000000000002 /* PBXContainerItemProxy */;
+		};
+		D5000001000000000000000C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D50000010000000000000008 /* RecapShareExtension */;
+			targetProxy = D50000010000000000000002 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -480,6 +582,80 @@
 			};
 			name = Release;
 		};
+		D5000001000000000000000D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = C40000010000000000000001 /* App.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BACKEND_BASE_URL = "https://re-cap.duckdns.org";
+				CODE_SIGN_ENTITLEMENTS = RecapShareExtension/RecapShareExtension.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 6A2Z7YP3KV;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = RecapShareExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cmc.recap;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = RecapProfile00;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		D5000001000000000000000E /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = C40000010000000000000001 /* App.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BACKEND_BASE_URL = "https://re-cap.duckdns.org";
+				CODE_SIGN_ENTITLEMENTS = RecapShareExtension/RecapShareExtension.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 6A2Z7YP3KV;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = RecapShareExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cmc.recap;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = RecapProfile00;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -506,6 +682,15 @@
 			buildConfigurations = (
 				B1000001000000000000000A /* Debug */,
 				B1000001000000000000000B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D5000001000000000000000F /* Build configuration list for PBXNativeTarget "RecapShareExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D5000001000000000000000D /* Debug */,
+				D5000001000000000000000E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

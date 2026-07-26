@@ -23,6 +23,7 @@ struct CardCreationScreenshot: Identifiable, Hashable {
 
 enum CardCreationFlowStep: Hashable {
     case picking
+    case confirmation
     case processing
     case complete
     case partialFailure
@@ -75,6 +76,7 @@ enum CardCreationFlowDecision {
 final class CardCreationFlowViewModel {
     private(set) var step: CardCreationFlowStep
     private(set) var screenshots: [CardCreationScreenshot]
+    private(set) var selectedScreenshots: [SelectedScreenshot]
     private(set) var progress: CardCreationProgress
     private(set) var successCount = 0
     private(set) var failedLoadCount = 0
@@ -91,25 +93,54 @@ final class CardCreationFlowViewModel {
         let screenshots = screenshots ?? []
         self.step = step
         self.screenshots = screenshots
+        self.selectedScreenshots = screenshots.compactMap { screenshot in
+            screenshot.imageData.map { SelectedScreenshot(imageData: $0) }
+        }
         self.progress = progress
         self.processor = processor ?? PreviewCardCreationPipeline()
         self.invalidationCenter = invalidationCenter
     }
 
-    var selectedCount: Int { screenshots.count }
+    var selectedCount: Int { selectedScreenshots.count }
 
-    func startProcessing(imageData: [Data], failedCount: Int) {
+    func receivePickerSelection(imageData: [Data], failedCount: Int, appending: Bool) {
         guard !imageData.isEmpty else {
-            failedLoadCount = max(failedCount, 1)
-            step = .failure
+            if selectedScreenshots.isEmpty {
+                failedLoadCount = max(failedCount, 1)
+                step = .failure
+            } else {
+                failedLoadCount += failedCount
+                step = .confirmation
+            }
             return
         }
 
-        screenshots = imageData.map {
-            CardCreationScreenshot(kind: .capture, imageData: $0)
+        let newScreenshots = imageData.map { SelectedScreenshot(imageData: $0) }
+        if appending {
+            selectedScreenshots.append(contentsOf: newScreenshots.prefix(20 - selectedScreenshots.count))
+            failedLoadCount += failedCount
+        } else {
+            selectedScreenshots = Array(newScreenshots.prefix(20))
+            failedLoadCount = failedCount
         }
+
+        screenshots = selectedScreenshots.map {
+            CardCreationScreenshot(kind: .capture, imageData: $0.imageData)
+        }
+        progress = .initial
+        step = .confirmation
+    }
+
+    func removeScreenshot(id: SelectedScreenshot.ID) {
+        selectedScreenshots.removeAll { $0.id == id }
+        screenshots = selectedScreenshots.map {
+            CardCreationScreenshot(kind: .capture, imageData: $0.imageData)
+        }
+    }
+
+    func beginProcessing() {
+        guard !selectedScreenshots.isEmpty else { return }
         successCount = 0
-        failedLoadCount = failedCount
         progress = .initial
         step = .processing
     }
@@ -121,7 +152,7 @@ final class CardCreationFlowViewModel {
     }
 
     func processSelectedScreenshots() async {
-        let images = screenshots.compactMap(\.imageData)
+        let images = selectedScreenshots.map(\.imageData)
 
         do {
             let result = try await processor.process(

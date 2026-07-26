@@ -5,6 +5,7 @@ struct CardCreationFlowView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: CardCreationFlowViewModel
     @State private var isPhotoPickerPresented = false
+    @State private var isAppendingSelection = false
 
     @MainActor
     init(viewModel: CardCreationFlowViewModel) {
@@ -21,6 +22,18 @@ struct CardCreationFlowView: View {
             switch viewModel.step {
             case .picking:
                 Color.recapBackground
+            case .confirmation:
+                SelectedScreenshotsConfirmationView(
+                    screenshots: viewModel.selectedScreenshots,
+                    isSubmitting: false,
+                    message: viewModel.failedLoadCount > 0
+                        ? "\(viewModel.failedLoadCount)장의 이미지를 불러오지 못했어요."
+                        : nil,
+                    onBack: close,
+                    onAdd: presentAdditionalPicker,
+                    onRemove: viewModel.removeScreenshot,
+                    onConfirm: viewModel.beginProcessing
+                )
             case .processing:
                 CardCreationProcessingView(
                     progress: viewModel.progress.fractionCompleted,
@@ -55,9 +68,9 @@ struct CardCreationFlowView: View {
         .overlay {
             ScreenshotPhotoPickerPresenter(
                 isPresented: $isPhotoPickerPresented,
-                maxSelectionCount: 20,
+                maxSelectionCount: max(1, 20 - (isAppendingSelection ? viewModel.selectedCount : 0)),
                 onLoad: handleLoadedScreenshots,
-                onCancel: close
+                onCancel: handlePickerCancellation
             )
         }
         .onAppear(perform: presentPickerIfNeeded)
@@ -80,10 +93,26 @@ struct CardCreationFlowView: View {
     }
 
     private func handleLoadedScreenshots(_ imageData: [Data], failedCount: Int) {
-        viewModel.startProcessing(
+        viewModel.receivePickerSelection(
             imageData: imageData,
-            failedCount: failedCount
+            failedCount: failedCount,
+            appending: isAppendingSelection
         )
+        isAppendingSelection = false
+    }
+
+    private func presentAdditionalPicker() {
+        guard viewModel.selectedCount < 20 else { return }
+        isAppendingSelection = true
+        isPhotoPickerPresented = true
+    }
+
+    private func handlePickerCancellation() {
+        if isAppendingSelection {
+            isAppendingSelection = false
+        } else {
+            close()
+        }
     }
 
     private func cancelProcessing() {
