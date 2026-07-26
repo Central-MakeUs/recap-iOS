@@ -4,6 +4,7 @@ import SwiftUI
 struct CardCreationFlowView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: CardCreationFlowViewModel
+    @State private var isPhotoPickerPresented = false
 
     @MainActor
     init(viewModel: CardCreationFlowViewModel) {
@@ -18,43 +19,51 @@ struct CardCreationFlowView: View {
     var body: some View {
         Group {
             switch viewModel.step {
-            case .selecting:
-                CardCreationSelectionView(viewModel: viewModel, onClose: close)
-            case .confirming:
-                CardCreationConfirmationView(viewModel: viewModel, onBack: viewModel.startSelection)
+            case .picking:
+                Color.recapBackground
             case .processing:
                 CardCreationProcessingView(
+                    progress: viewModel.progress.fractionCompleted,
                     onCancel: cancelProcessing
                 )
                 .task {
                     await viewModel.processSelectedScreenshots()
                 }
             case .complete:
-                CardCreationResultView(state: .complete, selectedCount: viewModel.selectedCount, failedCount: 0, onDone: close)
+                CardCreationResultView(
+                    state: .complete,
+                    selectedCount: viewModel.successCount,
+                    failedCount: 0,
+                    onDone: close
+                )
             case .partialFailure:
-                CardCreationResultView(state: .partialFailure, selectedCount: viewModel.selectedCount, failedCount: viewModel.failedLoadCount, onDone: close)
+                CardCreationResultView(
+                    state: .partialFailure,
+                    selectedCount: viewModel.successCount,
+                    failedCount: viewModel.failedLoadCount,
+                    onDone: close
+                )
             case .failure:
-                CardCreationResultView(state: .failure, selectedCount: viewModel.selectedCount, failedCount: viewModel.failedLoadCount, onDone: close)
-            case .noSelection:
-                CardCreationNoSelectionView(viewModel: viewModel, onBack: viewModel.startSelection)
-            case .noImages:
-                CardCreationUnavailableView(
-                    variant: .noImages,
-                    primaryAction: viewModel.retryLoad,
-                    secondaryAction: close
+                CardCreationResultView(
+                    state: .failure,
+                    selectedCount: 0,
+                    failedCount: viewModel.failedLoadCount,
+                    onDone: close
                 )
-            case .permissionMissing:
-                CardCreationUnavailableView(
-                    variant: .permissionMissing,
-                    primaryAction: close,
-                    secondaryAction: nil
-                )
-            case .loadFailure:
-                CardCreationUnavailableView(
-                    variant: .loadFailure,
-                    primaryAction: viewModel.retryLoad,
-                    secondaryAction: nil
-                )
+            }
+        }
+        .overlay {
+            ScreenshotPhotoPickerPresenter(
+                isPresented: $isPhotoPickerPresented,
+                maxSelectionCount: 20,
+                onLoad: handleLoadedScreenshots,
+                onCancel: close
+            )
+        }
+        .onAppear(perform: presentPickerIfNeeded)
+        .onChange(of: viewModel.step) { _, step in
+            if step == .picking {
+                isPhotoPickerPresented = true
             }
         }
         .navigationBarBackButtonHidden(true)
@@ -64,6 +73,19 @@ struct CardCreationFlowView: View {
 
     private func close() { dismiss() }
 
+    private func presentPickerIfNeeded() {
+        if viewModel.step == .picking {
+            isPhotoPickerPresented = true
+        }
+    }
+
+    private func handleLoadedScreenshots(_ imageData: [Data], failedCount: Int) {
+        viewModel.startProcessing(
+            imageData: imageData,
+            failedCount: failedCount
+        )
+    }
+
     private func cancelProcessing() {
         Task {
             await viewModel.cancelProcessing()
@@ -72,12 +94,8 @@ struct CardCreationFlowView: View {
 }
 
 
-#Preview("CardCreation flow") {
-    NavigationStack {
-        CardCreationFlowView(
-            viewModel: CardCreationFlowViewModel(screenshots: CardCreationSampleData.screenshots)
-        )
-    }
+#Preview("CardCreation processing") {
+    CardCreationProcessingView(progress: 0.75, onCancel: {})
 }
 
 #Preview("CardCreation complete") {
@@ -90,35 +108,4 @@ struct CardCreationFlowView: View {
 
 #Preview("CardCreation failure") {
     CardCreationResultView(state: .failure, onDone: {})
-}
-
-#Preview("CardCreation no selection") {
-    CardCreationFlowView(
-        viewModel: CardCreationFlowViewModel(
-            step: .noSelection,
-            selectedIDs: []
-        )
-    )
-}
-
-#Preview("CardCreation no images") {
-    CardCreationFlowView(
-        viewModel: CardCreationFlowViewModel(
-            step: .noImages,
-            screenshots: [],
-            selectedIDs: []
-        )
-    )
-}
-
-#Preview("CardCreation permission missing") {
-    CardCreationFlowView(
-        viewModel: CardCreationFlowViewModel(step: .permissionMissing)
-    )
-}
-
-#Preview("CardCreation load failure") {
-    CardCreationFlowView(
-        viewModel: CardCreationFlowViewModel(step: .loadFailure)
-    )
 }

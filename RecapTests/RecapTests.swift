@@ -7,18 +7,27 @@ final class RecapTests: XCTestCase {
         XCTAssertTrue(true)
     }
 
-    func testCardCreationFlowRequiresASelectionBeforeConfirmation() {
-        XCTAssertEqual(
-            CardCreationFlowDecision.confirmationStep(selectedCount: 0),
-            .noSelection
+    func testCardCreationFlowStartsProcessingPhotosPickerSelection() {
+        let viewModel = CardCreationFlowViewModel()
+
+        viewModel.startProcessing(
+            imageData: [Data([0x01])],
+            failedCount: 0
         )
+
+        XCTAssertEqual(viewModel.step, .processing)
+        XCTAssertEqual(viewModel.selectedCount, 1)
     }
 
-    func testCardCreationFlowMovesFromConfirmationToProcessing() {
-        XCTAssertEqual(
-            CardCreationFlowDecision.confirmationStep(selectedCount: 1),
-            .confirming
+    func testCardCreationFlowReportsFailureWhenPickerCannotLoadASelection() {
+        let viewModel = CardCreationFlowViewModel()
+
+        viewModel.startProcessing(
+            imageData: [],
+            failedCount: 1
         )
+
+        XCTAssertEqual(viewModel.step, .failure)
     }
 
     func testCardCreationFlowReportsPartialFailureWhenSomeLoadsFail() {

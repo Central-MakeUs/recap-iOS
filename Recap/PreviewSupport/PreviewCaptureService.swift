@@ -39,8 +39,25 @@ final class PreviewCaptureService: CaptureServing, @unchecked Sendable {
 }
 
 actor PreviewCardCreationPipeline: CardCreationProcessing {
-    func process(images: [Data]) async throws -> OrganizeStatusResponseDTO {
-        try await Task.sleep(for: .seconds(1.2))
+    func process(
+        images: [Data],
+        progress: @escaping @MainActor @Sendable (CardCreationProgress) -> Void
+    ) async throws -> OrganizeStatusResponseDTO {
+        let simulatedProgress: [CardCreationProgress] = [
+            .init(phase: .preparing, fractionCompleted: 0.08),
+            .init(phase: .uploading, fractionCompleted: 0.28),
+            .init(phase: .uploading, fractionCompleted: 0.52),
+            .init(phase: .organizing, fractionCompleted: 0.7),
+            .init(phase: .organizing, fractionCompleted: 0.86),
+            .init(phase: .completed, fractionCompleted: 1)
+        ]
+
+        for update in simulatedProgress {
+            try await Task.sleep(for: .milliseconds(350))
+            try Task.checkCancellation()
+            await progress(update)
+        }
+
         return OrganizeStatusResponseDTO(
             batchId: 1,
             status: .completed,

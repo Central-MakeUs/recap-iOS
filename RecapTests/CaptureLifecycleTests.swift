@@ -86,10 +86,23 @@ final class CaptureLifecycleServiceTests: XCTestCase {
             pollingInterval: .milliseconds(1),
             maximumPollingAttempts: 3
         )
+        let progressRecorder = await MainActor.run {
+            CardCreationProgressRecorder()
+        }
 
-        let result = try await pipeline.process(images: [Data([1]), Data([2])])
+        let result = try await pipeline.process(
+            images: [Data([1]), Data([2])],
+            progress: { update in
+                progressRecorder.values.append(update.fractionCompleted)
+            }
+        )
+        let progressValues = await MainActor.run {
+            progressRecorder.values
+        }
 
         XCTAssertEqual(result.status, .completed)
+        XCTAssertEqual(progressValues.last, 1)
+        XCTAssertEqual(progressValues, progressValues.sorted())
         XCTAssertEqual(Set(uploader.uploadedURLs.map(\.absoluteString)), [
             "https://upload.test/1",
             "https://upload.test/2"
@@ -240,6 +253,11 @@ final class CaptureLifecycleServiceTests: XCTestCase {
             JSONSerialization.jsonObject(with: data) as? [String: Any]
         )
     }
+}
+
+@MainActor
+private final class CardCreationProgressRecorder {
+    var values: [Double] = []
 }
 
 @MainActor

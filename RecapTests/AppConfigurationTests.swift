@@ -108,4 +108,21 @@ final class MockRuntimeProfileTests: XCTestCase {
         }
         XCTAssertEqual(tokenRecord.accessToken, "mock-access-token")
     }
+
+    func testMockDependenciesSimulateCardCreationProgressWithoutServer() async throws {
+        let dependencies = RecapDependencies.mock()
+        var progressValues: [Double] = []
+
+        let result = try await dependencies.cardCreationProcessor.process(
+            images: [Data([0x01])],
+            progress: { update in
+                progressValues.append(update.fractionCompleted)
+            }
+        )
+
+        XCTAssertEqual(result.status, .completed)
+        XCTAssertEqual(progressValues.last, 1)
+        XCTAssertGreaterThan(progressValues.count, 2)
+        XCTAssertEqual(progressValues, progressValues.sorted())
+    }
 }

@@ -8,184 +8,168 @@ struct CardCreationResultView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer(minLength: 92)
-
-            VStack(spacing: 25) {
-                statusIcon
-
-                Text(state.title(selectedCount: selectedCount, failedCount: failedCount))
-                    .font(RecapFont.pretendard(size: 20, weight: .semibold))
-                    .tracking(-0.4)
-                    .lineSpacing(3)
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(Color.recapGray900)
-
-                if state == .complete {
-                    CardCreationFolderIllustration(style: .complete)
-                        .padding(.top, 9)
-                }
-
-                Text(state.message)
-                    .font(RecapFont.pretendard(size: 15, weight: .medium))
-                    .tracking(-0.3)
-                    .foregroundStyle(Color.recapGray500)
-                    .padding(.top, state == .complete ? 24 : -8)
-            }
-
             Spacer()
+                .frame(height: 141)
 
-            RecapButton(title: state.buttonTitle, style: .primary, action: onDone)
-                .padding(.horizontal, 22)
-                .padding(.bottom, 25)
+            resultContent
+
+            Spacer(minLength: 20)
+
+            RecapButton(
+                title: state.buttonTitle,
+                style: .primary,
+                action: onDone
+            )
+            .padding(.horizontal, 16)
+            .padding(.bottom, 31)
         }
-        .background(state == .complete ? Color.recapBackground : Color.recapControlFill)
+        .background(Color.recapBackground)
+        .ignoresSafeArea(.container, edges: .bottom)
     }
 
     @ViewBuilder
-    private var statusIcon: some View {
+    private var resultContent: some View {
         switch state {
         case .complete:
-            Circle()
-                .fill(Color.recapBlue300)
-                .frame(width: 22, height: 22)
-                .overlay {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(.white)
-                }
+            CardCreationCompleteResultContent(
+                organizedCount: selectedCount
+            )
         case .partialFailure:
-            Circle()
-                .fill(Color.white)
-                .frame(width: 57, height: 57)
-                .overlay {
-                    Text("!")
-                        .font(RecapFont.pretendard(size: 24, weight: .semibold))
-                        .foregroundStyle(Color.recapGray300)
-                }
-                .overlay {
-                    Circle().stroke(Color.recapGray100, lineWidth: 1)
-                }
+            CardCreationPartialFailureResultContent(
+                organizedCount: selectedCount
+            )
         case .failure:
-            Circle()
-                .fill(Color.recapErrorSurface)
-                .frame(width: 57, height: 57)
-                .overlay {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(Color.recapErrorText)
-                }
+            CardCreationFailureResultContent()
         }
     }
 }
 
-struct CardCreationUnavailableView: View {
-    enum Variant {
-        case noImages
-        case permissionMissing
-        case loadFailure
-
-        var iconName: String {
-            switch self {
-            case .noImages: "camera"
-            case .permissionMissing: "photo.badge.exclamationmark"
-            case .loadFailure: "exclamationmark.triangle"
-            }
-        }
-
-        var title: String {
-            switch self {
-            case .noImages:
-                "선택할 수 있는 스크린샷이 없어요"
-            case .permissionMissing:
-                "사진 접근 권한이 꺼져 있어요"
-            case .loadFailure:
-                "이미지를 불러오지 못했어요"
-            }
-        }
-
-        var message: String {
-            switch self {
-            case .noImages:
-                "갤러리에 스크린샷을 저장한 뒤\n다시 시도해보세요."
-            case .permissionMissing:
-                "설정에서 사진 접근 권한을\n허용해주세요."
-            case .loadFailure:
-                "잠시 후 다시 시도해주세요."
-            }
-        }
-
-        var primaryTitle: String {
-            switch self {
-            case .noImages:
-                "다시 불러오기"
-            case .permissionMissing:
-                "설정으로 이동"
-            case .loadFailure:
-                "다시 시도"
-            }
-        }
-    }
-
-    let variant: Variant
-    let primaryAction: () -> Void
-    let secondaryAction: (() -> Void)?
+private struct CardCreationCompleteResultContent: View {
+    let organizedCount: Int
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
-                Button("취소", action: secondaryAction ?? primaryAction)
-                    .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                    .tracking(-0.28)
-                    .foregroundStyle(Color.recapGray500)
-                    .buttonStyle(.plain)
-                Spacer()
-            }
-            .padding(.horizontal, 22)
-            .padding(.top, 49)
+            Image("CardCreationSuccessIcon")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 40, height: 40)
 
-            Spacer(minLength: 0)
+            Text("\(organizedCount)개의 스크린샷을\n정리했어요")
+                .font(RecapFont.pretendard(size: 18, weight: .semibold))
+                .tracking(-0.36)
+                .lineSpacing(0)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(Color.recapGray900)
+                .padding(.top, 10)
 
-            VStack(spacing: 24) {
-                CardCreationDashedIcon(
-                    systemName: variant.iconName,
-                    tint: variant == .loadFailure ? Color.recapErrorIcon : Color.recapBlue300,
-                    isError: variant == .loadFailure
-                )
+            Image("CardCreationCompleteIllustration")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 195.09, height: 177.43)
+                .padding(.top, 25)
 
-                VStack(spacing: 9) {
-                    Text(variant.title)
-                        .font(RecapFont.pretendard(size: 18, weight: .semibold))
-                        .tracking(-0.36)
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(Color.recapGray900)
-
-                    Text(variant.message)
-                        .font(RecapFont.pretendard(size: 14, weight: .medium))
-                        .tracking(-0.28)
-                        .lineSpacing(3)
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(Color.recapGray500)
-                }
-
-                RecapButton(
-                    title: variant.primaryTitle,
-                    style: variant == .loadFailure ? .secondary : .primary,
-                    action: primaryAction
-                )
-                .frame(width: variant == .loadFailure ? 154 : 171)
-
-                if variant == .noImages, let secondaryAction {
-                    Button("홈으로", action: secondaryAction)
-                        .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                        .tracking(-0.28)
-                        .foregroundStyle(Color.recapGray500)
-                        .buttonStyle(.plain)
-                }
-            }
-
-            Spacer(minLength: 0)
+            Text("보관함에서 확인해보세요!")
+                .font(RecapFont.pretendard(size: 15, weight: .medium))
+                .tracking(-0.3)
+                .foregroundStyle(Color.recapGray500)
+                .padding(.top, 21)
         }
-        .background(Color.recapBackground)
     }
 }
 
+private struct CardCreationPartialFailureResultContent: View {
+    let organizedCount: Int
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Image("CardCreationPartialFailureIcon")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 40, height: 40)
+
+            Text("일부 스크린샷을 정리하지 못했어요")
+                .font(RecapFont.pretendard(size: 18, weight: .semibold))
+                .tracking(-0.36)
+                .foregroundStyle(Color.recapGray900)
+                .padding(.top, 10)
+
+            Text("\(organizedCount)개 정리됨")
+                .font(RecapFont.pretendard(size: 13, weight: .medium))
+                .tracking(-0.26)
+                .foregroundStyle(Color.recapBlue300)
+                .frame(width: 124, height: 38)
+                .background(Color.recapPrimarySoft)
+                .clipShape(Capsule())
+                .padding(.top, 18)
+
+            Image("CardCreationPartialFailureIllustration")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 123, height: 95)
+                .padding(.top, 56)
+
+            Text("정리된 스크린샷은\n보관함에 저장했어요!")
+                .font(RecapFont.pretendard(size: 15, weight: .medium))
+                .tracking(-0.3)
+                .lineSpacing(0)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(Color.recapGray500)
+                .padding(.top, 22)
+        }
+    }
+}
+
+private struct CardCreationFailureResultContent: View {
+    var body: some View {
+        VStack(spacing: 0) {
+            Image("CardCreationFailureIcon")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 40, height: 40)
+
+            Text("스크린샷을 정리하지 못했어요")
+                .font(RecapFont.pretendard(size: 18, weight: .semibold))
+                .tracking(-0.36)
+                .foregroundStyle(Color.recapGray900)
+                .padding(.top, 10)
+
+            Image("CardCreationFailureIllustration")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 123, height: 95)
+                .padding(.top, 56)
+
+            Text("다음에 다시 시도해주세요.")
+                .font(RecapFont.pretendard(size: 15, weight: .medium))
+                .tracking(-0.3)
+                .foregroundStyle(Color.recapGray500)
+                .padding(.top, 22)
+        }
+    }
+}
+
+#Preview("CardCreation result - complete") {
+    CardCreationResultView(
+        state: .complete,
+        selectedCount: 5,
+        onDone: {}
+    )
+}
+
+#Preview("CardCreation result - partial failure") {
+    CardCreationResultView(
+        state: .partialFailure,
+        selectedCount: 3,
+        failedCount: 2,
+        onDone: {}
+    )
+}
+
+#Preview("CardCreation result - failure") {
+    CardCreationResultView(
+        state: .failure,
+        selectedCount: 0,
+        failedCount: 5,
+        onDone: {}
+    )
+}

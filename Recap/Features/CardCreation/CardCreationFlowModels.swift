@@ -22,16 +22,11 @@ struct CardCreationScreenshot: Identifiable, Hashable {
 }
 
 enum CardCreationFlowStep: Hashable {
-    case selecting
-    case confirming
+    case picking
     case processing
     case complete
     case partialFailure
     case failure
-    case noSelection
-    case noImages
-    case permissionMissing
-    case loadFailure
 }
 
 enum CardCreationResultState: Hashable {
@@ -44,7 +39,7 @@ enum CardCreationResultState: Hashable {
         case .complete:
             "\(selectedCount)개의 스크린샷을\n정리했어요"
         case .partialFailure:
-            "\(failedCount)개의 스크린샷 정리를 실패했어요"
+            "일부 스크린샷을 정리하지 못했어요"
         case .failure:
             "스크린샷을 정리하지 못했어요"
         }
@@ -54,19 +49,19 @@ enum CardCreationResultState: Hashable {
         switch self {
         case .complete:
             "보관함에서 확인해보세요!"
-        case .partialFailure, .failure:
-            "다음에 다시 시도해보세요"
+        case .partialFailure:
+            "정리된 스크린샷은\n보관함에 저장했어요!"
+        case .failure:
+            "다음에 다시 시도해주세요."
         }
     }
 
-    var buttonTitle: String { "홈으로" }
+    var buttonTitle: String {
+        self == .complete ? "완료" : "닫기"
+    }
 }
 
 enum CardCreationFlowDecision {
-    static func confirmationStep(selectedCount: Int) -> CardCreationFlowStep {
-        selectedCount > 0 ? .confirming : .noSelection
-    }
-
     static func processingResult(failedCount: Int, hasScreenshots: Bool) -> CardCreationFlowStep {
         if failedCount == 0 {
             return .complete
@@ -80,104 +75,70 @@ enum CardCreationFlowDecision {
 final class CardCreationFlowViewModel {
     private(set) var step: CardCreationFlowStep
     private(set) var screenshots: [CardCreationScreenshot]
-    var selectedIDs: Set<CardCreationScreenshot.ID>
+    private(set) var progress: CardCreationProgress
+    private(set) var successCount = 0
     private(set) var failedLoadCount = 0
     private let processor: any CardCreationProcessing
     private let invalidationCenter: CardDataInvalidationCenter?
 
     init(
-        step: CardCreationFlowStep = .selecting,
+        step: CardCreationFlowStep = .picking,
         screenshots: [CardCreationScreenshot]? = nil,
-        selectedIDs: Set<CardCreationScreenshot.ID>? = nil,
+        progress: CardCreationProgress = .initial,
         processor: (any CardCreationProcessing)? = nil,
         invalidationCenter: CardDataInvalidationCenter? = nil
     ) {
         let screenshots = screenshots ?? []
         self.step = step
         self.screenshots = screenshots
+        self.progress = progress
         self.processor = processor ?? PreviewCardCreationPipeline()
         self.invalidationCenter = invalidationCenter
-        if let selectedIDs {
-            self.selectedIDs = selectedIDs
-        } else {
-            self.selectedIDs = Set(screenshots.prefix(5).map(\.id))
-        }
     }
 
-    var selectedScreenshots: [CardCreationScreenshot] {
-        screenshots.filter { selectedIDs.contains($0.id) }
-    }
+    var selectedCount: Int { screenshots.count }
 
-    var selectedCount: Int { selectedIDs.count }
-    var hasImages: Bool { !screenshots.isEmpty }
-    var canConfirm: Bool { selectedCount > 0 }
-
-    func toggle(_ screenshot: CardCreationScreenshot) {
-        if selectedIDs.contains(screenshot.id) {
-            selectedIDs.remove(screenshot.id)
-        } else {
-            selectedIDs.insert(screenshot.id)
-        }
-    }
-
-    func startSelection() {
-        if screenshots.isEmpty {
-            step = .noImages
-        } else {
-            step = .selecting
-        }
-    }
-
-    func showPermissionMissing() {
-        step = .permissionMissing
-    }
-
-    func showLoadFailure() {
-        step = .loadFailure
-    }
-
-    func confirmSelection() {
-        step = CardCreationFlowDecision.confirmationStep(selectedCount: selectedCount)
-    }
-
-    func addMore() {
-        step = screenshots.isEmpty ? .noImages : .selecting
-    }
-
-    func remove(_ screenshot: CardCreationScreenshot) {
-        selectedIDs.remove(screenshot.id)
-        if selectedIDs.isEmpty {
-            step = .noSelection
-        }
-    }
-
-    func startProcessing() {
-        guard canConfirm else {
-            step = .noSelection
+    func startProcessing(imageData: [Data], failedCount: Int) {
+        guard !imageData.isEmpty else {
+            failedLoadCount = max(failedCount, 1)
+            step = .failure
             return
         }
+
+        screenshots = imageData.map {
+            CardCreationScreenshot(kind: .capture, imageData: $0)
+        }
+        successCount = 0
+        failedLoadCount = failedCount
+        progress = .initial
         step = .processing
     }
 
     func cancelProcessing() async {
         await processor.cancelCurrentProcess()
-        step = .confirming
+        progress = .initial
+        step = .picking
     }
 
     func processSelectedScreenshots() async {
-        let selected = selectedScreenshots
-        let images = selected.map { $0.imageData ?? Data() }
+        let images = screenshots.compactMap(\.imageData)
 
         do {
-            let result = try await processor.process(images: images)
-            failedLoadCount = result.failCount
+            let result = try await processor.process(
+                images: images,
+                progress: { [weak self] update in
+                    self?.progress = update
+                }
+            )
+            successCount = result.successCount
+            failedLoadCount += result.failCount
             if result.successCount > 0 {
                 invalidationCenter?.invalidate(.captureCreated)
             }
 
             switch result.status {
             case .completed:
-                step = .complete
+                step = failedLoadCount == 0 ? .complete : .partialFailure
             case .partialFailed:
                 step = .partialFailure
             case .failed, .cancelled:
@@ -188,33 +149,13 @@ final class CardCreationFlowViewModel {
         } catch is CancellationError {
             return
         } catch {
-            failedLoadCount = max(failedLoadCount, selected.count)
+            failedLoadCount = max(failedLoadCount, images.count)
             step = .failure
         }
     }
 
-    func showPartialFailure() {
-        step = .partialFailure
-    }
-
-    func showFailure() {
-        step = .failure
-    }
-
-    func retryLoad() {
-        step = .selecting
-    }
-
-    func replaceScreenshots(with screenshots: [CardCreationScreenshot], failedCount: Int = 0) {
-        self.screenshots = screenshots
-        failedLoadCount = failedCount
-        selectedIDs = Set(screenshots.map(\.id))
-        step = screenshots.isEmpty ? .noImages : .selecting
-    }
-
-    func failLoadingScreenshots() {
-        failedLoadCount = 1
-        step = .loadFailure
+    func reopenPicker() {
+        step = .picking
     }
 }
 
