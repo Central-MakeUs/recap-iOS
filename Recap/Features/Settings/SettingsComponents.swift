@@ -1,109 +1,61 @@
 import SwiftUI
 
-struct SettingsHeader: View {
+struct SettingsNavigationHeader: View {
     let title: String
-    var leadingAction: (() -> Void)?
-    var trailingSystemName: String?
-    var trailingAction: (() -> Void)?
+    let dismiss: () -> Void
 
     var body: some View {
-        if let leadingAction {
-            ZStack {
-                Text(title)
-                    .font(RecapFont.pretendard(size: 17, weight: .semibold))
-                    .foregroundStyle(Color.settingsTextPrimary)
-                    .frame(maxWidth: .infinity)
-
-                HStack {
-                    Button(action: leadingAction) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundStyle(Color.settingsTextSecondary)
-                            .frame(width: 24, height: 24)
-                    }
-                    .buttonStyle(.plain)
-
-                    Spacer()
-                }
+        HStack(spacing: 13) {
+            Button(action: dismiss) {
+                RecapIconView(icon: .back, size: 24, color: Color.recapGray900)
+                    .frame(width: 24, height: 24)
+                    .contentShape(Rectangle())
             }
-            .frame(height: 32)
-        } else {
-            HStack {
-                Text(title)
-                    .font(RecapFont.pretendard(size: 22, weight: .bold))
-                    .foregroundStyle(Color.settingsTextPrimary)
+            .buttonStyle(.plain)
+            .accessibilityLabel("뒤로")
 
-                if let trailingSystemName, let trailingAction {
-                    Spacer()
+            Text(title)
+                .font(SettingsTypography.navigationTitle)
+                .foregroundStyle(Color.recapGray900)
 
-                    Button(action: trailingAction) {
-                        Image(systemName: trailingSystemName)
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundStyle(Color.settingsTextPrimary)
-                            .frame(width: 24, height: 24)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .frame(height: 32)
+            Spacer(minLength: 0)
         }
+        .padding(.horizontal, SettingsLayout.navigationHorizontalPadding)
+        .padding(.top, SettingsLayout.navigationTopPadding)
+        .frame(height: SettingsLayout.navigationHeight + SettingsLayout.navigationTopPadding)
     }
 }
 
-struct SettingsSection<Content: View>: View {
+struct SettingsListSection<Rows: View>: View {
     let title: String
-    let content: Content
+    let isFirst: Bool
+    @ViewBuilder let rows: Rows
 
     init(
         title: String,
-        @ViewBuilder content: () -> Content
+        isFirst: Bool = false,
+        @ViewBuilder rows: () -> Rows
     ) {
         self.title = title
-        self.content = content()
+        self.isFirst = isFirst
+        self.rows = rows()
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
+        VStack(alignment: .leading, spacing: 0) {
             Text(title)
                 .font(SettingsTypography.sectionTitle)
-                .foregroundStyle(Color.settingsTextTertiary)
-                .padding(.leading, 1)
-
-            content
-        }
-    }
-}
-
-struct SettingsAccountSummaryRow: View {
-    var body: some View {
-        HStack(spacing: 13) {
-            SessionAccountIcon()
-
-            Text("로그인됨")
-                .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                .foregroundStyle(Color.settingsTextPrimary)
+                .foregroundStyle(Color.recapGray500)
+                .frame(height: 20)
 
             Spacer()
+                .frame(height: SettingsLayout.sectionTitleToRows)
+
+            rows
         }
-        .frame(height: 65)
-        .padding(.horizontal, 15)
-    }
-}
-
-struct SettingsAccountSummaryCard: View {
-    var body: some View {
-        HStack(spacing: 13) {
-            SessionAccountIcon()
-
-            Text("로그인됨")
-                .font(RecapFont.pretendard(size: 15, weight: .semibold))
-                .foregroundStyle(Color.settingsTextPrimary)
-
-            Spacer()
-        }
-        .frame(height: 80)
-        .padding(.horizontal, 15)
-        .recapCard(radius: 13, borderColor: Color.recapGray100)
+        .padding(.horizontal, SettingsLayout.horizontalPadding)
+        .padding(.top, isFirst ? SettingsLayout.firstSectionTopPadding : SettingsLayout.sectionTopPadding)
+        .padding(.bottom, SettingsLayout.sectionBottomPadding)
     }
 }
 
@@ -112,121 +64,197 @@ struct SettingsNavigationRow: View {
     let action: () -> Void
 
     var body: some View {
-        HStack(spacing: 10) {
-            Text(title)
-                .font(SettingsTypography.rowTitle)
-                .foregroundStyle(Color.settingsTextPrimary)
-
-            Spacer()
-
-            Image(systemName: "chevron.right")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(Color.settingsChevron)
-        }
-        .frame(height: 43)
-        .padding(.horizontal, 15)
-        .contentShape(Rectangle())
-        .onTapGesture(perform: action)
-        .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(.isButton)
-    }
-}
-
-struct SettingsActionCard: View {
-    let title: String
-    let message: String
-    var tint: Color = Color.settingsTextPrimary
-    var borderColor: Color = Color.recapGray100
-    var isDestructive = false
-    let action: () -> Void
-
-    var body: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 0) {
                 Text(title)
                     .font(SettingsTypography.rowTitle)
-                    .foregroundStyle(tint)
-                Text(message)
-                    .font(SettingsTypography.rowCaption)
-                    .foregroundStyle(isDestructive ? tint.opacity(0.82) : Color.settingsTextSecondary)
+                    .foregroundStyle(Color.recapGray900)
+
+                Spacer(minLength: 0)
+
+                RecapIconView(icon: .forward, size: 16, color: Color.recapGray300)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .frame(height: 67)
-            .padding(.horizontal, 15)
-            .recapCard(radius: 13, borderColor: borderColor)
+            .frame(height: SettingsLayout.rowHeight)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .frame(height: SettingsLayout.rowHeight)
+        .clipped()
     }
 }
 
-struct SettingsToggleSection<Content: View>: View {
-    let title: String
-    let content: Content
-
-    init(
-        title: String,
-        @ViewBuilder content: () -> Content
-    ) {
-        self.title = title
-        self.content = content()
+struct SettingsSectionDivider: View {
+    var body: some View {
+        Rectangle()
+            .fill(Color.recapGray50)
+            .frame(height: SettingsLayout.dividerHeight)
+            .overlay(alignment: .top) {
+                Rectangle()
+                    .fill(Color.recapGray100)
+                    .frame(height: 1)
+            }
     }
+}
+
+struct SettingsNotificationPermissionBanner: View {
+    let enableNotifications: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 26) {
-            Text(title)
-                .font(RecapFont.pretendard(size: 13, weight: .regular))
-                .foregroundStyle(Color.settingsTextSecondary)
+        HStack(spacing: 10) {
+            Image("SettingsNotificationDisabled")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 24, height: 24)
 
-            VStack(spacing: 26) {
-                content
+            Text("기기 알림이 꺼져있어요")
+                .font(SettingsTypography.noticeTitle)
+                .foregroundStyle(Color.recapGray900)
+
+            Spacer(minLength: 0)
+
+            Button(action: enableNotifications) {
+                HStack(spacing: 2) {
+                    Text("켜기")
+                        .font(SettingsTypography.rowStatus)
+                    RecapIconView(icon: .forward, size: 16, color: Color.recapBlue300)
+                }
+                .foregroundStyle(Color.recapBlue300)
             }
+            .buttonStyle(.plain)
         }
+        .padding(.horizontal, 14)
+        .frame(height: 56)
+        .background(Color.recapGray50, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 }
 
-struct SettingsToggleRow: View {
-    let title: String
-    let subtitle: String
-    @Binding var isOn: Bool
+struct SettingsNotificationRow: View {
+    @Binding var isEnabled: Bool
+    let isSystemPermissionEnabled: Bool
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
-            VStack(alignment: .leading, spacing: 10) {
-                Text(title)
-                    .font(RecapFont.pretendard(size: 15, weight: .semibold))
-                    .foregroundStyle(Color.settingsTextPrimary)
-                Text(subtitle)
-                    .font(RecapFont.pretendard(size: 12, weight: .regular))
-                    .foregroundStyle(Color.settingsTextTertiary)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("정리 알림")
+                    .font(RecapFont.pretendard(size: 16, weight: .semibold))
+                    .foregroundStyle(Color.recapGray900)
+
+                Text("스크린샷 정리가 완료되거나 실패했을 때\n알려드려요.")
+                    .font(SettingsTypography.body)
+                    .foregroundStyle(Color.recapGray500)
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
-            Spacer()
+            Spacer(minLength: 0)
 
-            Toggle("", isOn: $isOn)
-                .labelsHidden()
-                .tint(Color.recapBlue300)
+            SettingsSwitch(
+                isOn: $isEnabled,
+                isEnabled: isSystemPermissionEnabled
+            )
+            .padding(.top, 2)
         }
     }
 }
 
-struct SessionAccountIcon: View {
+struct SettingsSwitch: View {
+    @Binding var isOn: Bool
+    let isEnabled: Bool
+
     var body: some View {
-        ZStack {
+        Button {
+            guard isEnabled else { return }
+            isOn.toggle()
+        } label: {
+            Capsule()
+                .fill(isEnabled && isOn ? Color.recapBlue300 : Color.recapGray200)
+                .frame(width: 47, height: 25)
+                .overlay(alignment: isOn ? .trailing : .leading) {
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 21, height: 21)
+                        .padding(2)
+                }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("정리 알림")
+        .accessibilityValue(isOn ? "켬" : "끔")
+    }
+}
+
+struct SettingsAccountProviderRow: View {
+    let providerName: String
+    let joinedDateText: String
+    let showsKakaoIcon: Bool
+
+    var body: some View {
+        HStack(spacing: 13) {
+            providerIcon
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(providerName)
+                    .font(SettingsTypography.rowTitle)
+                    .foregroundStyle(Color.recapGray900)
+
+                Text(joinedDateText)
+                    .font(SettingsTypography.body)
+                    .foregroundStyle(Color.recapGray500)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .frame(height: 72)
+    }
+
+    @ViewBuilder
+    private var providerIcon: some View {
+        if showsKakaoIcon {
+            Image("SettingsKakaoIcon")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 30, height: 30)
+        } else {
             Circle()
-                .fill(Color.recapBlue300.opacity(0.12))
-
-            Image(systemName: "person.fill")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(Color.recapBlue300)
+                .fill(Color.recapBlue50)
+                .frame(width: 30, height: 30)
+                .overlay {
+                    RecapIconView(icon: .information, size: 16, color: Color.recapBlue300)
+                }
         }
-        .frame(width: 38, height: 38)
     }
 }
 
-struct SettingsDivider: View {
+struct SettingsUnavailableView: View {
+    @Environment(\.dismiss) private var dismiss
+    let title: String
+
     var body: some View {
-        Rectangle()
-            .fill(Color.settingsDivider)
-            .frame(height: 1)
+        VStack(spacing: 0) {
+            SettingsNavigationHeader(title: title, dismiss: { dismiss() })
+
+            RecapIncompleteCallout(
+                title: "\(title) 미구현",
+                message: "Figma에 확정된 연결 화면이나 서버 계약이 없어 아직 제공하지 않아요."
+            )
+            .padding(.horizontal, SettingsLayout.horizontalPadding)
+            .padding(.top, 32)
+
+            Spacer()
+        }
+        .background(Color.recapBackground)
+        .toolbar(.hidden, for: .navigationBar)
     }
+}
+
+#Preview("설정 목록 행") {
+    SettingsNavigationRow(title: "계정 관리", action: {})
+        .padding(.horizontal, SettingsLayout.horizontalPadding)
+}
+
+#Preview("알림 권한 배너") {
+    SettingsNotificationPermissionBanner(enableNotifications: {})
+        .padding()
+}
+
+#Preview("설정 미구현 화면") {
+    SettingsUnavailableView(title: "문의하기")
 }
