@@ -1,8 +1,39 @@
 import Foundation
 
+struct CardCreationProgress: Equatable, Sendable {
+    enum Phase: Equatable, Sendable {
+        case preparing
+        case uploading
+        case organizing
+        case completed
+    }
+
+    let phase: Phase
+    let fractionCompleted: Double
+
+    nonisolated init(phase: Phase, fractionCompleted: Double) {
+        self.phase = phase
+        self.fractionCompleted = min(max(fractionCompleted, 0), 1)
+    }
+
+    nonisolated static let initial = CardCreationProgress(
+        phase: .preparing,
+        fractionCompleted: 0
+    )
+}
+
 protocol CardCreationProcessing: Sendable {
-    func process(images: [Data]) async throws -> OrganizeStatusResponseDTO
+    func process(
+        images: [Data],
+        progress: @escaping @MainActor @Sendable (CardCreationProgress) -> Void
+    ) async throws -> OrganizeStatusResponseDTO
     func cancelCurrentProcess() async
+}
+
+extension CardCreationProcessing {
+    func process(images: [Data]) async throws -> OrganizeStatusResponseDTO {
+        try await process(images: images, progress: { _ in })
+    }
 }
 
 actor CardCreationPipeline: CardCreationProcessing {
@@ -25,19 +56,29 @@ actor CardCreationPipeline: CardCreationProcessing {
         self.maximumPollingAttempts = maximumPollingAttempts
     }
 
-    func process(images: [Data]) async throws -> OrganizeStatusResponseDTO {
+    func process(
+        images: [Data],
+        progress: @escaping @MainActor @Sendable (CardCreationProgress) -> Void
+    ) async throws -> OrganizeStatusResponseDTO {
         guard (1...20).contains(images.count) else {
             throw CaptureLifecycleError.invalidImageCount
         }
 
+        await progress(.init(phase: .preparing, fractionCompleted: 0.05))
         let uploadItems = try await captureService.issueUploadURLs(count: images.count)
         guard uploadItems.count == images.count else {
             throw CaptureLifecycleError.uploadCountMismatch
         }
 
-        try await upload(images: images, items: uploadItems)
+        await progress(.init(phase: .uploading, fractionCompleted: 0.12))
+        try await upload(
+            images: images,
+            items: uploadItems,
+            progress: progress
+        )
         try Task.checkCancellation()
 
+        await progress(.init(phase: .organizing, fractionCompleted: 0.65))
         let organize = try await captureService.organize(
             imageKeys: uploadItems.map(\.imageKey)
         )
@@ -52,18 +93,28 @@ actor CardCreationPipeline: CardCreationProcessing {
                 successCount: organize.status == .completed ? organize.totalCount : 0,
                 failCount: organize.status == .failed ? organize.totalCount : 0
             )
+            await progress(.init(phase: .completed, fractionCompleted: 1))
             await acknowledgeIfNeeded(status)
             return status
         }
 
-        for _ in 0..<maximumPollingAttempts {
+        for attempt in 0..<maximumPollingAttempts {
             try Task.checkCancellation()
             try await Task.sleep(for: pollingInterval)
             let status = try await captureService.organizeStatus(batchID: organize.batchId)
             if status.status.isTerminal {
+                await progress(.init(phase: .completed, fractionCompleted: 1))
                 await acknowledgeIfNeeded(status)
                 return status
             }
+
+            let pollingFraction = Double(attempt + 1) / Double(maximumPollingAttempts)
+            await progress(
+                .init(
+                    phase: .organizing,
+                    fractionCompleted: 0.7 + (0.25 * pollingFraction)
+                )
+            )
         }
 
         throw CaptureLifecycleError.pollingTimedOut
@@ -75,7 +126,11 @@ actor CardCreationPipeline: CardCreationProcessing {
         self.currentBatchID = nil
     }
 
-    private func upload(images: [Data], items: [UploadItemDTO]) async throws {
+    private func upload(
+        images: [Data],
+        items: [UploadItemDTO],
+        progress: @escaping @MainActor @Sendable (CardCreationProgress) -> Void
+    ) async throws {
         let imageUploader = imageUploader
 
         try await withThrowingTaskGroup(of: Void.self) { group in
@@ -85,7 +140,17 @@ actor CardCreationPipeline: CardCreationProcessing {
                 }
             }
 
-            try await group.waitForAll()
+            var completedUploadCount = 0
+            for try await _ in group {
+                completedUploadCount += 1
+                let uploadFraction = Double(completedUploadCount) / Double(items.count)
+                await progress(
+                    .init(
+                        phase: .uploading,
+                        fractionCompleted: 0.12 + (0.43 * uploadFraction)
+                    )
+                )
+            }
         }
     }
 

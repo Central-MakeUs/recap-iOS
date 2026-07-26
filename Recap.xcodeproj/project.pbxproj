@@ -374,11 +374,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C40000010000000000000001 /* App.xcconfig */;
 			buildSettings = {
-				APP_RUNTIME_PROFILE = mock;
+				APP_RUNTIME_PROFILE = live;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				BACKEND_BASE_URL = "https://re-cap.duckdns.org";
-				"BACKEND_BASE_URL[sdk=iphonesimulator*]" = "http://localhost:8080";
 				CODE_SIGN_ENTITLEMENTS = Recap/Recap.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
