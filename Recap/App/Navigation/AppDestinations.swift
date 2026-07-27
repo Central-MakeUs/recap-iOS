@@ -4,6 +4,7 @@ extension View {
     @MainActor
     func withAppNavigationDestinations(
         cardStore: RecapCardStore,
+        homeSummaryLoader: any HomeSummaryLoading,
         archiveLoader: any ArchiveLoading,
         searchLoader: any SearchLoading,
         captureService: any CaptureServing,
@@ -15,6 +16,7 @@ extension View {
             destination(
                 for: route,
                 cardStore: cardStore,
+                homeSummaryLoader: homeSummaryLoader,
                 archiveLoader: archiveLoader,
                 searchLoader: searchLoader,
                 captureService: captureService,
@@ -30,6 +32,7 @@ extension View {
     private func destination(
         for route: AppRoute,
         cardStore: RecapCardStore,
+        homeSummaryLoader: any HomeSummaryLoading,
         archiveLoader: any ArchiveLoading,
         searchLoader: any SearchLoading,
         captureService: any CaptureServing,
@@ -41,17 +44,22 @@ extension View {
         case .search:
             SearchContainerView(loader: searchLoader)
         case .allRecentCards:
-            AllRecentCardsContainerView()
+            AllRecentCardsContainerView(
+                summaryLoader: homeSummaryLoader,
+                invalidationCenter: cardDataInvalidationCenter
+            )
         case .archiveFavorites:
             CollectionDetailContainerView(
                 scope: .favorites,
                 loader: archiveLoader,
+                captureDeleter: captureService,
                 invalidationCenter: cardDataInvalidationCenter
             )
         case .archiveDetail(let kind):
             CollectionDetailContainerView(
                 scope: .category(kind),
                 loader: archiveLoader,
+                captureDeleter: captureService,
                 invalidationCenter: cardDataInvalidationCenter
             )
         case .cardDetail(let id):

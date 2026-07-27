@@ -1,6 +1,10 @@
 import Foundation
 
-protocol CaptureServing: Sendable {
+protocol CaptureDeleting: Sendable {
+    func deleteCapture(captureID: Int64) async throws
+}
+
+protocol CaptureServing: CaptureDeleting, Sendable {
     func issueUploadURLs(count: Int) async throws -> [UploadItemDTO]
     func organize(imageKeys: [String]) async throws -> OrganizeResponseDTO
     func organizeStatus(batchID: Int64) async throws -> OrganizeStatusResponseDTO
@@ -9,7 +13,6 @@ protocol CaptureServing: Sendable {
     func acknowledgeOrganizeResult(batchID: Int64) async throws
     func captureDetail(captureID: Int64) async throws -> InformationCard
     func updateFavorite(captureID: Int64, isFavorite: Bool) async throws
-    func deleteCapture(captureID: Int64) async throws
 }
 
 final class CaptureService: CaptureServing, @unchecked Sendable {

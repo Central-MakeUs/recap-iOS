@@ -130,13 +130,18 @@ final class ArchiveAPITests: XCTestCase {
 
     func testDetailSortReloadsOnlyForSortableScopes() async {
         let loader = SequencedArchiveLoader(homeResults: [])
+        let deleter = CaptureDeleterStub()
         let otherModel = ArchiveDetailFeatureModel(
             scope: .category(.other),
-            loader: loader
+            loader: loader,
+            captureDeleter: deleter,
+            invalidationCenter: CardDataInvalidationCenter()
         )
         let favoritesModel = ArchiveDetailFeatureModel(
             scope: .favorites,
-            loader: loader
+            loader: loader,
+            captureDeleter: deleter,
+            invalidationCenter: CardDataInvalidationCenter()
         )
 
         await otherModel.loadIfNeeded()
@@ -149,6 +154,34 @@ final class ArchiveAPITests: XCTestCase {
             [.latest, .oldest, .latest]
         )
         XCTAssertEqual(favoritesModel.sort, .latest)
+    }
+
+    func testDetailSelectionDeletionCallsAPIAndRemovesDeletedCards() async throws {
+        let cards = [
+            Self.card(id: UUID(), captureID: 101),
+            Self.card(id: UUID(), captureID: 102),
+            Self.card(id: UUID(), captureID: 103)
+        ]
+        let loader = SequencedArchiveLoader(
+            homeResults: [],
+            detailCards: cards
+        )
+        let deleter = CaptureDeleterStub()
+        let invalidationCenter = CardDataInvalidationCenter()
+        let model = ArchiveDetailFeatureModel(
+            scope: .category(.shopping),
+            loader: loader,
+            captureDeleter: deleter,
+            invalidationCenter: invalidationCenter
+        )
+
+        await model.loadIfNeeded()
+        try await model.deleteCards(ids: [cards[0].id, cards[1].id])
+
+        XCTAssertEqual(deleter.deletedCaptureIDs, [101, 102])
+        XCTAssertEqual(model.state, .loaded([cards[2]]))
+        XCTAssertEqual(invalidationCenter.homeRevision, 1)
+        XCTAssertEqual(invalidationCenter.archiveDetailRevision, 1)
     }
 
     func testURLProtocolIntegrationAddsBearerAndDecodesArchiveList() async throws {
@@ -264,6 +297,27 @@ final class ArchiveAPITests: XCTestCase {
       "error": null
     }
     """
+
+    nonisolated private static func card(
+        id: UUID,
+        captureID: Int64
+    ) -> InformationCard {
+        InformationCard(
+            id: id,
+            captureID: captureID,
+            title: "카드 \(captureID)",
+            summary: "요약",
+            collection: .shopping,
+            dateText: "",
+            location: "",
+            businessHours: "",
+            category: "쇼핑 · 상품",
+            confirmationLabel: nil,
+            memo: "",
+            tags: [],
+            isFavorite: false
+        )
+    }
 }
 
 private final class ArchiveNetworkClientStub: NetworkClient, @unchecked Sendable {
@@ -311,11 +365,16 @@ private final class ArchiveNetworkClientStub: NetworkClient, @unchecked Sendable
 @MainActor
 private final class SequencedArchiveLoader: ArchiveLoading {
     private var homeResults: [Result<ArchiveHomeContent, Error>]
+    private let detailCards: [InformationCard]
     private(set) var homeRequestCount = 0
     private(set) var detailRequests: [(scope: ArchiveDetailScope, sort: ArchiveSort)] = []
 
-    init(homeResults: [Result<ArchiveHomeContent, Error>]) {
+    init(
+        homeResults: [Result<ArchiveHomeContent, Error>],
+        detailCards: [InformationCard] = []
+    ) {
         self.homeResults = homeResults
+        self.detailCards = detailCards
     }
 
     func fetchHome() async throws -> ArchiveHomeContent {
@@ -331,7 +390,22 @@ private final class SequencedArchiveLoader: ArchiveLoading {
         sort: ArchiveSort
     ) async throws -> [InformationCard] {
         detailRequests.append((scope, sort))
-        return []
+        return detailCards
+    }
+}
+
+private final class CaptureDeleterStub: CaptureDeleting, @unchecked Sendable {
+    private let lock = NSLock()
+    private var storedDeletedCaptureIDs: [Int64] = []
+
+    var deletedCaptureIDs: [Int64] {
+        lock.withLock { storedDeletedCaptureIDs }
+    }
+
+    func deleteCapture(captureID: Int64) async throws {
+        lock.withLock {
+            storedDeletedCaptureIDs.append(captureID)
+        }
     }
 }
 

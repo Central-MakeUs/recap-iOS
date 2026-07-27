@@ -12,6 +12,7 @@ struct CollectionDetailContainerView: View {
     init(
         scope: ArchiveDetailScope,
         loader: any ArchiveLoading,
+        captureDeleter: any CaptureDeleting,
         invalidationCenter: CardDataInvalidationCenter
     ) {
         self.scope = scope
@@ -19,7 +20,9 @@ struct CollectionDetailContainerView: View {
         _model = State(
             initialValue: ArchiveDetailFeatureModel(
                 scope: scope,
-                loader: loader
+                loader: loader,
+                captureDeleter: captureDeleter,
+                invalidationCenter: invalidationCenter
             )
         )
     }
@@ -31,6 +34,7 @@ struct CollectionDetailContainerView: View {
             loadState: loadState,
             onRetry: retry,
             onImportScreenshots: { router.navigate(.cardCreationStart) },
+            onDeleteCards: deleteCards,
             onAction: handleAction
         )
         .task(id: reloadTrigger) {
@@ -81,8 +85,6 @@ struct CollectionDetailContainerView: View {
             Task {
                 await model.selectSort(sort)
             }
-        case .deleteCards:
-            break
         case .openSettings:
             router.navigate(.settings)
         }
@@ -110,6 +112,10 @@ struct CollectionDetailContainerView: View {
         Task {
             await model.retry()
         }
+    }
+
+    private func deleteCards(_ ids: Set<InformationCard.ID>) async throws {
+        try await model.deleteCards(ids: ids)
     }
 }
 
@@ -166,6 +172,7 @@ struct CollectionDetailView: View {
     @State private var filterSelection = "최신순"
     @State private var isFilterExpanded = false
     @State private var isDeleteConfirmationPresented = false
+    @State private var isDeleting = false
     @State private var toast: RecapToastContent?
 
     let scope: ArchiveDetailScope
@@ -173,6 +180,7 @@ struct CollectionDetailView: View {
     let loadState: LoadState
     let onRetry: () -> Void
     let onImportScreenshots: () -> Void
+    let onDeleteCards: (Set<InformationCard.ID>) async throws -> Void
     let onAction: (ArchiveAction) -> Void
 
     init(
@@ -183,6 +191,7 @@ struct CollectionDetailView: View {
         initialToast: RecapToastContent? = nil,
         onRetry: @escaping () -> Void = {},
         onImportScreenshots: @escaping () -> Void = {},
+        onDeleteCards: @escaping (Set<InformationCard.ID>) async throws -> Void = { _ in },
         onAction: @escaping (ArchiveAction) -> Void
     ) {
         self.scope = scope
@@ -192,6 +201,7 @@ struct CollectionDetailView: View {
         _toast = State(initialValue: initialToast)
         self.onRetry = onRetry
         self.onImportScreenshots = onImportScreenshots
+        self.onDeleteCards = onDeleteCards
         self.onAction = onAction
     }
 
@@ -264,7 +274,7 @@ struct CollectionDetailView: View {
 
                 Button("선택 삭제 (\(selectedIDs.count))", action: requestDeletion)
                     .foregroundStyle(Color.recapBlue500)
-                    .disabled(selectedIDs.isEmpty)
+                    .disabled(selectedIDs.isEmpty || isDeleting)
             } else {
                 Button("선택", action: beginSelection)
                     .foregroundStyle(Color.recapGray500)
@@ -384,15 +394,29 @@ struct CollectionDetailView: View {
     }
 
     private func confirmDeletion() {
-        let deletedCount = selectedIDs.count
-        onAction(.deleteCards(selectedIDs))
-        selectedIDs.removeAll()
-        interactionMode = .browsing
-        query = ""
-        toast = RecapToastContent(
-            style: .success,
-            message: "\(deletedCount)개의 스크린샷을 삭제했어요."
-        )
+        let ids = selectedIDs
+        guard !ids.isEmpty, !isDeleting else { return }
+        isDeleting = true
+
+        Task {
+            defer { isDeleting = false }
+
+            do {
+                try await onDeleteCards(ids)
+                selectedIDs.removeAll()
+                interactionMode = .browsing
+                query = ""
+                toast = RecapToastContent(
+                    style: .success,
+                    message: "\(ids.count)개의 스크린샷을 삭제했어요."
+                )
+            } catch {
+                toast = RecapToastContent(
+                    style: .error,
+                    message: "스크린샷을 삭제하지 못했어요. 다시 시도해주세요."
+                )
+            }
+        }
     }
 
     private func clearToastIfNeeded() async {
