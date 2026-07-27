@@ -18,20 +18,24 @@ struct ShareExtensionRootView: View {
 
     var body: some View {
         Group {
-            if viewModel.isLoading {
+            switch viewModel.phase {
+            case .loading:
                 ProgressView("공유한 이미지를 불러오는 중이에요")
                     .font(.custom("Pretendard-Medium", size: 14))
-            } else {
-                SelectedScreenshotsConfirmationView(
-                    screenshots: viewModel.screenshots,
-                    isSubmitting: viewModel.isSubmitting,
-                    message: viewModel.message,
-                    toastMessage: viewModel.toastMessage,
-                    onBack: presentCancellationDialog,
-                    onAdd: { isPhotoPickerPresented = true },
-                    onRemove: viewModel.removeScreenshot,
-                    onConfirm: submit
+            case .confirmation:
+                confirmationView
+            case .organizing(let progress):
+                ShareOrganizingView(
+                    progress: progress,
+                    onCancel: cancelOrganizing
                 )
+            case .complete(let organizedCount, _):
+                ShareOrganizeCompleteView(
+                    organizedCount: organizedCount,
+                    onDone: finish
+                )
+            case .failure:
+                ShareOrganizeFailureView(onClose: close)
             }
         }
         .task {
@@ -65,6 +69,19 @@ struct ShareExtensionRootView: View {
         }
     }
 
+    private var confirmationView: some View {
+        SelectedScreenshotsConfirmationView(
+            screenshots: viewModel.screenshots,
+            isSubmitting: false,
+            message: viewModel.message,
+            toastMessage: viewModel.toastMessage,
+            onBack: presentCancellationDialog,
+            onAdd: { isPhotoPickerPresented = true },
+            onRemove: viewModel.removeScreenshot,
+            onConfirm: viewModel.submit
+        )
+    }
+
     private func presentCancellationDialog() {
         isCancellationDialogPresented = true
     }
@@ -73,25 +90,45 @@ struct ShareExtensionRootView: View {
         isCancellationDialogPresented = false
     }
 
-    private func submit() {
+    private func cancelOrganizing() {
         Task {
-            await viewModel.submit()
+            await viewModel.cancelOrganizing()
         }
     }
+
+    private func finish() {
+        Task {
+            await viewModel.finish()
+        }
+    }
+
+    private func close() {
+        Task {
+            await viewModel.close()
+        }
+    }
+}
+
+enum ShareExtensionPhase: Equatable {
+    case loading
+    case confirmation
+    case organizing(progress: Double)
+    case complete(organizedCount: Int, batchID: Int64)
+    case failure(batchID: Int64?)
 }
 
 @MainActor
 @Observable
 final class ShareExtensionViewModel {
     private(set) var screenshots: [SelectedScreenshot] = []
-    private(set) var isLoading = true
-    private(set) var isSubmitting = false
+    private(set) var phase: ShareExtensionPhase = .loading
     private(set) var message: String?
     private(set) var toastMessage: String?
 
     private weak var extensionContext: NSExtensionContext?
     private let pipeline: ShareExtensionUploadPipeline
     private var didLoad = false
+    @ObservationIgnored private var organizingTask: Task<Void, Never>?
 
     init(
         extensionContext: NSExtensionContext?,
@@ -126,7 +163,7 @@ final class ShareExtensionViewModel {
         }
 
         screenshots = loadedScreenshots
-        isLoading = false
+        phase = .confirmation
         if screenshots.isEmpty {
             message = "공유한 이미지를 불러오지 못했어요."
         }
@@ -148,29 +185,68 @@ final class ShareExtensionViewModel {
         screenshots.removeAll { $0.id == id }
     }
 
-    func submit() async {
-        guard !screenshots.isEmpty, !isSubmitting else { return }
-        isSubmitting = true
+    func submit() {
+        guard !screenshots.isEmpty, phase == .confirmation else { return }
+        let images = screenshots.map(\.imageData)
         message = nil
+        phase = .organizing(progress: 0.05)
 
+        organizingTask = Task { [weak self] in
+            await self?.organize(images: images)
+        }
+    }
+
+    func cancelOrganizing() async {
+        organizingTask?.cancel()
+        organizingTask = nil
+        await pipeline.cancelCurrentProcess()
+        extensionContext?.cancelRequest(withError: CocoaError(.userCancelled))
+    }
+
+    func finish() async {
+        guard case .complete(_, let batchID) = phase else { return }
+        await pipeline.acknowledge(batchID: batchID)
+        extensionContext?.completeRequest(returningItems: nil)
+    }
+
+    func close() async {
+        if case .failure(let batchID) = phase, let batchID {
+            await pipeline.acknowledge(batchID: batchID)
+        }
+        extensionContext?.completeRequest(returningItems: nil)
+    }
+
+    private func organize(images: [Data]) async {
         do {
-            try await pipeline.startOrganizing(images: screenshots.map(\.imageData))
-            extensionContext?.completeRequest(returningItems: nil)
+            let result = try await pipeline.organize(
+                images: images,
+                progress: { [weak self] progress in
+                    self?.phase = .organizing(progress: progress)
+                }
+            )
+            guard !Task.isCancelled else { return }
+
+            switch result.status {
+            case .completed:
+                phase = .complete(
+                    organizedCount: result.successCount,
+                    batchID: result.batchID
+                )
+            case .partialFailed where result.successCount > 0:
+                phase = .complete(
+                    organizedCount: result.successCount,
+                    batchID: result.batchID
+                )
+            case .processing, .partialFailed, .failed, .cancelled:
+                phase = .failure(batchID: result.batchID)
+            }
+        } catch is CancellationError {
+            return
         } catch ShareExtensionUploadError.missingSession {
+            phase = .confirmation
             message = "Recap 앱에서 로그인한 후 다시 시도해주세요."
-            isSubmitting = false
-        } catch ShareExtensionUploadError.uploadFailed {
-            message = "이미지 업로드에 실패했어요. 다시 시도해주세요."
-            isSubmitting = false
-        } catch ShareExtensionUploadError.httpStatus(let statusCode) {
-            message = "서버 요청에 실패했어요. (\(statusCode))"
-            isSubmitting = false
-        } catch ShareExtensionUploadError.keychain {
-            message = "로그인 정보를 불러오지 못했어요. Recap 앱을 다시 열어주세요."
-            isSubmitting = false
         } catch {
-            message = "스크린샷 정리를 시작하지 못했어요. 다시 시도해주세요."
-            isSubmitting = false
+            phase = .failure(batchID: nil)
         }
     }
 

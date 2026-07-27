@@ -11,17 +11,24 @@ actor ShareExtensionUploadPipeline {
     private let baseURL: URL
     private let session: URLSession
     private let tokenStore: ShareExtensionTokenStore
+    private let pollingInterval: Duration
+    private let maximumPollingAttempts: Int
     private let encoder = JSONEncoder()
     private let decoder: JSONDecoder
+    private var currentBatchID: Int64?
 
     init(
         baseURL: URL,
         session: URLSession = .shared,
-        tokenStore: ShareExtensionTokenStore
+        tokenStore: ShareExtensionTokenStore,
+        pollingInterval: Duration = .seconds(1),
+        maximumPollingAttempts: Int = 120
     ) {
         self.baseURL = baseURL
         self.session = session
         self.tokenStore = tokenStore
+        self.pollingInterval = pollingInterval
+        self.maximumPollingAttempts = maximumPollingAttempts
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
@@ -42,11 +49,15 @@ actor ShareExtensionUploadPipeline {
         )
     }
 
-    func startOrganizing(images: [Data]) async throws {
+    func organize(
+        images: [Data],
+        progress: @escaping @MainActor @Sendable (Double) -> Void
+    ) async throws -> ShareOrganizeResult {
         guard (1...20).contains(images.count) else {
             throw ShareExtensionUploadError.invalidImageCount
         }
 
+        await progress(0.05)
         let uploadResponse: ShareAPIEnvelope<ShareUploadURLsResponse> = try await sendAuthorized(
             method: "POST",
             path: "/api/v1/captures/upload-urls",
@@ -57,6 +68,7 @@ actor ShareExtensionUploadPipeline {
             throw ShareExtensionUploadError.invalidResponse
         }
 
+        await progress(0.12)
         try await withThrowingTaskGroup(of: Void.self) { group in
             for (image, item) in zip(images, uploadItems) {
                 group.addTask { [session] in
@@ -76,17 +88,84 @@ actor ShareExtensionUploadPipeline {
                     }
                 }
             }
-            try await group.waitForAll()
-        }
 
+            var completedUploadCount = 0
+            for try await _ in group {
+                completedUploadCount += 1
+                let uploadFraction = Double(completedUploadCount) / Double(images.count)
+                await progress(0.12 + (0.43 * uploadFraction))
+            }
+        }
+        try Task.checkCancellation()
+
+        await progress(0.65)
         let organizeResponse: ShareAPIEnvelope<ShareOrganizeResponse> = try await sendAuthorized(
             method: "POST",
             path: "/api/v1/captures/organize",
             body: ShareOrganizeRequest(imageKeys: uploadItems.map(\.imageKey))
         )
-        guard organizeResponse.success, organizeResponse.data != nil else {
+        guard organizeResponse.success, let organize = organizeResponse.data else {
             throw ShareExtensionUploadError.invalidResponse
         }
+
+        currentBatchID = organize.batchId
+        defer { currentBatchID = nil }
+
+        if organize.status.isTerminal {
+            await progress(1)
+            return ShareOrganizeResult(
+                batchID: organize.batchId,
+                status: organize.status,
+                totalCount: organize.totalCount,
+                successCount: organize.status == .completed ? organize.totalCount : 0,
+                failureCount: organize.status == .failed ? organize.totalCount : 0
+            )
+        }
+
+        for attempt in 0..<maximumPollingAttempts {
+            try Task.checkCancellation()
+            try await Task.sleep(for: pollingInterval)
+
+            let envelope: ShareAPIEnvelope<ShareOrganizeStatusResponse> = try await sendAuthorized(
+                method: "GET",
+                path: "/api/v1/captures/organize/\(organize.batchId)/status"
+            )
+            guard let status = envelope.data else {
+                throw ShareExtensionUploadError.invalidResponse
+            }
+
+            if status.status.isTerminal {
+                await progress(1)
+                return ShareOrganizeResult(
+                    batchID: status.batchId,
+                    status: status.status,
+                    totalCount: status.totalCount,
+                    successCount: status.successCount,
+                    failureCount: status.failCount
+                )
+            }
+
+            let pollingFraction = Double(attempt + 1) / Double(maximumPollingAttempts)
+            await progress(0.7 + (0.25 * pollingFraction))
+        }
+
+        throw ShareExtensionUploadError.pollingTimedOut
+    }
+
+    func cancelCurrentProcess() async {
+        guard let currentBatchID else { return }
+        try? await sendAuthorizedNoContent(
+            method: "POST",
+            path: "/api/v1/captures/organize/\(currentBatchID)/cancel"
+        )
+        self.currentBatchID = nil
+    }
+
+    func acknowledge(batchID: Int64) async {
+        try? await sendAuthorizedNoContent(
+            method: "POST",
+            path: "/api/v1/captures/organize/\(batchID)/ack"
+        )
     }
 
     private func sendAuthorized<Response: Decodable, Body: Encodable>(
@@ -116,11 +195,66 @@ actor ShareExtensionUploadPipeline {
         return try decode(Response.self, from: firstAttempt)
     }
 
+    private func sendAuthorized<Response: Decodable>(
+        method: String,
+        path: String
+    ) async throws -> Response {
+        var token = try tokenStore.load()
+        let firstAttempt = try await send(
+            method: method,
+            path: path,
+            bodyData: nil,
+            accessToken: token.accessToken
+        )
+
+        if firstAttempt.statusCode == 401 {
+            token = try await refresh(token: token)
+            let retry = try await send(
+                method: method,
+                path: path,
+                bodyData: nil,
+                accessToken: token.accessToken
+            )
+            return try decode(Response.self, from: retry)
+        }
+
+        return try decode(Response.self, from: firstAttempt)
+    }
+
+    private func sendAuthorizedNoContent(
+        method: String,
+        path: String
+    ) async throws {
+        var token = try tokenStore.load()
+        var response = try await send(
+            method: method,
+            path: path,
+            bodyData: nil,
+            accessToken: token.accessToken
+        )
+
+        if response.statusCode == 401 {
+            token = try await refresh(token: token)
+            response = try await send(
+                method: method,
+                path: path,
+                bodyData: nil,
+                accessToken: token.accessToken
+            )
+        }
+
+        guard (200..<300).contains(response.statusCode) else {
+            throw ShareExtensionUploadError.httpStatus(response.statusCode)
+        }
+    }
+
     private func refresh(token: ShareServerTokenRecord) async throws -> ShareServerTokenRecord {
         let response = try await send(
             method: "POST",
             path: "/api/v1/auth/refresh",
-            body: ShareRefreshRequest(refreshToken: token.refreshToken),
+            bodyData: try encoder.encode(
+                ShareRefreshRequest(refreshToken: token.refreshToken)
+            ),
             accessToken: nil
         )
         let envelope = try decode(
@@ -146,14 +280,30 @@ actor ShareExtensionUploadPipeline {
         body: Body,
         accessToken: String?
     ) async throws -> ShareHTTPResponse {
+        try await send(
+            method: method,
+            path: path,
+            bodyData: encoder.encode(body),
+            accessToken: accessToken
+        )
+    }
+
+    private func send(
+        method: String,
+        path: String,
+        bodyData: Data?,
+        accessToken: String?
+    ) async throws -> ShareHTTPResponse {
         var request = URLRequest(url: baseURL.appending(path: path))
         request.httpMethod = method
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if bodyData != nil {
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        }
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         if let accessToken {
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         }
-        request.httpBody = try encoder.encode(body)
+        request.httpBody = bodyData
 
         let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse else {
@@ -269,6 +419,16 @@ private struct ShareOrganizeRequest: Encodable {
 
 private struct ShareOrganizeResponse: Decodable {
     let batchId: Int64
+    let totalCount: Int
+    let status: ShareOrganizeStatus
+}
+
+private struct ShareOrganizeStatusResponse: Decodable {
+    let batchId: Int64
+    let status: ShareOrganizeStatus
+    let totalCount: Int
+    let successCount: Int
+    let failCount: Int
 }
 
 private struct ShareRefreshRequest: Encodable {
@@ -287,11 +447,32 @@ struct ShareServerTokenRecord: Codable {
     let accessTokenExpiresAt: Date
 }
 
+struct ShareOrganizeResult: Sendable {
+    let batchID: Int64
+    let status: ShareOrganizeStatus
+    let totalCount: Int
+    let successCount: Int
+    let failureCount: Int
+}
+
+enum ShareOrganizeStatus: String, Decodable, Sendable {
+    case processing = "PROCESSING"
+    case completed = "COMPLETED"
+    case partialFailed = "PARTIAL_FAILED"
+    case failed = "FAILED"
+    case cancelled = "CANCELLED"
+
+    var isTerminal: Bool {
+        self != .processing
+    }
+}
+
 enum ShareExtensionUploadError: Error, Equatable {
     case missingSession
     case invalidImageCount
     case invalidResponse
     case uploadFailed(Int)
+    case pollingTimedOut
     case httpStatus(Int)
     case keychain(OSStatus)
 }
