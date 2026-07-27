@@ -29,6 +29,7 @@ struct CardCreationFlowView: View {
                     message: viewModel.failedLoadCount > 0
                         ? "\(viewModel.failedLoadCount)장의 이미지를 불러오지 못했어요."
                         : nil,
+                    toastMessage: nil,
                     onBack: close,
                     onAdd: presentAdditionalPicker,
                     onRemove: viewModel.removeScreenshot,

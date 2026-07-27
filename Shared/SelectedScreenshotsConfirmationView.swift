@@ -12,133 +12,139 @@ struct SelectedScreenshot: Identifiable, Hashable, Sendable {
 }
 
 struct SelectedScreenshotsConfirmationView: View {
+    private static let maximumScreenshotCount = 20
+    private static let gridColumns = Array(
+        repeating: GridItem(.fixed(112), spacing: 6),
+        count: 3
+    )
+
     let screenshots: [SelectedScreenshot]
     let isSubmitting: Bool
     let message: String?
+    let toastMessage: String?
     let onBack: () -> Void
     let onAdd: () -> Void
     let onRemove: (SelectedScreenshot.ID) -> Void
     let onConfirm: () -> Void
 
-    @State private var focusedScreenshotID: SelectedScreenshot.ID?
-
-    private var focusedScreenshot: SelectedScreenshot? {
-        screenshots.first(where: { $0.id == focusedScreenshotID }) ?? screenshots.first
-    }
-
     var body: some View {
         VStack(spacing: 0) {
             header
-            focusedImage
-                .padding(.top, 17)
-            thumbnailStrip
-                .padding(.top, 23)
-            Spacer(minLength: 18)
+                .padding(.top, 28)
+
+            screenshotGrid
+                .padding(.top, 28)
+
+            Spacer(minLength: 22)
+
             statusMessage
+
             confirmButton
                 .padding(.top, message == nil ? 0 : 8)
                 .padding(.horizontal, 16)
-                .padding(.bottom, 31)
         }
         .background(Color("RecapBackground").ignoresSafeArea())
-        .onAppear(perform: selectFirstScreenshotIfNeeded)
-        .onChange(of: screenshots) { _, _ in
-            selectFirstScreenshotIfNeeded()
+        .overlay(alignment: .bottom) {
+            if let toastMessage {
+                excludedFileToast(message: toastMessage)
+                    .padding(.bottom, 66)
+            }
         }
     }
 
     private var header: some View {
         HStack(spacing: 0) {
             Button(action: onBack) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 17, weight: .medium))
+                Image("RecapIconBack")
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
                     .foregroundStyle(Color("RecapGray500"))
                     .frame(width: 24, height: 24)
             }
             .buttonStyle(.plain)
 
-            HStack(spacing: 10) {
-                Text("선택 스크린샷 확인")
-                    .font(.custom("Pretendard-SemiBold", size: 16))
-                    .tracking(-0.32)
-                    .foregroundStyle(Color("RecapGray900"))
+            Text("선택 스크린샷 확인")
+                .font(.custom("Pretendard-SemiBold", size: 16))
+                .tracking(-0.32)
+                .foregroundStyle(Color("RecapGray900"))
+                .padding(.leading, 13)
 
-                Text("\(screenshots.count)")
-                    .font(.custom("Pretendard-SemiBold", size: 16))
-                    .tracking(-0.32)
-                    .foregroundStyle(Color("RecapBlue300"))
-            }
-            .padding(.leading, 14)
+            Text("\(screenshots.count)")
+                .font(.custom("Pretendard-SemiBold", size: 16))
+                .tracking(-0.32)
+                .foregroundStyle(Color("RecapBlue300"))
+                .padding(.leading, 10)
 
-            Spacer()
-
-            Button(action: onAdd) {
-                Image(systemName: "plus")
-                    .font(.system(size: 23, weight: .regular))
-                    .foregroundStyle(Color("RecapGray500"))
-                    .frame(width: 24, height: 24)
-            }
-            .buttonStyle(.plain)
-            .disabled(screenshots.count >= 20 || isSubmitting)
+            Spacer(minLength: 0)
         }
         .padding(.horizontal, 16)
-        .frame(height: 46)
+        .frame(height: 24)
     }
 
-    @ViewBuilder
-    private var focusedImage: some View {
-        if let focusedScreenshot {
-            ScreenshotDataImage(imageData: focusedScreenshot.imageData)
-                .frame(width: 262, height: 449)
-                .clipped()
-        } else {
-            Color("RecapGray100")
-                .frame(width: 262, height: 449)
-        }
-    }
-
-    private var thumbnailStrip: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            LazyHStack(spacing: 12) {
+    private var screenshotGrid: some View {
+        ScrollView(showsIndicators: false) {
+            LazyVGrid(
+                columns: Self.gridColumns,
+                alignment: .leading,
+                spacing: 6
+            ) {
                 ForEach(screenshots) { screenshot in
-                    thumbnail(for: screenshot)
+                    screenshotTile(for: screenshot)
+                }
+
+                if screenshots.count < Self.maximumScreenshotCount {
+                    addScreenshotTile
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.leading, 13)
+            .padding(.trailing, 14)
         }
-        .frame(height: 112)
     }
 
-    private func thumbnail(for screenshot: SelectedScreenshot) -> some View {
+    private func screenshotTile(for screenshot: SelectedScreenshot) -> some View {
         ZStack(alignment: .topTrailing) {
             ScreenshotDataImage(imageData: screenshot.imageData)
                 .frame(width: 112, height: 112)
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                .overlay {
-                    if focusedScreenshotID == screenshot.id {
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .stroke(Color("RecapBlue300"), lineWidth: 2)
-                    }
-                }
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    focusedScreenshotID = screenshot.id
-                }
 
             Button {
                 onRemove(screenshot.id)
             } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.white)
+                Image("RecapIconCancelCircleM")
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundStyle(Color("RecapGray300"))
                     .frame(width: 24, height: 24)
-                    .background(Color("RecapGray300"))
-                    .clipShape(Circle())
             }
             .buttonStyle(.plain)
             .padding(7)
             .disabled(isSubmitting)
         }
+        .frame(width: 112, height: 112)
+    }
+
+    private var addScreenshotTile: some View {
+        Button(action: onAdd) {
+            Image("RecapIconPlusM")
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .foregroundStyle(Color("RecapGray300"))
+                .frame(width: 24, height: 24)
+                .frame(width: 112, height: 112)
+                .background(Color("RecapBackground"))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .stroke(
+                            Color("RecapGray300"),
+                            style: StrokeStyle(lineWidth: 1, dash: [4, 4])
+                        )
+                }
+        }
+        .buttonStyle(.plain)
+        .disabled(isSubmitting)
     }
 
     @ViewBuilder
@@ -175,11 +181,14 @@ struct SelectedScreenshotsConfirmationView: View {
         .disabled(screenshots.isEmpty || isSubmitting)
     }
 
-    private func selectFirstScreenshotIfNeeded() {
-        guard !screenshots.contains(where: { $0.id == focusedScreenshotID }) else {
-            return
-        }
-        focusedScreenshotID = screenshots.first?.id
+    private func excludedFileToast(message: String) -> some View {
+        Text(message)
+            .font(.custom("Pretendard-Medium", size: 13))
+            .tracking(-0.26)
+            .foregroundStyle(.white)
+            .frame(width: 205, height: 39)
+            .background(Color.black.opacity(0.5))
+            .clipShape(Capsule())
     }
 }
 
@@ -197,15 +206,12 @@ private struct ScreenshotDataImage: View {
     }
 }
 
-#Preview("선택 이미지 확인") {
+#Preview("03-02_선택 이미지 확인") {
     SelectedScreenshotsConfirmationView(
-        screenshots: [
-            SelectedScreenshot(imageData: previewImageData(color: .systemBlue)),
-            SelectedScreenshot(imageData: previewImageData(color: .systemPink)),
-            SelectedScreenshot(imageData: previewImageData(color: .systemGreen))
-        ],
+        screenshots: previewScreenshots,
         isSubmitting: false,
         message: nil,
+        toastMessage: nil,
         onBack: {},
         onAdd: {},
         onRemove: { _ in },
@@ -213,10 +219,45 @@ private struct ScreenshotDataImage: View {
     )
 }
 
-private func previewImageData(color: UIColor) -> Data {
-    let renderer = UIGraphicsImageRenderer(size: CGSize(width: 262, height: 449))
+#Preview("03-02_선택 이미지 확인 · 비이미지 제외") {
+    SelectedScreenshotsConfirmationView(
+        screenshots: previewScreenshots,
+        isSubmitting: false,
+        message: nil,
+        toastMessage: "이미지가 아닌 파일은 제외했어요",
+        onBack: {},
+        onAdd: {},
+        onRemove: { _ in },
+        onConfirm: {}
+    )
+}
+
+private var previewScreenshots: [SelectedScreenshot] {
+    (0..<5).map { index in
+        SelectedScreenshot(imageData: checkerboardImageData(phase: index))
+    }
+}
+
+private func checkerboardImageData(phase: Int) -> Data {
+    let size = CGSize(width: 112, height: 112)
+    let renderer = UIGraphicsImageRenderer(size: size)
+
     return renderer.pngData { context in
-        color.setFill()
-        context.fill(CGRect(origin: .zero, size: CGSize(width: 262, height: 449)))
+        let tileLength: CGFloat = 14
+        let colors = [UIColor.white, UIColor(white: 0.92, alpha: 1)]
+
+        for row in 0..<8 {
+            for column in 0..<8 {
+                colors[(row + column + phase) % colors.count].setFill()
+                context.fill(
+                    CGRect(
+                        x: CGFloat(column) * tileLength,
+                        y: CGFloat(row) * tileLength,
+                        width: tileLength,
+                        height: tileLength
+                    )
+                )
+            }
+        }
     }
 }

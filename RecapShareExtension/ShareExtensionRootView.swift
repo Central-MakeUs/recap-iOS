@@ -7,6 +7,7 @@ import UniformTypeIdentifiers
 struct ShareExtensionRootView: View {
     @State private var viewModel: ShareExtensionViewModel
     @State private var isPhotoPickerPresented = false
+    @State private var isCancellationDialogPresented = false
     @State private var pickerItems: [PhotosPickerItem] = []
 
     init(extensionContext: NSExtensionContext?) {
@@ -25,7 +26,8 @@ struct ShareExtensionRootView: View {
                     screenshots: viewModel.screenshots,
                     isSubmitting: viewModel.isSubmitting,
                     message: viewModel.message,
-                    onBack: viewModel.cancel,
+                    toastMessage: viewModel.toastMessage,
+                    onBack: presentCancellationDialog,
                     onAdd: { isPhotoPickerPresented = true },
                     onRemove: viewModel.removeScreenshot,
                     onConfirm: submit
@@ -48,6 +50,27 @@ struct ShareExtensionRootView: View {
                 pickerItems = []
             }
         }
+        .overlay {
+            if isCancellationDialogPresented {
+                ZStack {
+                    Color.black.opacity(0.30)
+                        .ignoresSafeArea()
+
+                    ShareUploadCancellationDialog(
+                        onContinue: dismissCancellationDialog,
+                        onExit: viewModel.cancel
+                    )
+                }
+            }
+        }
+    }
+
+    private func presentCancellationDialog() {
+        isCancellationDialogPresented = true
+    }
+
+    private func dismissCancellationDialog() {
+        isCancellationDialogPresented = false
     }
 
     private func submit() {
@@ -64,6 +87,7 @@ final class ShareExtensionViewModel {
     private(set) var isLoading = true
     private(set) var isSubmitting = false
     private(set) var message: String?
+    private(set) var toastMessage: String?
 
     private weak var extensionContext: NSExtensionContext?
     private let pipeline: ShareExtensionUploadPipeline
@@ -81,11 +105,17 @@ final class ShareExtensionViewModel {
         guard !didLoad else { return }
         didLoad = true
 
-        let providers = Array((extensionContext?.inputItems
+        let attachments = extensionContext?.inputItems
             .compactMap { $0 as? NSExtensionItem }
-            .flatMap { $0.attachments ?? [] }
-            .filter { $0.hasItemConformingToTypeIdentifier(UTType.image.identifier) }
-            .prefix(20)) ?? [])
+            .flatMap { $0.attachments ?? [] } ?? []
+        let imageProviders = attachments.filter {
+            $0.hasItemConformingToTypeIdentifier(UTType.image.identifier)
+        }
+        let providers = Array(imageProviders.prefix(20))
+
+        if imageProviders.count < attachments.count {
+            toastMessage = "이미지가 아닌 파일은 제외했어요"
+        }
 
         var loadedScreenshots: [SelectedScreenshot] = []
         for provider in providers {
