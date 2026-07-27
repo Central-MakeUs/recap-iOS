@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>APP_RUNTIME_PROFILE</key>
+	<string>$(APP_RUNTIME_PROFILE)</string>
+	<key>BACKEND_BASE_URL</key>
+	<string>$(BACKEND_BASE_URL)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
@@ -29,10 +33,6 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
-	<key>APP_RUNTIME_PROFILE</key>
-	<string>$(APP_RUNTIME_PROFILE)</string>
-	<key>BACKEND_BASE_URL</key>
-	<string>$(BACKEND_BASE_URL)</string>
 	<key>KAKAO_NATIVE_APP_KEY</key>
 	<string>$(KAKAO_NATIVE_APP_KEY)</string>
 	<key>KEYCHAIN_ACCESS_GROUP</key>

@@ -1,7 +1,13 @@
 import Foundation
+import OSLog
 import Security
 
 actor ShareExtensionUploadPipeline {
+    private static let logger = Logger(
+        subsystem: "com.cmc.recap.ShareExtension",
+        category: "Upload"
+    )
+
     private let baseURL: URL
     private let session: URLSession
     private let tokenStore: ShareExtensionTokenStore
@@ -56,10 +62,17 @@ actor ShareExtensionUploadPipeline {
                 group.addTask { [session] in
                     var request = URLRequest(url: item.uploadUrl)
                     request.httpMethod = "PUT"
+                    request.setValue("image/jpeg", forHTTPHeaderField: "Content-Type")
                     let (_, response) = try await session.upload(for: request, from: image)
-                    guard let httpResponse = response as? HTTPURLResponse,
-                          (200..<300).contains(httpResponse.statusCode) else {
-                        throw ShareExtensionUploadError.uploadFailed
+                    guard let httpResponse = response as? HTTPURLResponse else {
+                        Self.logger.error("Presigned image upload returned a non-HTTP response")
+                        throw ShareExtensionUploadError.invalidResponse
+                    }
+                    guard (200..<300).contains(httpResponse.statusCode) else {
+                        Self.logger.error(
+                            "Presigned image upload failed with status \(httpResponse.statusCode)"
+                        )
+                        throw ShareExtensionUploadError.uploadFailed(httpResponse.statusCode)
                     }
                 }
             }
@@ -144,8 +157,12 @@ actor ShareExtensionUploadPipeline {
 
         let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse else {
+            Self.logger.error("API request returned a non-HTTP response for \(path, privacy: .public)")
             throw ShareExtensionUploadError.invalidResponse
         }
+        Self.logger.info(
+            "API request completed path=\(path, privacy: .public) status=\(httpResponse.statusCode)"
+        )
         return ShareHTTPResponse(statusCode: httpResponse.statusCode, data: data)
     }
 
@@ -274,7 +291,7 @@ enum ShareExtensionUploadError: Error, Equatable {
     case missingSession
     case invalidImageCount
     case invalidResponse
-    case uploadFailed
+    case uploadFailed(Int)
     case httpStatus(Int)
     case keychain(OSStatus)
 }

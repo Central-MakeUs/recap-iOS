@@ -1,6 +1,7 @@
 import Observation
 import PhotosUI
 import SwiftUI
+import UIKit
 import UniformTypeIdentifiers
 
 struct ShareExtensionRootView: View {
@@ -88,8 +89,9 @@ final class ShareExtensionViewModel {
 
         var loadedScreenshots: [SelectedScreenshot] = []
         for provider in providers {
-            if let data = try? await provider.imageData() {
-                loadedScreenshots.append(SelectedScreenshot(imageData: data))
+            if let sourceData = try? await provider.imageData(),
+               let imageData = sourceData.normalizedJPEGData() {
+                loadedScreenshots.append(SelectedScreenshot(imageData: imageData))
             }
         }
 
@@ -105,8 +107,9 @@ final class ShareExtensionViewModel {
         guard availableCount > 0 else { return }
 
         for item in items.prefix(availableCount) {
-            if let data = try? await item.loadTransferable(type: Data.self) {
-                screenshots.append(SelectedScreenshot(imageData: data))
+            if let sourceData = try? await item.loadTransferable(type: Data.self),
+               let imageData = sourceData.normalizedJPEGData() {
+                screenshots.append(SelectedScreenshot(imageData: imageData))
             }
         }
     }
@@ -126,6 +129,15 @@ final class ShareExtensionViewModel {
         } catch ShareExtensionUploadError.missingSession {
             message = "Recap 앱에서 로그인한 후 다시 시도해주세요."
             isSubmitting = false
+        } catch ShareExtensionUploadError.uploadFailed {
+            message = "이미지 업로드에 실패했어요. 다시 시도해주세요."
+            isSubmitting = false
+        } catch ShareExtensionUploadError.httpStatus(let statusCode) {
+            message = "서버 요청에 실패했어요. (\(statusCode))"
+            isSubmitting = false
+        } catch ShareExtensionUploadError.keychain {
+            message = "로그인 정보를 불러오지 못했어요. Recap 앱을 다시 열어주세요."
+            isSubmitting = false
         } catch {
             message = "스크린샷 정리를 시작하지 못했어요. 다시 시도해주세요."
             isSubmitting = false
@@ -136,6 +148,12 @@ final class ShareExtensionViewModel {
         extensionContext?.cancelRequest(
             withError: CocoaError(.userCancelled)
         )
+    }
+}
+
+private extension Data {
+    func normalizedJPEGData() -> Data? {
+        UIImage(data: self)?.jpegData(compressionQuality: 0.9)
     }
 }
 
