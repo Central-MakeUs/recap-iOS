@@ -173,6 +173,7 @@ struct SelectedScreenshotsConfirmationView: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 50)
+            .contentShape(Rectangle())
         }
         .foregroundStyle(.white)
         .background(screenshots.isEmpty ? Color("RecapGray300") : Color("RecapBlue300"))
