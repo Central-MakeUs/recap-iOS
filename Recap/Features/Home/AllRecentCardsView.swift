@@ -3,15 +3,47 @@ import SwiftUI
 struct AllRecentCardsContainerView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppRouter.self) private var router
-    @Environment(RecapCardStore.self) private var cardStore
+
+    @State private var model: HomeFeatureModel
+    @State private var loadedRevision: Int?
+    let invalidationCenter: CardDataInvalidationCenter
+
+    init(
+        summaryLoader: any HomeSummaryLoading,
+        invalidationCenter: CardDataInvalidationCenter
+    ) {
+        self.invalidationCenter = invalidationCenter
+        _model = State(initialValue: HomeFeatureModel(summaryLoader: summaryLoader))
+    }
 
     var body: some View {
         AllRecentCardsView(
-            cards: cardStore.allCards(),
+            cards: cards,
             onBack: dismiss.callAsFunction,
             onSearch: { router.navigate(.search) },
-            onSelectCard: { router.navigate(.cardDetail($0)) }
+            onSelectCard: { router.navigate(.remoteCardDetail($0)) }
         )
+        .task(id: reloadTrigger) {
+            let revision = invalidationCenter.homeRevision
+            if loadedRevision == nil {
+                await model.loadIfNeeded()
+            } else if loadedRevision != revision {
+                await model.reload()
+            }
+            guard !Task.isCancelled else { return }
+            loadedRevision = revision
+        }
+    }
+
+    private var cards: [InformationCard] {
+        guard case .loaded(let content) = model.state else {
+            return []
+        }
+        return content.recentCards
+    }
+
+    private var reloadTrigger: Int {
+        invalidationCenter.homeRevision
     }
 }
 
@@ -19,7 +51,7 @@ struct AllRecentCardsView: View {
     let cards: [InformationCard]
     let onBack: () -> Void
     let onSearch: () -> Void
-    let onSelectCard: (InformationCard.ID) -> Void
+    let onSelectCard: (InformationCard) -> Void
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -41,7 +73,7 @@ struct AllRecentCardsView: View {
                 LazyVStack(spacing: 0) {
                     ForEach(cards) { card in
                         Button {
-                            onSelectCard(card.id)
+                            onSelectCard(card)
                         } label: {
                             AllRecentCardRow(card: card)
                         }
@@ -97,7 +129,7 @@ private struct AllRecentCardsNavigationBar: View {
             cards: SampleData.recentCards,
             onBack: {},
             onSearch: {},
-            onSelectCard: PreviewActions.handleCardSelection
+            onSelectCard: { _ in }
         )
     }
 }

@@ -74,15 +74,21 @@ final class ArchiveDetailFeatureModel {
     let scope: ArchiveDetailScope
 
     private let loader: any ArchiveLoading
+    private let captureDeleter: any CaptureDeleting
+    private let invalidationCenter: CardDataInvalidationCenter
     private(set) var state: State = .idle
     private(set) var sort: ArchiveSort = .latest
 
     init(
         scope: ArchiveDetailScope,
-        loader: any ArchiveLoading
+        loader: any ArchiveLoading,
+        captureDeleter: any CaptureDeleting,
+        invalidationCenter: CardDataInvalidationCenter
     ) {
         self.scope = scope
         self.loader = loader
+        self.captureDeleter = captureDeleter
+        self.invalidationCenter = invalidationCenter
     }
 
     func loadIfNeeded() async {
@@ -102,6 +108,36 @@ final class ArchiveDetailFeatureModel {
         guard scope != .favorites, self.sort != sort else { return }
         self.sort = sort
         await load()
+    }
+
+    func deleteCards(ids: Set<InformationCard.ID>) async throws {
+        guard case .loaded(let cards) = state else { return }
+
+        let selectedCards = cards.filter { ids.contains($0.id) }
+        let captureIDs = try selectedCards.map { card in
+            guard let captureID = card.captureID else {
+                throw CaptureLifecycleError.missingCaptureID
+            }
+            return captureID
+        }
+
+        var deletedCardIDs: Set<InformationCard.ID> = []
+
+        do {
+            for (card, captureID) in zip(selectedCards, captureIDs) {
+                try await captureDeleter.deleteCapture(captureID: captureID)
+                deletedCardIDs.insert(card.id)
+            }
+        } catch {
+            if !deletedCardIDs.isEmpty {
+                state = .loaded(cards.filter { !deletedCardIDs.contains($0.id) })
+                invalidationCenter.invalidate(.captureDeleted)
+            }
+            throw error
+        }
+
+        state = .loaded(cards.filter { !ids.contains($0.id) })
+        invalidationCenter.invalidate(.captureDeleted)
     }
 
     private func load() async {

@@ -76,7 +76,7 @@ struct CollectionHomeContainerView: View {
             router.navigate(.archiveDetail(kind))
         case .openCard(let card):
             router.navigate(.remoteCardDetail(card))
-        case .selectFilter, .deleteCards:
+        case .selectFilter:
             break
         case .openSettings:
             router.navigate(.settings)

@@ -65,6 +65,7 @@ struct RecapMainTabContainer: View {
             content()
                 .withAppNavigationDestinations(
                     cardStore: cardStore,
+                    homeSummaryLoader: homeSummaryLoader,
                     archiveLoader: archiveLoader,
                     searchLoader: searchLoader,
                     captureService: captureService,
