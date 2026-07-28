@@ -11,6 +11,7 @@ final class RecapDependencies {
     let captureService: any CaptureServing
     let cardCreationProcessor: any CardCreationProcessing
     let cardDataInvalidationCenter: CardDataInvalidationCenter
+    let organizeNotificationController: OrganizeNotificationController
 
     private let kakaoLoginProvider: any SocialLoginProviding
     private let appleLoginProvider: any SocialLoginProviding
@@ -25,6 +26,7 @@ final class RecapDependencies {
         captureService: any CaptureServing,
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
+        organizeNotificationController: OrganizeNotificationController,
         kakaoLoginProvider: any SocialLoginProviding,
         appleLoginProvider: any SocialLoginProviding
     ) {
@@ -37,6 +39,7 @@ final class RecapDependencies {
         self.captureService = captureService
         self.cardCreationProcessor = cardCreationProcessor
         self.cardDataInvalidationCenter = cardDataInvalidationCenter
+        self.organizeNotificationController = organizeNotificationController
         self.kakaoLoginProvider = kakaoLoginProvider
         self.appleLoginProvider = appleLoginProvider
     }
@@ -97,6 +100,7 @@ final class RecapDependencies {
                 imageUploader: URLSessionPresignedImageUploader()
             ),
             cardDataInvalidationCenter: CardDataInvalidationCenter(),
+            organizeNotificationController: OrganizeNotificationController(),
             kakaoLoginProvider: KakaoLoginProvider(),
             appleLoginProvider: AppleLoginProvider()
         )
@@ -130,6 +134,10 @@ final class RecapDependencies {
             captureService: previewCaptureService,
             cardCreationProcessor: PreviewCardCreationPipeline(),
             cardDataInvalidationCenter: CardDataInvalidationCenter(),
+            organizeNotificationController: OrganizeNotificationController(
+                delivery: PreviewOrganizeNotificationDelivery(),
+                userDefaults: UserDefaults(suiteName: UUID().uuidString)!
+            ),
             kakaoLoginProvider: PreviewSocialLoginProvider(provider: .kakao),
             appleLoginProvider: PreviewSocialLoginProvider(provider: .apple)
         )
@@ -166,6 +174,7 @@ final class RecapDependencies {
             captureService: captureService,
             cardCreationProcessor: PreviewCardCreationPipeline(),
             cardDataInvalidationCenter: CardDataInvalidationCenter(),
+            organizeNotificationController: OrganizeNotificationController(),
             kakaoLoginProvider: MockSocialLoginProvider(provider: .kakao),
             appleLoginProvider: MockSocialLoginProvider(provider: .apple)
         )

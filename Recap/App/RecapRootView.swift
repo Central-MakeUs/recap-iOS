@@ -70,6 +70,7 @@ struct RecapRootView: View {
                     captureService: dependencies.captureService,
                     cardCreationProcessor: dependencies.cardCreationProcessor,
                     cardDataInvalidationCenter: dependencies.cardDataInvalidationCenter,
+                    organizeNotificationController: dependencies.organizeNotificationController,
                     onLogout: logout
                 )
             }

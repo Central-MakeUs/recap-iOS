@@ -11,6 +11,7 @@ struct AppShellView: View {
     let captureService: any CaptureServing
     let cardCreationProcessor: any CardCreationProcessing
     let cardDataInvalidationCenter: CardDataInvalidationCenter
+    let organizeNotificationController: OrganizeNotificationController
     var onLogout: () -> Void = {}
 
     @State private var toast: RecapToastContent?
@@ -24,6 +25,7 @@ struct AppShellView: View {
         captureService: any CaptureServing,
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
+        organizeNotificationController: OrganizeNotificationController,
         onLogout: @escaping () -> Void = {}
     ) {
         self.router = router
@@ -34,6 +36,7 @@ struct AppShellView: View {
         self.captureService = captureService
         self.cardCreationProcessor = cardCreationProcessor
         self.cardDataInvalidationCenter = cardDataInvalidationCenter
+        self.organizeNotificationController = organizeNotificationController
         self.onLogout = onLogout
         _toast = State(initialValue: nil)
     }
@@ -52,18 +55,21 @@ struct AppShellView: View {
                 captureService: captureService,
                 cardCreationProcessor: cardCreationProcessor,
                 cardDataInvalidationCenter: cardDataInvalidationCenter,
+                organizeNotificationController: organizeNotificationController,
                 onUpload: openCardCreationFlow,
                 onCardDeleted: showCardDeletedToast
             )
         }
         .environment(router)
         .environment(cardStore)
+        .environment(organizeNotificationController)
         .environment(\.recapLogout, onLogout)
         .recapToast(toast)
         .task(id: toast) {
             await clearToastIfNeeded()
         }
         .task(id: scenePhase) {
+            organizeNotificationController.setApplicationInBackground(scenePhase == .background)
             guard scenePhase == .active else { return }
             await showPendingOrganizeResultIfNeeded()
         }
@@ -135,7 +141,11 @@ struct AppShellView: View {
         searchLoader: PreviewSearchLoader(),
         captureService: PreviewCaptureService(),
         cardCreationProcessor: PreviewCardCreationPipeline(),
-        cardDataInvalidationCenter: CardDataInvalidationCenter()
+        cardDataInvalidationCenter: CardDataInvalidationCenter(),
+        organizeNotificationController: OrganizeNotificationController(
+            delivery: PreviewOrganizeNotificationDelivery(),
+            userDefaults: UserDefaults(suiteName: UUID().uuidString)!
+        )
     )
 }
 

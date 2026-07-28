@@ -10,6 +10,7 @@ extension View {
         captureService: any CaptureServing,
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
+        organizeNotificationController: OrganizeNotificationController,
         onCardDeleted: @escaping () -> Void
     ) -> some View {
         navigationDestination(for: AppRoute.self) { route in
@@ -22,6 +23,7 @@ extension View {
                 captureService: captureService,
                 cardCreationProcessor: cardCreationProcessor,
                 cardDataInvalidationCenter: cardDataInvalidationCenter,
+                organizeNotificationController: organizeNotificationController,
                 onCardDeleted: onCardDeleted
             )
         }
@@ -38,6 +40,7 @@ extension View {
         captureService: any CaptureServing,
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
+        organizeNotificationController: OrganizeNotificationController,
         onCardDeleted: @escaping () -> Void
     ) -> some View {
         switch route {
@@ -82,7 +85,9 @@ extension View {
             CardCreationFlowView(
                 viewModel: CardCreationFlowViewModel(
                     processor: cardCreationProcessor,
-                    invalidationCenter: cardDataInvalidationCenter
+                    invalidationCenter: cardDataInvalidationCenter,
+                    notificationController: organizeNotificationController,
+                    backgroundExecution: SystemOrganizeBackgroundExecution()
                 )
             )
         case .settings:

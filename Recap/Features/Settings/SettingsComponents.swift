@@ -129,8 +129,8 @@ struct SettingsNotificationPermissionBanner: View {
 }
 
 struct SettingsNotificationRow: View {
-    @Binding var isEnabled: Bool
-    let isSystemPermissionEnabled: Bool
+    let isEnabled: Bool
+    let toggle: () -> Void
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
@@ -148,8 +148,8 @@ struct SettingsNotificationRow: View {
             Spacer(minLength: 0)
 
             SettingsSwitch(
-                isOn: $isEnabled,
-                isEnabled: isSystemPermissionEnabled
+                isOn: isEnabled,
+                action: toggle
             )
             .padding(.top, 2)
         }
@@ -157,16 +157,13 @@ struct SettingsNotificationRow: View {
 }
 
 struct SettingsSwitch: View {
-    @Binding var isOn: Bool
-    let isEnabled: Bool
+    let isOn: Bool
+    let action: () -> Void
 
     var body: some View {
-        Button {
-            guard isEnabled else { return }
-            isOn.toggle()
-        } label: {
+        Button(action: action) {
             Capsule()
-                .fill(isEnabled && isOn ? Color.recapBlue300 : Color.recapGray200)
+                .fill(isOn ? Color.recapBlue300 : Color.recapGray200)
                 .frame(width: 47, height: 25)
                 .overlay(alignment: isOn ? .trailing : .leading) {
                     Circle()

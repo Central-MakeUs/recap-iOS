@@ -82,13 +82,17 @@ final class CardCreationFlowViewModel {
     private(set) var failedLoadCount = 0
     private let processor: any CardCreationProcessing
     private let invalidationCenter: CardDataInvalidationCenter?
+    private let notificationController: OrganizeNotificationController?
+    private let backgroundExecution: any OrganizeBackgroundExecuting
 
     init(
         step: CardCreationFlowStep = .picking,
         screenshots: [CardCreationScreenshot]? = nil,
         progress: CardCreationProgress = .initial,
         processor: (any CardCreationProcessing)? = nil,
-        invalidationCenter: CardDataInvalidationCenter? = nil
+        invalidationCenter: CardDataInvalidationCenter? = nil,
+        notificationController: OrganizeNotificationController? = nil,
+        backgroundExecution: (any OrganizeBackgroundExecuting)? = nil
     ) {
         let screenshots = screenshots ?? []
         self.step = step
@@ -99,6 +103,8 @@ final class CardCreationFlowViewModel {
         self.progress = progress
         self.processor = processor ?? PreviewCardCreationPipeline()
         self.invalidationCenter = invalidationCenter
+        self.notificationController = notificationController
+        self.backgroundExecution = backgroundExecution ?? PreviewOrganizeBackgroundExecution()
     }
 
     var selectedCount: Int { selectedScreenshots.count }
@@ -154,6 +160,10 @@ final class CardCreationFlowViewModel {
     func processSelectedScreenshots() async {
         let images = selectedScreenshots.map(\.imageData)
 
+        await notificationController?.prepareForOrganize()
+        backgroundExecution.begin()
+        defer { backgroundExecution.end() }
+
         do {
             let result = try await processor.process(
                 images: images,
@@ -166,6 +176,7 @@ final class CardCreationFlowViewModel {
             if result.successCount > 0 {
                 invalidationCenter?.invalidate(.captureCreated)
             }
+            await notificationController?.notifyOrganizeResult(result)
 
             switch result.status {
             case .completed:
@@ -181,6 +192,7 @@ final class CardCreationFlowViewModel {
             return
         } catch {
             failedLoadCount = max(failedLoadCount, images.count)
+            await notificationController?.notifyOrganizeFailure()
             step = .failure
         }
     }
