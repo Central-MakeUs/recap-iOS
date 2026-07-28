@@ -92,6 +92,18 @@ final class AppConfigurationTests: XCTestCase {
 
 @MainActor
 final class MockRuntimeProfileTests: XCTestCase {
+    func testSimulatorMockDependenciesResolveDirectlyToMain() {
+        let dependencies = RecapDependencies.simulatorMock()
+
+        XCTAssertEqual(
+            AppLaunchDestinationResolver.resolve(
+                sessionState: dependencies.sessionStore.state,
+                onboardingProgress: dependencies.onboardingProgressStore.progress
+            ),
+            .main
+        )
+    }
+
     func testMockDependenciesStartOnboardingAndAuthenticateWithoutServer() async {
         let dependencies = RecapDependencies.mock()
 

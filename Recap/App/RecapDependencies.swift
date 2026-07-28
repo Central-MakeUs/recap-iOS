@@ -181,6 +181,19 @@ final class RecapDependencies {
             appleLoginProvider: MockSocialLoginProvider(provider: .apple)
         )
     }
+
+    static func simulatorMock() -> RecapDependencies {
+        mock(
+            initialSessionState: .authenticated(
+                ServerTokenRecord(
+                    accessToken: "simulator-access-token",
+                    refreshToken: "simulator-refresh-token",
+                    accessTokenExpiresAt: .distantFuture
+                )
+            ),
+            onboardingProgress: .completed
+        )
+    }
 }
 
 @MainActor

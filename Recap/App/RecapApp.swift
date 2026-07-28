@@ -20,7 +20,7 @@ struct RecapApp: App {
 
         switch configuration.runtimeProfile {
         case .mock:
-            dependencies = RecapDependencies.mock()
+            dependencies = RecapDependencies.simulatorMock()
         case .live:
             KakaoSDKBootstrap.initialize(configuration: configuration)
             dependencies = RecapDependencies.live(configuration: configuration)
