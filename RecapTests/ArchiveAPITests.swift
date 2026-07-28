@@ -130,17 +130,17 @@ final class ArchiveAPITests: XCTestCase {
 
     func testDetailSortReloadsOnlyForSortableScopes() async {
         let loader = SequencedArchiveLoader(homeResults: [])
-        let deleter = CaptureDeleterStub()
+        let mutator = CaptureMutatorStub()
         let otherModel = ArchiveDetailFeatureModel(
             scope: .category(.other),
             loader: loader,
-            captureDeleter: deleter,
+            captureMutator: mutator,
             invalidationCenter: CardDataInvalidationCenter()
         )
         let favoritesModel = ArchiveDetailFeatureModel(
             scope: .favorites,
             loader: loader,
-            captureDeleter: deleter,
+            captureMutator: mutator,
             invalidationCenter: CardDataInvalidationCenter()
         )
 
@@ -166,22 +166,71 @@ final class ArchiveAPITests: XCTestCase {
             homeResults: [],
             detailCards: cards
         )
-        let deleter = CaptureDeleterStub()
+        let mutator = CaptureMutatorStub()
         let invalidationCenter = CardDataInvalidationCenter()
         let model = ArchiveDetailFeatureModel(
             scope: .category(.shopping),
             loader: loader,
-            captureDeleter: deleter,
+            captureMutator: mutator,
             invalidationCenter: invalidationCenter
         )
 
         await model.loadIfNeeded()
         try await model.deleteCards(ids: [cards[0].id, cards[1].id])
 
-        XCTAssertEqual(deleter.deletedCaptureIDs, [101, 102])
+        XCTAssertEqual(mutator.deletedCaptureIDs, [101, 102])
         XCTAssertEqual(model.state, .loaded([cards[2]]))
         XCTAssertEqual(invalidationCenter.homeRevision, 1)
         XCTAssertEqual(invalidationCenter.archiveDetailRevision, 1)
+    }
+
+    func testDetailFavoriteToggleCallsAPIAndUpdatesCard() async throws {
+        let card = Self.card(id: UUID(), captureID: 101)
+        let loader = SequencedArchiveLoader(
+            homeResults: [],
+            detailCards: [card]
+        )
+        let mutator = CaptureMutatorStub()
+        let model = ArchiveDetailFeatureModel(
+            scope: .category(.shopping),
+            loader: loader,
+            captureMutator: mutator,
+            invalidationCenter: CardDataInvalidationCenter()
+        )
+
+        await model.loadIfNeeded()
+        let isFavorite = try await model.toggleFavorite(cardID: card.id)
+
+        XCTAssertTrue(isFavorite)
+        XCTAssertEqual(mutator.favoriteUpdates, [.init(captureID: 101, isFavorite: true)])
+        guard case .loaded(let cards) = model.state else {
+            return XCTFail("Expected loaded archive cards")
+        }
+        XCTAssertTrue(try XCTUnwrap(cards.first).isFavorite)
+    }
+
+    func testFavoritesToggleRemovesUnfavoritedCard() async throws {
+        let card = Self.card(id: UUID(), captureID: 101).with(isFavorite: true)
+        let loader = SequencedArchiveLoader(
+            homeResults: [],
+            detailCards: [card]
+        )
+        let mutator = CaptureMutatorStub()
+        let model = ArchiveDetailFeatureModel(
+            scope: .favorites,
+            loader: loader,
+            captureMutator: mutator,
+            invalidationCenter: CardDataInvalidationCenter()
+        )
+
+        await model.loadIfNeeded()
+        let isFavorite = try await model.toggleFavorite(cardID: card.id)
+
+        XCTAssertFalse(isFavorite)
+        guard case .loaded(let cards) = model.state else {
+            return XCTFail("Expected loaded archive cards")
+        }
+        XCTAssertTrue(cards.isEmpty)
     }
 
     func testURLProtocolIntegrationAddsBearerAndDecodesArchiveList() async throws {
@@ -394,17 +443,35 @@ private final class SequencedArchiveLoader: ArchiveLoading {
     }
 }
 
-private final class CaptureDeleterStub: CaptureDeleting, @unchecked Sendable {
+private final class CaptureMutatorStub: CaptureMutating, @unchecked Sendable {
+    struct FavoriteUpdate: Equatable {
+        let captureID: Int64
+        let isFavorite: Bool
+    }
+
     private let lock = NSLock()
     private var storedDeletedCaptureIDs: [Int64] = []
+    private var storedFavoriteUpdates: [FavoriteUpdate] = []
 
     var deletedCaptureIDs: [Int64] {
         lock.withLock { storedDeletedCaptureIDs }
     }
 
+    var favoriteUpdates: [FavoriteUpdate] {
+        lock.withLock { storedFavoriteUpdates }
+    }
+
     func deleteCapture(captureID: Int64) async throws {
         lock.withLock {
             storedDeletedCaptureIDs.append(captureID)
+        }
+    }
+
+    func updateFavorite(captureID: Int64, isFavorite: Bool) async throws {
+        lock.withLock {
+            storedFavoriteUpdates.append(
+                FavoriteUpdate(captureID: captureID, isFavorite: isFavorite)
+            )
         }
     }
 }

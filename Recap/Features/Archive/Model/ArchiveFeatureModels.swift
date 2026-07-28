@@ -74,7 +74,7 @@ final class ArchiveDetailFeatureModel {
     let scope: ArchiveDetailScope
 
     private let loader: any ArchiveLoading
-    private let captureDeleter: any CaptureDeleting
+    private let captureMutator: any CaptureMutating
     private let invalidationCenter: CardDataInvalidationCenter
     private(set) var state: State = .idle
     private(set) var sort: ArchiveSort = .latest
@@ -82,12 +82,12 @@ final class ArchiveDetailFeatureModel {
     init(
         scope: ArchiveDetailScope,
         loader: any ArchiveLoading,
-        captureDeleter: any CaptureDeleting,
+        captureMutator: any CaptureMutating,
         invalidationCenter: CardDataInvalidationCenter
     ) {
         self.scope = scope
         self.loader = loader
-        self.captureDeleter = captureDeleter
+        self.captureMutator = captureMutator
         self.invalidationCenter = invalidationCenter
     }
 
@@ -125,7 +125,7 @@ final class ArchiveDetailFeatureModel {
 
         do {
             for (card, captureID) in zip(selectedCards, captureIDs) {
-                try await captureDeleter.deleteCapture(captureID: captureID)
+                try await captureMutator.deleteCapture(captureID: captureID)
                 deletedCardIDs.insert(card.id)
             }
         } catch {
@@ -138,6 +138,41 @@ final class ArchiveDetailFeatureModel {
 
         state = .loaded(cards.filter { !ids.contains($0.id) })
         invalidationCenter.invalidate(.captureDeleted)
+    }
+
+    func toggleFavorite(cardID: InformationCard.ID) async throws -> Bool {
+        guard
+            case .loaded(let cards) = state,
+            let card = cards.first(where: { $0.id == cardID }),
+            let captureID = card.captureID
+        else {
+            throw CaptureLifecycleError.missingCaptureID
+        }
+
+        let targetValue = !card.isFavorite
+        state = .loaded(
+            cards.map { currentCard in
+                currentCard.id == cardID
+                    ? currentCard.with(isFavorite: targetValue)
+                    : currentCard
+            }
+        )
+
+        do {
+            try await captureMutator.updateFavorite(
+                captureID: captureID,
+                isFavorite: targetValue
+            )
+
+            if scope == .favorites, !targetValue {
+                state = .loaded(cards.filter { $0.id != cardID })
+            }
+            invalidationCenter.invalidate(.favoriteChanged)
+            return targetValue
+        } catch {
+            state = .loaded(cards)
+            throw error
+        }
     }
 
     private func load() async {

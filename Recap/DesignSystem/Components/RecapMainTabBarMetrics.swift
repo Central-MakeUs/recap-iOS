@@ -7,6 +7,9 @@ enum RecapMainTabBarMetrics {
     static let selectorSize = CGSize(width: 155, height: 54)
     static let tabItemSize = CGSize(width: 72, height: 46)
     static let uploadButtonSize = CGSize(width: 107, height: 54)
+    static let shadowOpacity: CGFloat = 0.14
+    static let shadowRadius: CGFloat = 10
+    static let shadowY: CGFloat = 4
 
     static func contentHeight(bottomSafeAreaInset: CGFloat) -> CGFloat {
         max(0, height - bottomSafeAreaInset)

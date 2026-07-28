@@ -14,7 +14,7 @@ struct CardDetailCategoryAndDateRow: View {
 
             Spacer()
 
-            Text(card.dateText)
+            Text(RecapPresentation.organizedDateText(for: card))
                 .font(RecapFont.pretendard(size: 12, weight: .medium))
                 .tracking(-0.24)
                 .foregroundStyle(Color.recapGray300)

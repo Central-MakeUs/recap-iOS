@@ -33,6 +33,7 @@ final class CardDataInvalidationCenter {
     private(set) var homeRevision = 0
     private(set) var archiveHomeRevision = ArchiveHomeRevision()
     private(set) var archiveDetailRevision = 0
+    private(set) var searchRevision = 0
 
     func invalidate(_ change: CardDataChange) {
         switch change {
@@ -40,12 +41,14 @@ final class CardDataInvalidationCenter {
             homeRevision &+= 1
             archiveHomeRevision.favorites &+= 1
             archiveDetailRevision &+= 1
+            searchRevision &+= 1
         case .captureCreated, .captureDeleted, .organizeResultAcknowledged:
             homeRevision &+= 1
             archiveHomeRevision.types &+= 1
             archiveHomeRevision.favorites &+= 1
             archiveHomeRevision.other &+= 1
             archiveDetailRevision &+= 1
+            searchRevision &+= 1
         }
     }
 }

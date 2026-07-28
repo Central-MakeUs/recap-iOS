@@ -1,6 +1,5 @@
 import SwiftUI
 import UIKit
-import UserNotifications
 
 struct SettingsDetailView: View {
     let route: SettingsRoute
@@ -191,10 +190,7 @@ struct NotificationSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
     @Environment(\.scenePhase) private var scenePhase
-
-    @AppStorage("settings.organizeNotificationEnabled")
-    private var isOrganizeNotificationEnabled = true
-    @State private var authorizationStatus: UNAuthorizationStatus?
+    @Environment(OrganizeNotificationController.self) private var notifications
 
     var body: some View {
         VStack(spacing: 0) {
@@ -208,8 +204,8 @@ struct NotificationSettingsView: View {
                 }
 
                 SettingsNotificationRow(
-                    isEnabled: $isOrganizeNotificationEnabled,
-                    isSystemPermissionEnabled: isSystemPermissionEnabled
+                    isEnabled: notifications.isEnabled,
+                    toggle: toggleOrganizeNotifications
                 )
             }
             .padding(.horizontal, SettingsLayout.horizontalPadding)
@@ -232,24 +228,24 @@ struct NotificationSettingsView: View {
     }
 
     private var showsPermissionBanner: Bool {
-        guard let authorizationStatus else { return false }
-        return !authorizationStatus.allowsNotifications
-    }
-
-    private var isSystemPermissionEnabled: Bool {
-        authorizationStatus?.allowsNotifications == true
+        !notifications.authorizationStatus.allowsNotifications
     }
 
     private func enableSystemNotifications() {
-        if authorizationStatus == .notDetermined {
-            Task {
-                _ = try? await UNUserNotificationCenter.current().requestAuthorization(
-                    options: [.alert, .badge, .sound]
-                )
-                await refreshSystemNotificationPermission()
+        Task {
+            let action = await notifications.enableSystemNotifications()
+            if action == .openSettings {
+                openSystemSettings()
             }
-        } else {
-            openSystemSettings()
+        }
+    }
+
+    private func toggleOrganizeNotifications() {
+        Task {
+            let action = await notifications.toggleOrganizeNotifications()
+            if action == .openSettings {
+                openSystemSettings()
+            }
         }
     }
 
@@ -261,26 +257,18 @@ struct NotificationSettingsView: View {
     }
 
     private func refreshSystemNotificationPermission() async {
-        let settings = await UNUserNotificationCenter.current().notificationSettings()
-        authorizationStatus = settings.authorizationStatus
-    }
-}
-
-private extension UNAuthorizationStatus {
-    var allowsNotifications: Bool {
-        switch self {
-        case .authorized, .provisional, .ephemeral:
-            true
-        case .notDetermined, .denied:
-            false
-        @unknown default:
-            false
-        }
+        await notifications.refreshAuthorization()
     }
 }
 
 #Preview("알림 설정") {
     NotificationSettingsView()
+        .environment(
+            OrganizeNotificationController(
+                delivery: PreviewOrganizeNotificationDelivery(),
+                userDefaults: UserDefaults(suiteName: UUID().uuidString)!
+            )
+        )
 }
 
 #Preview("계정 관리") {

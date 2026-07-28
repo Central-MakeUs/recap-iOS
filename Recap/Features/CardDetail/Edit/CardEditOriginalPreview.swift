@@ -14,7 +14,11 @@ struct CardEditOriginalPreview: View {
                 .padding(.bottom, 8)
 
             CardDetailImageCard(onExpand: onOpenOriginal) {
-                RecapScreenshotThumbnail(kind: card.collection, assetName: card.detailImageAssetName)
+                RecapScreenshotThumbnail(
+                    kind: card.collection,
+                    assetName: card.detailImageAssetName,
+                    remoteURL: card.originalImageURL ?? card.thumbnailURL
+                )
             }
 
             Text("원본 이미지는 수정 할 수 없어요. 텍스트 정보만 편집 가능해요")

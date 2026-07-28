@@ -88,6 +88,23 @@ final class SearchFeatureModel {
         }
     }
 
+    func refreshCurrentQuery() async {
+        guard !activeQuery.isEmpty, activeQuery.count <= 100 else { return }
+
+        requestGeneration += 1
+        let generation = requestGeneration
+        let previousState = state
+
+        do {
+            try await loadFirstPage(query: activeQuery, generation: generation)
+        } catch is CancellationError {
+            return
+        } catch {
+            guard generation == requestGeneration else { return }
+            state = previousState
+        }
+    }
+
     func loadNextPageIfNeeded(after resultID: SearchResult.ID) async {
         guard
             case .loaded(let content) = state,

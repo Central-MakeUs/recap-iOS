@@ -24,6 +24,7 @@ struct RecapMainTabContainer: View {
     let captureService: any CaptureServing
     let cardCreationProcessor: any CardCreationProcessing
     let cardDataInvalidationCenter: CardDataInvalidationCenter
+    let organizeNotificationController: OrganizeNotificationController
     let onUpload: () -> Void
     let onCardDeleted: () -> Void
 
@@ -32,26 +33,43 @@ struct RecapMainTabContainer: View {
     var body: some View {
         @Bindable var router = router
 
-        TabView(selection: $router.selectedTab) {
-            Tab("홈", image: "RecapTabHomeIcon", value: MainTab.home) {
-                tabStack(for: .home) {
-                    HomeContainerView(
-                        summaryLoader: homeSummaryLoader,
-                        invalidationCenter: cardDataInvalidationCenter
-                    )
+        GeometryReader { geometry in
+            TabView(selection: $router.selectedTab) {
+                Tab("홈", image: "RecapTabHomeIcon", value: MainTab.home) {
+                    tabStack(for: .home) {
+                        HomeContainerView(
+                            summaryLoader: homeSummaryLoader,
+                            invalidationCenter: cardDataInvalidationCenter
+                        )
+                    }
+                    .toolbar(.hidden, for: .tabBar)
                 }
-                .toolbar(.hidden, for: .tabBar)
-            }
 
-            Tab("보관함", image: "RecapTabArchiveIcon", value: MainTab.archive) {
-                tabStack(for: .archive) {
-                    CollectionHomeContainerView(
-                        loader: archiveLoader,
-                        invalidationCenter: cardDataInvalidationCenter
-                    )
+                Tab("보관함", image: "RecapTabArchiveIcon", value: MainTab.archive) {
+                    tabStack(for: .archive) {
+                        CollectionHomeContainerView(
+                            loader: archiveLoader,
+                            invalidationCenter: cardDataInvalidationCenter
+                        )
+                    }
+                    .toolbar(.hidden, for: .tabBar)
                 }
-                .toolbar(.hidden, for: .tabBar)
             }
+            .safeAreaBar(edge: .bottom, spacing: 0) {
+                if showsBottomChrome {
+                    RecapMainTabBarToolbar(
+                        selection: router.selectedTab,
+                        onSelect: router.switchTo,
+                        onUpload: onUpload,
+                        height: RecapMainTabBarMetrics.contentHeight(
+                            bottomSafeAreaInset: geometry.safeAreaInsets.bottom
+                        )
+                    )
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+            .scrollEdgeEffectHidden(true, for: .bottom)
+            .animation(.easeInOut(duration: 0.18), value: showsBottomChrome)
         }
         .environment(chromeState)
     }
@@ -71,29 +89,10 @@ struct RecapMainTabContainer: View {
                     captureService: captureService,
                     cardCreationProcessor: cardCreationProcessor,
                     cardDataInvalidationCenter: cardDataInvalidationCenter,
+                    organizeNotificationController: organizeNotificationController,
                     onCardDeleted: onCardDeleted
                 )
-                .toolbar {
-                    if showsBottomChrome {
-                        ToolbarItem(placement: .bottomBar) {
-                            RecapTabSelector(
-                                selection: router.selectedTab,
-                                onSelect: router.switchTo
-                            )
-                        }
-                        .sharedBackgroundVisibility(.hidden)
-
-                        ToolbarSpacer(.flexible, placement: .bottomBar)
-
-                        ToolbarItem(placement: .bottomBar) {
-                            RecapUploadButton(action: onUpload)
-                        }
-                        .sharedBackgroundVisibility(.hidden)
-                    }
-                }
-                .toolbarBackgroundVisibility(.hidden, for: .bottomBar)
         }
-        .scrollEdgeEffectHidden(true, for: .bottom)
     }
 
     private var showsBottomChrome: Bool {

@@ -26,6 +26,11 @@ struct RecapUploadButton: View {
         }
         .buttonStyle(.plain)
         .glassEffect(.regular.interactive(), in: .capsule)
+        .shadow(
+            color: .black.opacity(RecapMainTabBarMetrics.shadowOpacity),
+            radius: RecapMainTabBarMetrics.shadowRadius,
+            y: RecapMainTabBarMetrics.shadowY
+        )
         .accessibilityLabel("업로드")
         .accessibilityIdentifier("mainTab.upload")
     }

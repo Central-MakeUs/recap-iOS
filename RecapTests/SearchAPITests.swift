@@ -128,6 +128,28 @@ final class SearchAPITests: XCTestCase {
         XCTAssertEqual(loader.requests.map(\.query), ["파스타 레시피"])
     }
 
+    func testFavoriteInvalidationRefreshesCurrentQuery() async throws {
+        let initialResult = SearchResult(dto: .fixture(isFavorite: false))
+        let refreshedResult = SearchResult(dto: .fixture(isFavorite: true))
+        let loader = RecordingSearchLoader(pages: [
+            SearchPage(count: 1, hasNext: false, items: [initialResult]),
+            SearchPage(count: 1, hasNext: false, items: [refreshedResult])
+        ])
+        let model = SearchFeatureModel(loader: loader)
+        let invalidationCenter = CardDataInvalidationCenter()
+
+        await model.search(query: "파스타", debounce: .milliseconds(0))
+        invalidationCenter.invalidate(.favoriteChanged)
+        await model.refreshCurrentQuery()
+
+        XCTAssertEqual(invalidationCenter.searchRevision, 1)
+        XCTAssertEqual(loader.requests.map(\.query), ["파스타", "파스타"])
+        guard case .loaded(let content) = model.state else {
+            return XCTFail("검색 결과가 loaded 상태여야 합니다.")
+        }
+        XCTAssertTrue(try XCTUnwrap(content.results.first).card.isFavorite)
+    }
+
     func testRepeatedLastRowAppearanceLoadsNextPageOnce() async throws {
         let firstResult = SearchResult(dto: .fixture(captureId: 1))
         let secondResult = SearchResult(dto: .fixture(captureId: 2))
@@ -281,7 +303,8 @@ private extension SearchResultDTO {
         captureId: Int64 = 101,
         titleHighlighted: String = "<mark>검색</mark> 결과",
         summaryHighlighted: String = "검색 결과 요약",
-        ocrExcerptHighlighted: String? = nil
+        ocrExcerptHighlighted: String? = nil,
+        isFavorite: Bool = false
     ) -> SearchResultDTO {
         SearchResultDTO(
             captureId: captureId,
@@ -290,7 +313,7 @@ private extension SearchResultDTO {
             titleHighlighted: titleHighlighted,
             summaryHighlighted: summaryHighlighted,
             ocrExcerptHighlighted: ocrExcerptHighlighted,
-            isFavorite: false,
+            isFavorite: isFavorite,
             organizedAt: Date(timeIntervalSince1970: 1_753_232_523)
         )
     }

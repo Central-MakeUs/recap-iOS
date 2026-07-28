@@ -2,33 +2,26 @@ import SwiftUI
 
 struct ShareSetupGuideView: View {
     let onShowTutorial: () -> Void
-    let onSkip: () -> Void
 
     var body: some View {
-        OnboardingDesignCanvas {
-            RecapOnboardingDots(activeIndex: 1, count: 3)
-                .onboardingFrame(x: 162, y: 74, width: 51, height: 8)
-
-            RecapLogoText(size: 20.73)
-                .onboardingFrame(x: 22, y: 112, width: 65, height: 26, alignment: .leading)
-
+        ZStack(alignment: .topLeading) {
             Text("리캡을 공유 즐겨찾기에 추가해주세요")
                 .font(RecapFont.pretendard(size: 22, weight: .semibold))
                 .tracking(-0.44)
                 .foregroundStyle(Color.recapGray900)
-                .onboardingFrame(x: 22, y: 148, width: 330, height: 31, alignment: .leading)
+                .onboardingFrame(x: 22, y: 10, width: 330, height: 31, alignment: .leading)
 
             Text("한 번만 설정하면\n스크린샷을 앨범에서 바로 공유 할 수있어요!")
                 .font(RecapFont.pretendard(size: 15, weight: .medium))
                 .tracking(-0.3)
                 .foregroundStyle(Color.recapGray500)
-                .onboardingFrame(x: 22, y: 196, width: 280, height: 42, alignment: .leading)
+                .onboardingFrame(x: 22, y: 58, width: 280, height: 42, alignment: .leading)
 
             ShareSetupMockup()
-                .onboardingFrame(x: 67, y: 317, width: 239, height: 238)
+                .onboardingFrame(x: 67, y: 179, width: 239, height: 238)
 
             RecapSpeechBubble(text: "초간단 30초면 끝나요!")
-                .onboardingFrame(x: 117, y: 531, width: 143, height: 46)
+                .onboardingFrame(x: 117, y: 393, width: 143, height: 46)
 
             Button(action: onShowTutorial) {
                 Text("어떻게 등록하나요?")
@@ -40,30 +33,7 @@ struct ShareSetupGuideView: View {
                     .contentShape(Rectangle())
             }
                 .buttonStyle(.plain)
-                .onboardingFrame(x: 111, y: 584, width: 153, height: 43)
-
-            ShareLink(item: "Recap") {
-                Text("공유시트 열기")
-                    .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                    .tracking(-0.28)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.recapBlue300)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            }
-            .buttonStyle(.plain)
-            .onboardingFrame(x: 16, y: 679, width: 343, height: 50)
-
-            Button(action: onSkip) {
-                Text("나중에 하기")
-                    .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                    .tracking(-0.28)
-                    .foregroundStyle(Color.recapGray500)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .contentShape(Rectangle())
-            }
-                .buttonStyle(.plain)
-                .onboardingFrame(x: 16, y: 741, width: 343, height: 50)
+                .onboardingFrame(x: 111, y: 446, width: 153, height: 43)
         }
     }
 }
@@ -138,48 +108,23 @@ private struct ShareSetupTutorialPageView: View {
 }
 
 struct FirstCleanupStartView: View {
-    let onStart: () -> Void
-    let onSkip: () -> Void
-
     var body: some View {
-        OnboardingDesignCanvas {
-            RecapOnboardingDots(activeIndex: 2, count: 3)
-                .onboardingFrame(x: 162, y: 74, width: 51, height: 8)
-
-            RecapLogoText(size: 20.73)
-                .onboardingFrame(x: 22, y: 112, width: 65, height: 26, alignment: .leading)
-
+        ZStack(alignment: .topLeading) {
             Text("첫 정리를 시작해볼까요?")
                 .font(RecapFont.pretendard(size: 22, weight: .semibold))
                 .tracking(-0.44)
                 .foregroundStyle(Color.recapGray900)
-                .onboardingFrame(x: 22, y: 148, width: 270, height: 31, alignment: .leading)
+                .onboardingFrame(x: 22, y: 10, width: 270, height: 31, alignment: .leading)
 
             Text("쌓아둔 스크린샷을 골라 첫 정리를 시작해보세요!")
                 .font(RecapFont.pretendard(size: 15, weight: .medium))
                 .tracking(-0.3)
                 .foregroundStyle(Color.recapGray500)
-                .onboardingFrame(x: 22, y: 196, width: 300, height: 21, alignment: .leading)
+                .onboardingFrame(x: 22, y: 58, width: 300, height: 21, alignment: .leading)
 
             Image("OnboardingFirstCleanupIllustration")
                 .resizable()
-                .onboardingFrame(x: 0, y: 243, width: 375, height: 333)
-
-            RecapButton(title: "스크린샷 선택하기", style: .primary, action: onStart)
-                .frame(width: 343, height: 50)
-                .position(x: 187.5, y: 704)
-
-            Button(action: onSkip) {
-                Text("나중에 하기")
-                    .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                    .tracking(-0.28)
-                    .foregroundStyle(Color.recapGray500)
-                    .multilineTextAlignment(.center)
-                    .frame(width: 343, height: 50, alignment: .center)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .position(x: 187.5, y: 766)
+                .onboardingFrame(x: 0, y: 105, width: 375, height: 333)
         }
     }
 }
@@ -190,6 +135,14 @@ private struct ShareSetupMockup: View {
             Image("OnboardingShareSetupMockup")
                 .resizable()
                 .frame(width: 239, height: 238)
+
+            LinearGradient(
+                colors: [.white.opacity(0), .white],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(width: 269, height: 90)
+            .position(x: 120.5, y: 200)
 
             Image("OnboardingShareImageIcon")
                 .resizable()

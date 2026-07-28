@@ -137,7 +137,7 @@ struct SelectedScreenshotsConfirmationView: View {
                 .background(Color("RecapBackground"))
                 .overlay {
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .stroke(
+                        .strokeBorder(
                             Color("RecapGray300"),
                             style: StrokeStyle(lineWidth: 1, dash: [4, 4])
                         )

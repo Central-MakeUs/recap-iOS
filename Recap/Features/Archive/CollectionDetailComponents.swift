@@ -26,9 +26,6 @@ enum ArchiveDetailScope: Hashable {
         }
     }
 
-    var favoriteOverride: Bool? {
-        self == .favorites ? true : nil
-    }
 }
 
 struct CollectionDetailNavigationHeader: View {

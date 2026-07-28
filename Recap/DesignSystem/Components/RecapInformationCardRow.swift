@@ -8,10 +8,10 @@ struct RecapInformationCardRow: View {
 
     let card: InformationCard
     var metadata: Metadata = .category
-    var favoriteOverride: Bool?
     var selectionState: Bool?
     var titleText: Text?
     var summaryText: Text?
+    var onToggleFavorite: (() -> Void)?
 
     var body: some View {
         Group {
@@ -42,6 +42,7 @@ struct RecapInformationCardRow: View {
 
             thumbnailAndFavorite
         }
+        .frame(height: 80, alignment: .top)
     }
 
     private func selectedLayout(isSelected: Bool) -> some View {
@@ -65,17 +66,27 @@ struct RecapInformationCardRow: View {
                 kind: card.collection,
                 assetName: card.thumbnailAssetName,
                 remoteURL: card.thumbnailURL,
-                hasFavoriteFold: true
+                hasFavoriteFold: true,
+                size: CGSize(width: 62, height: 80)
             )
-            .frame(width: 62, height: 80)
-            .clipped()
 
-            let isFavorite = favoriteOverride ?? card.isFavorite
             RecapIconView(
-                icon: isFavorite ? .star : .starEmpty,
+                icon: card.isFavorite ? .star : .starEmpty,
                 size: 24,
-                color: isFavorite ? Color.recapBlue300 : Color.recapGray100
+                color: card.isFavorite ? Color.recapBlue300 : Color.recapGray100
             )
+        }
+        .frame(width: 62, height: 80)
+        .overlay(alignment: .topTrailing) {
+            if let onToggleFavorite {
+                Button(action: onToggleFavorite) {
+                    Color.clear
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(card.isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가")
+            }
         }
     }
 
@@ -113,14 +124,14 @@ struct RecapInformationCardRow: View {
 
     private var titleAndSummary: some View {
         VStack(alignment: .leading, spacing: 2) {
-            (titleText ?? Text(card.title))
+            (titleText ?? Text(card.title.recapWordUnitWrapped))
                 .font(RecapFont.pretendard(size: 14, weight: .semibold))
                 .tracking(-0.28)
                 .foregroundStyle(Color.recapGray900)
                 .lineLimit(1)
                 .frame(height: 20, alignment: .topLeading)
 
-            (summaryText ?? Text(card.summary))
+            (summaryText ?? Text(card.summary.recapWordUnitWrapped))
                 .font(RecapFont.pretendard(size: 13, weight: .medium))
                 .tracking(-0.26)
                 .foregroundStyle(Color.recapGray500)
@@ -131,7 +142,17 @@ struct RecapInformationCardRow: View {
     }
 
     private var organizedDateText: String {
-        card.dateText.replacingOccurrences(of: "정리됨 ", with: "") + " 정리"
+        RecapPresentation.organizedDateText(for: card)
+    }
+}
+
+private extension String {
+    var recapWordUnitWrapped: String {
+        split(separator: " ", omittingEmptySubsequences: false)
+            .map { word in
+                word.map(String.init).joined(separator: "\u{2060}")
+            }
+            .joined(separator: " ")
     }
 }
 
@@ -159,4 +180,20 @@ struct RecapInformationCardRow: View {
         metadata: .organizedDate,
         selectionState: true
     )
+}
+
+#Preview("card/nocategory - 320pt") {
+    RecapInformationCardRow(
+        card: SampleData.cards[2],
+        metadata: .organizedDate
+    )
+    .frame(width: 320)
+}
+
+#Preview("card/nocategory - 430pt") {
+    RecapInformationCardRow(
+        card: SampleData.cards[2],
+        metadata: .organizedDate
+    )
+    .frame(width: 430)
 }

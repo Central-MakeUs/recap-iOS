@@ -36,6 +36,11 @@ struct RecapTabSelector: View {
         }
         .glassEffect(.regular.tint(.white), in: .capsule)
         .clipShape(Capsule())
+        .shadow(
+            color: .black.opacity(RecapMainTabBarMetrics.shadowOpacity),
+            radius: RecapMainTabBarMetrics.shadowRadius,
+            y: RecapMainTabBarMetrics.shadowY
+        )
         .animation(.snappy(duration: 0.28, extraBounce: 0), value: selection)
     }
 }

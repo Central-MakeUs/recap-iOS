@@ -21,7 +21,7 @@ nonisolated struct ArchiveHomeContent: Equatable, Sendable {
     )
 }
 
-nonisolated enum ArchiveSort: String, CaseIterable, Sendable {
+nonisolated enum ArchiveSort: String, CaseIterable, Hashable, Sendable {
     case latest
     case oldest
 
@@ -32,6 +32,10 @@ nonisolated enum ArchiveSort: String, CaseIterable, Sendable {
         case .oldest:
             "오래된순"
         }
+    }
+
+    var toggled: ArchiveSort {
+        self == .latest ? .oldest : .latest
     }
 }
 

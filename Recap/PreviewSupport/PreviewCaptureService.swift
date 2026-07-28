@@ -1,6 +1,12 @@
 import Foundation
 
 final class PreviewCaptureService: CaptureServing, @unchecked Sendable {
+    private let cardRepository: PreviewCardRepository
+
+    init(cardRepository: PreviewCardRepository = PreviewCardRepository()) {
+        self.cardRepository = cardRepository
+    }
+
     func issueUploadURLs(count: Int) async throws -> [UploadItemDTO] {
         (0..<count).map { index in
             UploadItemDTO(
@@ -32,10 +38,17 @@ final class PreviewCaptureService: CaptureServing, @unchecked Sendable {
     func pendingOrganizeResult() async throws -> PendingOrganizeResultDTO? { nil }
     func acknowledgeOrganizeResult(batchID: Int64) async throws {}
     func captureDetail(captureID: Int64) async throws -> InformationCard {
-        SampleData.cards.first { $0.captureID == captureID } ?? SampleData.cards[0]
+        try await cardRepository.card(captureID: captureID)
     }
-    func updateFavorite(captureID: Int64, isFavorite: Bool) async throws {}
-    func deleteCapture(captureID: Int64) async throws {}
+    func updateFavorite(captureID: Int64, isFavorite: Bool) async throws {
+        try await cardRepository.updateFavorite(
+            captureID: captureID,
+            isFavorite: isFavorite
+        )
+    }
+    func deleteCapture(captureID: Int64) async throws {
+        try await cardRepository.deleteCard(captureID: captureID)
+    }
 }
 
 actor PreviewCardCreationPipeline: CardCreationProcessing {

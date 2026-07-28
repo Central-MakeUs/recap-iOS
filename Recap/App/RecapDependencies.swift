@@ -11,6 +11,7 @@ final class RecapDependencies {
     let captureService: any CaptureServing
     let cardCreationProcessor: any CardCreationProcessing
     let cardDataInvalidationCenter: CardDataInvalidationCenter
+    let organizeNotificationController: OrganizeNotificationController
 
     private let kakaoLoginProvider: any SocialLoginProviding
     private let appleLoginProvider: any SocialLoginProviding
@@ -25,6 +26,7 @@ final class RecapDependencies {
         captureService: any CaptureServing,
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
+        organizeNotificationController: OrganizeNotificationController,
         kakaoLoginProvider: any SocialLoginProviding,
         appleLoginProvider: any SocialLoginProviding
     ) {
@@ -37,6 +39,7 @@ final class RecapDependencies {
         self.captureService = captureService
         self.cardCreationProcessor = cardCreationProcessor
         self.cardDataInvalidationCenter = cardDataInvalidationCenter
+        self.organizeNotificationController = organizeNotificationController
         self.kakaoLoginProvider = kakaoLoginProvider
         self.appleLoginProvider = appleLoginProvider
     }
@@ -97,6 +100,7 @@ final class RecapDependencies {
                 imageUploader: URLSessionPresignedImageUploader()
             ),
             cardDataInvalidationCenter: CardDataInvalidationCenter(),
+            organizeNotificationController: OrganizeNotificationController(),
             kakaoLoginProvider: KakaoLoginProvider(),
             appleLoginProvider: AppleLoginProvider()
         )
@@ -108,11 +112,12 @@ final class RecapDependencies {
     ) -> RecapDependencies {
         let secureSessionStore = PreviewSecureSessionStore()
         let previewNetworkClient = PreviewNetworkClient()
+        let cardRepository = PreviewCardRepository()
         let authenticationService = AuthenticationService(
             networkClient: previewNetworkClient,
             secureSessionStore: secureSessionStore
         )
-        let previewCaptureService = PreviewCaptureService()
+        let previewCaptureService = PreviewCaptureService(cardRepository: cardRepository)
 
         return RecapDependencies(
             sessionStore: RecapSessionStore(
@@ -124,56 +129,88 @@ final class RecapDependencies {
                 persistence: PreviewOnboardingProgressPersistence(onboardingProgress)
             ),
             networkClient: previewNetworkClient,
-            homeSummaryLoader: PreviewHomeSummaryLoader(),
-            archiveLoader: PreviewArchiveLoader(),
-            searchLoader: PreviewSearchLoader(),
+            homeSummaryLoader: PreviewHomeSummaryLoader(cardRepository: cardRepository),
+            archiveLoader: PreviewArchiveLoader(cardRepository: cardRepository),
+            searchLoader: PreviewSearchLoader(cardRepository: cardRepository),
             captureService: previewCaptureService,
             cardCreationProcessor: PreviewCardCreationPipeline(),
             cardDataInvalidationCenter: CardDataInvalidationCenter(),
+            organizeNotificationController: OrganizeNotificationController(
+                delivery: PreviewOrganizeNotificationDelivery(),
+                userDefaults: UserDefaults(suiteName: UUID().uuidString)!
+            ),
             kakaoLoginProvider: PreviewSocialLoginProvider(provider: .kakao),
             appleLoginProvider: PreviewSocialLoginProvider(provider: .apple)
         )
     }
 
-    static func mock() -> RecapDependencies {
-        let secureSessionStore = MockSecureSessionStore()
+    static func mock(
+        initialSessionState: RecapSessionState = .signedOut(nil),
+        onboardingProgress: OnboardingProgress = .notStarted
+    ) -> RecapDependencies {
+        let resolvedSessionState = initialSessionState
+        let secureSessionStore = MockSecureSessionStore(
+            tokenRecord: resolvedSessionState.tokenRecord
+        )
         let networkClient = MockAuthenticationNetworkClient()
         let authenticationService = AuthenticationService(
             networkClient: networkClient,
             secureSessionStore: secureSessionStore
         )
-        let captureService = PreviewCaptureService()
+        let cardRepository = PreviewCardRepository()
+        let captureService = PreviewCaptureService(cardRepository: cardRepository)
 
         return RecapDependencies(
             sessionStore: RecapSessionStore(
                 authenticationService: authenticationService,
                 secureSessionStore: secureSessionStore,
-                initialState: .signedOut(nil)
+                initialState: resolvedSessionState
             ),
             onboardingProgressStore: OnboardingProgressStore(
-                persistence: PreviewOnboardingProgressPersistence(.notStarted)
+                persistence: PreviewOnboardingProgressPersistence(onboardingProgress)
             ),
             networkClient: networkClient,
-            homeSummaryLoader: PreviewHomeSummaryLoader(),
-            archiveLoader: PreviewArchiveLoader(),
-            searchLoader: PreviewSearchLoader(),
+            homeSummaryLoader: PreviewHomeSummaryLoader(cardRepository: cardRepository),
+            archiveLoader: PreviewArchiveLoader(cardRepository: cardRepository),
+            searchLoader: PreviewSearchLoader(cardRepository: cardRepository),
             captureService: captureService,
             cardCreationProcessor: PreviewCardCreationPipeline(),
             cardDataInvalidationCenter: CardDataInvalidationCenter(),
+            organizeNotificationController: OrganizeNotificationController(),
             kakaoLoginProvider: MockSocialLoginProvider(provider: .kakao),
             appleLoginProvider: MockSocialLoginProvider(provider: .apple)
+        )
+    }
+
+    static func simulatorMock() -> RecapDependencies {
+        mock(
+            initialSessionState: .authenticated(
+                ServerTokenRecord(
+                    accessToken: "simulator-access-token",
+                    refreshToken: "simulator-refresh-token",
+                    accessTokenExpiresAt: .distantFuture
+                )
+            ),
+            onboardingProgress: .completed
         )
     }
 }
 
 @MainActor
 private final class PreviewHomeSummaryLoader: HomeSummaryLoading {
+    private let cardRepository: PreviewCardRepository
+
+    init(cardRepository: PreviewCardRepository = PreviewCardRepository()) {
+        self.cardRepository = cardRepository
+    }
+
     func fetchSummary() async throws -> HomeSummaryContent {
-        HomeSummaryContent(
-            recentCards: SampleData.recentCards,
-            favoriteCards: SampleData.cards.filter(\.isFavorite),
+        let cards = await cardRepository.allCards()
+        return HomeSummaryContent(
+            recentCards: Array(cards.prefix(3)),
+            favoriteCards: cards.filter(\.isFavorite),
             frequentTypes: SampleData.collectionSummaries,
-            hasAnyCapture: true
+            hasAnyCapture: !cards.isEmpty
         )
     }
 }
@@ -208,10 +245,21 @@ private final class PreviewOnboardingProgressPersistence: OnboardingProgressPers
 private final class MockSecureSessionStore: SecureSessionStoring {
     private var tokenRecord: ServerTokenRecord?
 
+    init(tokenRecord: ServerTokenRecord? = nil) {
+        self.tokenRecord = tokenRecord
+    }
+
     func deviceID() throws -> String { "mock-device" }
     func saveServerTokenRecord(_ record: ServerTokenRecord) throws { tokenRecord = record }
     func loadServerTokenRecord() throws -> ServerTokenRecord? { tokenRecord }
     func deleteServerTokenRecord() throws { tokenRecord = nil }
+}
+
+private extension RecapSessionState {
+    var tokenRecord: ServerTokenRecord? {
+        guard case .authenticated(let tokenRecord) = self else { return nil }
+        return tokenRecord
+    }
 }
 
 private final class MockAuthenticationNetworkClient: NetworkClient, @unchecked Sendable {

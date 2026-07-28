@@ -92,6 +92,18 @@ final class AppConfigurationTests: XCTestCase {
 
 @MainActor
 final class MockRuntimeProfileTests: XCTestCase {
+    func testSimulatorMockDependenciesResolveDirectlyToMain() {
+        let dependencies = RecapDependencies.simulatorMock()
+
+        XCTAssertEqual(
+            AppLaunchDestinationResolver.resolve(
+                sessionState: dependencies.sessionStore.state,
+                onboardingProgress: dependencies.onboardingProgressStore.progress
+            ),
+            .main
+        )
+    }
+
     func testMockDependenciesStartOnboardingAndAuthenticateWithoutServer() async {
         let dependencies = RecapDependencies.mock()
 
@@ -109,6 +121,20 @@ final class MockRuntimeProfileTests: XCTestCase {
         XCTAssertEqual(tokenRecord.accessToken, "mock-access-token")
     }
 
+    func testDefaultMockDependenciesResolveToServiceIntro() {
+        let dependencies = RecapDependencies.mock()
+
+        XCTAssertEqual(dependencies.sessionStore.state, .signedOut(nil))
+        XCTAssertEqual(dependencies.onboardingProgressStore.progress, .notStarted)
+        XCTAssertEqual(
+            AppLaunchDestinationResolver.resolve(
+                sessionState: dependencies.sessionStore.state,
+                onboardingProgress: dependencies.onboardingProgressStore.progress
+            ),
+            .serviceIntro
+        )
+    }
+
     func testMockDependenciesSimulateCardCreationProgressWithoutServer() async throws {
         let dependencies = RecapDependencies.mock()
         var progressValues: [Double] = []
@@ -124,5 +150,43 @@ final class MockRuntimeProfileTests: XCTestCase {
         XCTAssertEqual(progressValues.last, 1)
         XCTAssertGreaterThan(progressValues.count, 2)
         XCTAssertEqual(progressValues, progressValues.sorted())
+    }
+
+    func testMockFavoriteMutationPersistsAcrossHomeArchiveDetailAndSearch() async throws {
+        let dependencies = RecapDependencies.mock()
+        let initialHome = try await dependencies.archiveLoader.fetchHome()
+        let knowledgeCards = try await dependencies.archiveLoader.fetchCards(
+            scope: .category(.knowledge),
+            sort: .latest
+        )
+        let card = try XCTUnwrap(knowledgeCards.first(where: { !$0.isFavorite }))
+        let captureID = try XCTUnwrap(card.captureID)
+
+        try await dependencies.captureService.updateFavorite(
+            captureID: captureID,
+            isFavorite: true
+        )
+
+        let refreshedHome = try await dependencies.archiveLoader.fetchHome()
+        let refreshedCards = try await dependencies.archiveLoader.fetchCards(
+            scope: .category(.knowledge),
+            sort: .latest
+        )
+        let refreshedDetail = try await dependencies.captureService.captureDetail(
+            captureID: captureID
+        )
+        let searchPage = try await dependencies.searchLoader.search(
+            query: "파스타",
+            scope: .all,
+            page: 0,
+            size: 20
+        )
+
+        XCTAssertEqual(refreshedHome.favoriteCount, initialHome.favoriteCount + 1)
+        XCTAssertTrue(
+            try XCTUnwrap(refreshedCards.first(where: { $0.captureID == captureID })).isFavorite
+        )
+        XCTAssertTrue(refreshedDetail.isFavorite)
+        XCTAssertTrue(try XCTUnwrap(searchPage.items.first).card.isFavorite)
     }
 }

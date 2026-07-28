@@ -4,8 +4,7 @@ struct RecapComponentCatalog: View {
     @State private var selectedTab = MainTab.home
     @State private var searchText = "검색어"
     @State private var inputText = "텍스트"
-    @State private var filterSelection = "최신순"
-    @State private var isFilterExpanded = true
+    @State private var archiveSort = ArchiveSort.latest
 
     var body: some View {
         ScrollView {
@@ -126,12 +125,9 @@ struct RecapComponentCatalog: View {
             catalogTitle("searchfield · filter")
             SearchBar(text: .constant(""))
             SearchBar(text: $searchText)
-            RecapFilterButton(title: "최신순")
-            RecapFilterPicker(
-                options: ["최신순", "즐겨찾기"],
-                selection: $filterSelection,
-                isExpanded: $isFilterExpanded
-            )
+            RecapSortToggleButton(title: archiveSort.title) {
+                archiveSort = archiveSort.toggled
+            }
         }
     }
 

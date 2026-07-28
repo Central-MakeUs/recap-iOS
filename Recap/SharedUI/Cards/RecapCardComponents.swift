@@ -6,6 +6,7 @@ struct RecapScreenshotThumbnail: View {
     var remoteURL: URL? = nil
     var cornerRadius: CGFloat = 5
     var hasFavoriteFold = false
+    var size: CGSize? = nil
     var onRemoteLoadFailure: (URL) -> Void = { _ in }
 
     var body: some View {
@@ -36,11 +37,13 @@ struct RecapScreenshotThumbnail: View {
                 placeholder
             }
         }
+        .frame(width: size?.width, height: size?.height)
         .clipShape(thumbnailShape)
         .clipped()
         .overlay {
             thumbnailShape
                 .stroke(Color.recapGray100, lineWidth: 1)
+                .padding(0.5)
         }
     }
 
@@ -135,5 +138,23 @@ private struct RecapScreenshotThumbnailShape: Shape {
         assetName: SampleData.cards[0].thumbnailAssetName
     )
     .frame(width: 134, height: 85)
+    .padding()
+}
+
+#Preview("즐겨찾기 접힘 썸네일") {
+    ZStack(alignment: .topTrailing) {
+        RecapScreenshotThumbnail(
+            kind: .shopping,
+            assetName: SampleData.cards[2].thumbnailAssetName,
+            hasFavoriteFold: true
+        )
+        .frame(width: 62, height: 80)
+
+        RecapIconView(
+            icon: .starEmpty,
+            size: 24,
+            color: Color.recapGray100
+        )
+    }
     .padding()
 }

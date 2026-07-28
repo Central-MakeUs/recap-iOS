@@ -10,6 +10,7 @@ extension View {
         captureService: any CaptureServing,
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
+        organizeNotificationController: OrganizeNotificationController,
         onCardDeleted: @escaping () -> Void
     ) -> some View {
         navigationDestination(for: AppRoute.self) { route in
@@ -22,6 +23,7 @@ extension View {
                 captureService: captureService,
                 cardCreationProcessor: cardCreationProcessor,
                 cardDataInvalidationCenter: cardDataInvalidationCenter,
+                organizeNotificationController: organizeNotificationController,
                 onCardDeleted: onCardDeleted
             )
         }
@@ -38,11 +40,15 @@ extension View {
         captureService: any CaptureServing,
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
+        organizeNotificationController: OrganizeNotificationController,
         onCardDeleted: @escaping () -> Void
     ) -> some View {
         switch route {
         case .search:
-            SearchContainerView(loader: searchLoader)
+            SearchContainerView(
+                loader: searchLoader,
+                invalidationCenter: cardDataInvalidationCenter
+            )
         case .allRecentCards:
             AllRecentCardsContainerView(
                 summaryLoader: homeSummaryLoader,
@@ -52,14 +58,14 @@ extension View {
             CollectionDetailContainerView(
                 scope: .favorites,
                 loader: archiveLoader,
-                captureDeleter: captureService,
+                captureMutator: captureService,
                 invalidationCenter: cardDataInvalidationCenter
             )
         case .archiveDetail(let kind):
             CollectionDetailContainerView(
                 scope: .category(kind),
                 loader: archiveLoader,
-                captureDeleter: captureService,
+                captureMutator: captureService,
                 invalidationCenter: cardDataInvalidationCenter
             )
         case .cardDetail(let id):
@@ -82,7 +88,9 @@ extension View {
             CardCreationFlowView(
                 viewModel: CardCreationFlowViewModel(
                     processor: cardCreationProcessor,
-                    invalidationCenter: cardDataInvalidationCenter
+                    invalidationCenter: cardDataInvalidationCenter,
+                    notificationController: organizeNotificationController,
+                    backgroundExecution: SystemOrganizeBackgroundExecution()
                 )
             )
         case .settings:

@@ -52,7 +52,8 @@ struct RecapHomeFavoriteCard: View {
                 .lineLimit(1)
         }
         .padding(13)
-        .frame(width: 166, height: 85, alignment: .topLeading)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: 85, alignment: .topLeading)
         .background(Color.recapGray50)
         .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
     }

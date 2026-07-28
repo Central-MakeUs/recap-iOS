@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CollectionHomeHeader: View {
     @Binding var layoutMode: CollectionHomeView.LayoutMode
+    @Namespace private var layoutSelection
 
     var body: some View {
         HStack(spacing: 6) {
@@ -27,6 +28,7 @@ struct CollectionHomeHeader: View {
                 layoutButton(mode: .grid, icon: .grid)
                 layoutButton(mode: .list, icon: .list)
             }
+            .animation(.easeInOut(duration: 0.2), value: layoutMode)
             .padding(.horizontal, 5)
             .frame(width: 64, height: 31)
             .background(Color.recapControlFill)
@@ -48,8 +50,16 @@ struct CollectionHomeHeader: View {
                 color: layoutMode == mode ? Color.recapGray700 : Color.recapGray200
             )
             .frame(width: 24, height: 24)
-            .background(layoutMode == mode ? Color.white : Color.clear)
-            .clipShape(RoundedRectangle(cornerRadius: 2, style: .continuous))
+            .background {
+                if layoutMode == mode {
+                    RoundedRectangle(cornerRadius: 2, style: .continuous)
+                        .fill(Color.white)
+                        .matchedGeometryEffect(
+                            id: "archiveLayoutSelection",
+                            in: layoutSelection
+                        )
+                }
+            }
         }
         .buttonStyle(.plain)
     }
