@@ -31,6 +31,7 @@ struct CollectionDetailContainerView: View {
         CollectionDetailView(
             scope: scope,
             cards: cards,
+            sort: model.sort,
             loadState: loadState,
             onRetry: retry,
             onImportScreenshots: { router.navigate(.cardCreationStart) },
@@ -79,10 +80,7 @@ struct CollectionDetailContainerView: View {
             router.navigate(.archiveDetail(kind))
         case .openCard(let card):
             router.navigate(.remoteCardDetail(card))
-        case .selectFilter(let value):
-            guard let sort = ArchiveSort.allCases.first(where: { $0.title == value }) else {
-                return
-            }
+        case .selectSort(let sort):
             Task {
                 await model.selectSort(sort)
             }
@@ -174,8 +172,6 @@ struct CollectionDetailView: View {
     @State private var query = ""
     @State private var interactionMode: InteractionMode
     @State private var selectedIDs: Set<InformationCard.ID> = []
-    @State private var filterSelection = "최신순"
-    @State private var isFilterExpanded = false
     @State private var isDeleteConfirmationPresented = false
     @State private var isDeleting = false
     @State private var favoriteUpdatingIDs: Set<InformationCard.ID> = []
@@ -183,6 +179,7 @@ struct CollectionDetailView: View {
 
     let scope: ArchiveDetailScope
     let cards: [InformationCard]
+    let sort: ArchiveSort
     let loadState: LoadState
     let onRetry: () -> Void
     let onImportScreenshots: () -> Void
@@ -193,6 +190,7 @@ struct CollectionDetailView: View {
     init(
         scope: ArchiveDetailScope,
         cards: [InformationCard],
+        sort: ArchiveSort = .latest,
         loadState: LoadState = .loaded,
         interactionMode: InteractionMode = .browsing,
         initialToast: RecapToastContent? = nil,
@@ -204,6 +202,7 @@ struct CollectionDetailView: View {
     ) {
         self.scope = scope
         self.cards = cards
+        self.sort = sort
         self.loadState = loadState
         _interactionMode = State(initialValue: interactionMode)
         _toast = State(initialValue: initialToast)
@@ -266,13 +265,10 @@ struct CollectionDetailView: View {
 
     private var controlRow: some View {
         HStack(spacing: 14) {
-            RecapFilterPicker(
-                options: ["최신순", "즐겨찾기"],
-                selection: $filterSelection,
-                isExpanded: $isFilterExpanded
-            )
-            .onChange(of: filterSelection) { _, value in
-                onAction(.selectFilter(value))
+            if scope != .favorites {
+                RecapSortToggleButton(title: sort.title) {
+                    onAction(.selectSort(sort.toggled))
+                }
             }
 
             Spacer()

@@ -90,8 +90,8 @@ struct HomeFrequentTypesSection: View {
             RecapSectionHeader(title: "자주 저장한 유형")
 
             if !frequentTypes.isEmpty {
-                HStack(spacing: 20) {
-                    ForEach(frequentTypes) { kind in
+                HStack(spacing: 0) {
+                    ForEach(Array(frequentTypes.enumerated()), id: \.element) { index, kind in
                         Button {
                             openArchive(kind)
                         } label: {
@@ -103,12 +103,17 @@ struct HomeFrequentTypesSection: View {
                                     .tracking(-0.26)
                                     .foregroundStyle(Color.recapGray700)
                                     .lineLimit(1)
-                                    .frame(width: 71)
                             }
+                            .frame(width: 71)
                         }
                         .buttonStyle(.plain)
+
+                        if index < frequentTypes.count - 1 {
+                            Spacer(minLength: 0)
+                        }
                     }
                 }
+                .frame(maxWidth: .infinity)
             }
         }
     }
