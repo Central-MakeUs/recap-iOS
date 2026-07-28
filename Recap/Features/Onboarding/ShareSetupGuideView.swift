@@ -136,6 +136,14 @@ private struct ShareSetupMockup: View {
                 .resizable()
                 .frame(width: 239, height: 238)
 
+            LinearGradient(
+                colors: [.white.opacity(0), .white],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(width: 269, height: 90)
+            .position(x: 120.5, y: 200)
+
             Image("OnboardingShareImageIcon")
                 .resizable()
                 .frame(width: 18, height: 18)
