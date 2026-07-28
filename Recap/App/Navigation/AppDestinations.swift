@@ -45,7 +45,10 @@ extension View {
     ) -> some View {
         switch route {
         case .search:
-            SearchContainerView(loader: searchLoader)
+            SearchContainerView(
+                loader: searchLoader,
+                invalidationCenter: cardDataInvalidationCenter
+            )
         case .allRecentCards:
             AllRecentCardsContainerView(
                 summaryLoader: homeSummaryLoader,

@@ -112,11 +112,12 @@ final class RecapDependencies {
     ) -> RecapDependencies {
         let secureSessionStore = PreviewSecureSessionStore()
         let previewNetworkClient = PreviewNetworkClient()
+        let cardRepository = PreviewCardRepository()
         let authenticationService = AuthenticationService(
             networkClient: previewNetworkClient,
             secureSessionStore: secureSessionStore
         )
-        let previewCaptureService = PreviewCaptureService()
+        let previewCaptureService = PreviewCaptureService(cardRepository: cardRepository)
 
         return RecapDependencies(
             sessionStore: RecapSessionStore(
@@ -128,9 +129,9 @@ final class RecapDependencies {
                 persistence: PreviewOnboardingProgressPersistence(onboardingProgress)
             ),
             networkClient: previewNetworkClient,
-            homeSummaryLoader: PreviewHomeSummaryLoader(),
-            archiveLoader: PreviewArchiveLoader(),
-            searchLoader: PreviewSearchLoader(),
+            homeSummaryLoader: PreviewHomeSummaryLoader(cardRepository: cardRepository),
+            archiveLoader: PreviewArchiveLoader(cardRepository: cardRepository),
+            searchLoader: PreviewSearchLoader(cardRepository: cardRepository),
             captureService: previewCaptureService,
             cardCreationProcessor: PreviewCardCreationPipeline(),
             cardDataInvalidationCenter: CardDataInvalidationCenter(),
@@ -156,7 +157,8 @@ final class RecapDependencies {
             networkClient: networkClient,
             secureSessionStore: secureSessionStore
         )
-        let captureService = PreviewCaptureService()
+        let cardRepository = PreviewCardRepository()
+        let captureService = PreviewCaptureService(cardRepository: cardRepository)
 
         return RecapDependencies(
             sessionStore: RecapSessionStore(
@@ -168,9 +170,9 @@ final class RecapDependencies {
                 persistence: PreviewOnboardingProgressPersistence(onboardingProgress)
             ),
             networkClient: networkClient,
-            homeSummaryLoader: PreviewHomeSummaryLoader(),
-            archiveLoader: PreviewArchiveLoader(),
-            searchLoader: PreviewSearchLoader(),
+            homeSummaryLoader: PreviewHomeSummaryLoader(cardRepository: cardRepository),
+            archiveLoader: PreviewArchiveLoader(cardRepository: cardRepository),
+            searchLoader: PreviewSearchLoader(cardRepository: cardRepository),
             captureService: captureService,
             cardCreationProcessor: PreviewCardCreationPipeline(),
             cardDataInvalidationCenter: CardDataInvalidationCenter(),
@@ -183,12 +185,19 @@ final class RecapDependencies {
 
 @MainActor
 private final class PreviewHomeSummaryLoader: HomeSummaryLoading {
+    private let cardRepository: PreviewCardRepository
+
+    init(cardRepository: PreviewCardRepository = PreviewCardRepository()) {
+        self.cardRepository = cardRepository
+    }
+
     func fetchSummary() async throws -> HomeSummaryContent {
-        HomeSummaryContent(
-            recentCards: SampleData.recentCards,
-            favoriteCards: SampleData.cards.filter(\.isFavorite),
+        let cards = await cardRepository.allCards()
+        return HomeSummaryContent(
+            recentCards: Array(cards.prefix(3)),
+            favoriteCards: cards.filter(\.isFavorite),
             frequentTypes: SampleData.collectionSummaries,
-            hasAnyCapture: true
+            hasAnyCapture: !cards.isEmpty
         )
     }
 }

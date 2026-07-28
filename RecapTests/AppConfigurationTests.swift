@@ -139,4 +139,42 @@ final class MockRuntimeProfileTests: XCTestCase {
         XCTAssertGreaterThan(progressValues.count, 2)
         XCTAssertEqual(progressValues, progressValues.sorted())
     }
+
+    func testMockFavoriteMutationPersistsAcrossHomeArchiveDetailAndSearch() async throws {
+        let dependencies = RecapDependencies.mock()
+        let initialHome = try await dependencies.archiveLoader.fetchHome()
+        let knowledgeCards = try await dependencies.archiveLoader.fetchCards(
+            scope: .category(.knowledge),
+            sort: .latest
+        )
+        let card = try XCTUnwrap(knowledgeCards.first(where: { !$0.isFavorite }))
+        let captureID = try XCTUnwrap(card.captureID)
+
+        try await dependencies.captureService.updateFavorite(
+            captureID: captureID,
+            isFavorite: true
+        )
+
+        let refreshedHome = try await dependencies.archiveLoader.fetchHome()
+        let refreshedCards = try await dependencies.archiveLoader.fetchCards(
+            scope: .category(.knowledge),
+            sort: .latest
+        )
+        let refreshedDetail = try await dependencies.captureService.captureDetail(
+            captureID: captureID
+        )
+        let searchPage = try await dependencies.searchLoader.search(
+            query: "파스타",
+            scope: .all,
+            page: 0,
+            size: 20
+        )
+
+        XCTAssertEqual(refreshedHome.favoriteCount, initialHome.favoriteCount + 1)
+        XCTAssertTrue(
+            try XCTUnwrap(refreshedCards.first(where: { $0.captureID == captureID })).isFavorite
+        )
+        XCTAssertTrue(refreshedDetail.isFavorite)
+        XCTAssertTrue(try XCTUnwrap(searchPage.items.first).card.isFavorite)
+    }
 }

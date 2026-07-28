@@ -2,11 +2,25 @@ import Foundation
 
 @MainActor
 final class PreviewArchiveLoader: ArchiveLoading {
+    private let cardRepository: PreviewCardRepository
+
+    init(cardRepository: PreviewCardRepository = PreviewCardRepository()) {
+        self.cardRepository = cardRepository
+    }
+
     func fetchHome() async throws -> ArchiveHomeContent {
-        ArchiveHomeContent(
-            summaries: SampleData.collectionSummaries,
-            favoriteCount: SampleData.cards.filter(\.isFavorite).count,
-            otherCount: SampleData.cards(in: .other).count
+        let cards = await cardRepository.allCards()
+        return ArchiveHomeContent(
+            summaries: CollectionKind.folderCases.map { kind in
+                let cardsForKind = cards.filter { $0.collection == kind }
+                return CollectionSummary(
+                    kind: kind,
+                    count: cardsForKind.count,
+                    previewTitle: cardsForKind.first?.title ?? "카드 없음"
+                )
+            },
+            favoriteCount: cards.filter(\.isFavorite).count,
+            otherCount: cards.filter { $0.collection == .other }.count
         )
     }
 
@@ -14,11 +28,13 @@ final class PreviewArchiveLoader: ArchiveLoading {
         scope: ArchiveDetailScope,
         sort: ArchiveSort
     ) async throws -> [InformationCard] {
+        let cards = await cardRepository.allCards()
+
         switch scope {
         case .favorites:
-            SampleData.cards.filter(\.isFavorite)
+            return cards.filter(\.isFavorite)
         case .category(let kind):
-            SampleData.cards(in: kind)
+            return cards.filter { $0.collection == kind }
         }
     }
 }

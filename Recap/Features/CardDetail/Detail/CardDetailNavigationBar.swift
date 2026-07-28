@@ -38,7 +38,7 @@ struct CardDetailNavigationBar: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .contentShape(Rectangle().inset(by: -10))
+            .contentShape(Rectangle().inset(by: -5))
             .accessibilityLabel(isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가")
 
             Button(action: onMore) {
@@ -46,7 +46,7 @@ struct CardDetailNavigationBar: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .contentShape(Rectangle().inset(by: -10))
+            .contentShape(Rectangle().inset(by: -5))
             .accessibilityLabel("더보기")
             .padding(.leading, 10)
         }

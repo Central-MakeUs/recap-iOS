@@ -8,14 +8,25 @@ struct SearchContainerView: View {
     @State private var model: SearchFeatureModel
     @State private var recentSearchStore: RecentSearchStore
 
-    init(loader: any SearchLoading) {
+    let invalidationCenter: CardDataInvalidationCenter
+
+    init(
+        loader: any SearchLoading,
+        invalidationCenter: CardDataInvalidationCenter
+    ) {
         _model = State(initialValue: SearchFeatureModel(loader: loader))
         _recentSearchStore = State(initialValue: RecentSearchStore())
+        self.invalidationCenter = invalidationCenter
     }
 
-    init(loader: any SearchLoading, recentSearchStore: RecentSearchStore) {
+    init(
+        loader: any SearchLoading,
+        recentSearchStore: RecentSearchStore,
+        invalidationCenter: CardDataInvalidationCenter
+    ) {
         _model = State(initialValue: SearchFeatureModel(loader: loader))
         _recentSearchStore = State(initialValue: recentSearchStore)
+        self.invalidationCenter = invalidationCenter
     }
 
     var body: some View {
@@ -24,6 +35,10 @@ struct SearchContainerView: View {
             recentSearchStore: recentSearchStore,
             onAction: handleAction
         )
+        .task(id: invalidationCenter.searchRevision) {
+            guard invalidationCenter.searchRevision > 0 else { return }
+            await model.refreshCurrentQuery()
+        }
     }
 
     private func handleAction(_ action: SearchAction) {
