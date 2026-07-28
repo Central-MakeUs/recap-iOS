@@ -46,23 +46,19 @@ struct RecapRootView: View {
                 }
             case .login(let reason):
                 loginView(signOutReason: reason)
-            case .uploadGuide:
-                UploadMethodGuideView {
-                    onboardingStore.move(to: .shareSetup)
-                }
-            case .shareSetup:
-                ShareSetupGuideView(
-                    onShowTutorial: { onboardingStore.move(to: .shareSetupDetail) },
-                    onSkip: { onboardingStore.move(to: .firstCardCreation) }
+            case .onboardingGuide:
+                OnboardingGuideCarouselView(
+                    initialProgress: onboardingStore.progress,
+                    onProgressChanged: onboardingStore.move,
+                    onShowShareSetupTutorial: {
+                        onboardingStore.move(to: .shareSetupDetail)
+                    },
+                    onStart: completeOnboardingAndStartCardCreation,
+                    onSkip: completeOnboarding
                 )
             case .shareSetupDetail:
                 ShareSetupDetailView(
                     onBack: { onboardingStore.move(to: .shareSetup) }
-                )
-            case .firstCardCreation:
-                FirstCleanupStartView(
-                    onStart: completeOnboardingAndStartCardCreation,
-                    onSkip: completeOnboarding
                 )
             case .main:
                 AppShellView(

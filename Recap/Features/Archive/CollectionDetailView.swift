@@ -12,7 +12,7 @@ struct CollectionDetailContainerView: View {
     init(
         scope: ArchiveDetailScope,
         loader: any ArchiveLoading,
-        captureDeleter: any CaptureDeleting,
+        captureMutator: any CaptureMutating,
         invalidationCenter: CardDataInvalidationCenter
     ) {
         self.scope = scope
@@ -21,7 +21,7 @@ struct CollectionDetailContainerView: View {
             initialValue: ArchiveDetailFeatureModel(
                 scope: scope,
                 loader: loader,
-                captureDeleter: captureDeleter,
+                captureMutator: captureMutator,
                 invalidationCenter: invalidationCenter
             )
         )
@@ -35,6 +35,7 @@ struct CollectionDetailContainerView: View {
             onRetry: retry,
             onImportScreenshots: { router.navigate(.cardCreationStart) },
             onDeleteCards: deleteCards,
+            onToggleFavorite: toggleFavorite,
             onAction: handleAction
         )
         .task(id: reloadTrigger) {
@@ -117,6 +118,10 @@ struct CollectionDetailContainerView: View {
     private func deleteCards(_ ids: Set<InformationCard.ID>) async throws {
         try await model.deleteCards(ids: ids)
     }
+
+    private func toggleFavorite(_ id: InformationCard.ID) async throws -> Bool {
+        try await model.toggleFavorite(cardID: id)
+    }
 }
 
 private struct ArchiveDetailReloadTrigger: Hashable {
@@ -173,6 +178,7 @@ struct CollectionDetailView: View {
     @State private var isFilterExpanded = false
     @State private var isDeleteConfirmationPresented = false
     @State private var isDeleting = false
+    @State private var favoriteUpdatingIDs: Set<InformationCard.ID> = []
     @State private var toast: RecapToastContent?
 
     let scope: ArchiveDetailScope
@@ -181,6 +187,7 @@ struct CollectionDetailView: View {
     let onRetry: () -> Void
     let onImportScreenshots: () -> Void
     let onDeleteCards: (Set<InformationCard.ID>) async throws -> Void
+    let onToggleFavorite: (InformationCard.ID) async throws -> Bool
     let onAction: (ArchiveAction) -> Void
 
     init(
@@ -192,6 +199,7 @@ struct CollectionDetailView: View {
         onRetry: @escaping () -> Void = {},
         onImportScreenshots: @escaping () -> Void = {},
         onDeleteCards: @escaping (Set<InformationCard.ID>) async throws -> Void = { _ in },
+        onToggleFavorite: @escaping (InformationCard.ID) async throws -> Bool = { _ in false },
         onAction: @escaping (ArchiveAction) -> Void
     ) {
         self.scope = scope
@@ -202,6 +210,7 @@ struct CollectionDetailView: View {
         self.onRetry = onRetry
         self.onImportScreenshots = onImportScreenshots
         self.onDeleteCards = onDeleteCards
+        self.onToggleFavorite = onToggleFavorite
         self.onAction = onAction
     }
 
@@ -275,7 +284,7 @@ struct CollectionDetailView: View {
                 Button("선택 삭제 (\(selectedIDs.count))", action: requestDeletion)
                     .foregroundStyle(Color.recapBlue500)
                     .disabled(selectedIDs.isEmpty || isDeleting)
-            } else {
+            } else if scope != .favorites {
                 Button("선택", action: beginSelection)
                     .foregroundStyle(Color.recapGray500)
             }
@@ -326,23 +335,24 @@ struct CollectionDetailView: View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 0) {
                 ForEach(filteredCards) { card in
-                    Button {
+                    RecapInformationCardRow(
+                        card: card,
+                        metadata: scope.rowMetadata,
+                        selectionState: isSelecting
+                            ? selectedIDs.contains(card.id)
+                            : nil,
+                        onToggleFavorite: isSelecting || favoriteUpdatingIDs.contains(card.id)
+                            ? nil
+                            : { toggleFavorite(card.id) }
+                    )
+                    .contentShape(Rectangle())
+                    .onTapGesture {
                         if isSelecting {
                             toggleSelection(card.id)
                         } else {
                             onAction(.openCard(card))
                         }
-                    } label: {
-                        RecapInformationCardRow(
-                            card: card,
-                            metadata: scope.rowMetadata,
-                            favoriteOverride: scope.favoriteOverride,
-                            selectionState: isSelecting
-                                ? selectedIDs.contains(card.id)
-                                : nil
-                        )
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }
@@ -391,6 +401,29 @@ struct CollectionDetailView: View {
     private func requestDeletion() {
         guard !selectedIDs.isEmpty else { return }
         isDeleteConfirmationPresented = true
+    }
+
+    private func toggleFavorite(_ id: InformationCard.ID) {
+        guard favoriteUpdatingIDs.insert(id).inserted else { return }
+
+        Task {
+            defer { favoriteUpdatingIDs.remove(id) }
+
+            do {
+                let isFavorite = try await onToggleFavorite(id)
+                toast = RecapToastContent(
+                    style: .success,
+                    message: isFavorite
+                        ? "즐겨찾기에 추가했어요."
+                        : "즐겨찾기에서 해제했어요."
+                )
+            } catch {
+                toast = RecapToastContent(
+                    style: .error,
+                    message: "즐겨찾기를 변경하지 못했어요. 다시 시도해주세요."
+                )
+            }
+        }
     }
 
     private func confirmDeletion() {

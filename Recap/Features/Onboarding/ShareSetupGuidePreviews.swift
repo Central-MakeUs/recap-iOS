@@ -1,7 +1,13 @@
 import SwiftUI
 
 #Preview("Share setup guide") {
-    ShareSetupGuideView(onShowTutorial: {}, onSkip: {})
+    OnboardingGuideCarouselView(
+        initialProgress: .shareSetup,
+        onProgressChanged: { _ in },
+        onShowShareSetupTutorial: {},
+        onStart: {},
+        onSkip: {}
+    )
 }
 
 #Preview("Share setup detail") {
@@ -9,5 +15,11 @@ import SwiftUI
 }
 
 #Preview("First cleanup start") {
-    FirstCleanupStartView(onStart: {}, onSkip: {})
+    OnboardingGuideCarouselView(
+        initialProgress: .firstCardCreation,
+        onProgressChanged: { _ in },
+        onShowShareSetupTutorial: {},
+        onStart: {},
+        onSkip: {}
+    )
 }

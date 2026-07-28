@@ -4,10 +4,8 @@ nonisolated enum AppLaunchDestination: Equatable, Sendable {
     case launching
     case serviceIntro
     case login(SessionSignOutReason?)
-    case uploadGuide
-    case shareSetup
+    case onboardingGuide
     case shareSetupDetail
-    case firstCardCreation
     case main
 }
 
@@ -32,16 +30,11 @@ nonisolated enum AppLaunchDestinationResolver {
         for progress: OnboardingProgress
     ) -> AppLaunchDestination {
         switch progress {
-        case .notStarted, .loginReady, .permissionGuide:
-            return .uploadGuide
-        case .uploadGuide:
-            return .uploadGuide
-        case .shareSetup:
-            return .shareSetup
+        case .notStarted, .loginReady, .permissionGuide, .uploadGuide, .shareSetup,
+             .firstCardCreation:
+            return .onboardingGuide
         case .shareSetupDetail:
             return .shareSetupDetail
-        case .firstCardCreation:
-            return .firstCardCreation
         case .completed:
             return .main
         }

@@ -13,21 +13,26 @@ struct CardDetailImageCard<Content: View>: View {
     }
 
     var body: some View {
-        content
-            .frame(height: CardDetailStyle.imageCardHeight)
-            .frame(maxWidth: .infinity)
-            .clipped()
-            .overlay(alignment: .bottomTrailing) {
-                CardExpandButton(action: onExpand)
-                .padding(.trailing, 8)
-                .padding(.bottom, 8)
-            }
-            .clipShape(
-                RoundedRectangle(
-                    cornerRadius: CardDetailStyle.cornerRadius,
-                    style: .continuous
+        Button(action: onExpand) {
+            content
+                .frame(height: CardDetailStyle.imageCardHeight)
+                .frame(maxWidth: .infinity)
+                .clipped()
+                .overlay(alignment: .bottomTrailing) {
+                    CardExpandIcon()
+                        .padding(.trailing, 8)
+                        .padding(.bottom, 8)
+                }
+                .clipShape(
+                    RoundedRectangle(
+                        cornerRadius: CardDetailStyle.cornerRadius,
+                        style: .continuous
+                    )
                 )
-            )
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("원본 이미지 전체 보기")
     }
 }
 

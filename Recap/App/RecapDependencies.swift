@@ -135,8 +135,14 @@ final class RecapDependencies {
         )
     }
 
-    static func mock() -> RecapDependencies {
-        let secureSessionStore = MockSecureSessionStore()
+    static func mock(
+        initialSessionState: RecapSessionState = .signedOut(nil),
+        onboardingProgress: OnboardingProgress = .notStarted
+    ) -> RecapDependencies {
+        let resolvedSessionState = initialSessionState
+        let secureSessionStore = MockSecureSessionStore(
+            tokenRecord: resolvedSessionState.tokenRecord
+        )
         let networkClient = MockAuthenticationNetworkClient()
         let authenticationService = AuthenticationService(
             networkClient: networkClient,
@@ -148,10 +154,10 @@ final class RecapDependencies {
             sessionStore: RecapSessionStore(
                 authenticationService: authenticationService,
                 secureSessionStore: secureSessionStore,
-                initialState: .signedOut(nil)
+                initialState: resolvedSessionState
             ),
             onboardingProgressStore: OnboardingProgressStore(
-                persistence: PreviewOnboardingProgressPersistence(.notStarted)
+                persistence: PreviewOnboardingProgressPersistence(onboardingProgress)
             ),
             networkClient: networkClient,
             homeSummaryLoader: PreviewHomeSummaryLoader(),
@@ -208,10 +214,21 @@ private final class PreviewOnboardingProgressPersistence: OnboardingProgressPers
 private final class MockSecureSessionStore: SecureSessionStoring {
     private var tokenRecord: ServerTokenRecord?
 
+    init(tokenRecord: ServerTokenRecord? = nil) {
+        self.tokenRecord = tokenRecord
+    }
+
     func deviceID() throws -> String { "mock-device" }
     func saveServerTokenRecord(_ record: ServerTokenRecord) throws { tokenRecord = record }
     func loadServerTokenRecord() throws -> ServerTokenRecord? { tokenRecord }
     func deleteServerTokenRecord() throws { tokenRecord = nil }
+}
+
+private extension RecapSessionState {
+    var tokenRecord: ServerTokenRecord? {
+        guard case .authenticated(let tokenRecord) = self else { return nil }
+        return tokenRecord
+    }
 }
 
 private final class MockAuthenticationNetworkClient: NetworkClient, @unchecked Sendable {

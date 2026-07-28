@@ -4,7 +4,13 @@ protocol CaptureDeleting: Sendable {
     func deleteCapture(captureID: Int64) async throws
 }
 
-protocol CaptureServing: CaptureDeleting, Sendable {
+protocol CaptureFavoriteUpdating: Sendable {
+    func updateFavorite(captureID: Int64, isFavorite: Bool) async throws
+}
+
+protocol CaptureMutating: CaptureDeleting, CaptureFavoriteUpdating {}
+
+protocol CaptureServing: CaptureMutating, Sendable {
     func issueUploadURLs(count: Int) async throws -> [UploadItemDTO]
     func organize(imageKeys: [String]) async throws -> OrganizeResponseDTO
     func organizeStatus(batchID: Int64) async throws -> OrganizeStatusResponseDTO
@@ -12,7 +18,6 @@ protocol CaptureServing: CaptureDeleting, Sendable {
     func pendingOrganizeResult() async throws -> PendingOrganizeResultDTO?
     func acknowledgeOrganizeResult(batchID: Int64) async throws
     func captureDetail(captureID: Int64) async throws -> InformationCard
-    func updateFavorite(captureID: Int64, isFavorite: Bool) async throws
 }
 
 final class CaptureService: CaptureServing, @unchecked Sendable {

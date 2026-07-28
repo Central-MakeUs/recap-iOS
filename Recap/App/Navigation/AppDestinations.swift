@@ -52,14 +52,14 @@ extension View {
             CollectionDetailContainerView(
                 scope: .favorites,
                 loader: archiveLoader,
-                captureDeleter: captureService,
+                captureMutator: captureService,
                 invalidationCenter: cardDataInvalidationCenter
             )
         case .archiveDetail(let kind):
             CollectionDetailContainerView(
                 scope: .category(kind),
                 loader: archiveLoader,
-                captureDeleter: captureService,
+                captureMutator: captureService,
                 invalidationCenter: cardDataInvalidationCenter
             )
         case .cardDetail(let id):

@@ -44,6 +44,31 @@ enum RecapPresentation {
         }
     }
 
+    static func organizedDateText(for card: InformationCard) -> String {
+        if let organizedAt = card.organizedAt {
+            let components = Calendar.current.dateComponents(
+                [.month, .day],
+                from: organizedAt
+            )
+            if let month = components.month, let day = components.day {
+                return String(format: "%02d월 %02d일 정리", month, day)
+            }
+        }
+
+        let numbers = card.dateText
+            .split(whereSeparator: { !$0.isNumber })
+            .compactMap { Int($0) }
+
+        guard numbers.count >= 2 else {
+            return card.dateText
+        }
+        return String(
+            format: "%02d월 %02d일 정리",
+            numbers[numbers.count - 2],
+            numbers[numbers.count - 1]
+        )
+    }
+
     static func initialRangeOption(for range: InitialRange) -> InitialRangeOption {
         switch range {
         case .sevenDays:
