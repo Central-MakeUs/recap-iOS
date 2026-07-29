@@ -1,12 +1,18 @@
 import SwiftUI
 
 struct RecapScreenshotThumbnail: View {
+    enum FallbackStyle {
+        case empty
+        case noImage
+    }
+
     let kind: CollectionKind
     var assetName: String?
     var remoteURL: URL? = nil
     var cornerRadius: CGFloat = 5
     var hasFavoriteFold = false
     var size: CGSize? = nil
+    var fallbackStyle: FallbackStyle = .empty
     var onRemoteLoadFailure: (URL) -> Void = { _ in }
 
     var body: some View {
@@ -52,8 +58,21 @@ struct RecapScreenshotThumbnail: View {
         )
     }
 
+    @ViewBuilder
     private var fallback: some View {
-        Color.clear
+        switch fallbackStyle {
+        case .empty:
+            Color.clear
+        case .noImage:
+            Color.recapThumbnail
+                .overlay {
+                    RecapIconView(
+                        icon: .noImage,
+                        size: 24,
+                        color: Color.recapGray500
+                    )
+                }
+        }
     }
 }
 
