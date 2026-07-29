@@ -182,7 +182,7 @@ final class RecapTests: XCTestCase {
         XCTAssertTrue(favoriteCards[0].isFavorite)
     }
 
-    func testCardEditDraftRequiresTitleAndSummary() {
+    func testCardEditDraftRequiresTitleSummaryAndBody() {
         let missingTitle = CardEditDraft(
             collection: .schedule,
             title: "   ",
@@ -195,11 +195,19 @@ final class RecapTests: XCTestCase {
             summary: "\n",
             body: "본문"
         )
+        let missingBody = CardEditDraft(
+            collection: .schedule,
+            title: "제주 숙소 예약 정보",
+            summary: "예약 정보",
+            body: "\n"
+        )
 
         XCTAssertFalse(missingTitle.isSavable)
         XCTAssertTrue(missingTitle.hasRequiredFieldError)
         XCTAssertFalse(missingSummary.isSavable)
         XCTAssertTrue(missingSummary.hasRequiredFieldError)
+        XCTAssertFalse(missingBody.isSavable)
+        XCTAssertTrue(missingBody.hasRequiredFieldError)
     }
 
     func testCardEditDraftRejectsTextBeyondFigmaLimits() {

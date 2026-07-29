@@ -65,10 +65,20 @@ struct RecapTextInput: View {
 }
 
 struct RecapTextArea: View {
+    private enum Layout {
+        static let minimumLineCount = 2
+        static let maximumLineCount = 12
+        static let minimumHeight: CGFloat = 66
+        static let maximumHeight: CGFloat = 266
+        static let horizontalPadding: CGFloat = 13
+        static let verticalPadding: CGFloat = 13
+    }
+
     let label: String
     @Binding var text: String
     var placeholder: String
     var characterLimit: Int?
+    var errorMessage: String?
 
     @FocusState private var isFocused: Bool
 
@@ -76,26 +86,19 @@ struct RecapTextArea: View {
         VStack(alignment: .leading, spacing: 6) {
             RecapInputLabel(title: label)
 
-            TextEditor(text: limitedText)
+            TextField(placeholder, text: limitedText, axis: .vertical)
                 .focused($isFocused)
                 .font(RecapFont.pretendard(size: 14, weight: .regular))
                 .tracking(-0.28)
                 .foregroundStyle(Color.recapGray900)
-                .scrollContentBackground(.hidden)
-                .overlay(alignment: .topLeading) {
-                    if text.isEmpty {
-                        Text(placeholder)
-                            .font(RecapFont.pretendard(size: 14, weight: .regular))
-                            .tracking(-0.28)
-                            .foregroundStyle(Color.recapGray300)
-                            .padding(.top, 8)
-                            .padding(.leading, 5)
-                            .allowsHitTesting(false)
-                    }
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 5)
-                .frame(height: 126)
+                .lineLimit(Layout.minimumLineCount...Layout.maximumLineCount)
+                .padding(.horizontal, Layout.horizontalPadding)
+                .padding(.vertical, Layout.verticalPadding)
+                .frame(
+                    minHeight: Layout.minimumHeight,
+                    maxHeight: Layout.maximumHeight,
+                    alignment: .topLeading
+                )
                 .background(Color.white)
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 .overlay {
@@ -103,12 +106,26 @@ struct RecapTextArea: View {
                         .stroke(isFocused ? Color.recapBlue300 : Color.recapGray200, lineWidth: 1)
                 }
 
-            if let characterLimit {
-                RecapCharacterCounter(
-                    currentCount: text.count,
-                    limit: characterLimit
-                )
-                    .frame(maxWidth: .infinity, alignment: .trailing)
+            if characterLimit != nil || errorMessage != nil {
+                HStack(spacing: 6) {
+                    if let errorMessage {
+                        Image(systemName: "exclamationmark.circle.fill")
+                            .font(.system(size: 12, weight: .medium))
+                        Text(errorMessage)
+                            .font(RecapFont.pretendard(size: 12, weight: .medium))
+                            .tracking(-0.24)
+                    }
+
+                    Spacer(minLength: 0)
+
+                    if let characterLimit {
+                        RecapCharacterCounter(
+                            currentCount: text.count,
+                            limit: characterLimit
+                        )
+                    }
+                }
+                .foregroundStyle(Color.recapDestructive)
             }
         }
     }

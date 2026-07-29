@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct CardEditForm: View {
     let card: InformationCard
@@ -41,12 +42,32 @@ struct CardEditForm: View {
                 )
                 .padding(.top, 27)
 
-                CardEditBodyField(body: $draft.body)
+                CardEditBodyField(
+                    body: $draft.body,
+                    showsRequiredError: draft.trimmedBody.isEmpty
+                )
                     .padding(.top, 27)
             }
             .padding(.horizontal, CardDetailStyle.horizontalPadding)
             .padding(.bottom, 28)
         }
+        .scrollDismissesKeyboard(.interactively)
+        .background {
+            Color.clear
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    dismissKeyboard()
+                }
+        }
+    }
+
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder),
+            to: nil,
+            from: nil,
+            for: nil
+        )
     }
 }
 
