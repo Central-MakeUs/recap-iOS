@@ -265,10 +265,8 @@ struct CollectionDetailView: View {
 
     private var controlRow: some View {
         HStack(spacing: 14) {
-            if scope != .favorites {
-                RecapSortToggleButton(title: sort.title) {
-                    onAction(.selectSort(sort.toggled))
-                }
+            RecapSortToggleButton(title: sort.title) {
+                onAction(.selectSort(sort.toggled))
             }
 
             Spacer()

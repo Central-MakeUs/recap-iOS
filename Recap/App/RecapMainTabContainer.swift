@@ -22,11 +22,14 @@ struct RecapMainTabContainer: View {
     let archiveLoader: any ArchiveLoading
     let searchLoader: any SearchLoading
     let captureService: any CaptureServing
+    let userAccountService: any UserAccountServing
     let cardCreationProcessor: any CardCreationProcessing
     let cardDataInvalidationCenter: CardDataInvalidationCenter
     let organizeNotificationController: OrganizeNotificationController
     let onUpload: () -> Void
     let onCardDeleted: () -> Void
+    let onAccountWithdrawalCompleted: () -> Void
+    let onAccountDataDeleted: () -> Void
 
     @State private var chromeState = RecapMainTabChromeState()
 
@@ -87,10 +90,13 @@ struct RecapMainTabContainer: View {
                     archiveLoader: archiveLoader,
                     searchLoader: searchLoader,
                     captureService: captureService,
+                    userAccountService: userAccountService,
                     cardCreationProcessor: cardCreationProcessor,
                     cardDataInvalidationCenter: cardDataInvalidationCenter,
                     organizeNotificationController: organizeNotificationController,
-                    onCardDeleted: onCardDeleted
+                    onCardDeleted: onCardDeleted,
+                    onAccountWithdrawalCompleted: onAccountWithdrawalCompleted,
+                    onAccountDataDeleted: onAccountDataDeleted
                 )
         }
     }

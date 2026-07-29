@@ -151,6 +151,14 @@ final class CardCreationFlowViewModel {
         step = .processing
     }
 
+    func shouldPresentNotificationPermissionGuide() async -> Bool {
+        await notificationController?.shouldPresentPermissionGuide() ?? false
+    }
+
+    func requestNotificationPermission() async {
+        await notificationController?.requestPermissionForOrganize()
+    }
+
     func cancelProcessing() async {
         await processor.cancelCurrentProcess()
         progress = .initial

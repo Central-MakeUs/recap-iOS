@@ -1,12 +1,18 @@
 import SwiftUI
 
 struct RecapScreenshotThumbnail: View {
+    enum FallbackStyle {
+        case empty
+        case noImage
+    }
+
     let kind: CollectionKind
     var assetName: String?
     var remoteURL: URL? = nil
     var cornerRadius: CGFloat = 5
     var hasFavoriteFold = false
     var size: CGSize? = nil
+    var fallbackStyle: FallbackStyle = .empty
     var onRemoteLoadFailure: (URL) -> Void = { _ in }
 
     var body: some View {
@@ -25,16 +31,14 @@ struct RecapScreenshotThumbnail: View {
                             .scaledToFill()
                     },
                     loadingContent: {
-                        ProgressView()
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .background(Color.recapThumbnail)
+                        fallback
                     },
                     failureContent: {
-                        placeholder
+                        fallback
                     }
                 )
             } else {
-                placeholder
+                fallback
             }
         }
         .frame(width: size?.width, height: size?.height)
@@ -42,8 +46,7 @@ struct RecapScreenshotThumbnail: View {
         .clipped()
         .overlay {
             thumbnailShape
-                .stroke(Color.recapGray100, lineWidth: 1)
-                .padding(0.5)
+                .strokeBorder(Color.recapGray100, lineWidth: 1)
         }
     }
 
@@ -54,32 +57,42 @@ struct RecapScreenshotThumbnail: View {
         )
     }
 
-    private var placeholder: some View {
-        let display = RecapPresentation.collectionDisplay(for: kind)
-
-        return RoundedRectangle(cornerRadius: 5, style: .continuous)
-            .fill(Color.recapThumbnail)
-            .overlay(alignment: .topLeading) {
-                Rectangle()
-                    .fill(display.dotColor.opacity(0.20))
-                    .frame(height: 18)
-            }
-            .overlay {
-                Image(systemName: display.symbolName)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(display.textColor.opacity(0.55))
-            }
+    @ViewBuilder
+    private var fallback: some View {
+        switch fallbackStyle {
+        case .empty:
+            Color.clear
+        case .noImage:
+            Color.recapThumbnail
+                .overlay {
+                    RecapIconView(
+                        icon: .noImage,
+                        size: 24,
+                        color: Color.recapGray500
+                    )
+                }
+        }
     }
 }
 
-private struct RecapScreenshotThumbnailShape: Shape {
+private struct RecapScreenshotThumbnailShape: InsettableShape {
     let cornerRadius: CGFloat
     let hasFavoriteFold: Bool
+    var insetAmount: CGFloat = 0
+
+    func inset(by amount: CGFloat) -> RecapScreenshotThumbnailShape {
+        var insetShape = self
+        insetShape.insetAmount += amount
+        return insetShape
+    }
 
     func path(in rect: CGRect) -> Path {
+        let rect = rect.insetBy(dx: insetAmount, dy: insetAmount)
+        let insetCornerRadius = max(0, cornerRadius - insetAmount)
+
         guard hasFavoriteFold else {
             return RoundedRectangle(
-                cornerRadius: cornerRadius,
+                cornerRadius: insetCornerRadius,
                 style: .continuous
             )
             .path(in: rect)
@@ -87,7 +100,7 @@ private struct RecapScreenshotThumbnailShape: Shape {
 
         let scaleX = rect.width / 62
         let scaleY = rect.height / 80
-        let radius = 5 * min(scaleX, scaleY)
+        let radius = max(0, (5 * min(scaleX, scaleY)) - insetAmount)
         let foldTopEndX = rect.minX + (31 * scaleX)
         let foldVerticalX = rect.minX + (36 * scaleX)
         let foldBottomStartX = rect.minX + (41 * scaleX)
@@ -156,5 +169,24 @@ private struct RecapScreenshotThumbnailShape: Shape {
             color: Color.recapGray100
         )
     }
+    .padding()
+}
+
+#Preview("즐겨찾기 썸네일 폴백") {
+    ZStack(alignment: .topTrailing) {
+        RecapScreenshotThumbnail(
+            kind: .shopping,
+            assetName: nil,
+            hasFavoriteFold: true,
+            size: CGSize(width: 62, height: 80)
+        )
+
+        RecapIconView(
+            icon: .star,
+            size: 24,
+            color: Color.recapBlue300
+        )
+    }
+    .frame(width: 62, height: 80)
     .padding()
 }

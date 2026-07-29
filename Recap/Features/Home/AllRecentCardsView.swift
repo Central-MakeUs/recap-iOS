@@ -63,7 +63,9 @@ struct AllRecentCardsView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 19)
 
-                Text("\(cards.count) recaps")
+                Text(
+                    "\(Text("\(cards.count)").font(RecapFont.pretendard(size: 14, weight: .semibold)).foregroundStyle(Color.recapGray700)) recaps"
+                )
                     .font(RecapFont.pretendard(size: 14, weight: .regular))
                     .tracking(-0.28)
                     .foregroundStyle(Color.recapGray500)

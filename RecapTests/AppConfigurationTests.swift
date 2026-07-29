@@ -91,7 +91,35 @@ final class AppConfigurationTests: XCTestCase {
 }
 
 @MainActor
-final class MockRuntimeProfileTests: XCTestCase {
+final class RuntimeProfileTests: XCTestCase {
+    func testLiveDependenciesOpenMainWithoutReplacingLiveServices() {
+        let configuration = AppConfiguration.live()
+        let firstLaunch = RecapDependencies.live(configuration: configuration)
+
+        XCTAssertEqual(firstLaunch.onboardingProgressStore.progress, .completed)
+        firstLaunch.onboardingProgressStore.move(to: .completed)
+
+        let nextLaunch = RecapDependencies.live(configuration: configuration)
+
+        XCTAssertEqual(nextLaunch.onboardingProgressStore.progress, .completed)
+        XCTAssertEqual(
+            AppLaunchDestinationResolver.resolve(
+                sessionState: .authenticated(
+                    ServerTokenRecord(
+                        accessToken: "access",
+                        refreshToken: "refresh",
+                        accessTokenExpiresAt: .distantFuture
+                    )
+                ),
+                onboardingProgress: nextLaunch.onboardingProgressStore.progress
+            ),
+            .main
+        )
+        XCTAssertTrue(nextLaunch.networkClient is AuthenticatedNetworkClient)
+        XCTAssertTrue(nextLaunch.homeSummaryLoader is HomeSummaryService)
+        XCTAssertTrue(nextLaunch.captureService is CaptureService)
+    }
+
     func testSimulatorMockDependenciesResolveDirectlyToMain() {
         let dependencies = RecapDependencies.simulatorMock()
 
@@ -121,7 +149,7 @@ final class MockRuntimeProfileTests: XCTestCase {
         XCTAssertEqual(tokenRecord.accessToken, "mock-access-token")
     }
 
-    func testDefaultMockDependenciesResolveToServiceIntro() {
+    func testDefaultMockDependenciesResolveToLogin() {
         let dependencies = RecapDependencies.mock()
 
         XCTAssertEqual(dependencies.sessionStore.state, .signedOut(nil))
@@ -131,7 +159,7 @@ final class MockRuntimeProfileTests: XCTestCase {
                 sessionState: dependencies.sessionStore.state,
                 onboardingProgress: dependencies.onboardingProgressStore.progress
             ),
-            .serviceIntro
+            .login(nil)
         )
     }
 

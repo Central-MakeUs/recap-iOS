@@ -55,22 +55,18 @@ struct SearchResultsView: View {
         }
     }
 
+    @ViewBuilder
     private var normalContent: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 22) {
-                if query.isEmpty {
-                    SearchRecentContent(
-                        recentKeywords: recentSearchStore.keywords,
-                        clearKeywords: recentSearchStore.removeAll,
-                        selectKeyword: selectRecentKeyword
-                    )
-                } else {
-                    searchStateContent
-                }
+        if query.isEmpty {
+            scrollContent {
+                SearchRecentContent(
+                    recentKeywords: recentSearchStore.keywords,
+                    clearKeywords: recentSearchStore.removeAll,
+                    selectKeyword: selectRecentKeyword
+                )
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 18)
-            .padding(.bottom, 40)
+        } else {
+            searchStateContent
         }
     }
 
@@ -91,14 +87,28 @@ struct SearchResultsView: View {
         case .failed:
             SearchIncompleteState(title: "미구현: 검색 실패")
         case .loaded(let content) where content.results.isEmpty:
-            SearchIncompleteState(title: "미구현: 검색 결과 없음")
+            SearchNoResultsView()
         case .loaded(let content):
-            SearchResultsList(
-                totalCount: content.totalCount,
-                results: content.results,
-                openCard: openCard,
-                loadNextPageIfNeeded: loadNextPageIfNeeded
-            )
+            scrollContent {
+                SearchResultsList(
+                    totalCount: content.totalCount,
+                    results: content.results,
+                    openCard: openCard,
+                    loadNextPageIfNeeded: loadNextPageIfNeeded
+                )
+            }
+        }
+    }
+
+    private func scrollContent<Content: View>(
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        ScrollView(showsIndicators: false) {
+            content()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 16)
+                .padding(.top, 18)
+                .padding(.bottom, 40)
         }
     }
 
@@ -151,7 +161,7 @@ struct SearchResultsView: View {
     }
 }
 
-#Preview("Search empty - incomplete") {
+#Preview("Search empty") {
     NavigationStack {
         SearchResultsView(
             initialQuery: "없는검색어",

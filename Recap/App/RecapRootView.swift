@@ -5,27 +5,34 @@ struct RecapRootView: View {
     @State private var onboardingStore: OnboardingProgressStore
     @State private var router: AppRouter
     @State private var cardStore: RecapCardStore
+    @State private var isSplashPresented: Bool
 
     private let dependencies: RecapDependencies
 
-    init(dependencies: RecapDependencies) {
+    init(
+        dependencies: RecapDependencies,
+        initiallyShowsSplash: Bool = true
+    ) {
         self.init(
             dependencies: dependencies,
             router: AppRouter(),
-            cardStore: RecapCardStore(cards: SampleData.cards)
+            cardStore: RecapCardStore(cards: SampleData.cards),
+            initiallyShowsSplash: initiallyShowsSplash
         )
     }
 
     init(
         dependencies: RecapDependencies,
         router: AppRouter,
-        cardStore: RecapCardStore
+        cardStore: RecapCardStore,
+        initiallyShowsSplash: Bool = true
     ) {
         self.dependencies = dependencies
         _sessionStore = State(initialValue: dependencies.sessionStore)
         _onboardingStore = State(initialValue: dependencies.onboardingProgressStore)
         _router = State(initialValue: router)
         _cardStore = State(initialValue: cardStore)
+        _isSplashPresented = State(initialValue: initiallyShowsSplash)
     }
 
     private var destination: AppLaunchDestination {
@@ -37,42 +44,10 @@ struct RecapRootView: View {
 
     var body: some View {
         Group {
-            switch destination {
-            case .launching:
-                ProgressView()
-            case .serviceIntro:
-                OnboardingIntroView {
-                    onboardingStore.move(to: .loginReady)
-                }
-            case .login(let reason):
-                loginView(signOutReason: reason)
-            case .onboardingGuide:
-                OnboardingGuideCarouselView(
-                    initialProgress: onboardingStore.progress,
-                    onProgressChanged: onboardingStore.move,
-                    onShowShareSetupTutorial: {
-                        onboardingStore.move(to: .shareSetupDetail)
-                    },
-                    onStart: completeOnboardingAndStartCardCreation,
-                    onSkip: completeOnboarding
-                )
-            case .shareSetupDetail:
-                ShareSetupDetailView(
-                    onBack: { onboardingStore.move(to: .shareSetup) }
-                )
-            case .main:
-                AppShellView(
-                    router: router,
-                    cardStore: cardStore,
-                    homeSummaryLoader: dependencies.homeSummaryLoader,
-                    archiveLoader: dependencies.archiveLoader,
-                    searchLoader: dependencies.searchLoader,
-                    captureService: dependencies.captureService,
-                    cardCreationProcessor: dependencies.cardCreationProcessor,
-                    cardDataInvalidationCenter: dependencies.cardDataInvalidationCenter,
-                    organizeNotificationController: dependencies.organizeNotificationController,
-                    onLogout: logout
-                )
+            if isSplashPresented {
+                AppSplashView(onFinished: finishSplash)
+            } else {
+                destinationView
             }
         }
         .animation(.easeInOut(duration: 0.22), value: destination)
@@ -84,6 +59,52 @@ struct RecapRootView: View {
         .task(id: sessionStore.state) {
             await sessionStore.refreshAccessTokenWhenNeeded()
         }
+    }
+
+    @ViewBuilder
+    private var destinationView: some View {
+        switch destination {
+        case .launching:
+            ProgressView()
+        case .login(let reason):
+            loginView(signOutReason: reason)
+        case .onboardingGuide:
+            OnboardingGuideCarouselView(
+                initialProgress: onboardingStore.progress,
+                onProgressChanged: onboardingStore.move,
+                onShowShareSetupTutorial: {
+                    onboardingStore.move(to: .shareSetupDetail)
+                },
+                onStart: completeOnboardingAndStartCardCreation,
+                onSkip: completeOnboarding
+            )
+        case .shareSetupDetail:
+            ShareSetupDetailView(
+                onBack: { onboardingStore.move(to: .shareSetup) }
+            )
+        case .main:
+            AppShellView(
+                router: router,
+                cardStore: cardStore,
+                homeSummaryLoader: dependencies.homeSummaryLoader,
+                archiveLoader: dependencies.archiveLoader,
+                searchLoader: dependencies.searchLoader,
+                captureService: dependencies.captureService,
+                userAccountService: dependencies.userAccountService,
+                cardCreationProcessor: dependencies.cardCreationProcessor,
+                cardDataInvalidationCenter: dependencies.cardDataInvalidationCenter,
+                organizeNotificationController: dependencies.organizeNotificationController,
+                onLogout: logout,
+                onAccountWithdrawalCompleted: completeAccountWithdrawal
+            )
+        }
+    }
+
+    private func finishSplash() {
+        if onboardingStore.progress == .notStarted {
+            onboardingStore.move(to: .loginReady)
+        }
+        isSplashPresented = false
     }
 
     private func loginView(signOutReason: SessionSignOutReason?) -> some View {
@@ -129,6 +150,11 @@ struct RecapRootView: View {
             }
         }
     }
+
+    private func completeAccountWithdrawal() {
+        sessionStore.completeAccountWithdrawal()
+        MainTab.allCases.forEach(router.reset)
+    }
 }
 
 #Preview("Onboarding start") {
@@ -153,7 +179,8 @@ struct RecapRootView: View {
             onboardingProgress: .completed
         ),
         router: AppRouter(),
-        cardStore: PreviewStores.recapCardStore()
+        cardStore: PreviewStores.recapCardStore(),
+        initiallyShowsSplash: false
     )
 }
 
@@ -162,7 +189,8 @@ struct RecapRootView: View {
         dependencies: .preview(
             sessionState: .signedOut(.sessionExpired),
             onboardingProgress: .completed
-        )
+        ),
+        initiallyShowsSplash: false
     )
 }
 
@@ -171,6 +199,7 @@ struct RecapRootView: View {
         dependencies: .preview(
             sessionState: .authenticating(.kakao),
             onboardingProgress: .loginReady
-        )
+        ),
+        initiallyShowsSplash: false
     )
 }

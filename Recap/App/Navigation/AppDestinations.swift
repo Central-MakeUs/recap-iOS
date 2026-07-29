@@ -8,10 +8,13 @@ extension View {
         archiveLoader: any ArchiveLoading,
         searchLoader: any SearchLoading,
         captureService: any CaptureServing,
+        userAccountService: any UserAccountServing,
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
         organizeNotificationController: OrganizeNotificationController,
-        onCardDeleted: @escaping () -> Void
+        onCardDeleted: @escaping () -> Void,
+        onAccountWithdrawalCompleted: @escaping () -> Void,
+        onAccountDataDeleted: @escaping () -> Void
     ) -> some View {
         navigationDestination(for: AppRoute.self) { route in
             destination(
@@ -21,10 +24,13 @@ extension View {
                 archiveLoader: archiveLoader,
                 searchLoader: searchLoader,
                 captureService: captureService,
+                userAccountService: userAccountService,
                 cardCreationProcessor: cardCreationProcessor,
                 cardDataInvalidationCenter: cardDataInvalidationCenter,
                 organizeNotificationController: organizeNotificationController,
-                onCardDeleted: onCardDeleted
+                onCardDeleted: onCardDeleted,
+                onAccountWithdrawalCompleted: onAccountWithdrawalCompleted,
+                onAccountDataDeleted: onAccountDataDeleted
             )
         }
     }
@@ -38,10 +44,13 @@ extension View {
         archiveLoader: any ArchiveLoading,
         searchLoader: any SearchLoading,
         captureService: any CaptureServing,
+        userAccountService: any UserAccountServing,
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
         organizeNotificationController: OrganizeNotificationController,
-        onCardDeleted: @escaping () -> Void
+        onCardDeleted: @escaping () -> Void,
+        onAccountWithdrawalCompleted: @escaping () -> Void,
+        onAccountDataDeleted: @escaping () -> Void
     ) -> some View {
         switch route {
         case .search:
@@ -94,7 +103,11 @@ extension View {
                 )
             )
         case .settings:
-            SettingsContainerView()
+            SettingsContainerView(
+                userAccountService: userAccountService,
+                accountWithdrawalCompleted: onAccountWithdrawalCompleted,
+                accountDataDeleted: onAccountDataDeleted
+            )
         }
     }
 }

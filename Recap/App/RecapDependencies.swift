@@ -9,6 +9,7 @@ final class RecapDependencies {
     let archiveLoader: any ArchiveLoading
     let searchLoader: any SearchLoading
     let captureService: any CaptureServing
+    let userAccountService: any UserAccountServing
     let cardCreationProcessor: any CardCreationProcessing
     let cardDataInvalidationCenter: CardDataInvalidationCenter
     let organizeNotificationController: OrganizeNotificationController
@@ -24,6 +25,7 @@ final class RecapDependencies {
         archiveLoader: any ArchiveLoading,
         searchLoader: any SearchLoading,
         captureService: any CaptureServing,
+        userAccountService: any UserAccountServing,
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
         organizeNotificationController: OrganizeNotificationController,
@@ -37,6 +39,7 @@ final class RecapDependencies {
         self.archiveLoader = archiveLoader
         self.searchLoader = searchLoader
         self.captureService = captureService
+        self.userAccountService = userAccountService
         self.cardCreationProcessor = cardCreationProcessor
         self.cardDataInvalidationCenter = cardDataInvalidationCenter
         self.organizeNotificationController = organizeNotificationController
@@ -88,13 +91,14 @@ final class RecapDependencies {
         return RecapDependencies(
             sessionStore: sessionStore,
             onboardingProgressStore: OnboardingProgressStore(
-                persistence: UserDefaultsOnboardingProgressPersistence()
+                persistence: InMemoryOnboardingProgressPersistence(.completed)
             ),
             networkClient: authenticatedNetworkClient,
             homeSummaryLoader: HomeSummaryService(networkClient: authenticatedNetworkClient),
             archiveLoader: ArchiveService(networkClient: authenticatedNetworkClient),
             searchLoader: SearchService(networkClient: authenticatedNetworkClient),
             captureService: captureService,
+            userAccountService: UserAccountService(networkClient: authenticatedNetworkClient),
             cardCreationProcessor: CardCreationPipeline(
                 captureService: captureService,
                 imageUploader: URLSessionPresignedImageUploader()
@@ -126,13 +130,14 @@ final class RecapDependencies {
                 initialState: sessionState
             ),
             onboardingProgressStore: OnboardingProgressStore(
-                persistence: PreviewOnboardingProgressPersistence(onboardingProgress)
+                persistence: InMemoryOnboardingProgressPersistence(onboardingProgress)
             ),
             networkClient: previewNetworkClient,
             homeSummaryLoader: PreviewHomeSummaryLoader(cardRepository: cardRepository),
             archiveLoader: PreviewArchiveLoader(cardRepository: cardRepository),
             searchLoader: PreviewSearchLoader(cardRepository: cardRepository),
             captureService: previewCaptureService,
+            userAccountService: PreviewUserAccountService(capturedCount: SampleData.cards.count),
             cardCreationProcessor: PreviewCardCreationPipeline(),
             cardDataInvalidationCenter: CardDataInvalidationCenter(),
             organizeNotificationController: OrganizeNotificationController(
@@ -167,13 +172,16 @@ final class RecapDependencies {
                 initialState: resolvedSessionState
             ),
             onboardingProgressStore: OnboardingProgressStore(
-                persistence: PreviewOnboardingProgressPersistence(onboardingProgress)
+                persistence: InMemoryOnboardingProgressPersistence(onboardingProgress)
             ),
             networkClient: networkClient,
             homeSummaryLoader: PreviewHomeSummaryLoader(cardRepository: cardRepository),
             archiveLoader: PreviewArchiveLoader(cardRepository: cardRepository),
             searchLoader: PreviewSearchLoader(cardRepository: cardRepository),
             captureService: captureService,
+            userAccountService: PreviewUserAccountService(
+                capturedCount: SampleData.cards.count
+            ),
             cardCreationProcessor: PreviewCardCreationPipeline(),
             cardDataInvalidationCenter: CardDataInvalidationCenter(),
             organizeNotificationController: OrganizeNotificationController(),
@@ -231,7 +239,7 @@ private final class PreviewSecureSessionStore: SecureSessionStoring {
     func deleteServerTokenRecord() throws {}
 }
 
-private final class PreviewOnboardingProgressPersistence: OnboardingProgressPersisting {
+private final class InMemoryOnboardingProgressPersistence: OnboardingProgressPersisting {
     private var progress: OnboardingProgress
 
     init(_ progress: OnboardingProgress) {

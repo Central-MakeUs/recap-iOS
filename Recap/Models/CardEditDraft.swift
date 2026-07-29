@@ -39,13 +39,14 @@ struct CardEditDraft: Equatable {
     var isSavable: Bool {
         !trimmedTitle.isEmpty
             && !trimmedSummary.isEmpty
+            && !trimmedBody.isEmpty
             && title.count <= Self.titleLimit
             && summary.count <= Self.summaryLimit
             && body.count <= Self.bodyLimit
     }
 
     var hasRequiredFieldError: Bool {
-        trimmedTitle.isEmpty || trimmedSummary.isEmpty
+        trimmedTitle.isEmpty || trimmedSummary.isEmpty || trimmedBody.isEmpty
     }
 
     func normalized() -> CardEditDraft {

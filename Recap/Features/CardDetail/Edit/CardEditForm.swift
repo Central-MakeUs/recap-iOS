@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct CardEditForm: View {
     let card: InformationCard
@@ -27,7 +28,7 @@ struct CardEditForm: View {
                     title: "제목",
                     text: $draft.title,
                     limit: CardEditDraft.titleLimit,
-                    placeholder: "텍스트",
+                    placeholder: "스크린샷 제목을 입력해주세요",
                     showsRequiredError: draft.trimmedTitle.isEmpty
                 )
                 .padding(.top, 29)
@@ -36,17 +37,37 @@ struct CardEditForm: View {
                     title: "한 줄 요약",
                     text: $draft.summary,
                     limit: CardEditDraft.summaryLimit,
-                    placeholder: "텍스트",
+                    placeholder: "스크린샷을 한 줄로 요약해보세요",
                     showsRequiredError: draft.trimmedSummary.isEmpty
                 )
                 .padding(.top, 27)
 
-                CardEditBodyField(body: $draft.body)
+                CardEditBodyField(
+                    body: $draft.body,
+                    showsRequiredError: draft.trimmedBody.isEmpty
+                )
                     .padding(.top, 27)
             }
             .padding(.horizontal, CardDetailStyle.horizontalPadding)
             .padding(.bottom, 28)
+            .background {
+                Color.recapBackground
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        dismissKeyboard()
+                    }
+            }
         }
+        .scrollDismissesKeyboard(.interactively)
+    }
+
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder),
+            to: nil,
+            from: nil,
+            for: nil
+        )
     }
 }
 

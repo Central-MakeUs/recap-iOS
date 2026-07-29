@@ -4,7 +4,7 @@ struct HomeContainerView: View {
     @Environment(AppRouter.self) private var router
 
     @State private var model: HomeFeatureModel
-    @State private var loadedRevision: Int?
+    @State private var hasRequestedSummary = false
     let invalidationCenter: CardDataInvalidationCenter
 
     init(
@@ -27,14 +27,13 @@ struct HomeContainerView: View {
         .task(id: reloadTrigger) {
             guard reloadTrigger.isActive else { return }
 
-            let revision = invalidationCenter.homeRevision
-            if loadedRevision == nil {
-                await model.loadIfNeeded()
-            } else if loadedRevision != revision {
+            if hasRequestedSummary {
                 await model.reload()
+            } else {
+                await model.loadIfNeeded()
             }
             guard !Task.isCancelled else { return }
-            loadedRevision = revision
+            hasRequestedSummary = true
         }
     }
 
