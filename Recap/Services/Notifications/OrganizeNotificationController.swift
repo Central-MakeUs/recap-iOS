@@ -101,6 +101,12 @@ final class OrganizeNotificationController {
         isPreferenceEnabled && authorizationStatus.allowsNotifications
     }
 
+    func shouldPresentPermissionGuide() async -> Bool {
+        await refreshAuthorization()
+        return userDefaults.object(forKey: preferenceKey) == nil
+            && authorizationStatus == .notDetermined
+    }
+
     func prepareForOrganize() async {
         await refreshAuthorization()
 
@@ -111,14 +117,25 @@ final class OrganizeNotificationController {
         switch authorizationStatus {
         case .authorized:
             savePreference(true)
-        case .notDetermined:
-            _ = try? await delivery.requestAuthorization()
-            await refreshAuthorization()
+        case .notDetermined, .denied:
+            break
+        }
+    }
+
+    func requestPermissionForOrganize() async {
+        await refreshAuthorization()
+
+        guard authorizationStatus == .notDetermined else {
             if authorizationStatus.allowsNotifications {
                 savePreference(true)
             }
-        case .denied:
-            break
+            return
+        }
+
+        _ = try? await delivery.requestAuthorization()
+        await refreshAuthorization()
+        if authorizationStatus.allowsNotifications {
+            savePreference(true)
         }
     }
 

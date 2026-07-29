@@ -6,6 +6,8 @@ struct CardCreationFlowView: View {
     @State private var viewModel: CardCreationFlowViewModel
     @State private var isPhotoPickerPresented = false
     @State private var isAppendingSelection = false
+    @State private var isNotificationPermissionGuidePresented = false
+    @State private var isExitConfirmationPresented = false
 
     @MainActor
     init(viewModel: CardCreationFlowViewModel) {
@@ -30,10 +32,10 @@ struct CardCreationFlowView: View {
                         ? "\(viewModel.failedLoadCount)장의 이미지를 불러오지 못했어요."
                         : nil,
                     toastMessage: nil,
-                    onBack: close,
+                    onBack: requestExit,
                     onAdd: presentAdditionalPicker,
                     onRemove: viewModel.removeScreenshot,
-                    onConfirm: viewModel.beginProcessing
+                    onConfirm: confirmSelection
                 )
             case .processing:
                 CardCreationProcessingView(
@@ -74,6 +76,24 @@ struct CardCreationFlowView: View {
                 onCancel: handlePickerCancellation
             )
         }
+        .overlay {
+            if isNotificationPermissionGuidePresented {
+                OrganizeNotificationPermissionModal(
+                    onEnableNotifications: enableNotificationsAndBeginProcessing,
+                    onContinueWithoutNotifications: continueWithoutNotifications
+                )
+                .transition(.opacity)
+            }
+        }
+        .recapConfirmationDialog(
+            isPresented: $isExitConfirmationPresented,
+            title: "정리를 취소할까요?",
+            message: "지금 나가면 공유한 스크린샷이\n정리되지 않아요",
+            cancelTitle: "계속정리하기",
+            confirmTitle: "나가기",
+            confirmStyle: .primary,
+            onConfirm: close
+        )
         .onAppear(perform: presentPickerIfNeeded)
         .onChange(of: viewModel.step) { _, step in
             if step == .picking {
@@ -86,6 +106,14 @@ struct CardCreationFlowView: View {
     }
 
     private func close() { dismiss() }
+
+    private func requestExit() {
+        guard viewModel.selectedCount > 0 else {
+            close()
+            return
+        }
+        isExitConfirmationPresented = true
+    }
 
     private func presentPickerIfNeeded() {
         if viewModel.step == .picking {
@@ -119,6 +147,37 @@ struct CardCreationFlowView: View {
     private func cancelProcessing() {
         Task {
             await viewModel.cancelProcessing()
+        }
+    }
+
+    private func confirmSelection() {
+        Task {
+            if await viewModel.shouldPresentNotificationPermissionGuide() {
+                withAnimation(.easeOut(duration: 0.2)) {
+                    isNotificationPermissionGuidePresented = true
+                }
+            } else {
+                viewModel.beginProcessing()
+            }
+        }
+    }
+
+    private func enableNotificationsAndBeginProcessing() {
+        dismissNotificationPermissionGuide()
+        Task {
+            await viewModel.requestNotificationPermission()
+            viewModel.beginProcessing()
+        }
+    }
+
+    private func continueWithoutNotifications() {
+        dismissNotificationPermissionGuide()
+        viewModel.beginProcessing()
+    }
+
+    private func dismissNotificationPermissionGuide() {
+        withAnimation(.easeIn(duration: 0.15)) {
+            isNotificationPermissionGuidePresented = false
         }
     }
 }

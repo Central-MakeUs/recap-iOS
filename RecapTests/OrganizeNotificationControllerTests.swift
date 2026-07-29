@@ -15,14 +15,31 @@ final class OrganizeNotificationControllerTests: XCTestCase {
         XCTAssertTrue(fixture.userDefaults.bool(forKey: fixture.preferenceKey))
     }
 
-    func testFirstOrganizeRequestsPermissionAndEnablesNotificationPreference() async {
+    func testFirstOrganizeShowsPermissionGuideBeforeRequestingSystemPermission() async {
         let delivery = OrganizeNotificationDeliverySpy(status: .notDetermined)
         let fixture = makeFixture(
             delivery: delivery,
             storedPreference: nil
         )
 
+        let shouldPresentGuide = await fixture.controller.shouldPresentPermissionGuide()
         await fixture.controller.prepareForOrganize()
+
+        let requestCount = await delivery.authorizationRequestCount()
+        XCTAssertTrue(shouldPresentGuide)
+        XCTAssertEqual(requestCount, 0)
+        XCTAssertFalse(fixture.controller.isEnabled)
+        XCTAssertNil(fixture.userDefaults.object(forKey: fixture.preferenceKey))
+    }
+
+    func testPermissionGuideConfirmationRequestsPermissionAndEnablesPreference() async {
+        let delivery = OrganizeNotificationDeliverySpy(status: .notDetermined)
+        let fixture = makeFixture(
+            delivery: delivery,
+            storedPreference: nil
+        )
+
+        await fixture.controller.requestPermissionForOrganize()
 
         let requestCount = await delivery.authorizationRequestCount()
         XCTAssertEqual(requestCount, 1)
