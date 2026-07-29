@@ -11,7 +11,7 @@ struct CardEditBodyField: View {
         RecapTextArea(
             label: "본문",
             text: $bodyText,
-            placeholder: "본문을 입력해주세요",
+            placeholder: "스크린샷에 대한 설명을 작성해보세요",
             characterLimit: CardEditDraft.bodyLimit
         )
     }

@@ -24,7 +24,7 @@ struct CardEditTextFieldGroup: View {
         title: "제목",
         text: $title,
         limit: CardEditDraft.titleLimit,
-        placeholder: "제목을 입력해주세요",
+        placeholder: "스크린샷 제목을 입력해주세요",
         showsRequiredError: false
     )
     .padding()
@@ -36,7 +36,7 @@ struct CardEditTextFieldGroup: View {
         title: "제목",
         text: $title,
         limit: CardEditDraft.titleLimit,
-        placeholder: "제목을 입력해주세요",
+        placeholder: "스크린샷 제목을 입력해주세요",
         showsRequiredError: true
     )
     .padding()
