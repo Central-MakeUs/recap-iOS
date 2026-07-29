@@ -46,8 +46,7 @@ struct RecapScreenshotThumbnail: View {
         .clipped()
         .overlay {
             thumbnailShape
-                .stroke(Color.recapGray100, lineWidth: 1)
-                .padding(0.5)
+                .strokeBorder(Color.recapGray100, lineWidth: 1)
         }
     }
 
@@ -76,14 +75,24 @@ struct RecapScreenshotThumbnail: View {
     }
 }
 
-private struct RecapScreenshotThumbnailShape: Shape {
+private struct RecapScreenshotThumbnailShape: InsettableShape {
     let cornerRadius: CGFloat
     let hasFavoriteFold: Bool
+    var insetAmount: CGFloat = 0
+
+    func inset(by amount: CGFloat) -> RecapScreenshotThumbnailShape {
+        var insetShape = self
+        insetShape.insetAmount += amount
+        return insetShape
+    }
 
     func path(in rect: CGRect) -> Path {
+        let rect = rect.insetBy(dx: insetAmount, dy: insetAmount)
+        let insetCornerRadius = max(0, cornerRadius - insetAmount)
+
         guard hasFavoriteFold else {
             return RoundedRectangle(
-                cornerRadius: cornerRadius,
+                cornerRadius: insetCornerRadius,
                 style: .continuous
             )
             .path(in: rect)
@@ -91,7 +100,7 @@ private struct RecapScreenshotThumbnailShape: Shape {
 
         let scaleX = rect.width / 62
         let scaleY = rect.height / 80
-        let radius = 5 * min(scaleX, scaleY)
+        let radius = max(0, (5 * min(scaleX, scaleY)) - insetAmount)
         let foldTopEndX = rect.minX + (31 * scaleX)
         let foldVerticalX = rect.minX + (36 * scaleX)
         let foldBottomStartX = rect.minX + (41 * scaleX)
