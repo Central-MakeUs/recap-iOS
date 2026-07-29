@@ -1,0 +1,190 @@
+{
+  "fill" : {
+    "automatic-gradient" : "extended-srgb:0.00000,0.47843,1.00000,1.00000"
+  },
+  "groups" : [
+    {
+      "blur-material" : null,
+      "layers" : [
+        {
+          "glass" : false,
+          "image-name" : "eye black 2.svg",
+          "name" : "eye black 2",
+          "position" : {
+            "scale" : 0.9,
+            "translation-in-points" : [
+              -5.480848842424393,
+              105.10445083799516
+            ]
+          }
+        },
+        {
+          "fill-specializations" : [
+            {
+              "value" : "none"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "none"
+            }
+          ],
+          "glass" : false,
+          "image-name" : "eye white 2.svg",
+          "name" : "eye white 2",
+          "opacity-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : 0.8
+            }
+          ],
+          "position" : {
+            "scale" : 0.9,
+            "translation-in-points" : [
+              -26.628818582064696,
+              108.8729159524371
+            ]
+          }
+        }
+      ],
+      "opacity-specializations" : [
+        {
+          "appearance" : "dark",
+          "value" : 0.9
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    },
+    {
+      "blur-material" : 0.1,
+      "layers" : [
+        {
+          "fill" : "none",
+          "glass" : true,
+          "image-name" : "folder white 2.svg",
+          "name" : "folder white 2",
+          "opacity" : 0.8,
+          "position" : {
+            "scale" : 0.86,
+            "translation-in-points" : [
+              18,
+              41
+            ]
+          }
+        }
+      ],
+      "lighting" : "individual",
+      "opacity" : 0.8,
+      "shadow" : {
+        "kind" : "layer-color",
+        "opacity" : 0.8
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.2
+      }
+    },
+    {
+      "layers" : [
+        {
+          "glass" : false,
+          "image-name" : "folder blue 2.svg",
+          "name" : "folder blue 2",
+          "position" : {
+            "scale" : 0.86,
+            "translation-in-points" : [
+              -30,
+              -45
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "layer-color",
+        "opacity" : 0.5
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0.5
+      }
+    },
+    {
+      "blur-material" : null,
+      "hidden" : false,
+      "layers" : [
+        {
+          "fill" : "none",
+          "glass" : false,
+          "image-name" : "Group 174.svg",
+          "name" : "Group 174",
+          "opacity-specializations" : [
+            {
+              "value" : 0.7
+            },
+            {
+              "appearance" : "dark",
+              "value" : 1
+            }
+          ],
+          "position" : {
+            "scale" : 1.03,
+            "translation-in-points" : [
+              -4,
+              1
+            ]
+          }
+        },
+        {
+          "blend-mode-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : "normal"
+            }
+          ],
+          "fill-specializations" : [
+            {
+              "value" : "none"
+            },
+            {
+              "appearance" : "tinted",
+              "value" : {
+                "solid" : "display-p3:0.00000,0.00000,0.00000,1.00000"
+              }
+            }
+          ],
+          "glass" : true,
+          "hidden" : false,
+          "image-name" : "bg 2.svg",
+          "name" : "bg 2"
+        }
+      ],
+      "lighting" : "individual",
+      "name" : "Group",
+      "opacity" : 1,
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}
