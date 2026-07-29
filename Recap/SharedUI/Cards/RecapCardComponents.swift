@@ -25,16 +25,14 @@ struct RecapScreenshotThumbnail: View {
                             .scaledToFill()
                     },
                     loadingContent: {
-                        ProgressView()
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .background(Color.recapThumbnail)
+                        fallback
                     },
                     failureContent: {
-                        placeholder
+                        fallback
                     }
                 )
             } else {
-                placeholder
+                fallback
             }
         }
         .frame(width: size?.width, height: size?.height)
@@ -54,21 +52,8 @@ struct RecapScreenshotThumbnail: View {
         )
     }
 
-    private var placeholder: some View {
-        let display = RecapPresentation.collectionDisplay(for: kind)
-
-        return RoundedRectangle(cornerRadius: 5, style: .continuous)
-            .fill(Color.recapThumbnail)
-            .overlay(alignment: .topLeading) {
-                Rectangle()
-                    .fill(display.dotColor.opacity(0.20))
-                    .frame(height: 18)
-            }
-            .overlay {
-                Image(systemName: display.symbolName)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(display.textColor.opacity(0.55))
-            }
+    private var fallback: some View {
+        Color.clear
     }
 }
 
@@ -156,5 +141,24 @@ private struct RecapScreenshotThumbnailShape: Shape {
             color: Color.recapGray100
         )
     }
+    .padding()
+}
+
+#Preview("즐겨찾기 썸네일 폴백") {
+    ZStack(alignment: .topTrailing) {
+        RecapScreenshotThumbnail(
+            kind: .shopping,
+            assetName: nil,
+            hasFavoriteFold: true,
+            size: CGSize(width: 62, height: 80)
+        )
+
+        RecapIconView(
+            icon: .star,
+            size: 24,
+            color: Color.recapBlue300
+        )
+    }
+    .frame(width: 62, height: 80)
     .padding()
 }
