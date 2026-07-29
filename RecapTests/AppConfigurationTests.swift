@@ -92,16 +92,16 @@ final class AppConfigurationTests: XCTestCase {
 
 @MainActor
 final class RuntimeProfileTests: XCTestCase {
-    func testLiveDependenciesRestartOnboardingWithoutReplacingLiveServices() {
+    func testLiveDependenciesOpenMainWithoutReplacingLiveServices() {
         let configuration = AppConfiguration.live()
         let firstLaunch = RecapDependencies.live(configuration: configuration)
 
-        XCTAssertEqual(firstLaunch.onboardingProgressStore.progress, .notStarted)
+        XCTAssertEqual(firstLaunch.onboardingProgressStore.progress, .completed)
         firstLaunch.onboardingProgressStore.move(to: .completed)
 
         let nextLaunch = RecapDependencies.live(configuration: configuration)
 
-        XCTAssertEqual(nextLaunch.onboardingProgressStore.progress, .notStarted)
+        XCTAssertEqual(nextLaunch.onboardingProgressStore.progress, .completed)
         XCTAssertEqual(
             AppLaunchDestinationResolver.resolve(
                 sessionState: .authenticated(
@@ -113,7 +113,7 @@ final class RuntimeProfileTests: XCTestCase {
                 ),
                 onboardingProgress: nextLaunch.onboardingProgressStore.progress
             ),
-            .serviceIntro
+            .main
         )
         XCTAssertTrue(nextLaunch.networkClient is AuthenticatedNetworkClient)
         XCTAssertTrue(nextLaunch.homeSummaryLoader is HomeSummaryService)
@@ -149,7 +149,7 @@ final class RuntimeProfileTests: XCTestCase {
         XCTAssertEqual(tokenRecord.accessToken, "mock-access-token")
     }
 
-    func testDefaultMockDependenciesResolveToServiceIntro() {
+    func testDefaultMockDependenciesResolveToLogin() {
         let dependencies = RecapDependencies.mock()
 
         XCTAssertEqual(dependencies.sessionStore.state, .signedOut(nil))
@@ -159,7 +159,7 @@ final class RuntimeProfileTests: XCTestCase {
                 sessionState: dependencies.sessionStore.state,
                 onboardingProgress: dependencies.onboardingProgressStore.progress
             ),
-            .serviceIntro
+            .login(nil)
         )
     }
 

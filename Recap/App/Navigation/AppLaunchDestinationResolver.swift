@@ -2,7 +2,6 @@ import Foundation
 
 nonisolated enum AppLaunchDestination: Equatable, Sendable {
     case launching
-    case serviceIntro
     case login(SessionSignOutReason?)
     case onboardingGuide
     case shareSetupDetail
@@ -18,7 +17,7 @@ nonisolated enum AppLaunchDestinationResolver {
         case .launching, .signingOut:
             return .launching
         case .signedOut(let reason):
-            return onboardingProgress == .notStarted ? .serviceIntro : .login(reason)
+            return .login(reason)
         case .authenticating:
             return .login(nil)
         case .authenticated:
@@ -30,9 +29,8 @@ nonisolated enum AppLaunchDestinationResolver {
         for progress: OnboardingProgress
     ) -> AppLaunchDestination {
         switch progress {
-        case .notStarted:
-            return .serviceIntro
-        case .loginReady, .permissionGuide, .uploadGuide, .shareSetup, .firstCardCreation:
+        case .notStarted, .loginReady, .permissionGuide, .uploadGuide, .shareSetup,
+             .firstCardCreation:
             return .onboardingGuide
         case .shareSetupDetail:
             return .shareSetupDetail

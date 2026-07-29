@@ -1,7 +1,7 @@
 import Lottie
 import SwiftUI
 
-struct OnboardingIntroAnimationView: UIViewRepresentable {
+struct AppSplashAnimationView: UIViewRepresentable {
     let onFinished: () -> Void
 
     func makeCoordinator() -> Coordinator {

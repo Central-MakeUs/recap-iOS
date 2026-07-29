@@ -11,13 +11,13 @@ final class AppLaunchDestinationResolverTests: XCTestCase {
     func testLaunchAndSignOutDestinations() {
         XCTAssertEqual(resolve(.launching, .notStarted), .launching)
         XCTAssertEqual(resolve(.signingOut, .completed), .launching)
-        XCTAssertEqual(resolve(.signedOut(nil), .notStarted), .serviceIntro)
+        XCTAssertEqual(resolve(.signedOut(nil), .notStarted), .login(nil))
         XCTAssertEqual(resolve(.signedOut(.sessionExpired), .completed), .login(.sessionExpired))
         XCTAssertEqual(resolve(.authenticating(.apple), .completed), .login(nil))
     }
 
     func testAuthenticatedOnboardingDestinations() {
-        XCTAssertEqual(resolve(.authenticated(token), .notStarted), .serviceIntro)
+        XCTAssertEqual(resolve(.authenticated(token), .notStarted), .onboardingGuide)
         XCTAssertEqual(resolve(.authenticated(token), .loginReady), .onboardingGuide)
         XCTAssertEqual(resolve(.authenticated(token), .permissionGuide), .onboardingGuide)
         XCTAssertEqual(resolve(.authenticated(token), .uploadGuide), .onboardingGuide)

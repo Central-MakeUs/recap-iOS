@@ -1,19 +1,5 @@
 import SwiftUI
 
-struct OnboardingIntroView: View {
-    let onStart: () -> Void
-
-    var body: some View {
-        GeometryReader { proxy in
-            OnboardingIntroAnimationView(onFinished: onStart)
-                .frame(width: proxy.size.width, height: proxy.size.height)
-        }
-        .background(Color.recapBlue300)
-        .ignoresSafeArea()
-        .accessibilityLabel("Recap 서비스 소개")
-    }
-}
-
 struct OnboardingLoginView: View {
     enum Provider {
         case kakao
@@ -212,10 +198,6 @@ private struct OnboardingBackgroundDecorations: View {
             .frame(width: width, height: height)
             .position(x: x + width / 2, y: y + height / 2)
     }
-}
-
-#Preview("Onboarding intro") {
-    OnboardingIntroView(onStart: {})
 }
 
 #Preview("Onboarding login") {
