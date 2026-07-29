@@ -91,7 +91,35 @@ final class AppConfigurationTests: XCTestCase {
 }
 
 @MainActor
-final class MockRuntimeProfileTests: XCTestCase {
+final class RuntimeProfileTests: XCTestCase {
+    func testLiveDependenciesRestartOnboardingWithoutReplacingLiveServices() {
+        let configuration = AppConfiguration.live()
+        let firstLaunch = RecapDependencies.live(configuration: configuration)
+
+        XCTAssertEqual(firstLaunch.onboardingProgressStore.progress, .notStarted)
+        firstLaunch.onboardingProgressStore.move(to: .completed)
+
+        let nextLaunch = RecapDependencies.live(configuration: configuration)
+
+        XCTAssertEqual(nextLaunch.onboardingProgressStore.progress, .notStarted)
+        XCTAssertEqual(
+            AppLaunchDestinationResolver.resolve(
+                sessionState: .authenticated(
+                    ServerTokenRecord(
+                        accessToken: "access",
+                        refreshToken: "refresh",
+                        accessTokenExpiresAt: .distantFuture
+                    )
+                ),
+                onboardingProgress: nextLaunch.onboardingProgressStore.progress
+            ),
+            .serviceIntro
+        )
+        XCTAssertTrue(nextLaunch.networkClient is AuthenticatedNetworkClient)
+        XCTAssertTrue(nextLaunch.homeSummaryLoader is HomeSummaryService)
+        XCTAssertTrue(nextLaunch.captureService is CaptureService)
+    }
+
     func testSimulatorMockDependenciesResolveDirectlyToMain() {
         let dependencies = RecapDependencies.simulatorMock()
 

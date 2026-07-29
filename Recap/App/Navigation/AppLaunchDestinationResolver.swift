@@ -30,8 +30,9 @@ nonisolated enum AppLaunchDestinationResolver {
         for progress: OnboardingProgress
     ) -> AppLaunchDestination {
         switch progress {
-        case .notStarted, .loginReady, .permissionGuide, .uploadGuide, .shareSetup,
-             .firstCardCreation:
+        case .notStarted:
+            return .serviceIntro
+        case .loginReady, .permissionGuide, .uploadGuide, .shareSetup, .firstCardCreation:
             return .onboardingGuide
         case .shareSetupDetail:
             return .shareSetupDetail

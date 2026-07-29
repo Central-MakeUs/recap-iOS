@@ -81,6 +81,17 @@ private enum ShareSetupTutorialPage: String, CaseIterable {
     case addRecap = "OnboardingShareTutorial3"
     case finish = "OnboardingShareTutorial4"
 
+    var imageSize: CGSize {
+        switch self {
+        case .openMore:
+            CGSize(width: 280.247, height: 374)
+        case .openEdit:
+            CGSize(width: 294, height: 377)
+        case .addRecap, .finish:
+            CGSize(width: 282, height: 377)
+        }
+    }
+
     var simpleCaption: String? {
         switch self {
         case .openMore:
@@ -100,8 +111,8 @@ private struct ShareSetupTutorialPageView: View {
         VStack(alignment: .leading, spacing: 29) {
             Image(page.rawValue)
                 .resizable()
-                .frame(width: 280, height: 374)
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .interpolation(.high)
+                .frame(width: page.imageSize.width, height: page.imageSize.height)
 
             ShareSetupTutorialCaption(page: page)
         }

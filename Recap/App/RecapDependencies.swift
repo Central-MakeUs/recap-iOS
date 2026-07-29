@@ -88,7 +88,7 @@ final class RecapDependencies {
         return RecapDependencies(
             sessionStore: sessionStore,
             onboardingProgressStore: OnboardingProgressStore(
-                persistence: UserDefaultsOnboardingProgressPersistence()
+                persistence: InMemoryOnboardingProgressPersistence(.notStarted)
             ),
             networkClient: authenticatedNetworkClient,
             homeSummaryLoader: HomeSummaryService(networkClient: authenticatedNetworkClient),
@@ -126,7 +126,7 @@ final class RecapDependencies {
                 initialState: sessionState
             ),
             onboardingProgressStore: OnboardingProgressStore(
-                persistence: PreviewOnboardingProgressPersistence(onboardingProgress)
+                persistence: InMemoryOnboardingProgressPersistence(onboardingProgress)
             ),
             networkClient: previewNetworkClient,
             homeSummaryLoader: PreviewHomeSummaryLoader(cardRepository: cardRepository),
@@ -167,7 +167,7 @@ final class RecapDependencies {
                 initialState: resolvedSessionState
             ),
             onboardingProgressStore: OnboardingProgressStore(
-                persistence: PreviewOnboardingProgressPersistence(onboardingProgress)
+                persistence: InMemoryOnboardingProgressPersistence(onboardingProgress)
             ),
             networkClient: networkClient,
             homeSummaryLoader: PreviewHomeSummaryLoader(cardRepository: cardRepository),
@@ -231,7 +231,7 @@ private final class PreviewSecureSessionStore: SecureSessionStoring {
     func deleteServerTokenRecord() throws {}
 }
 
-private final class PreviewOnboardingProgressPersistence: OnboardingProgressPersisting {
+private final class InMemoryOnboardingProgressPersistence: OnboardingProgressPersisting {
     private var progress: OnboardingProgress
 
     init(_ progress: OnboardingProgress) {
