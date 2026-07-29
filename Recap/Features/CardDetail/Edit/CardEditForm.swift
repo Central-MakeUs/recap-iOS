@@ -50,15 +50,15 @@ struct CardEditForm: View {
             }
             .padding(.horizontal, CardDetailStyle.horizontalPadding)
             .padding(.bottom, 28)
+            .background {
+                Color.recapBackground
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        dismissKeyboard()
+                    }
+            }
         }
         .scrollDismissesKeyboard(.interactively)
-        .background {
-            Color.clear
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    dismissKeyboard()
-                }
-        }
     }
 
     private func dismissKeyboard() {
