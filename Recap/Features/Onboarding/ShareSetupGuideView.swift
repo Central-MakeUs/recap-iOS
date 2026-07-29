@@ -5,17 +5,20 @@ struct ShareSetupGuideView: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            Text("리캡을 공유 즐겨찾기에 추가해주세요")
+            Text("앨범에서 리캡으로, 더 빠르게 공유하기")
                 .font(RecapFont.pretendard(size: 22, weight: .semibold))
                 .tracking(-0.44)
                 .foregroundStyle(Color.recapGray900)
-                .onboardingFrame(x: 22, y: 10, width: 330, height: 31, alignment: .leading)
+                .lineLimit(1)
+                .onboardingFrame(x: 22, y: 10, width: 331, height: 31, alignment: .leading)
 
-            Text("한 번만 설정하면\n스크린샷을 앨범에서 바로 공유 할 수있어요!")
+            Text("리캡을 공유 즐겨찾기에 등록해두면\n공유할 때 더보기 버튼을 누르지 않고, 바로 보낼 수 있어요.")
                 .font(RecapFont.pretendard(size: 15, weight: .medium))
                 .tracking(-0.3)
                 .foregroundStyle(Color.recapGray500)
-                .onboardingFrame(x: 22, y: 58, width: 280, height: 42, alignment: .leading)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+                .onboardingFrame(x: 22, y: 58, width: 331, height: 42, alignment: .leading)
 
             ShareSetupMockup()
                 .onboardingFrame(x: 67, y: 179, width: 239, height: 238)
