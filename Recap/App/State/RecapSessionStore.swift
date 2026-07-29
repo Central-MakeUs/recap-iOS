@@ -140,6 +140,14 @@ final class RecapSessionStore {
         state = .signedOut(.sessionExpired)
     }
 
+    func completeAccountWithdrawal() {
+        authenticationTask?.cancel()
+        authenticationTask = nil
+        authenticationAttemptID = nil
+        authenticationService.invalidateSession()
+        state = .signedOut(nil)
+    }
+
     func login(using provider: any SocialLoginProviding) async -> LoginAttemptOutcome {
         guard authenticationTask == nil else { return .ignored }
 

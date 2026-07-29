@@ -3,21 +3,36 @@ import UIKit
 
 struct SettingsDetailView: View {
     let route: SettingsRoute
-    let captureCount: Int
+    let userAccountService: any UserAccountServing
+    let accountWithdrawalCompleted: () -> Void
+    let accountDataDeleted: () -> Void
 
-    init(route: SettingsRoute, captureCount: Int = 0) {
+    init(
+        route: SettingsRoute,
+        userAccountService: any UserAccountServing,
+        accountWithdrawalCompleted: @escaping () -> Void,
+        accountDataDeleted: @escaping () -> Void
+    ) {
         self.route = route
-        self.captureCount = captureCount
+        self.userAccountService = userAccountService
+        self.accountWithdrawalCompleted = accountWithdrawalCompleted
+        self.accountDataDeleted = accountDataDeleted
     }
 
     var body: some View {
         switch route {
         case .accountManagement:
-            AccountManagementView()
+            AccountManagementView(
+                service: userAccountService,
+                accountWithdrawalCompleted: accountWithdrawalCompleted
+            )
         case .notificationSettings:
             NotificationSettingsView()
         case .dataManagement:
-            DataManagementView(captureCount: captureCount)
+            DataManagementView(
+                service: userAccountService,
+                accountDataDeleted: accountDataDeleted
+            )
         case .usageGuide:
             UsageGuideView()
         case .privacyPolicy:
@@ -33,8 +48,21 @@ struct SettingsDetailView: View {
 struct AccountManagementView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.recapLogout) private var logout
+    @State private var model: AccountManagementModel
     @State private var showsLogoutConfirmation = false
     @State private var showsWithdrawalConfirmation = false
+
+    init(
+        service: any UserAccountServing,
+        accountWithdrawalCompleted: @escaping () -> Void
+    ) {
+        _model = State(
+            initialValue: AccountManagementModel(
+                service: service,
+                accountWithdrawalCompleted: accountWithdrawalCompleted
+            )
+        )
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -42,9 +70,9 @@ struct AccountManagementView: View {
 
             SettingsListSection(title: "로그인 정보", isFirst: true) {
                 SettingsAccountProviderRow(
-                    providerName: "카카오로 로그인중",
-                    joinedDateText: "2026.6.12 가입",
-                    showsKakaoIcon: true
+                    providerName: providerName,
+                    joinedDateText: joinedDateText,
+                    provider: model.accountInfo?.provider
                 )
             }
             .padding(.bottom, -SettingsLayout.sectionBottomPadding)
@@ -70,6 +98,13 @@ struct AccountManagementView: View {
         }
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .task {
+            await model.loadAccountInfo()
+        }
+        .recapToast(model.toast)
+        .task(id: model.toast) {
+            await clearToastIfNeeded()
+        }
         .recapConfirmationDialog(
             isPresented: $showsLogoutConfirmation,
             title: "로그아웃할까요?",
@@ -86,16 +121,68 @@ struct AccountManagementView: View {
             cancelTitle: "취소",
             confirmTitle: "탈퇴하기",
             height: 210,
-            onConfirm: {}
+            onConfirm: {
+                Task {
+                    await model.withdrawAccount()
+                }
+            }
         )
+    }
+
+    private var providerName: String {
+        switch model.accountInfo?.provider {
+        case .kakao:
+            "카카오로 로그인중"
+        case .apple:
+            "Apple로 로그인중"
+        case nil:
+            "로그인 정보 확인 중"
+        }
+    }
+
+    private var joinedDateText: String {
+        guard let createdAt = model.accountInfo?.createdAt else {
+            return ""
+        }
+
+        let components = Calendar.current.dateComponents(
+            [.year, .month, .day],
+            from: createdAt
+        )
+        guard
+            let year = components.year,
+            let month = components.month,
+            let day = components.day
+        else {
+            return ""
+        }
+        return "\(year).\(month).\(day) 가입"
+    }
+
+    private func clearToastIfNeeded() async {
+        guard model.toast != nil else { return }
+        try? await Task.sleep(for: .seconds(2))
+        guard !Task.isCancelled else { return }
+        model.toast = nil
     }
 }
 
 struct DataManagementView: View {
     @Environment(\.dismiss) private var dismiss
+    @State private var model: DataManagementModel
     @State private var showsDeleteConfirmation = false
 
-    let captureCount: Int
+    init(
+        service: any UserAccountServing,
+        accountDataDeleted: @escaping () -> Void
+    ) {
+        _model = State(
+            initialValue: DataManagementModel(
+                service: service,
+                accountDataDeleted: accountDataDeleted
+            )
+        )
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -128,6 +215,13 @@ struct DataManagementView: View {
         }
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .task {
+            await model.loadDataSummary()
+        }
+        .recapToast(model.toast)
+        .task(id: model.toast) {
+            await clearToastIfNeeded()
+        }
         .recapConfirmationDialog(
             isPresented: $showsDeleteConfirmation,
             title: "모든 데이터를 삭제할까요?",
@@ -135,7 +229,11 @@ struct DataManagementView: View {
             cancelTitle: "취소",
             confirmTitle: "삭제하기",
             height: 210,
-            onConfirm: {}
+            onConfirm: {
+                Task {
+                    await model.deleteAllData()
+                }
+            }
         )
     }
 
@@ -147,7 +245,7 @@ struct DataManagementView: View {
                         .font(RecapFont.pretendard(size: 16, weight: .semibold))
                         .foregroundStyle(Color.recapGray900)
 
-                    Text("\(captureCount)개")
+                    Text("\(model.capturedCount)개")
                         .font(RecapFont.pretendard(size: 22, weight: .semibold))
                         .foregroundStyle(Color.recapBlue300)
                 }
@@ -183,6 +281,13 @@ struct DataManagementView: View {
         .foregroundStyle(Color.recapGray300)
         .fixedSize(horizontal: false, vertical: true)
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func clearToastIfNeeded() async {
+        guard model.toast != nil else { return }
+        try? await Task.sleep(for: .seconds(2))
+        guard !Task.isCancelled else { return }
+        model.toast = nil
     }
 }
 
@@ -272,9 +377,15 @@ struct NotificationSettingsView: View {
 }
 
 #Preview("계정 관리") {
-    AccountManagementView()
+    AccountManagementView(
+        service: PreviewUserAccountService(provider: .apple),
+        accountWithdrawalCompleted: {}
+    )
 }
 
 #Preview("데이터 관리") {
-    DataManagementView(captureCount: 128)
+    DataManagementView(
+        service: PreviewUserAccountService(),
+        accountDataDeleted: {}
+    )
 }

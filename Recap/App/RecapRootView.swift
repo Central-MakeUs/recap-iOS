@@ -68,10 +68,12 @@ struct RecapRootView: View {
                     archiveLoader: dependencies.archiveLoader,
                     searchLoader: dependencies.searchLoader,
                     captureService: dependencies.captureService,
+                    userAccountService: dependencies.userAccountService,
                     cardCreationProcessor: dependencies.cardCreationProcessor,
                     cardDataInvalidationCenter: dependencies.cardDataInvalidationCenter,
                     organizeNotificationController: dependencies.organizeNotificationController,
-                    onLogout: logout
+                    onLogout: logout,
+                    onAccountWithdrawalCompleted: completeAccountWithdrawal
                 )
             }
         }
@@ -128,6 +130,11 @@ struct RecapRootView: View {
                 MainTab.allCases.forEach(router.reset)
             }
         }
+    }
+
+    private func completeAccountWithdrawal() {
+        sessionStore.completeAccountWithdrawal()
+        MainTab.allCases.forEach(router.reset)
     }
 }
 

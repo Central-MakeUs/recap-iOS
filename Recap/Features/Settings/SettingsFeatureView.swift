@@ -6,9 +6,22 @@ extension EnvironmentValues {
 }
 
 struct SettingsContainerView: View {
-    @Environment(RecapCardStore.self) private var cardStore
     @Environment(\.dismiss) private var dismiss
     @State private var route: SettingsRoute?
+
+    let userAccountService: any UserAccountServing
+    let accountWithdrawalCompleted: () -> Void
+    let accountDataDeleted: () -> Void
+
+    init(
+        userAccountService: any UserAccountServing,
+        accountWithdrawalCompleted: @escaping () -> Void,
+        accountDataDeleted: @escaping () -> Void
+    ) {
+        self.userAccountService = userAccountService
+        self.accountWithdrawalCompleted = accountWithdrawalCompleted
+        self.accountDataDeleted = accountDataDeleted
+    }
 
     var body: some View {
         SettingsView(
@@ -19,7 +32,9 @@ struct SettingsContainerView: View {
             if let route {
                 SettingsDetailView(
                     route: route,
-                    captureCount: cardStore.allCards().count
+                    userAccountService: userAccountService,
+                    accountWithdrawalCompleted: accountWithdrawalCompleted,
+                    accountDataDeleted: accountDataDeleted
                 )
                     .id(route)
             }

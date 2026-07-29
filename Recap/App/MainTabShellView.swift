@@ -9,10 +9,12 @@ struct AppShellView: View {
     let archiveLoader: any ArchiveLoading
     let searchLoader: any SearchLoading
     let captureService: any CaptureServing
+    let userAccountService: any UserAccountServing
     let cardCreationProcessor: any CardCreationProcessing
     let cardDataInvalidationCenter: CardDataInvalidationCenter
     let organizeNotificationController: OrganizeNotificationController
     var onLogout: () -> Void = {}
+    var onAccountWithdrawalCompleted: () -> Void = {}
 
     @State private var toast: RecapToastContent?
 
@@ -23,10 +25,12 @@ struct AppShellView: View {
         archiveLoader: any ArchiveLoading,
         searchLoader: any SearchLoading,
         captureService: any CaptureServing,
+        userAccountService: any UserAccountServing,
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
         organizeNotificationController: OrganizeNotificationController,
-        onLogout: @escaping () -> Void = {}
+        onLogout: @escaping () -> Void = {},
+        onAccountWithdrawalCompleted: @escaping () -> Void = {}
     ) {
         self.router = router
         self.cardStore = cardStore
@@ -34,10 +38,12 @@ struct AppShellView: View {
         self.archiveLoader = archiveLoader
         self.searchLoader = searchLoader
         self.captureService = captureService
+        self.userAccountService = userAccountService
         self.cardCreationProcessor = cardCreationProcessor
         self.cardDataInvalidationCenter = cardDataInvalidationCenter
         self.organizeNotificationController = organizeNotificationController
         self.onLogout = onLogout
+        self.onAccountWithdrawalCompleted = onAccountWithdrawalCompleted
         _toast = State(initialValue: nil)
     }
 
@@ -53,11 +59,14 @@ struct AppShellView: View {
                 archiveLoader: archiveLoader,
                 searchLoader: searchLoader,
                 captureService: captureService,
+                userAccountService: userAccountService,
                 cardCreationProcessor: cardCreationProcessor,
                 cardDataInvalidationCenter: cardDataInvalidationCenter,
                 organizeNotificationController: organizeNotificationController,
                 onUpload: openCardCreationFlow,
-                onCardDeleted: showCardDeletedToast
+                onCardDeleted: showCardDeletedToast,
+                onAccountWithdrawalCompleted: onAccountWithdrawalCompleted,
+                onAccountDataDeleted: handleAccountDataDeleted
             )
         }
         .environment(router)
@@ -87,6 +96,11 @@ struct AppShellView: View {
             style: .success,
             message: "스크린샷을 삭제했어요."
         )
+    }
+
+    private func handleAccountDataDeleted() {
+        cardStore.removeAllCards()
+        cardDataInvalidationCenter.invalidate(.captureDeleted)
     }
 
     private func clearToastIfNeeded() async {
@@ -140,6 +154,7 @@ struct AppShellView: View {
         archiveLoader: PreviewArchiveLoader(),
         searchLoader: PreviewSearchLoader(),
         captureService: PreviewCaptureService(),
+        userAccountService: PreviewUserAccountService(),
         cardCreationProcessor: PreviewCardCreationPipeline(),
         cardDataInvalidationCenter: CardDataInvalidationCenter(),
         organizeNotificationController: OrganizeNotificationController(

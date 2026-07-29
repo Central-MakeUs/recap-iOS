@@ -83,6 +83,10 @@ final class RecapCardStore {
         cards.removeAll { $0.id == id }
     }
 
+    func removeAllCards() {
+        cards.removeAll()
+    }
+
     func cacheRemoteCards(_ remoteCards: [InformationCard]) {
         for remoteCard in remoteCards {
             guard let captureID = remoteCard.captureID else { continue }

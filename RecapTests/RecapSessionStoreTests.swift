@@ -198,6 +198,23 @@ final class RecapSessionStoreTests: XCTestCase {
         XCTAssertEqual(secureStore.deleteCount, 1)
     }
 
+    func testAccountWithdrawalCompletionDeletesLocalSessionWithoutLogoutRequest() {
+        let secureStore = SessionSecureStoreStub(token: validToken)
+        let network = SessionNetworkClientStub(loginResponse: nil)
+        let store = makeStore(
+            secureStore: secureStore,
+            network: network,
+            initialState: .authenticated(validToken)
+        )
+
+        store.completeAccountWithdrawal()
+
+        XCTAssertEqual(store.state, .signedOut(nil))
+        XCTAssertNil(secureStore.token)
+        XCTAssertEqual(secureStore.deleteCount, 1)
+        XCTAssertEqual(network.logoutSendCount, 0)
+    }
+
     private func makeStore(
         secureStore: SessionSecureStoreStub,
         response: ServerTokenRecord? = nil,

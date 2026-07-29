@@ -181,7 +181,7 @@ struct SettingsSwitch: View {
 struct SettingsAccountProviderRow: View {
     let providerName: String
     let joinedDateText: String
-    let showsKakaoIcon: Bool
+    let provider: AuthProvider?
 
     var body: some View {
         HStack(spacing: 13) {
@@ -204,18 +204,21 @@ struct SettingsAccountProviderRow: View {
 
     @ViewBuilder
     private var providerIcon: some View {
-        if showsKakaoIcon {
+        switch provider {
+        case .kakao:
             Image("SettingsKakaoIcon")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 30, height: 30)
-        } else {
-            Circle()
-                .fill(Color.recapBlue50)
+        case .apple:
+            Image("OnboardingAppleLoginButton")
+                .resizable()
+                .scaledToFit()
                 .frame(width: 30, height: 30)
-                .overlay {
-                    RecapIconView(icon: .information, size: 16, color: Color.recapBlue300)
-                }
+        case nil:
+            Circle()
+                .fill(Color.recapGray100)
+                .frame(width: 30, height: 30)
         }
     }
 }
