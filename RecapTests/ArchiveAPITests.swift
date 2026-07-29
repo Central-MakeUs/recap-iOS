@@ -128,7 +128,7 @@ final class ArchiveAPITests: XCTestCase {
         XCTAssertEqual(loader.homeRequestCount, 2)
     }
 
-    func testDetailSortReloadsOnlyForSortableScopes() async {
+    func testCategoryDetailSortReloadsFromServer() async {
         let loader = SequencedArchiveLoader(homeResults: [])
         let mutator = CaptureMutatorStub()
         let otherModel = ArchiveDetailFeatureModel(
@@ -137,23 +137,47 @@ final class ArchiveAPITests: XCTestCase {
             captureMutator: mutator,
             invalidationCenter: CardDataInvalidationCenter()
         )
-        let favoritesModel = ArchiveDetailFeatureModel(
-            scope: .favorites,
-            loader: loader,
-            captureMutator: mutator,
-            invalidationCenter: CardDataInvalidationCenter()
-        )
 
         await otherModel.loadIfNeeded()
         await otherModel.selectSort(.oldest)
-        await favoritesModel.loadIfNeeded()
-        await favoritesModel.selectSort(.oldest)
 
         XCTAssertEqual(
             loader.detailRequests.map(\.sort),
-            [.latest, .oldest, .latest]
+            [.latest, .oldest]
         )
-        XCTAssertEqual(favoritesModel.sort, .latest)
+        XCTAssertEqual(otherModel.sort, .oldest)
+    }
+
+    func testFavoritesSortsLocallyByOrganizedDate() async {
+        let older = Self.card(
+            id: UUID(),
+            captureID: 101,
+            organizedAt: Date(timeIntervalSince1970: 100)
+        )
+        let newer = Self.card(
+            id: UUID(),
+            captureID: 102,
+            organizedAt: Date(timeIntervalSince1970: 200)
+        )
+        let loader = SequencedArchiveLoader(
+            homeResults: [],
+            detailCards: [older, newer]
+        )
+        let model = ArchiveDetailFeatureModel(
+            scope: .favorites,
+            loader: loader,
+            captureMutator: CaptureMutatorStub(),
+            invalidationCenter: CardDataInvalidationCenter()
+        )
+
+        await model.loadIfNeeded()
+        XCTAssertEqual(model.state, .loaded([newer, older]))
+
+        await model.selectSort(.oldest)
+
+        XCTAssertEqual(model.state, .loaded([older, newer]))
+        XCTAssertEqual(model.sort, .oldest)
+        XCTAssertEqual(loader.detailRequests.map(\.sort), [.latest])
     }
 
     func testDetailSelectionDeletionCallsAPIAndRemovesDeletedCards() async throws {
@@ -349,7 +373,8 @@ final class ArchiveAPITests: XCTestCase {
 
     nonisolated private static func card(
         id: UUID,
-        captureID: Int64
+        captureID: Int64,
+        organizedAt: Date? = nil
     ) -> InformationCard {
         InformationCard(
             id: id,
@@ -357,6 +382,7 @@ final class ArchiveAPITests: XCTestCase {
             title: "카드 \(captureID)",
             summary: "요약",
             collection: .shopping,
+            organizedAt: organizedAt,
             dateText: "",
             location: "",
             businessHours: "",

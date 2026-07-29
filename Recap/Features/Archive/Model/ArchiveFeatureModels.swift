@@ -105,8 +105,14 @@ final class ArchiveDetailFeatureModel {
     }
 
     func selectSort(_ sort: ArchiveSort) async {
-        guard scope != .favorites, self.sort != sort else { return }
+        guard self.sort != sort else { return }
         self.sort = sort
+
+        if scope == .favorites, case .loaded(let cards) = state {
+            state = .loaded(sortedFavorites(cards))
+            return
+        }
+
         await load()
     }
 
@@ -179,13 +185,31 @@ final class ArchiveDetailFeatureModel {
         state = .loading
 
         do {
+            let cards = try await loader.fetchCards(scope: scope, sort: sort)
             state = .loaded(
-                try await loader.fetchCards(scope: scope, sort: sort)
+                scope == .favorites ? sortedFavorites(cards) : cards
             )
         } catch is CancellationError {
             state = .idle
         } catch {
             state = .failed
         }
+    }
+
+    private func sortedFavorites(_ cards: [InformationCard]) -> [InformationCard] {
+        cards.enumerated()
+            .sorted { lhs, rhs in
+                switch (lhs.element.organizedAt, rhs.element.organizedAt) {
+                case let (left?, right?) where left != right:
+                    return sort == .latest ? left > right : left < right
+                case (_?, nil):
+                    return true
+                case (nil, _?):
+                    return false
+                default:
+                    return lhs.offset < rhs.offset
+                }
+            }
+            .map(\.element)
     }
 }
