@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CardCreationProcessingView: View {
     let progress: Double
+    let notificationsEnabled: Bool
     let onCancel: () -> Void
 
     var body: some View {
@@ -9,7 +10,9 @@ struct CardCreationProcessingView: View {
             Spacer()
                 .frame(height: 157)
 
-            CardCreationProcessingBubble()
+            CardCreationProcessingBubble(
+                notificationsEnabled: notificationsEnabled
+            )
 
             Image("CardCreationProcessingIllustration")
                 .resizable()
@@ -50,6 +53,8 @@ struct CardCreationProcessingView: View {
 }
 
 private struct CardCreationProcessingBubble: View {
+    let notificationsEnabled: Bool
+
     private enum Layout {
         static let frameSize = CGSize(width: 194.67, height: 67.67)
         static let bodyHeight = frameSize.height * 170 / 203
@@ -62,7 +67,7 @@ private struct CardCreationProcessingBubble: View {
                 .scaledToFit()
                 .frame(width: Layout.frameSize.width, height: Layout.frameSize.height)
 
-            Text("앱을 종료해도 백그라운드에서\n정리가 계속 진행돼요!")
+            Text(message)
                 .font(RecapFont.pretendard(size: 13, weight: .medium))
                 .tracking(-0.26)
                 .lineSpacing(0)
@@ -75,6 +80,14 @@ private struct CardCreationProcessingBubble: View {
                 )
         }
         .frame(width: Layout.frameSize.width, height: Layout.frameSize.height)
+    }
+
+    private var message: String {
+        if notificationsEnabled {
+            "앱을 종료해도 백그라운드에서\n정리가 계속 진행돼요!"
+        } else {
+            "정리 결과는 앱에서\n확인할 수 있어요!"
+        }
     }
 }
 
@@ -110,7 +123,10 @@ struct CardCreationProgressBar: View {
 }
 
 #Preview("CardCreation processing bubble") {
-    CardCreationProcessingBubble()
-        .padding()
-        .background(Color.recapBackground)
+    VStack(spacing: 24) {
+        CardCreationProcessingBubble(notificationsEnabled: true)
+        CardCreationProcessingBubble(notificationsEnabled: false)
+    }
+    .padding()
+    .background(Color.recapBackground)
 }

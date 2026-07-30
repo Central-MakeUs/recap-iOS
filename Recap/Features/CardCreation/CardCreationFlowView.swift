@@ -42,6 +42,7 @@ struct CardCreationFlowView: View {
             case .processing:
                 CardCreationProcessingView(
                     progress: viewModel.progress.fractionCompleted,
+                    notificationsEnabled: viewModel.areOrganizeNotificationsEnabled,
                     onCancel: cancelProcessing
                 )
                 .task {
@@ -208,7 +209,11 @@ struct CardCreationFlowView: View {
 
 
 #Preview("CardCreation processing") {
-    CardCreationProcessingView(progress: 0.75, onCancel: {})
+    CardCreationProcessingView(
+        progress: 0.75,
+        notificationsEnabled: true,
+        onCancel: {}
+    )
 }
 
 #Preview("CardCreation complete") {
