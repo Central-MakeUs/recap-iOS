@@ -162,18 +162,20 @@ struct PrivacyInformationView: View {
 
                 VStack(alignment: .leading, spacing: 22) {
                     PrivacyInformationSection(
-                        title: "이미지 처리 방식",
+                        title: "AI 분석 및 데이터 전송",
                         content: """
-                        •  직접 선택하거나 공유한 이미지만 서버로 전송됩니다.
-                        •  전송된 이미지는 AI 분석을 거쳐 제목, 한 줄 요약, 본문이 담긴 정보로 정리됩니다.
+                        •  직접 선택하거나 공유한 이미지 원본과 이미지에서 추출한 텍스트가 AI 분석에 사용됩니다.
+                        •  원본 이미지는 앱에서 S3로 직접 업로드되며, 서버가 S3에서 이미지를 불러와 Google LLC의 Gemini API로 전송합니다.
+                        •  Gemini Flash Lite 유료 서비스를 사용하며, 전송된 정보는 Google의 AI 모델 학습에 사용되지 않습니다.
                         """
                     )
 
                     PrivacyInformationSection(
-                        title: "원본 이미지 보관",
+                        title: "데이터 보관 및 삭제",
                         content: """
-                        •  원본 이미지는 미리보기 제공을 위해 서버에 저장됩니다.
-                        •  스크린샷을 삭제하거나 데이터 삭제, 회원탈퇴 시 서버에 저장된 원본 이미지도 함께 삭제됩니다.
+                        •  업로드한 원본 이미지는 S3에 1개월간 보관한 뒤 삭제됩니다.
+                        •  미리보기용 이미지, OCR 텍스트와 정보카드는 회원 탈퇴 시까지 보관됩니다.
+                        •  스크린샷 삭제나 데이터 삭제 시 해당 정보와 서버에 저장된 원본 이미지도 함께 삭제됩니다.
                         """
                     )
 
