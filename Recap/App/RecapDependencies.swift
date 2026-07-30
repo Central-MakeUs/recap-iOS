@@ -13,6 +13,7 @@ final class RecapDependencies {
     let cardCreationProcessor: any CardCreationProcessing
     let cardDataInvalidationCenter: CardDataInvalidationCenter
     let organizeNotificationController: OrganizeNotificationController
+    let aiDataTransferConsentStore: AIDataTransferConsentStore
 
     private let kakaoLoginProvider: any SocialLoginProviding
     private let appleLoginProvider: any SocialLoginProviding
@@ -29,6 +30,7 @@ final class RecapDependencies {
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
         organizeNotificationController: OrganizeNotificationController,
+        aiDataTransferConsentStore: AIDataTransferConsentStore,
         kakaoLoginProvider: any SocialLoginProviding,
         appleLoginProvider: any SocialLoginProviding
     ) {
@@ -43,6 +45,7 @@ final class RecapDependencies {
         self.cardCreationProcessor = cardCreationProcessor
         self.cardDataInvalidationCenter = cardDataInvalidationCenter
         self.organizeNotificationController = organizeNotificationController
+        self.aiDataTransferConsentStore = aiDataTransferConsentStore
         self.kakaoLoginProvider = kakaoLoginProvider
         self.appleLoginProvider = appleLoginProvider
     }
@@ -105,6 +108,7 @@ final class RecapDependencies {
             ),
             cardDataInvalidationCenter: CardDataInvalidationCenter(),
             organizeNotificationController: OrganizeNotificationController(),
+            aiDataTransferConsentStore: AIDataTransferConsentStore(),
             kakaoLoginProvider: KakaoLoginProvider(),
             appleLoginProvider: AppleLoginProvider()
         )
@@ -142,6 +146,9 @@ final class RecapDependencies {
             cardDataInvalidationCenter: CardDataInvalidationCenter(),
             organizeNotificationController: OrganizeNotificationController(
                 delivery: PreviewOrganizeNotificationDelivery(),
+                userDefaults: UserDefaults(suiteName: UUID().uuidString)!
+            ),
+            aiDataTransferConsentStore: AIDataTransferConsentStore(
                 userDefaults: UserDefaults(suiteName: UUID().uuidString)!
             ),
             kakaoLoginProvider: PreviewSocialLoginProvider(provider: .kakao),
@@ -185,6 +192,9 @@ final class RecapDependencies {
             cardCreationProcessor: PreviewCardCreationPipeline(),
             cardDataInvalidationCenter: CardDataInvalidationCenter(),
             organizeNotificationController: OrganizeNotificationController(),
+            aiDataTransferConsentStore: AIDataTransferConsentStore(
+                userDefaults: UserDefaults(suiteName: UUID().uuidString)!
+            ),
             kakaoLoginProvider: MockSocialLoginProvider(provider: .kakao),
             appleLoginProvider: MockSocialLoginProvider(provider: .apple)
         )
@@ -192,13 +202,7 @@ final class RecapDependencies {
 
     static func simulatorMock() -> RecapDependencies {
         mock(
-            initialSessionState: .authenticated(
-                ServerTokenRecord(
-                    accessToken: "simulator-access-token",
-                    refreshToken: "simulator-refresh-token",
-                    accessTokenExpiresAt: .distantFuture
-                )
-            ),
+            initialSessionState: .signedOut(nil),
             onboardingProgress: .notStarted
         )
     }

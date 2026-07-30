@@ -94,6 +94,7 @@ struct RecapRootView: View {
                 cardCreationProcessor: dependencies.cardCreationProcessor,
                 cardDataInvalidationCenter: dependencies.cardDataInvalidationCenter,
                 organizeNotificationController: dependencies.organizeNotificationController,
+                aiDataTransferConsentStore: dependencies.aiDataTransferConsentStore,
                 onLogout: logout,
                 onAccountWithdrawalCompleted: completeAccountWithdrawal
             )

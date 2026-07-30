@@ -169,8 +169,10 @@ struct AccountManagementView: View {
 
 struct DataManagementView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(AIDataTransferConsentStore.self) private var consentStore
     @State private var model: DataManagementModel
     @State private var showsDeleteConfirmation = false
+    @State private var showsAIConsentSheet = false
 
     init(
         service: any UserAccountServing,
@@ -207,11 +209,18 @@ struct DataManagementView: View {
 
                 dataDeletionNotes
                     .padding(.top, 32)
-
-                Spacer(minLength: 0)
             }
             .padding(.horizontal, 16)
             .padding(.top, 21)
+
+            SettingsSectionDivider()
+                .padding(.top, 32)
+
+            dataTransferManagement
+                .padding(.horizontal, 28)
+                .padding(.top, 32)
+
+            Spacer(minLength: 0)
         }
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
@@ -234,6 +243,10 @@ struct DataManagementView: View {
                     await model.deleteAllData()
                 }
             }
+        )
+        .aiDataTransferConsentSheet(
+            isPresented: $showsAIConsentSheet,
+            onConsent: grantAIDataTransferConsent
         )
     }
 
@@ -281,6 +294,54 @@ struct DataManagementView: View {
         .foregroundStyle(Color.recapGray300)
         .fixedSize(horizontal: false, vertical: true)
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var dataTransferManagement: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("데이터 전송 관리")
+                .font(SettingsTypography.sectionTitle)
+                .foregroundStyle(Color.recapGray500)
+
+            Button(action: presentAIConsentSheet) {
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 0) {
+                        Text("AI 데이터 전송 동의")
+                            .font(SettingsTypography.rowTitle)
+                            .foregroundStyle(Color.recapGray900)
+
+                        Spacer(minLength: 0)
+
+                        Text(consentStore.hasConsented ? "동의함" : "동의하기")
+                            .font(SettingsTypography.rowStatus)
+                            .foregroundStyle(
+                                consentStore.hasConsented
+                                    ? Color.recapBlue300
+                                    : Color.recapGray300
+                            )
+                    }
+                    .frame(height: 21)
+
+                    Text(consentStore.hasConsented ? "동의함" : "동의하지 않음")
+                        .font(SettingsTypography.body)
+                        .foregroundStyle(Color.recapGray500)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 25)
+            .disabled(consentStore.hasConsented)
+        }
+    }
+
+    private func presentAIConsentSheet() {
+        guard !consentStore.hasConsented else { return }
+        showsAIConsentSheet = true
+    }
+
+    private func grantAIDataTransferConsent() {
+        consentStore.grantConsent()
+        showsAIConsentSheet = false
     }
 
     private func clearToastIfNeeded() async {
@@ -387,5 +448,10 @@ struct NotificationSettingsView: View {
     DataManagementView(
         service: PreviewUserAccountService(),
         accountDataDeleted: {}
+    )
+    .environment(
+        AIDataTransferConsentStore(
+            userDefaults: UserDefaults(suiteName: UUID().uuidString)!
+        )
     )
 }
