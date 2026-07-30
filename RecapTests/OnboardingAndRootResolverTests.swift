@@ -73,6 +73,26 @@ final class OnboardingProgressStoreTests: XCTestCase {
         XCTAssertEqual(store.progress, .completed)
         XCTAssertEqual(persistence.progress, .completed)
     }
+
+    func testCompletedOnboardingRemainsCompletedAfterLogin() {
+        let persistence = OnboardingPersistenceStub(progress: .completed)
+        let store = OnboardingProgressStore(persistence: persistence)
+
+        store.startAfterLoginIfNeeded()
+
+        XCTAssertEqual(store.progress, .completed)
+        XCTAssertEqual(persistence.progress, .completed)
+    }
+
+    func testFirstLoginStartsUploadGuide() {
+        let persistence = OnboardingPersistenceStub(progress: .loginReady)
+        let store = OnboardingProgressStore(persistence: persistence)
+
+        store.startAfterLoginIfNeeded()
+
+        XCTAssertEqual(store.progress, .uploadGuide)
+        XCTAssertEqual(persistence.progress, .uploadGuide)
+    }
 }
 
 private final class ResolverNetworkClientStub: NetworkClient, @unchecked Sendable {

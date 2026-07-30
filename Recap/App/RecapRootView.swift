@@ -111,7 +111,7 @@ struct RecapRootView: View {
     private func loginView(signOutReason: SessionSignOutReason?) -> some View {
         OnboardingLoginView(
             notice: loginNotice(for: signOutReason),
-            onStart: { onboardingStore.move(to: .uploadGuide) },
+            onStart: onboardingStore.startAfterLoginIfNeeded,
             login: { provider in
                 let authProvider: AuthProvider = provider == .kakao ? .kakao : .apple
                 return await sessionStore.login(

@@ -79,4 +79,9 @@ final class OnboardingProgressStore {
             didFailToPersist = true
         }
     }
+
+    func startAfterLoginIfNeeded() {
+        guard progress != .completed else { return }
+        move(to: .uploadGuide)
+    }
 }
