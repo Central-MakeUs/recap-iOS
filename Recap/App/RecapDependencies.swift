@@ -199,7 +199,7 @@ final class RecapDependencies {
                     accessTokenExpiresAt: .distantFuture
                 )
             ),
-            onboardingProgress: .completed
+            onboardingProgress: .notStarted
         )
     }
 }

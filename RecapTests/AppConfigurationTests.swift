@@ -120,7 +120,7 @@ final class RuntimeProfileTests: XCTestCase {
         XCTAssertTrue(nextLaunch.captureService is CaptureService)
     }
 
-    func testSimulatorMockDependenciesResolveDirectlyToMain() {
+    func testSimulatorMockDependenciesAlwaysStartOnboarding() {
         let dependencies = RecapDependencies.simulatorMock()
 
         XCTAssertEqual(
@@ -128,7 +128,7 @@ final class RuntimeProfileTests: XCTestCase {
                 sessionState: dependencies.sessionStore.state,
                 onboardingProgress: dependencies.onboardingProgressStore.progress
             ),
-            .main
+            .onboardingGuide
         )
     }
 
