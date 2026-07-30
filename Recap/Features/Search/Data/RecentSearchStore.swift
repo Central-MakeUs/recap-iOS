@@ -73,6 +73,11 @@ final class RecentSearchStore {
         persistence.saveKeywords([])
     }
 
+    func remove(_ keyword: String) {
+        keywords.removeAll { $0 == keyword }
+        persistence.saveKeywords(keywords)
+    }
+
     private func normalized(_ keyword: String) -> String {
         keyword
             .split(whereSeparator: \.isWhitespace)
