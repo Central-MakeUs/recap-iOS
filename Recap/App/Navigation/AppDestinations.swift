@@ -67,6 +67,7 @@ extension View {
             CollectionDetailContainerView(
                 scope: .favorites,
                 loader: archiveLoader,
+                searchLoader: searchLoader,
                 captureMutator: captureService,
                 invalidationCenter: cardDataInvalidationCenter
             )
@@ -74,6 +75,7 @@ extension View {
             CollectionDetailContainerView(
                 scope: .category(kind),
                 loader: archiveLoader,
+                searchLoader: searchLoader,
                 captureMutator: captureService,
                 invalidationCenter: cardDataInvalidationCenter
             )

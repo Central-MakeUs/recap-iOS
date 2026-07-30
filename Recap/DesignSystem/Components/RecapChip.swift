@@ -13,6 +13,8 @@ struct RecapChip: View {
     }
 
     let configuration: Configuration
+    var onSelect: () -> Void = {}
+    var onRemove: () -> Void = {}
 
     var body: some View {
         switch configuration {
@@ -76,17 +78,31 @@ struct RecapChip: View {
     }
 
     private func recentSearchChip(keyword: String) -> some View {
-        HStack(spacing: 10) {
-            Text(keyword)
-                .font(RecapFont.pretendard(size: 14, weight: .regular))
-                .tracking(-0.28)
+        HStack(spacing: 0) {
+            Button(action: onSelect) {
+                Text(keyword)
+                    .font(RecapFont.pretendard(size: 14, weight: .regular))
+                    .tracking(-0.28)
+                    .frame(height: 30)
+            }
+            .buttonStyle(.plain)
+            .padding(.trailing, 10)
 
-            Image(systemName: "xmark")
-                .font(.system(size: 10, weight: .semibold))
-                .frame(width: 16, height: 16)
+            Button(action: onRemove) {
+                RecapIconView(
+                    icon: .cancelCircle,
+                    size: 16,
+                    color: Color.recapGray300
+                )
+                .frame(width: 24, height: 30)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("\(keyword) 최근 검색어 삭제")
         }
         .foregroundStyle(Color.recapGray500)
-        .padding(.horizontal, 12)
+        .padding(.leading, 12)
+        .padding(.trailing, 6)
         .frame(height: 30)
         .background(Color.recapGray50)
         .clipShape(Capsule())

@@ -3,11 +3,13 @@ import SwiftUI
 
 struct CardCreationFlowView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(AIDataTransferConsentStore.self) private var consentStore
     @State private var viewModel: CardCreationFlowViewModel
     @State private var isPhotoPickerPresented = false
     @State private var isAppendingSelection = false
     @State private var isNotificationPermissionGuidePresented = false
     @State private var isExitConfirmationPresented = false
+    @State private var isAIConsentSheetPresented = false
 
     @MainActor
     init(viewModel: CardCreationFlowViewModel) {
@@ -40,6 +42,7 @@ struct CardCreationFlowView: View {
             case .processing:
                 CardCreationProcessingView(
                     progress: viewModel.progress.fractionCompleted,
+                    notificationsEnabled: viewModel.areOrganizeNotificationsEnabled,
                     onCancel: cancelProcessing
                 )
                 .task {
@@ -93,6 +96,10 @@ struct CardCreationFlowView: View {
             confirmTitle: "나가기",
             confirmStyle: .primary,
             onConfirm: close
+        )
+        .aiDataTransferConsentSheet(
+            isPresented: $isAIConsentSheetPresented,
+            onConsent: grantConsentAndContinue
         )
         .onAppear(perform: presentPickerIfNeeded)
         .onChange(of: viewModel.step) { _, step in
@@ -151,14 +158,32 @@ struct CardCreationFlowView: View {
     }
 
     private func confirmSelection() {
+        guard consentStore.hasConsented else {
+            isAIConsentSheetPresented = true
+            return
+        }
+
         Task {
-            if await viewModel.shouldPresentNotificationPermissionGuide() {
-                withAnimation(.easeOut(duration: 0.2)) {
-                    isNotificationPermissionGuidePresented = true
-                }
-            } else {
-                viewModel.beginProcessing()
+            await continueAfterConsent()
+        }
+    }
+
+    private func grantConsentAndContinue() {
+        consentStore.grantConsent()
+        isAIConsentSheetPresented = false
+
+        Task {
+            await continueAfterConsent()
+        }
+    }
+
+    private func continueAfterConsent() async {
+        if await viewModel.shouldPresentNotificationPermissionGuide() {
+            withAnimation(.easeOut(duration: 0.2)) {
+                isNotificationPermissionGuidePresented = true
             }
+        } else {
+            viewModel.beginProcessing()
         }
     }
 
@@ -184,7 +209,11 @@ struct CardCreationFlowView: View {
 
 
 #Preview("CardCreation processing") {
-    CardCreationProcessingView(progress: 0.75, onCancel: {})
+    CardCreationProcessingView(
+        progress: 0.75,
+        notificationsEnabled: true,
+        onCancel: {}
+    )
 }
 
 #Preview("CardCreation complete") {

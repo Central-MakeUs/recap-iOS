@@ -64,6 +64,21 @@ final class SearchAPITests: XCTestCase {
         XCTAssertEqual(query["size"], "10")
     }
 
+    func testArchiveDetailScopeUsesMatchingServerSearchScope() {
+        XCTAssertEqual(
+            ArchiveDetailScope.favorites.searchScope,
+            SearchScope.favorites
+        )
+        XCTAssertEqual(
+            ArchiveDetailScope.category(.other).searchScope,
+            SearchScope.other
+        )
+        XCTAssertEqual(
+            ArchiveDetailScope.category(.career).searchScope,
+            SearchScope.type(.career)
+        )
+    }
+
     func testSearchResultUsesOCRExcerptInExistingSummarySlot() throws {
         let dto = SearchResultDTO.fixture(
             titleHighlighted: "파스타 레시피",

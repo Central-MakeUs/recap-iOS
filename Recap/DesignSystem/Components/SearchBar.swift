@@ -2,21 +2,30 @@ import SwiftUI
 
 struct SearchBar: View {
     @Binding var text: String
-    var placeholder = "스크린샷 내용이나 제목으로 검색"
+    @FocusState private var isFocused: Bool
+
+    var placeholder = "제목, 요약, 이미지 속 내용으로 검색"
     var showsClearButton = false
+    var focusesOnAppear = false
     var onSubmit: () -> Void = {}
 
     var body: some View {
         HStack(spacing: 4) {
             RecapIconView(icon: .search, size: 24, color: Color.recapGray300)
 
-            TextField(placeholder, text: $text)
+            TextField(
+                "",
+                text: $text,
+                prompt: Text(placeholder)
+                    .foregroundStyle(Color.recapGray300)
+            )
                 .font(RecapFont.pretendard(size: 13, weight: .medium))
                 .tracking(-0.26)
                 .foregroundStyle(Color.recapGray900)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .submitLabel(.search)
+                .focused($isFocused)
                 .onSubmit(onSubmit)
 
             if showsClearButton && !text.isEmpty {
@@ -33,11 +42,15 @@ struct SearchBar: View {
         .frame(height: 44)
         .background(Color.recapControlFill)
         .clipShape(RoundedRectangle(cornerRadius: 44, style: .continuous))
+        .task {
+            guard focusesOnAppear else { return }
+            isFocused = true
+        }
     }
 }
 
 struct SearchBarDisplay: View {
-    var placeholder = "스크린샷 내용이나 제목으로 검색"
+    var placeholder = "제목, 요약, 이미지 속 내용으로 검색"
 
     var body: some View {
         HStack(spacing: 4) {

@@ -41,7 +41,7 @@ struct SearchResultsView: View {
             case .normal:
                 normalContent
             case .failureBlank:
-                SearchIncompleteState(title: "미구현: 검색 실패")
+                SearchFailureView(onRetry: retrySearch)
             case .targetCardEmpty:
                 SearchTargetCardEmptyState()
             }
@@ -62,7 +62,8 @@ struct SearchResultsView: View {
                 SearchRecentContent(
                     recentKeywords: recentSearchStore.keywords,
                     clearKeywords: recentSearchStore.removeAll,
-                    selectKeyword: selectRecentKeyword
+                    selectKeyword: selectRecentKeyword,
+                    removeKeyword: recentSearchStore.remove
                 )
             }
         } else {
@@ -79,13 +80,19 @@ struct SearchResultsView: View {
         recentSearchStore.record(query)
     }
 
+    private func retrySearch() {
+        Task {
+            await model.retry()
+        }
+    }
+
     @ViewBuilder
     private var searchStateContent: some View {
         switch model.state {
         case .idle, .loading:
             Color.clear
         case .failed:
-            SearchIncompleteState(title: "미구현: 검색 실패")
+            SearchFailureView(onRetry: retrySearch)
         case .loaded(let content) where content.results.isEmpty:
             SearchNoResultsView()
         case .loaded(let content):

@@ -108,6 +108,9 @@ final class CardCreationFlowViewModel {
     }
 
     var selectedCount: Int { selectedScreenshots.count }
+    var areOrganizeNotificationsEnabled: Bool {
+        notificationController?.isEnabled ?? false
+    }
 
     func receivePickerSelection(imageData: [Data], failedCount: Int, appending: Bool) {
         guard !imageData.isEmpty else {

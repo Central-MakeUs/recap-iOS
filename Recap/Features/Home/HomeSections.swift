@@ -90,7 +90,7 @@ struct HomeFrequentTypesSection: View {
             RecapSectionHeader(title: "자주 저장한 유형")
 
             if !frequentTypes.isEmpty {
-                HStack(spacing: 0) {
+                HStack(spacing: usesDistributedSpacing ? 0 : 16) {
                     ForEach(Array(frequentTypes.enumerated()), id: \.element) { index, kind in
                         Button {
                             openArchive(kind)
@@ -108,18 +108,22 @@ struct HomeFrequentTypesSection: View {
                         }
                         .buttonStyle(.plain)
 
-                        if index < frequentTypes.count - 1 {
+                        if usesDistributedSpacing, index < frequentTypes.count - 1 {
                             Spacer(minLength: 0)
                         }
                     }
                 }
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
     }
 
     private var frequentTypes: [CollectionKind] {
         Array(summaries.prefix(4).map(\.kind))
+    }
+
+    private var usesDistributedSpacing: Bool {
+        frequentTypes.count == 4
     }
 }
 
@@ -161,5 +165,14 @@ private struct HomeSectionEmptyMessage: View {
         }
         .padding()
     }
+    .background(Color.recapBackground)
+}
+
+#Preview("Frequent types aligned leading") {
+    HomeFrequentTypesSection(
+        summaries: Array(SampleData.collectionSummaries.prefix(2)),
+        openArchive: { _ in }
+    )
+    .padding(.horizontal, 16)
     .background(Color.recapBackground)
 }

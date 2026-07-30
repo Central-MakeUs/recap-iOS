@@ -7,11 +7,13 @@ struct CollectionDetailContainerView: View {
     let invalidationCenter: CardDataInvalidationCenter
 
     @State private var model: ArchiveDetailFeatureModel
+    @State private var searchModel: SearchFeatureModel
     @State private var loadedRevision: Int?
 
     init(
         scope: ArchiveDetailScope,
         loader: any ArchiveLoading,
+        searchLoader: any SearchLoading,
         captureMutator: any CaptureMutating,
         invalidationCenter: CardDataInvalidationCenter
     ) {
@@ -25,12 +27,19 @@ struct CollectionDetailContainerView: View {
                 invalidationCenter: invalidationCenter
             )
         )
+        _searchModel = State(
+            initialValue: SearchFeatureModel(
+                loader: searchLoader,
+                scope: scope.searchScope
+            )
+        )
     }
 
     var body: some View {
         CollectionDetailView(
             scope: scope,
             cards: cards,
+            searchModel: searchModel,
             sort: model.sort,
             loadState: loadState,
             onRetry: retry,
@@ -56,8 +65,7 @@ struct CollectionDetailContainerView: View {
     private var reloadTrigger: ArchiveDetailReloadTrigger {
         ArchiveDetailReloadTrigger(
             revision: invalidationCenter.archiveDetailRevision,
-            isActive: router.selectedTab == .archive
-                && router.path(for: .archive).last == route
+            isActive: router.path(for: router.selectedTab).last == route
         )
     }
 
@@ -115,10 +123,13 @@ struct CollectionDetailContainerView: View {
 
     private func deleteCards(_ ids: Set<InformationCard.ID>) async throws {
         try await model.deleteCards(ids: ids)
+        await searchModel.refreshCurrentQuery()
     }
 
     private func toggleFavorite(_ id: InformationCard.ID) async throws -> Bool {
-        try await model.toggleFavorite(cardID: id)
+        let isFavorite = try await model.toggleFavorite(cardID: id)
+        await searchModel.refreshCurrentQuery()
+        return isFavorite
     }
 }
 
@@ -179,6 +190,7 @@ struct CollectionDetailView: View {
 
     let scope: ArchiveDetailScope
     let cards: [InformationCard]
+    let searchModel: SearchFeatureModel
     let sort: ArchiveSort
     let loadState: LoadState
     let onRetry: () -> Void
@@ -190,6 +202,7 @@ struct CollectionDetailView: View {
     init(
         scope: ArchiveDetailScope,
         cards: [InformationCard],
+        searchModel: SearchFeatureModel,
         sort: ArchiveSort = .latest,
         loadState: LoadState = .loaded,
         interactionMode: InteractionMode = .browsing,
@@ -202,6 +215,7 @@ struct CollectionDetailView: View {
     ) {
         self.scope = scope
         self.cards = cards
+        self.searchModel = searchModel
         self.sort = sort
         self.loadState = loadState
         _interactionMode = State(initialValue: interactionMode)
@@ -251,12 +265,15 @@ struct CollectionDetailView: View {
         .task(id: toast) {
             await clearToastIfNeeded()
         }
+        .task(id: query) {
+            await searchModel.search(query: query)
+        }
         .onAppear {
             mainTabChromeState.setVisible(false, for: .archive)
         }
         .onChange(of: query) {
             guard isSelecting else { return }
-            selectedIDs.formIntersection(filteredCards.map(\.id))
+            selectedIDs.formIntersection(visibleCards.map(\.id))
         }
         .onDisappear {
             mainTabChromeState.reset(for: .archive)
@@ -291,31 +308,71 @@ struct CollectionDetailView: View {
 
     @ViewBuilder
     private var detailContent: some View {
+        if query.isEmpty {
+            archiveContent
+        } else {
+            searchContent
+        }
+    }
+
+    @ViewBuilder
+    private var archiveContent: some View {
         switch loadState {
         case .failed:
             RecapLoadFailureView(style: .archive, retry: onRetry)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.bottom, 82)
         case .loaded:
-            recapCount
-
-            if filteredCards.isEmpty {
-                CollectionDetailEmptyState(
-                    scope: scope,
-                    onImportScreenshots: onImportScreenshots
-                )
-                .frame(maxHeight: .infinity)
-                .padding(.bottom, 120)
-            } else {
-                cardList
-                    .padding(.top, 7)
-            }
+            loadedContent(cards: cards, highlightedResults: [:])
         }
     }
 
-    private var recapCount: some View {
+    @ViewBuilder
+    private var searchContent: some View {
+        switch searchModel.state {
+        case .idle, .loading:
+            Color.clear
+        case .failed:
+            RecapLoadFailureView(style: .archive, retry: retrySearch)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.bottom, 82)
+        case .loaded(let content):
+            let results = sortedSearchResults(content.results)
+            let displayCards = results.map(displayCard)
+            loadedContent(
+                cards: displayCards,
+                highlightedResults: Dictionary(
+                    uniqueKeysWithValues: zip(displayCards, results).map {
+                        ($0.id, $1)
+                    }
+                )
+            )
+        }
+    }
+
+    @ViewBuilder
+    private func loadedContent(
+        cards: [InformationCard],
+        highlightedResults: [InformationCard.ID: SearchResult]
+    ) -> some View {
+        recapCount(cards.count)
+
+        if cards.isEmpty {
+            CollectionDetailEmptyState(
+                scope: scope,
+                onImportScreenshots: onImportScreenshots
+            )
+            .frame(maxHeight: .infinity)
+            .padding(.bottom, 120)
+        } else {
+            cardList(cards: cards, highlightedResults: highlightedResults)
+                .padding(.top, 7)
+        }
+    }
+
+    private func recapCount(_ count: Int) -> some View {
         Text(
-            "\(Text("\(filteredCards.count)").font(RecapFont.pretendard(size: 14, weight: .semibold)).foregroundStyle(Color.recapGray700)) recaps"
+            "\(Text("\(count)").font(RecapFont.pretendard(size: 14, weight: .semibold)).foregroundStyle(Color.recapGray700)) recaps"
         )
         .font(RecapFont.pretendard(size: 14, weight: .regular))
         .tracking(-0.28)
@@ -325,20 +382,35 @@ struct CollectionDetailView: View {
         .padding(.top, 15)
     }
 
-    private var cardList: some View {
+    private func cardList(
+        cards: [InformationCard],
+        highlightedResults: [InformationCard.ID: SearchResult]
+    ) -> some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 0) {
-                ForEach(filteredCards) { card in
+                ForEach(cards) { card in
+                    let searchResult = highlightedResults[card.id]
+
                     RecapInformationCardRow(
                         card: card,
                         metadata: scope.rowMetadata,
                         selectionState: isSelecting
                             ? selectedIDs.contains(card.id)
                             : nil,
+                        titleText: searchResult?.title.styledText(
+                            defaultColor: Color.recapGray900
+                        ),
+                        summaryText: searchResult?.summary.styledText(
+                            defaultColor: Color.recapGray500
+                        ),
                         onToggleFavorite: isSelecting || favoriteUpdatingIDs.contains(card.id)
                             ? nil
                             : { toggleFavorite(card.id) }
                     )
+                    .onAppear {
+                        guard let searchResult else { return }
+                        loadNextSearchPage(after: searchResult.id)
+                    }
                     .contentShape(Rectangle())
                     .onTapGesture {
                         if isSelecting {
@@ -352,11 +424,42 @@ struct CollectionDetailView: View {
         }
     }
 
-    private var filteredCards: [InformationCard] {
+    private var visibleCards: [InformationCard] {
         guard !query.isEmpty else { return cards }
-        return cards.filter {
-            $0.title.localizedCaseInsensitiveContains(query)
-                || $0.summary.localizedCaseInsensitiveContains(query)
+        guard case .loaded(let content) = searchModel.state else { return [] }
+        return sortedSearchResults(content.results).map(displayCard)
+    }
+
+    private func displayCard(for result: SearchResult) -> InformationCard {
+        cards.first { $0.captureID == result.captureID } ?? result.card
+    }
+
+    private func sortedSearchResults(_ results: [SearchResult]) -> [SearchResult] {
+        results.enumerated()
+            .sorted { lhs, rhs in
+                switch (lhs.element.card.organizedAt, rhs.element.card.organizedAt) {
+                case let (left?, right?) where left != right:
+                    return sort == .latest ? left > right : left < right
+                case (_?, nil):
+                    return true
+                case (nil, _?):
+                    return false
+                default:
+                    return lhs.offset < rhs.offset
+                }
+            }
+            .map(\.element)
+    }
+
+    private func retrySearch() {
+        Task {
+            await searchModel.retry()
+        }
+    }
+
+    private func loadNextSearchPage(after resultID: SearchResult.ID) {
+        Task {
+            await searchModel.loadNextPageIfNeeded(after: resultID)
         }
     }
 
@@ -459,6 +562,7 @@ struct CollectionDetailView: View {
         CollectionDetailView(
             scope: .category(.shopping),
             cards: SampleData.cards(in: .shopping),
+            searchModel: previewArchiveSearchModel(scope: .category(.shopping)),
             onAction: PreviewActions.handleArchive
         )
     }
@@ -470,6 +574,7 @@ struct CollectionDetailView: View {
         CollectionDetailView(
             scope: .favorites,
             cards: SampleData.cards.filter(\.isFavorite),
+            searchModel: previewArchiveSearchModel(scope: .favorites),
             onAction: PreviewActions.handleArchive
         )
     }
@@ -481,6 +586,7 @@ struct CollectionDetailView: View {
         CollectionDetailView(
             scope: .category(.shopping),
             cards: SampleData.cards(in: .shopping),
+            searchModel: previewArchiveSearchModel(scope: .category(.shopping)),
             interactionMode: .searching,
             onAction: PreviewActions.handleArchive
         )
@@ -493,6 +599,7 @@ struct CollectionDetailView: View {
         CollectionDetailView(
             scope: .category(.shopping),
             cards: SampleData.cards(in: .shopping),
+            searchModel: previewArchiveSearchModel(scope: .category(.shopping)),
             interactionMode: .selecting(returnToSearch: false),
             onAction: PreviewActions.handleArchive
         )
@@ -505,6 +612,7 @@ struct CollectionDetailView: View {
         CollectionDetailView(
             scope: .category(.shopping),
             cards: SampleData.cards(in: .shopping),
+            searchModel: previewArchiveSearchModel(scope: .category(.shopping)),
             initialToast: RecapToastContent(
                 style: .error,
                 message: "스크린샷을 삭제하지 못했어요. 다시 시도해주세요."
@@ -513,4 +621,14 @@ struct CollectionDetailView: View {
         )
     }
     .environment(RecapMainTabChromeState())
+}
+
+@MainActor
+private func previewArchiveSearchModel(
+    scope: ArchiveDetailScope
+) -> SearchFeatureModel {
+    SearchFeatureModel(
+        loader: PreviewSearchLoader(),
+        scope: scope.searchScope
+    )
 }

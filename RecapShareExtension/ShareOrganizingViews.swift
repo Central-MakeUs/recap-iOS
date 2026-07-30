@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ShareOrganizingView: View {
     let progress: Double
+    let notificationsEnabled: Bool
     let onCancel: () -> Void
 
     var body: some View {
@@ -55,7 +56,7 @@ struct ShareOrganizingView: View {
                 .scaledToFit()
                 .frame(width: 194.67, height: 67.67)
 
-            Text("앱을 종료해도 백그라운드에서\n정리가 계속 진행돼요!")
+            Text(bubbleMessage)
                 .font(.custom("Pretendard-Medium", size: 13))
                 .tracking(-0.26)
                 .multilineTextAlignment(.center)
@@ -63,6 +64,14 @@ struct ShareOrganizingView: View {
                 .frame(width: 194.67, height: 56.67)
         }
         .frame(width: 194.67, height: 67.67)
+    }
+
+    private var bubbleMessage: String {
+        if notificationsEnabled {
+            "앱을 종료해도 백그라운드에서\n정리가 계속 진행돼요!"
+        } else {
+            "정리 결과는 앱에서\n확인할 수 있어요!"
+        }
     }
 
     private var progressBar: some View {
@@ -205,7 +214,7 @@ private struct ShareExtensionActionButton: View {
 }
 
 #Preview("04-02_공유 정리 시작") {
-    ShareOrganizingView(progress: 0.75, onCancel: {})
+    ShareOrganizingView(progress: 0.75, notificationsEnabled: false, onCancel: {})
 }
 
 #Preview("04-03_공유 정리 완료") {

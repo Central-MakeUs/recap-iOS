@@ -59,6 +59,10 @@ final class DataManagementModel {
     private(set) var isDeleting = false
     var toast: RecapToastContent?
 
+    var canDeleteData: Bool {
+        capturedCount > 0 && !isDeleting
+    }
+
     init(
         service: any UserAccountServing,
         accountDataDeleted: @escaping () -> Void
@@ -81,7 +85,7 @@ final class DataManagementModel {
     }
 
     func deleteAllData() async {
-        guard !isDeleting else { return }
+        guard canDeleteData else { return }
         isDeleting = true
         defer { isDeleting = false }
 

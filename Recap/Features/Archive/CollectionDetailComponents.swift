@@ -26,6 +26,16 @@ enum ArchiveDetailScope: Hashable {
         }
     }
 
+    var searchScope: SearchScope {
+        switch self {
+        case .favorites:
+            .favorites
+        case .category(.other):
+            .other
+        case .category(let kind):
+            .type(kind)
+        }
+    }
 }
 
 struct CollectionDetailNavigationHeader: View {
@@ -105,7 +115,8 @@ struct CollectionDetailNavigationHeader: View {
         HStack(spacing: 8) {
             SearchBar(
                 text: $query,
-                placeholder: scope.searchPlaceholder
+                placeholder: scope.searchPlaceholder,
+                focusesOnAppear: true
             )
             .frame(height: 44)
 

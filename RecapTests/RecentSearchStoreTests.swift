@@ -41,6 +41,18 @@ final class RecentSearchStoreTests: XCTestCase {
         XCTAssertTrue(store.keywords.isEmpty)
         XCTAssertEqual(persistence.savedKeywords, [])
     }
+
+    func testRemoveDeletesOnlySelectedKeyword() {
+        let persistence = RecentSearchPersistenceSpy(
+            loadedKeywords: ["첫 번째", "두 번째", "세 번째"]
+        )
+        let store = RecentSearchStore(persistence: persistence)
+
+        store.remove("두 번째")
+
+        XCTAssertEqual(store.keywords, ["첫 번째", "세 번째"])
+        XCTAssertEqual(persistence.savedKeywords, ["첫 번째", "세 번째"])
+    }
 }
 
 private final class RecentSearchPersistenceSpy: RecentSearchPersisting {

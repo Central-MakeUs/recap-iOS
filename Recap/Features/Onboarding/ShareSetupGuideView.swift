@@ -187,7 +187,7 @@ private struct ShareSetupTutorialCaption: View {
                 }
             } else {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("❸ 즐겨찾기에 Recap이 추가되면 완료!")
+                    Text("❹ 즐겨찾기에 Recap이 추가되면 완료!")
                     HStack(spacing: 4) {
                         Image("OnboardingTutorialMenuIcon")
                             .resizable()

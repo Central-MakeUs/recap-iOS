@@ -13,6 +13,7 @@ struct AppShellView: View {
     let cardCreationProcessor: any CardCreationProcessing
     let cardDataInvalidationCenter: CardDataInvalidationCenter
     let organizeNotificationController: OrganizeNotificationController
+    let aiDataTransferConsentStore: AIDataTransferConsentStore
     var onLogout: () -> Void = {}
     var onAccountWithdrawalCompleted: () -> Void = {}
 
@@ -29,6 +30,7 @@ struct AppShellView: View {
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
         organizeNotificationController: OrganizeNotificationController,
+        aiDataTransferConsentStore: AIDataTransferConsentStore,
         onLogout: @escaping () -> Void = {},
         onAccountWithdrawalCompleted: @escaping () -> Void = {}
     ) {
@@ -42,6 +44,7 @@ struct AppShellView: View {
         self.cardCreationProcessor = cardCreationProcessor
         self.cardDataInvalidationCenter = cardDataInvalidationCenter
         self.organizeNotificationController = organizeNotificationController
+        self.aiDataTransferConsentStore = aiDataTransferConsentStore
         self.onLogout = onLogout
         self.onAccountWithdrawalCompleted = onAccountWithdrawalCompleted
         _toast = State(initialValue: nil)
@@ -72,6 +75,7 @@ struct AppShellView: View {
         .environment(router)
         .environment(cardStore)
         .environment(organizeNotificationController)
+        .environment(aiDataTransferConsentStore)
         .environment(\.recapLogout, onLogout)
         .recapToast(toast)
         .task(id: toast) {
@@ -159,6 +163,9 @@ struct AppShellView: View {
         cardDataInvalidationCenter: CardDataInvalidationCenter(),
         organizeNotificationController: OrganizeNotificationController(
             delivery: PreviewOrganizeNotificationDelivery(),
+            userDefaults: UserDefaults(suiteName: UUID().uuidString)!
+        ),
+        aiDataTransferConsentStore: AIDataTransferConsentStore(
             userDefaults: UserDefaults(suiteName: UUID().uuidString)!
         )
     )

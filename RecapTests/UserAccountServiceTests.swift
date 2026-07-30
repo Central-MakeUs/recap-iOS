@@ -94,6 +94,20 @@ final class UserAccountServiceTests: XCTestCase {
         XCTAssertEqual(model.toast?.style, .success)
     }
 
+    func testDataManagementModelDoesNotDeleteWhenCapturedCountIsZero() async {
+        let service = DataDeletionServiceSpy(capturedCount: 0)
+        let model = DataManagementModel(
+            service: service,
+            accountDataDeleted: {}
+        )
+
+        await model.loadDataSummary()
+        await model.deleteAllData()
+
+        XCTAssertFalse(model.canDeleteData)
+        XCTAssertEqual(service.deleteCallCount, 0)
+    }
+
     private func assertEndpoint(
         _ endpoint: APIEndpoint,
         method: APIEndpoint.Method,
@@ -105,6 +119,30 @@ final class UserAccountServiceTests: XCTestCase {
         XCTAssertEqual(endpoint.path, path, file: file, line: line)
         XCTAssertEqual(endpoint.authorization, .bearer, file: file, line: line)
         XCTAssertEqual(endpoint.headers["Accept"], "application/json", file: file, line: line)
+    }
+}
+
+@MainActor
+private final class DataDeletionServiceSpy: UserAccountServing {
+    let capturedCount: Int
+    private(set) var deleteCallCount = 0
+
+    init(capturedCount: Int) {
+        self.capturedCount = capturedCount
+    }
+
+    func fetchAccountInfo() async throws -> UserAccountInfo {
+        UserAccountInfo(provider: .kakao, createdAt: .distantPast)
+    }
+
+    func fetchDataSummary() async throws -> UserDataSummary {
+        UserDataSummary(capturedCount: capturedCount)
+    }
+
+    func withdrawAccount() async throws {}
+
+    func deleteAllData() async throws {
+        deleteCallCount += 1
     }
 }
 
