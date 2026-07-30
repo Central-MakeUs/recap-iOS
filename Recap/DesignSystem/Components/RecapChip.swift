@@ -78,7 +78,7 @@ struct RecapChip: View {
     }
 
     private func recentSearchChip(keyword: String) -> some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 0) {
             Button(action: onSelect) {
                 Text(keyword)
                     .font(RecapFont.pretendard(size: 14, weight: .regular))
@@ -86,6 +86,7 @@ struct RecapChip: View {
                     .frame(height: 30)
             }
             .buttonStyle(.plain)
+            .padding(.trailing, 10)
 
             Button(action: onRemove) {
                 RecapIconView(
@@ -93,12 +94,15 @@ struct RecapChip: View {
                     size: 16,
                     color: Color.recapGray300
                 )
-                .frame(width: 16, height: 30)
+                .frame(width: 24, height: 30)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("\(keyword) 최근 검색어 삭제")
         }
         .foregroundStyle(Color.recapGray500)
-        .padding(.horizontal, 12)
+        .padding(.leading, 12)
+        .padding(.trailing, 6)
         .frame(height: 30)
         .background(Color.recapGray50)
         .clipShape(Capsule())

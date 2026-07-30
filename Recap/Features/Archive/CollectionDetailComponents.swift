@@ -115,7 +115,8 @@ struct CollectionDetailNavigationHeader: View {
         HStack(spacing: 8) {
             SearchBar(
                 text: $query,
-                placeholder: scope.searchPlaceholder
+                placeholder: scope.searchPlaceholder,
+                focusesOnAppear: true
             )
             .frame(height: 44)
 

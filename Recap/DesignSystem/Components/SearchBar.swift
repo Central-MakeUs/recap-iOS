@@ -2,8 +2,11 @@ import SwiftUI
 
 struct SearchBar: View {
     @Binding var text: String
+    @FocusState private var isFocused: Bool
+
     var placeholder = "제목, 요약, 이미지 속 내용으로 검색"
     var showsClearButton = false
+    var focusesOnAppear = false
     var onSubmit: () -> Void = {}
 
     var body: some View {
@@ -22,6 +25,7 @@ struct SearchBar: View {
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .submitLabel(.search)
+                .focused($isFocused)
                 .onSubmit(onSubmit)
 
             if showsClearButton && !text.isEmpty {
@@ -38,6 +42,10 @@ struct SearchBar: View {
         .frame(height: 44)
         .background(Color.recapControlFill)
         .clipShape(RoundedRectangle(cornerRadius: 44, style: .continuous))
+        .task {
+            guard focusesOnAppear else { return }
+            isFocused = true
+        }
     }
 }
 
