@@ -39,22 +39,6 @@ struct SearchResultsList: View {
     }
 }
 
-private extension SearchHighlightedString {
-    func styledText(defaultColor: Color) -> Text {
-        var attributedString = AttributedString()
-
-        for segment in segments {
-            var part = AttributedString(segment.text)
-            part.foregroundColor = segment.isHighlighted
-                ? Color.recapBlue300
-                : defaultColor
-            attributedString.append(part)
-        }
-
-        return Text(attributedString)
-    }
-}
-
 #Preview("검색 결과 목록") {
     let results = SampleData.search("파스타").map(SearchResult.init(card:))
 

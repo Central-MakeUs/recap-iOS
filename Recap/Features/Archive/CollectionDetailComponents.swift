@@ -26,6 +26,16 @@ enum ArchiveDetailScope: Hashable {
         }
     }
 
+    var searchScope: SearchScope {
+        switch self {
+        case .favorites:
+            .favorites
+        case .category(.other):
+            .other
+        case .category(let kind):
+            .type(kind)
+        }
+    }
 }
 
 struct CollectionDetailNavigationHeader: View {
