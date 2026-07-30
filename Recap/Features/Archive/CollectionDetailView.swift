@@ -56,8 +56,7 @@ struct CollectionDetailContainerView: View {
     private var reloadTrigger: ArchiveDetailReloadTrigger {
         ArchiveDetailReloadTrigger(
             revision: invalidationCenter.archiveDetailRevision,
-            isActive: router.selectedTab == .archive
-                && router.path(for: .archive).last == route
+            isActive: router.path(for: router.selectedTab).last == route
         )
     }
 

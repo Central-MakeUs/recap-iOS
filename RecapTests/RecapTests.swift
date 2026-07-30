@@ -96,6 +96,36 @@ final class RecapTests: XCTestCase {
         XCTAssertEqual(router.archivePath, [.archiveFavorites])
     }
 
+    func testRouterReturnsToHomeAfterOpeningFavoritesFromHome() {
+        let router = AppRouter()
+
+        router.navigate(.archiveFavorites)
+
+        XCTAssertEqual(router.selectedTab, .home)
+        XCTAssertEqual(router.homePath, [.archiveFavorites])
+        XCTAssertTrue(router.archivePath.isEmpty)
+
+        router.homePath.removeLast()
+
+        XCTAssertEqual(router.selectedTab, .home)
+        XCTAssertTrue(router.homePath.isEmpty)
+    }
+
+    func testRouterReturnsToHomeAfterOpeningArchiveCategoryFromHome() {
+        let router = AppRouter()
+
+        router.navigate(.archiveDetail(.shopping))
+
+        XCTAssertEqual(router.selectedTab, .home)
+        XCTAssertEqual(router.homePath, [.archiveDetail(.shopping)])
+        XCTAssertTrue(router.archivePath.isEmpty)
+
+        router.homePath.removeLast()
+
+        XCTAssertEqual(router.selectedTab, .home)
+        XCTAssertTrue(router.homePath.isEmpty)
+    }
+
     func testMainTabChromeUsesFigmaGeometry() {
         XCTAssertEqual(RecapMainTabBarMetrics.height, 111)
         XCTAssertEqual(RecapMainTabBarMetrics.horizontalPadding, 22)
