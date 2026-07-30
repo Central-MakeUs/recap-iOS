@@ -3,6 +3,7 @@ import PhotosUI
 import SwiftUI
 import UIKit
 import UniformTypeIdentifiers
+import UserNotifications
 
 struct ShareExtensionRootView: View {
     @State private var viewModel: ShareExtensionViewModel
@@ -27,6 +28,7 @@ struct ShareExtensionRootView: View {
             case .organizing(let progress):
                 ShareOrganizingView(
                     progress: progress,
+                    notificationsEnabled: viewModel.notificationsEnabled,
                     onCancel: cancelOrganizing
                 )
             case .complete(let organizedCount, _):
@@ -124,6 +126,7 @@ final class ShareExtensionViewModel {
     private(set) var phase: ShareExtensionPhase = .loading
     private(set) var message: String?
     private(set) var toastMessage: String?
+    private(set) var notificationsEnabled = false
 
     private weak var extensionContext: NSExtensionContext?
     private let pipeline: ShareExtensionUploadPipeline
@@ -166,6 +169,18 @@ final class ShareExtensionViewModel {
         phase = .confirmation
         if screenshots.isEmpty {
             message = "공유한 이미지를 불러오지 못했어요."
+        }
+
+        notificationsEnabled = await Self.resolveNotificationsEnabled()
+    }
+
+    private static func resolveNotificationsEnabled() async -> Bool {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        switch settings.authorizationStatus {
+        case .authorized, .provisional, .ephemeral:
+            return true
+        default:
+            return false
         }
     }
 
