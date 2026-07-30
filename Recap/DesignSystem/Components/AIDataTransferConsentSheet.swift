@@ -118,11 +118,13 @@ struct AIDataTransferConsentSheet: View {
 extension View {
     func aiDataTransferConsentSheet(
         isPresented: Binding<Bool>,
+        primaryButtonTitle: String = "동의하고 정리하기",
         onConsent: @escaping () -> Void
     ) -> some View {
         modifier(
             AIDataTransferConsentPresentation(
                 isPresented: isPresented,
+                primaryButtonTitle: primaryButtonTitle,
                 onConsent: onConsent
             )
         )
@@ -131,12 +133,14 @@ extension View {
 
 private struct AIDataTransferConsentPresentation: ViewModifier {
     @Binding var isPresented: Bool
+    let primaryButtonTitle: String
     let onConsent: () -> Void
 
     func body(content: Content) -> some View {
         content
             .sheet(isPresented: $isPresented) {
                 AIDataTransferConsentSheet(
+                    primaryButtonTitle: primaryButtonTitle,
                     onConsent: onConsent,
                     onCancel: dismiss
                 )

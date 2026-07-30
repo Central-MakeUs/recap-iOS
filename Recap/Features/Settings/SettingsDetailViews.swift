@@ -190,42 +190,45 @@ struct DataManagementView: View {
         VStack(spacing: 0) {
             SettingsNavigationHeader(title: "데이터 관리", dismiss: { dismiss() })
 
-            VStack(spacing: 0) {
-                dataSummary
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    VStack(spacing: 0) {
+                        dataSummary
 
-                Button("데이터 삭제") {
-                    showsDeleteConfirmation = true
+                        Button("데이터 삭제") {
+                            showsDeleteConfirmation = true
+                        }
+                        .buttonStyle(.plain)
+                        .font(RecapFont.pretendard(size: 16, weight: .semibold))
+                        .foregroundStyle(
+                            model.canDeleteData
+                                ? Color.recapDestructive
+                                : Color.recapGray300
+                        )
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(
+                            Color.recapGray50,
+                            in: RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        )
+                        .padding(.top, 19)
+                        .disabled(!model.canDeleteData)
+
+                        dataDeletionNotes
+                            .padding(.top, 32)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 21)
+
+                    SettingsSectionDivider()
+                        .padding(.top, 32)
+
+                    dataTransferManagement
+                        .padding(.horizontal, 28)
+                        .padding(.top, 32)
+                        .padding(.bottom, 40)
                 }
-                .buttonStyle(.plain)
-                .font(RecapFont.pretendard(size: 16, weight: .semibold))
-                .foregroundStyle(
-                    model.canDeleteData
-                        ? Color.recapDestructive
-                        : Color.recapGray300
-                )
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .background(
-                    Color.recapGray50,
-                    in: RoundedRectangle(cornerRadius: 10, style: .continuous)
-                )
-                .padding(.top, 19)
-                .disabled(!model.canDeleteData)
-
-                dataDeletionNotes
-                    .padding(.top, 32)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 21)
-
-            SettingsSectionDivider()
-                .padding(.top, 32)
-
-            dataTransferManagement
-                .padding(.horizontal, 28)
-                .padding(.top, 32)
-
-            Spacer(minLength: 0)
         }
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
@@ -251,6 +254,7 @@ struct DataManagementView: View {
         )
         .aiDataTransferConsentSheet(
             isPresented: $showsAIConsentSheet,
+            primaryButtonTitle: consentStore.hasConsented ? "확인" : "동의하기",
             onConsent: grantAIDataTransferConsent
         )
     }
@@ -335,12 +339,10 @@ struct DataManagementView: View {
             }
             .buttonStyle(.plain)
             .padding(.top, 25)
-            .disabled(consentStore.hasConsented)
         }
     }
 
     private func presentAIConsentSheet() {
-        guard !consentStore.hasConsented else { return }
         showsAIConsentSheet = true
     }
 
