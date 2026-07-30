@@ -198,7 +198,11 @@ struct DataManagementView: View {
                 }
                 .buttonStyle(.plain)
                 .font(RecapFont.pretendard(size: 16, weight: .semibold))
-                .foregroundStyle(Color.recapDestructive)
+                .foregroundStyle(
+                    model.canDeleteData
+                        ? Color.recapDestructive
+                        : Color.recapGray300
+                )
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
                 .background(
@@ -206,6 +210,7 @@ struct DataManagementView: View {
                     in: RoundedRectangle(cornerRadius: 10, style: .continuous)
                 )
                 .padding(.top, 19)
+                .disabled(!model.canDeleteData)
 
                 dataDeletionNotes
                     .padding(.top, 32)
