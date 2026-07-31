@@ -4,6 +4,9 @@
 options:
   addVersionNumbers: true
   suppressOpeningDirectory: true
+  # 라이선스 본문까지 plist 한 파일에 담는다.
+  # 라이브러리별 파일로 나누면 앱 번들 복사 과정에서 중첩 폴더가 비어 오는 경우가 있다.
+  singlePage: true
 
 # LicensePlist 자신과 그 의존성은 빌드 도구일 뿐 앱에 포함되지 않으므로 제외한다.
 exclude:

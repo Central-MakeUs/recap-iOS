@@ -40,22 +40,45 @@ nonisolated struct OpenSourceLicenseLoader {
         let rootURL = outputDirectory
             .appendingPathComponent(Key.rootPlistName)
             .appendingPathExtension("plist")
+        let specifiers = Self.specifiers(at: rootURL)
 
-        return Self.childPanes(atRoot: rootURL).compactMap { pane in
+        // singlePage 출력: 제목과 본문이 한 파일에 함께 들어 있다.
+        let inlineLicenses = specifiers.compactMap { specifier -> OpenSourceLicense? in
             guard
-                let name = pane[Key.title] as? String,
-                let relativePath = pane[Key.file] as? String,
-                let body = Self.licenseBody(
-                    at: outputDirectory
-                        .appendingPathComponent(relativePath)
-                        .appendingPathExtension("plist")
-                )
+                let name = specifier[Key.title] as? String,
+                let body = (specifier[Key.footerText] as? String)?
+                    .trimmingCharacters(in: .whitespacesAndNewlines),
+                !body.isEmpty
             else {
                 return nil
             }
 
             return OpenSourceLicense(name: name, body: body)
         }
+
+        if !inlineLicenses.isEmpty {
+            return inlineLicenses
+        }
+
+        // 라이브러리별 파일로 나뉜 출력을 위한 대비책.
+        return specifiers
+            .filter { $0[Key.type] as? String == Key.childPaneType }
+            .compactMap { pane in
+                guard
+                    let name = pane[Key.title] as? String,
+                    let relativePath = pane[Key.file] as? String,
+                    let body = Self.licenseBody(
+                        at: outputDirectory
+                            .appendingPathComponent(relativePath)
+                            .appendingPathExtension("plist")
+                    ),
+                    !body.isEmpty
+                else {
+                    return nil
+                }
+
+                return OpenSourceLicense(name: name, body: body)
+            }
     }
 
     /// 플러그인 출력은 번들 최상위에 복사된다. 이름에 점이 많아
@@ -89,9 +112,6 @@ nonisolated struct OpenSourceLicenseLoader {
         return nil
     }
 
-    private static func childPanes(atRoot url: URL) -> [[String: Any]] {
-        specifiers(at: url).filter { $0[Key.type] as? String == Key.childPaneType }
-    }
 
     private static func licenseBody(at url: URL) -> String? {
         specifiers(at: url)
