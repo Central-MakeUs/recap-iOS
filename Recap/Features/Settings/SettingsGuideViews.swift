@@ -5,45 +5,50 @@ struct UsageGuideView: View {
     @State private var showsShareSetupGuide = false
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                SettingsNavigationHeader(title: "이용 안내", dismiss: { dismiss() })
+        VStack(alignment: .leading, spacing: 0) {
+            SettingsNavigationHeader(title: "이용 안내", dismiss: { dismiss() })
 
-                UsageGuideShareCard {
-                    showsShareSetupGuide = true
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
-
-                Text("Recap 이용 안내")
-                    .font(SettingsTypography.sectionTitle)
-                    .foregroundStyle(Color.recapGray500)
-                    .frame(height: 40, alignment: .topLeading)
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 0) {
+                    UsageGuideShareCard {
+                        showsShareSetupGuide = true
+                    }
                     .padding(.horizontal, 16)
-                    .padding(.top, 37)
+                    .padding(.top, 16)
 
-                VStack(alignment: .leading, spacing: 41) {
-                    UsageGuideItem(
-                        icon: .recap(.checkbox),
-                        title: "직접 선택한 스크린샷을 정리해요",
-                        description: "앨범에서 스크린샷을 직접 선택한 경우에만 정리를 시작해요."
-                    )
+                    Text("Recap 이용 안내")
+                        .font(SettingsTypography.sectionTitle)
+                        .foregroundStyle(Color.recapGray500)
+                        .frame(height: 40, alignment: .topLeading)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 37)
 
-                    UsageGuideItem(
-                        icon: .system("square.and.arrow.up.fill"),
-                        title: "공유하기 버튼으로 바로 공유해요",
-                        description: "다른 앱이나 앨범에서 공유 버튼을 누르고 Recap을 선택하면\n바로 정리할 수 있어요!"
-                    )
+                    VStack(alignment: .leading, spacing: 41) {
+                        UsageGuideItem(
+                            icon: .recap(.checkbox),
+                            title: "직접 선택한 스크린샷을 정리해요",
+                            description: "앨범에서 스크린샷을 직접 선택한 경우에만 정리를 시작해요."
+                        )
 
-                    UsageGuideItem(
-                        icon: .system("rectangle.slash.fill"),
-                        title: "자동으로 가져가지 않아요",
-                        description: "스크린샷을 자동 수집하거나 사진첩을 자동 분석하지 않아요."
-                    )
+                        UsageGuideItem(
+                            icon: .system("square.and.arrow.up.fill"),
+                            title: "공유하기 버튼으로 바로 공유해요",
+                            description: "다른 앱이나 앨범에서 공유 버튼을 누르고 Recap을 선택하면\n바로 정리할 수 있어요!"
+                        )
+
+                        UsageGuideItem(
+                            icon: .system("rectangle.slash.fill"),
+                            title: "자동으로 가져가지 않아요",
+                            description: "스크린샷을 자동 수집하거나 사진첩을 자동 분석하지 않아요."
+                        )
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 40)
                 }
-                .padding(.horizontal, 16)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
         .navigationDestination(isPresented: $showsShareSetupGuide) {
@@ -156,11 +161,12 @@ struct PrivacyInformationView: View {
     @Environment(\.openURL) private var openURL
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                SettingsNavigationHeader(title: "개인정보 처리 안내", dismiss: { dismiss() })
+        VStack(alignment: .leading, spacing: 0) {
+            SettingsNavigationHeader(title: "개인정보 처리 안내", dismiss: { dismiss() })
 
-                VStack(alignment: .leading, spacing: 22) {
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 0) {
+                    VStack(alignment: .leading, spacing: 22) {
                     PrivacyInformationSection(
                         title: "이미지 처리 방식",
                         content: """
@@ -199,24 +205,28 @@ struct PrivacyInformationView: View {
                         content: "AI 전송 동의는 설정 > 데이터 관리에서 언제든지 철회할 수 있으며, 철회 시 스크린샷 정리 기능을 사용할 수 없습니다."
                     )
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 27)
-                .padding(.bottom, 40)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 27)
+                    .padding(.bottom, 40)
 
-                SettingsSectionDivider()
+                    SettingsSectionDivider()
 
-                VStack(spacing: 0) {
-                    SettingsNavigationRow(title: RecapExternalLink.privacyPolicy.title) {
-                        openURL(RecapExternalLink.privacyPolicy.url)
+                    VStack(spacing: 0) {
+                        SettingsNavigationRow(title: RecapExternalLink.privacyPolicy.title) {
+                            openURL(RecapExternalLink.privacyPolicy.url)
+                        }
+                        SettingsNavigationRow(title: RecapExternalLink.termsOfService.title) {
+                            openURL(RecapExternalLink.termsOfService.url)
+                        }
                     }
-                    SettingsNavigationRow(title: RecapExternalLink.termsOfService.title) {
-                        openURL(RecapExternalLink.termsOfService.url)
-                    }
+                    .padding(.horizontal, SettingsLayout.horizontalPadding)
+                    .padding(.top, 15)
+                    .padding(.bottom, 40)
                 }
-                .padding(.horizontal, SettingsLayout.horizontalPadding)
-                .padding(.top, 15)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
     }

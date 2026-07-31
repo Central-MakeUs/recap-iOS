@@ -66,25 +66,28 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            LazyVStack(alignment: .leading, spacing: 0) {
-                SettingsNavigationHeader(title: "설정", dismiss: onClose)
+        VStack(alignment: .leading, spacing: 0) {
+            SettingsNavigationHeader(title: "설정", dismiss: onClose)
 
-                SettingsAccountSection(onNavigate: onNavigate)
-                SettingsSectionDivider()
-                SettingsNotificationAndPermissionSection(
-                    onNavigate: onNavigate
-                )
-                SettingsSectionDivider()
-                SettingsDataSection(onNavigate: onNavigate)
-                SettingsSectionDivider()
-                SettingsGuideSection(onNavigate: onNavigate)
-                SettingsSectionDivider()
-                SettingsSupportSection(
-                    onNavigate: onNavigate
-                )
+            ScrollView(showsIndicators: false) {
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    SettingsAccountSection(onNavigate: onNavigate)
+                    SettingsSectionDivider()
+                    SettingsNotificationAndPermissionSection(
+                        onNavigate: onNavigate
+                    )
+                    SettingsSectionDivider()
+                    SettingsDataSection(onNavigate: onNavigate)
+                    SettingsSectionDivider()
+                    SettingsGuideSection(onNavigate: onNavigate)
+                    SettingsSectionDivider()
+                    SettingsSupportSection(
+                        onNavigate: onNavigate
+                    )
+                }
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
     }

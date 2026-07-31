@@ -10,13 +10,13 @@ struct OpenSourceLicensesView: View {
     }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                SettingsNavigationHeader(
-                    title: "오픈소스 라이선스",
-                    dismiss: { dismiss() }
-                )
+        VStack(alignment: .leading, spacing: 0) {
+            SettingsNavigationHeader(
+                title: "오픈소스 라이선스",
+                dismiss: { dismiss() }
+            )
 
+            ScrollView(showsIndicators: false) {
                 if licenses.isEmpty {
                     Text("표시할 오픈소스 라이선스가 없어요.")
                         .font(SettingsTypography.body)
@@ -34,9 +34,11 @@ struct OpenSourceLicensesView: View {
                     }
                     .padding(.horizontal, SettingsLayout.horizontalPadding)
                     .padding(.top, 15)
+                    .padding(.bottom, 40)
                 }
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
         .navigationDestination(item: $selectedLicense) { license in
@@ -50,13 +52,13 @@ private struct OpenSourceLicenseDetailView: View {
     let license: OpenSourceLicense
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                SettingsNavigationHeader(
-                    title: license.name,
-                    dismiss: { dismiss() }
-                )
+        VStack(alignment: .leading, spacing: 0) {
+            SettingsNavigationHeader(
+                title: license.name,
+                dismiss: { dismiss() }
+            )
 
+            ScrollView(showsIndicators: false) {
                 Text(license.body)
                     .font(RecapFont.pretendard(size: 13, weight: .regular))
                     .foregroundStyle(Color.recapGray500)
@@ -68,6 +70,7 @@ private struct OpenSourceLicenseDetailView: View {
                     .padding(.bottom, 40)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
     }

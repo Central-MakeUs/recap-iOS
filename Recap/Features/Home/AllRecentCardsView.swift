@@ -66,24 +66,24 @@ struct AllRecentCardsView: View {
     @State private var toast: RecapToastContent?
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                AllRecentCardsNavigationBar(
-                    onBack: onBack,
-                    onSearch: onSearch
-                )
+        VStack(alignment: .leading, spacing: 0) {
+            AllRecentCardsNavigationBar(
+                onBack: onBack,
+                onSearch: onSearch
+            )
+            .padding(.horizontal, 16)
+            .padding(.top, 19)
+
+            Text(
+                "\(Text("\(cards.count)").font(RecapFont.pretendard(size: 14, weight: .semibold)).foregroundStyle(Color.recapGray700)) recaps"
+            )
+                .font(RecapFont.pretendard(size: 14, weight: .regular))
+                .tracking(-0.28)
+                .foregroundStyle(Color.recapGray500)
                 .padding(.horizontal, 16)
-                .padding(.top, 19)
+                .padding(.top, 25)
 
-                Text(
-                    "\(Text("\(cards.count)").font(RecapFont.pretendard(size: 14, weight: .semibold)).foregroundStyle(Color.recapGray700)) recaps"
-                )
-                    .font(RecapFont.pretendard(size: 14, weight: .regular))
-                    .tracking(-0.28)
-                    .foregroundStyle(Color.recapGray500)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 25)
-
+            ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 0) {
                     ForEach(cards) { card in
                         AllRecentCardRow(
@@ -101,6 +101,7 @@ struct AllRecentCardsView: View {
                 .padding(.top, 7)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
         .recapToast(toast)
