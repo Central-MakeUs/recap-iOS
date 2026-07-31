@@ -355,9 +355,9 @@ struct CollectionDetailView: View {
         cards: [InformationCard],
         highlightedResults: [InformationCard.ID: SearchResult]
     ) -> some View {
-        recapCount(cards.count)
-
         if cards.isEmpty {
+            recapCount(cards.count)
+
             CollectionDetailEmptyState(
                 scope: scope,
                 onImportScreenshots: onImportScreenshots
@@ -365,8 +365,8 @@ struct CollectionDetailView: View {
             .frame(maxHeight: .infinity)
             .padding(.bottom, 120)
         } else {
+            // recaps 개수는 헤더가 아니라 목록과 함께 스크롤된다.
             cardList(cards: cards, highlightedResults: highlightedResults)
-                .padding(.top, 7)
         }
     }
 
@@ -388,6 +388,9 @@ struct CollectionDetailView: View {
     ) -> some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 0) {
+                recapCount(cards.count)
+                    .padding(.bottom, 7)
+
                 ForEach(cards) { card in
                     let searchResult = highlightedResults[card.id]
 

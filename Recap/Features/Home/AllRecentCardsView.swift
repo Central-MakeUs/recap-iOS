@@ -74,17 +74,19 @@ struct AllRecentCardsView: View {
             .padding(.horizontal, 16)
             .padding(.top, 19)
 
-            Text(
-                "\(Text("\(cards.count)").font(RecapFont.pretendard(size: 14, weight: .semibold)).foregroundStyle(Color.recapGray700)) recaps"
-            )
-                .font(RecapFont.pretendard(size: 14, weight: .regular))
-                .tracking(-0.28)
-                .foregroundStyle(Color.recapGray500)
-                .padding(.horizontal, 16)
-                .padding(.top, 25)
-
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 0) {
+                    Text(
+                        "\(Text("\(cards.count)").font(RecapFont.pretendard(size: 14, weight: .semibold)).foregroundStyle(Color.recapGray700)) recaps"
+                    )
+                        .font(RecapFont.pretendard(size: 14, weight: .regular))
+                        .tracking(-0.28)
+                        .foregroundStyle(Color.recapGray500)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 25)
+                        .padding(.bottom, 7)
+
                     ForEach(cards) { card in
                         AllRecentCardRow(
                             card: card,
@@ -98,7 +100,6 @@ struct AllRecentCardsView: View {
                         }
                     }
                 }
-                .padding(.top, 7)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

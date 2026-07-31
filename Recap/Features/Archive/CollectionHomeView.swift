@@ -57,7 +57,7 @@ struct CollectionHomeView: View {
 
     private var loadedContent: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // 헤더와 검색 바는 빈 상태·실패 상태와 같은 위치에 고정된다.
+            // 헤더·검색 바·즐겨찾기까지 고정되고, 폴더 목록만 스크롤된다.
             header
                 .padding(.horizontal, 16)
                 .padding(.top, 15)
@@ -66,16 +66,17 @@ struct CollectionHomeView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 20)
 
+            Button {
+                onAction(.openFavorites)
+            } label: {
+                CollectionHomeFavoritesLink(count: favoriteCount)
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 16)
+            .padding(.top, 21)
+
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
-                    Button {
-                        onAction(.openFavorites)
-                    } label: {
-                        CollectionHomeFavoritesLink(count: favoriteCount)
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.top, 21)
-
                     if layoutMode == .grid {
                         CollectionHomeFolderGrid(
                             summaries: folderSummaries,
