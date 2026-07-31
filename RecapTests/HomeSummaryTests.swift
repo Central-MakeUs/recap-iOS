@@ -134,6 +134,68 @@ final class HomeSummaryTests: XCTestCase {
         XCTAssertEqual(HomeSummaryURLProtocol.requestCount, 1)
     }
 
+    func testFavoritesAreSortedByOrganizedAtDescending() throws {
+        let response = try JSONDecoder.recapAPI.decode(
+            APIResponse<HomeSummaryDTO>.self,
+            from: Data(Self.unorderedFavoritesJSON.utf8)
+        )
+
+        let content = HomeSummaryContent(dto: try response.requiredData())
+
+        XCTAssertEqual(content.favoriteCards.map(\.captureID), [203, 201, 202, 204])
+    }
+
+    /// 같은 정리 시각을 가진 202, 204는 서버 응답 순서를 유지해야 한다.
+    private static let unorderedFavoritesJSON = """
+    {
+      "success": true,
+      "data": {
+        "recentCaptures": [],
+        "favorites": [
+          {
+            "captureId": 201,
+            "title": "중간",
+            "summary": "요약",
+            "typeCode": "KNOWLEDGE",
+            "thumbnailUrl": null,
+            "isFavorite": true,
+            "organizedAt": "2026-07-22T00:00:00Z"
+          },
+          {
+            "captureId": 202,
+            "title": "가장 오래됨",
+            "summary": "요약",
+            "typeCode": "KNOWLEDGE",
+            "thumbnailUrl": null,
+            "isFavorite": true,
+            "organizedAt": "2026-07-20T00:00:00Z"
+          },
+          {
+            "captureId": 203,
+            "title": "가장 최신",
+            "summary": "요약",
+            "typeCode": "KNOWLEDGE",
+            "thumbnailUrl": null,
+            "isFavorite": true,
+            "organizedAt": "2026-07-24T00:00:00Z"
+          },
+          {
+            "captureId": 204,
+            "title": "가장 오래됨 동률",
+            "summary": "요약",
+            "typeCode": "KNOWLEDGE",
+            "thumbnailUrl": null,
+            "isFavorite": true,
+            "organizedAt": "2026-07-20T00:00:00Z"
+          }
+        ],
+        "topTypes": [],
+        "hasAnyCapture": true
+      },
+      "error": null
+    }
+    """
+
     private static let summaryJSON = """
     {
       "success": true,

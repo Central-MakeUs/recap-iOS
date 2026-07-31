@@ -20,7 +20,14 @@ nonisolated struct HomeSummaryContent: Equatable, Sendable {
 
     init(dto: HomeSummaryDTO) {
         recentCards = dto.recentCaptures.map(InformationCard.init(dto:))
-        favoriteCards = dto.favorites.map(InformationCard.init(dto:))
+        favoriteCards = dto.favorites
+            .enumerated()
+            .sorted { lhs, rhs in
+                lhs.element.organizedAt == rhs.element.organizedAt
+                    ? lhs.offset < rhs.offset
+                    : lhs.element.organizedAt > rhs.element.organizedAt
+            }
+            .map { InformationCard(dto: $0.element) }
         frequentTypes = dto.topTypes.map(CollectionSummary.init(dto:))
         hasAnyCapture = dto.hasAnyCapture
     }
