@@ -10,7 +10,6 @@ struct OnboardingLoginView: View {
     @State private var isLoggingIn = false
     @State private var showsLoginFailure = false
 
-    var notice: String?
     let onStart: () -> Void
     var login: (Provider) async -> LoginAttemptOutcome = { _ in .success }
 
@@ -32,15 +31,6 @@ struct OnboardingLoginView: View {
             providerButtons
 
             terms
-
-            if let notice {
-                Text(notice)
-                    .font(RecapFont.pretendard(size: 12, weight: .medium))
-                    .tracking(-0.24)
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(Color.recapGray500)
-                    .onboardingFrame(x: 25, y: 656, width: 326, height: 34)
-            }
 
             if showsLoginFailure {
                 RecapToast(style: .error, message: "로그인에 실패했어요. 잠시 후 다시 시도해주세요.")
@@ -207,9 +197,9 @@ private struct OnboardingBackgroundDecorations: View {
 }
 
 #Preview("Onboarding login") {
-    OnboardingLoginView(notice: nil, onStart: {})
+    OnboardingLoginView(onStart: {})
 }
 
 #Preview("Onboarding login failure") {
-    OnboardingLoginView(notice: nil, onStart: {}, login: { _ in .failure })
+    OnboardingLoginView(onStart: {}, login: { _ in .failure })
 }

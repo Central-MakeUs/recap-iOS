@@ -66,8 +66,8 @@ struct RecapRootView: View {
         switch destination {
         case .launching:
             ProgressView()
-        case .login(let reason):
-            loginView(signOutReason: reason)
+        case .login:
+            loginView
         case .onboardingGuide:
             OnboardingGuideCarouselView(
                 initialProgress: onboardingStore.progress,
@@ -108,9 +108,8 @@ struct RecapRootView: View {
         isSplashPresented = false
     }
 
-    private func loginView(signOutReason: SessionSignOutReason?) -> some View {
+    private var loginView: some View {
         OnboardingLoginView(
-            notice: loginNotice(for: signOutReason),
             onStart: onboardingStore.startAfterLoginIfNeeded,
             login: { provider in
                 let authProvider: AuthProvider = provider == .kakao ? .kakao : .apple
@@ -119,20 +118,6 @@ struct RecapRootView: View {
                 )
             }
         )
-    }
-
-    private func loginNotice(for reason: SessionSignOutReason?) -> String? {
-        switch reason {
-        case .sessionExpired:
-            // 세션 만료는 사용자가 한 일이 아니므로 별도 안내 없이 로그인 화면만 보여준다.
-            return nil
-        case .sessionRefreshFailed:
-            return "로그인 세션을 갱신하지 못했어요. 네트워크를 확인해주세요."
-        case .secureStorageFailed:
-            return "로그인 정보를 불러오지 못했어요. 다시 로그인해주세요."
-        case .authenticationFailed, nil:
-            return nil
-        }
     }
 
     private func completeOnboarding() {
