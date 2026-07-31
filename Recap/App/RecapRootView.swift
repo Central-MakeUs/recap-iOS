@@ -124,7 +124,8 @@ struct RecapRootView: View {
     private func loginNotice(for reason: SessionSignOutReason?) -> String? {
         switch reason {
         case .sessionExpired:
-            return "로그인 세션이 만료됐어요. 다시 로그인해주세요."
+            // 세션 만료는 사용자가 한 일이 아니므로 별도 안내 없이 로그인 화면만 보여준다.
+            return nil
         case .sessionRefreshFailed:
             return "로그인 세션을 갱신하지 못했어요. 네트워크를 확인해주세요."
         case .secureStorageFailed:

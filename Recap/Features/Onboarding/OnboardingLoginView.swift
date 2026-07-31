@@ -39,7 +39,7 @@ struct OnboardingLoginView: View {
                     .tracking(-0.24)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(Color.recapGray500)
-                    .onboardingFrame(x: 25, y: 682, width: 326, height: 34)
+                    .onboardingFrame(x: 25, y: 656, width: 326, height: 34)
             }
 
             if showsLoginFailure {
