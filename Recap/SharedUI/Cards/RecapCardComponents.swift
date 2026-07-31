@@ -2,8 +2,10 @@ import SwiftUI
 
 struct RecapScreenshotThumbnail: View {
     enum FallbackStyle {
-        case empty
-        case noImage
+        /// 목록 썸네일처럼 카드 자체가 캐릭터 몸이 되는 경우 눈만 표시한다.
+        case character
+        /// 홈·상세처럼 넓은 영역에는 눈 달린 폴더를 가운데 표시한다.
+        case folderCharacter
     }
 
     let kind: CollectionKind
@@ -12,7 +14,7 @@ struct RecapScreenshotThumbnail: View {
     var cornerRadius: CGFloat = 5
     var hasFavoriteFold = false
     var size: CGSize? = nil
-    var fallbackStyle: FallbackStyle = .empty
+    var fallbackStyle: FallbackStyle = .folderCharacter
     var onRemoteLoadFailure: (URL) -> Void = { _ in }
 
     var body: some View {
@@ -60,16 +62,23 @@ struct RecapScreenshotThumbnail: View {
     @ViewBuilder
     private var fallback: some View {
         switch fallbackStyle {
-        case .empty:
-            Color.clear
-        case .noImage:
-            Color.recapThumbnail
+        case .character:
+            Color.recapGray50
+                .overlay(alignment: .bottomLeading) {
+                    Image("RecapIconCharacterEyes")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 26, height: 26)
+                        .padding(.leading, 7)
+                        .padding(.bottom, 5)
+                }
+        case .folderCharacter:
+            Color.recapGray50
                 .overlay {
-                    RecapIconView(
-                        icon: .noImage,
-                        size: 24,
-                        color: Color.recapGray500
-                    )
+                    Image("RecapIconCharacterFolder")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 21)
                 }
         }
     }
@@ -178,7 +187,8 @@ private struct RecapScreenshotThumbnailShape: InsettableShape {
             kind: .shopping,
             assetName: nil,
             hasFavoriteFold: true,
-            size: CGSize(width: 62, height: 80)
+            size: CGSize(width: 62, height: 80),
+            fallbackStyle: .character
         )
 
         RecapIconView(

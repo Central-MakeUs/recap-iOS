@@ -67,7 +67,8 @@ struct RecapInformationCardRow: View {
                 assetName: card.thumbnailAssetName,
                 remoteURL: card.thumbnailURL,
                 hasFavoriteFold: true,
-                size: CGSize(width: 62, height: 80)
+                size: CGSize(width: 62, height: 80),
+                fallbackStyle: .character
             )
 
             RecapIconView(
@@ -95,7 +96,8 @@ struct RecapInformationCardRow: View {
             kind: card.collection,
             assetName: card.thumbnailAssetName,
             remoteURL: card.thumbnailURL,
-            cornerRadius: 0
+            cornerRadius: 0,
+            fallbackStyle: .character
         )
         .frame(width: 62, height: 80)
         .clipped()

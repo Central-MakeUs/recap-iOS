@@ -10,7 +10,7 @@ struct RecapHomeRecentCard: View {
                 assetName: card.thumbnailAssetName,
                 remoteURL: card.thumbnailURL,
                 size: CGSize(width: 134, height: 85),
-                fallbackStyle: .noImage
+                fallbackStyle: .folderCharacter
             )
 
             VStack(alignment: .leading, spacing: 5) {
@@ -74,7 +74,7 @@ struct RecapHomeFavoriteCard: View {
         kind: .knowledge,
         assetName: nil,
         size: CGSize(width: 134, height: 85),
-        fallbackStyle: .noImage
+        fallbackStyle: .folderCharacter
     )
     .padding()
 }
