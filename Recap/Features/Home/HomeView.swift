@@ -118,45 +118,50 @@ struct HomeView: View {
     }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                HomeHeader(
-                    openSettings: { onAction(.openSettings) },
-                    openSearch: { onAction(.search) }
-                )
-
-                if status == .loading {
-                    ProgressView()
-                        .tint(Color.recapBlue300)
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 131)
-                } else if status == .failed {
-                    RecapLoadFailureView(style: .home, retry: onRetry)
-                        .padding(.top, 131)
-                } else {
-                    HomeFavoritesSection(
-                        cards: favoriteCards,
-                        openFavorites: { onAction(.openFavorites) },
-                        openCard: { onAction(.openCard($0)) }
-                    )
-                    .padding(.top, 26)
-
-                    HomeRecentSection(
-                        cards: recentCards,
-                        openAllRecent: { onAction(.openAllRecent) },
-                        openCard: { onAction(.openCard($0)) }
-                    )
-                    .padding(.top, 26)
-
-                    HomeFrequentTypesSection(
-                        summaries: collectionSummaries,
-                        openArchive: { onAction(.openArchive($0)) }
-                    )
-                    .padding(.top, 26)
-                }
-            }
+        VStack(alignment: .leading, spacing: 0) {
+            // Figma 02-01의 "스크롤 Fixed 영역": 헤더는 스크롤과 무관하게 고정된다.
+            HomeHeader(
+                openSettings: { onAction(.openSettings) },
+                openSearch: { onAction(.search) }
+            )
             .padding(.horizontal, 16)
             .padding(.top, 15)
+
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 0) {
+                    if status == .loading {
+                        ProgressView()
+                            .tint(Color.recapBlue300)
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, 131)
+                    } else if status == .failed {
+                        RecapLoadFailureView(style: .home, retry: onRetry)
+                            .padding(.top, 131)
+                    } else {
+                        HomeFavoritesSection(
+                            cards: favoriteCards,
+                            openFavorites: { onAction(.openFavorites) },
+                            openCard: { onAction(.openCard($0)) }
+                        )
+                        .padding(.top, 26)
+
+                        HomeRecentSection(
+                            cards: recentCards,
+                            openAllRecent: { onAction(.openAllRecent) },
+                            openCard: { onAction(.openCard($0)) }
+                        )
+                        .padding(.top, 26)
+
+                        HomeFrequentTypesSection(
+                            summaries: collectionSummaries,
+                            openArchive: { onAction(.openArchive($0)) }
+                        )
+                        .padding(.top, 26)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 16)
+            }
         }
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)

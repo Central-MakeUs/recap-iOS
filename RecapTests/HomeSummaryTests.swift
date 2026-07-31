@@ -134,6 +134,119 @@ final class HomeSummaryTests: XCTestCase {
         XCTAssertEqual(HomeSummaryURLProtocol.requestCount, 1)
     }
 
+    func testToggleFavoriteUpdatesRecentCardAndNotifiesInvalidation() async throws {
+        let mutator = HomeCaptureMutatorStub()
+        let invalidationCenter = CardDataInvalidationCenter()
+        let model = HomeFeatureModel(
+            summaryLoader: SequencedHomeSummaryLoader(results: [.success(try Self.decodedSummary())]),
+            captureMutator: mutator,
+            invalidationCenter: invalidationCenter
+        )
+        await model.loadIfNeeded()
+        let cardID = try XCTUnwrap(Self.recentCard(in: model)?.id)
+
+        let isFavorite = try await model.toggleFavorite(cardID: cardID)
+
+        XCTAssertTrue(isFavorite)
+        XCTAssertEqual(mutator.favoriteUpdates, [.init(captureID: 101, isFavorite: true)])
+        XCTAssertEqual(Self.recentCard(in: model)?.isFavorite, true)
+        XCTAssertEqual(invalidationCenter.homeRevision, 1)
+    }
+
+    func testToggleFavoriteRestoresPreviousStateWhenRequestFails() async throws {
+        let invalidationCenter = CardDataInvalidationCenter()
+        let model = HomeFeatureModel(
+            summaryLoader: SequencedHomeSummaryLoader(results: [.success(try Self.decodedSummary())]),
+            captureMutator: HomeCaptureMutatorStub(favoriteError: APIError.transport),
+            invalidationCenter: invalidationCenter
+        )
+        await model.loadIfNeeded()
+        let cardID = try XCTUnwrap(Self.recentCard(in: model)?.id)
+
+        do {
+            _ = try await model.toggleFavorite(cardID: cardID)
+            XCTFail("A failed favorite update must throw")
+        } catch {
+            XCTAssertEqual(Self.recentCard(in: model)?.isFavorite, false)
+            XCTAssertEqual(invalidationCenter.homeRevision, 0)
+        }
+    }
+
+    private static func decodedSummary() throws -> HomeSummaryContent {
+        let response = try JSONDecoder.recapAPI.decode(
+            APIResponse<HomeSummaryDTO>.self,
+            from: Data(Self.summaryJSON.utf8)
+        )
+        return HomeSummaryContent(dto: try response.requiredData())
+    }
+
+    private static func recentCard(in model: HomeFeatureModel) -> InformationCard? {
+        guard case .loaded(let content) = model.state else { return nil }
+        return content.recentCards.first
+    }
+
+    func testFavoritesAreSortedByOrganizedAtDescending() throws {
+        let response = try JSONDecoder.recapAPI.decode(
+            APIResponse<HomeSummaryDTO>.self,
+            from: Data(Self.unorderedFavoritesJSON.utf8)
+        )
+
+        let content = HomeSummaryContent(dto: try response.requiredData())
+
+        XCTAssertEqual(content.favoriteCards.map(\.captureID), [203, 201, 202, 204])
+    }
+
+    /// 같은 정리 시각을 가진 202, 204는 서버 응답 순서를 유지해야 한다.
+    private static let unorderedFavoritesJSON = """
+    {
+      "success": true,
+      "data": {
+        "recentCaptures": [],
+        "favorites": [
+          {
+            "captureId": 201,
+            "title": "중간",
+            "summary": "요약",
+            "typeCode": "KNOWLEDGE",
+            "thumbnailUrl": null,
+            "isFavorite": true,
+            "organizedAt": "2026-07-22T00:00:00Z"
+          },
+          {
+            "captureId": 202,
+            "title": "가장 오래됨",
+            "summary": "요약",
+            "typeCode": "KNOWLEDGE",
+            "thumbnailUrl": null,
+            "isFavorite": true,
+            "organizedAt": "2026-07-20T00:00:00Z"
+          },
+          {
+            "captureId": 203,
+            "title": "가장 최신",
+            "summary": "요약",
+            "typeCode": "KNOWLEDGE",
+            "thumbnailUrl": null,
+            "isFavorite": true,
+            "organizedAt": "2026-07-24T00:00:00Z"
+          },
+          {
+            "captureId": 204,
+            "title": "가장 오래됨 동률",
+            "summary": "요약",
+            "typeCode": "KNOWLEDGE",
+            "thumbnailUrl": null,
+            "isFavorite": true,
+            "organizedAt": "2026-07-20T00:00:00Z"
+          }
+        ],
+        "topTypes": [],
+        "hasAnyCapture": true
+      },
+      "error": null
+    }
+    """
+
     private static let summaryJSON = """
     {
       "success": true,
@@ -290,4 +403,36 @@ private final class HomeSummaryURLProtocol: URLProtocol, @unchecked Sendable {
     }
 
     override func stopLoading() {}
+}
+
+private final class HomeCaptureMutatorStub: CaptureMutating, @unchecked Sendable {
+    struct FavoriteUpdate: Equatable {
+        let captureID: Int64
+        let isFavorite: Bool
+    }
+
+    private let lock = NSLock()
+    private let favoriteError: Error?
+    private var storedFavoriteUpdates: [FavoriteUpdate] = []
+
+    init(favoriteError: Error? = nil) {
+        self.favoriteError = favoriteError
+    }
+
+    var favoriteUpdates: [FavoriteUpdate] {
+        lock.withLock { storedFavoriteUpdates }
+    }
+
+    func deleteCapture(captureID: Int64) async throws {}
+
+    func updateFavorite(captureID: Int64, isFavorite: Bool) async throws {
+        if let favoriteError {
+            throw favoriteError
+        }
+        lock.withLock {
+            storedFavoriteUpdates.append(
+                FavoriteUpdate(captureID: captureID, isFavorite: isFavorite)
+            )
+        }
+    }
 }

@@ -56,11 +56,13 @@ extension View {
         case .search:
             SearchContainerView(
                 loader: searchLoader,
+                captureMutator: captureService,
                 invalidationCenter: cardDataInvalidationCenter
             )
         case .allRecentCards:
             AllRecentCardsContainerView(
                 summaryLoader: homeSummaryLoader,
+                captureMutator: captureService,
                 invalidationCenter: cardDataInvalidationCenter
             )
         case .archiveFavorites:

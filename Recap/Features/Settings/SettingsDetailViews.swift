@@ -40,7 +40,7 @@ struct SettingsDetailView: View {
         case .support:
             SettingsUnavailableView(title: "문의하기")
         case .openSourceLicenses:
-            SettingsUnavailableView(title: "오픈소스 라이선스")
+            OpenSourceLicensesView()
         }
     }
 }
@@ -172,6 +172,7 @@ struct DataManagementView: View {
     @Environment(AIDataTransferConsentStore.self) private var consentStore
     @State private var model: DataManagementModel
     @State private var showsDeleteConfirmation = false
+    @State private var showsConsentRevocationConfirmation = false
     @State private var showsAIConsentSheet = false
 
     init(
@@ -252,6 +253,16 @@ struct DataManagementView: View {
                 }
             }
         )
+        .recapConfirmationDialog(
+            isPresented: $showsConsentRevocationConfirmation,
+            title: "데이터 전송 동의를 철회할까요?",
+            message: "동의를 철회하면 스크린샷 정리 기능을\n사용할 수 없어요.\n다시 정리를 시작하면 동의화면이 표시돼요.",
+            cancelTitle: "취소",
+            confirmTitle: "철회하기",
+            confirmStyle: .primary,
+            height: 210,
+            onConfirm: revokeAIDataTransferConsent
+        )
         .aiDataTransferConsentSheet(
             isPresented: $showsAIConsentSheet,
             primaryButtonTitle: consentStore.hasConsented ? "확인" : "동의하기",
@@ -311,7 +322,7 @@ struct DataManagementView: View {
                 .font(SettingsTypography.sectionTitle)
                 .foregroundStyle(Color.recapGray500)
 
-            Button(action: presentAIConsentSheet) {
+            Button(action: handleAIConsentRowTap) {
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 0) {
                         Text("AI 데이터 전송 동의")
@@ -320,17 +331,13 @@ struct DataManagementView: View {
 
                         Spacer(minLength: 0)
 
-                        Text(consentStore.hasConsented ? "동의함" : "동의하기")
+                        Text(consentStore.hasConsented ? "철회하기" : "동의하기")
                             .font(SettingsTypography.rowStatus)
-                            .foregroundStyle(
-                                consentStore.hasConsented
-                                    ? Color.recapBlue300
-                                    : Color.recapGray300
-                            )
+                            .foregroundStyle(Color.recapGray300)
                     }
                     .frame(height: 21)
 
-                    Text(consentStore.hasConsented ? "동의함" : "동의하지 않음")
+                    Text(consentStatusText)
                         .font(SettingsTypography.body)
                         .foregroundStyle(Color.recapGray500)
                 }
@@ -342,13 +349,34 @@ struct DataManagementView: View {
         }
     }
 
-    private func presentAIConsentSheet() {
-        showsAIConsentSheet = true
+    private var consentStatusText: String {
+        guard consentStore.hasConsented else { return "동의하지 않음" }
+        guard let consentedAt = consentStore.consentedAt else { return "동의함" }
+        return "동의함 \(Self.consentDateFormatter.string(from: consentedAt))"
+    }
+
+    private static let consentDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy.MM.dd"
+        return formatter
+    }()
+
+    private func handleAIConsentRowTap() {
+        if consentStore.hasConsented {
+            showsConsentRevocationConfirmation = true
+        } else {
+            showsAIConsentSheet = true
+        }
     }
 
     private func grantAIDataTransferConsent() {
         consentStore.grantConsent()
         showsAIConsentSheet = false
+    }
+
+    private func revokeAIDataTransferConsent() {
+        consentStore.revokeConsent()
     }
 
     private func clearToastIfNeeded() async {

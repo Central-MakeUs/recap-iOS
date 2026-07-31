@@ -56,39 +56,46 @@ struct CollectionHomeView: View {
     }
 
     private var loadedContent: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                header
+        VStack(alignment: .leading, spacing: 0) {
+            // 헤더·검색 바·즐겨찾기까지 고정되고, 폴더 목록만 스크롤된다.
+            header
+                .padding(.horizontal, 16)
+                .padding(.top, 15)
 
-                searchButton
-                    .padding(.top, 20)
+            searchButton
+                .padding(.horizontal, 16)
+                .padding(.top, 20)
 
-                Button {
-                    onAction(.openFavorites)
-                } label: {
-                    CollectionHomeFavoritesLink(count: favoriteCount)
-                }
-                .buttonStyle(.plain)
-                .padding(.top, 21)
-
-                if layoutMode == .grid {
-                    CollectionHomeFolderGrid(
-                        summaries: folderSummaries,
-                        onOpenArchive: openArchive
-                    )
-                    .padding(.top, 21)
-                } else {
-                    CollectionHomeFolderList(
-                        summaries: folderSummaries,
-                        onOpenArchive: openArchive
-                    )
-                    .padding(.horizontal, -16)
-                    .padding(.top, 14)
-                }
+            Button {
+                onAction(.openFavorites)
+            } label: {
+                CollectionHomeFavoritesLink(count: favoriteCount)
             }
+            .buttonStyle(.plain)
             .padding(.horizontal, 16)
-            .padding(.top, 15)
-            .padding(.bottom, 24)
+            .padding(.top, 21)
+
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 0) {
+                    if layoutMode == .grid {
+                        CollectionHomeFolderGrid(
+                            summaries: folderSummaries,
+                            onOpenArchive: openArchive
+                        )
+                        .padding(.top, 21)
+                    } else {
+                        CollectionHomeFolderList(
+                            summaries: folderSummaries,
+                            onOpenArchive: openArchive
+                        )
+                        .padding(.horizontal, -16)
+                        .padding(.top, 14)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 24)
+            }
         }
     }
 

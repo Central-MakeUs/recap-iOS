@@ -66,25 +66,28 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            LazyVStack(alignment: .leading, spacing: 0) {
-                SettingsNavigationHeader(title: "설정", dismiss: onClose)
+        VStack(alignment: .leading, spacing: 0) {
+            SettingsNavigationHeader(title: "설정", dismiss: onClose)
 
-                SettingsAccountSection(onNavigate: onNavigate)
-                SettingsSectionDivider()
-                SettingsNotificationAndPermissionSection(
-                    onNavigate: onNavigate
-                )
-                SettingsSectionDivider()
-                SettingsDataSection(onNavigate: onNavigate)
-                SettingsSectionDivider()
-                SettingsGuideSection(onNavigate: onNavigate)
-                SettingsSectionDivider()
-                SettingsSupportSection(
-                    onNavigate: onNavigate
-                )
+            ScrollView(showsIndicators: false) {
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    SettingsAccountSection(onNavigate: onNavigate)
+                    SettingsSectionDivider()
+                    SettingsNotificationAndPermissionSection(
+                        onNavigate: onNavigate
+                    )
+                    SettingsSectionDivider()
+                    SettingsDataSection(onNavigate: onNavigate)
+                    SettingsSectionDivider()
+                    SettingsGuideSection(onNavigate: onNavigate)
+                    SettingsSectionDivider()
+                    SettingsSupportSection(
+                        onNavigate: onNavigate
+                    )
+                }
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
     }
@@ -145,13 +148,14 @@ private struct SettingsGuideSection: View {
 }
 
 private struct SettingsSupportSection: View {
+    @Environment(\.openURL) private var openURL
     let onNavigate: (SettingsRoute) -> Void
 
     var body: some View {
         SettingsListSection(title: "지원") {
             VStack(spacing: 0) {
-                SettingsNavigationRow(title: "문의하기") {
-                    onNavigate(.support)
+                SettingsNavigationRow(title: RecapExternalLink.support.title) {
+                    openURL(RecapExternalLink.support.url)
                 }
                 SettingsNavigationRow(title: "오픈소스 라이선스") {
                     onNavigate(.openSourceLicenses)

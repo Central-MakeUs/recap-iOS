@@ -6,10 +6,10 @@ struct OnboardingLoginView: View {
         case apple
     }
 
+    @Environment(\.openURL) private var openURL
     @State private var isLoggingIn = false
     @State private var showsLoginFailure = false
 
-    var notice: String?
     let onStart: () -> Void
     var login: (Provider) async -> LoginAttemptOutcome = { _ in .success }
 
@@ -31,15 +31,6 @@ struct OnboardingLoginView: View {
             providerButtons
 
             terms
-
-            if let notice {
-                Text(notice)
-                    .font(RecapFont.pretendard(size: 12, weight: .medium))
-                    .tracking(-0.24)
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(Color.recapGray500)
-                    .onboardingFrame(x: 25, y: 682, width: 326, height: 34)
-            }
 
             if showsLoginFailure {
                 RecapToast(style: .error, message: "로그인에 실패했어요. 잠시 후 다시 시도해주세요.")
@@ -101,25 +92,30 @@ struct OnboardingLoginView: View {
     }
 
     private var terms: some View {
-        VStack(spacing: 9) {
+        VStack(spacing: 45) {
             HStack(spacing: 10) {
-                Button("이용약관") {}
+                Button(RecapExternalLink.termsOfService.title) {
+                    openURL(RecapExternalLink.termsOfService.url)
+                }
                 Rectangle()
                     .fill(Color.recapGray100)
                     .frame(width: 1, height: 15)
-                Button("개인정보 처리방침") {}
+                Button(RecapExternalLink.privacyPolicy.title) {
+                    openURL(RecapExternalLink.privacyPolicy.url)
+                }
             }
             .font(RecapFont.pretendard(size: 14, weight: .medium))
             .tracking(0.28)
             .foregroundStyle(Color.recapGray500)
 
-            Text("로그인 시 이용약관 및 개인정보 처리방침에 동의하는 것으로 간주됩니다")
+            Text("로그인 시 만 14세 이상이며 이용약관 및\n개인정보 처리방침에 동의하는 것으로 간주됩니다")
                 .font(RecapFont.pretendard(size: 12, weight: .medium))
                 .tracking(-0.24)
+                .multilineTextAlignment(.center)
                 .foregroundStyle(Color.recapGray300)
         }
         .buttonStyle(.plain)
-        .onboardingFrame(x: 25, y: 742, width: 326, height: 44, alignment: .top)
+        .onboardingFrame(x: 25, y: 697, width: 326, height: 97, alignment: .top)
     }
 
     private var loginDecorations: some View {
@@ -201,9 +197,9 @@ private struct OnboardingBackgroundDecorations: View {
 }
 
 #Preview("Onboarding login") {
-    OnboardingLoginView(notice: nil, onStart: {})
+    OnboardingLoginView(onStart: {})
 }
 
 #Preview("Onboarding login failure") {
-    OnboardingLoginView(notice: nil, onStart: {}, login: { _ in .failure })
+    OnboardingLoginView(onStart: {}, login: { _ in .failure })
 }
