@@ -40,7 +40,7 @@ struct SettingsDetailView: View {
         case .support:
             SettingsUnavailableView(title: "문의하기")
         case .openSourceLicenses:
-            SettingsUnavailableView(title: "오픈소스 라이선스")
+            OpenSourceLicensesView()
         }
     }
 }

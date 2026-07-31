@@ -1,0 +1,19 @@
+# LicensePlistBuildTool이 빌드마다 오픈소스 라이선스 목록을 생성한다.
+# 플러그인은 --sandbox-mode로 실행되어 네트워크를 쓸 수 없으므로,
+# 라이선스 본문은 SPM 체크아웃(--package-sources-path)에서만 읽는다.
+options:
+  addVersionNumbers: true
+  suppressOpeningDirectory: true
+
+# LicensePlist 자신과 그 의존성은 빌드 도구일 뿐 앱에 포함되지 않으므로 제외한다.
+exclude:
+  - name: LicensePlist
+  - name: APIKit
+  - name: HeliumLogger
+  - name: LoggerAPI
+  - name: TOMLKit
+  - name: XcodeEdit
+  - name: Yams
+  - name: swift-argument-parser
+  - name: swift-html-entities
+  - name: swift-log
