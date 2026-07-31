@@ -153,7 +153,7 @@ private struct UsageGuideItem: View {
 
 struct PrivacyInformationView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var destination: PrivacyInformationDestination?
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -206,11 +206,11 @@ struct PrivacyInformationView: View {
                 SettingsSectionDivider()
 
                 VStack(spacing: 0) {
-                    SettingsNavigationRow(title: "개인정보 처리방침") {
-                        destination = .privacyPolicy
+                    SettingsNavigationRow(title: RecapExternalLink.privacyPolicy.title) {
+                        openURL(RecapExternalLink.privacyPolicy.url)
                     }
-                    SettingsNavigationRow(title: "이용약관") {
-                        destination = .termsOfService
+                    SettingsNavigationRow(title: RecapExternalLink.termsOfService.title) {
+                        openURL(RecapExternalLink.termsOfService.url)
                     }
                 }
                 .padding(.horizontal, SettingsLayout.horizontalPadding)
@@ -219,9 +219,6 @@ struct PrivacyInformationView: View {
         }
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
-        .navigationDestination(item: $destination) { destination in
-            SettingsUnavailableView(title: destination.title)
-        }
     }
 }
 
@@ -239,22 +236,6 @@ private struct PrivacyInformationSection: View {
                 .font(RecapFont.pretendard(size: 14, weight: .regular))
                 .foregroundStyle(Color.recapGray500)
                 .fixedSize(horizontal: false, vertical: true)
-        }
-    }
-}
-
-private enum PrivacyInformationDestination: Hashable, Identifiable {
-    case privacyPolicy
-    case termsOfService
-
-    var id: Self { self }
-
-    var title: String {
-        switch self {
-        case .privacyPolicy:
-            "개인정보 처리방침"
-        case .termsOfService:
-            "이용약관"
         }
     }
 }

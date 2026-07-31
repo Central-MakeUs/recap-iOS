@@ -145,13 +145,14 @@ private struct SettingsGuideSection: View {
 }
 
 private struct SettingsSupportSection: View {
+    @Environment(\.openURL) private var openURL
     let onNavigate: (SettingsRoute) -> Void
 
     var body: some View {
         SettingsListSection(title: "지원") {
             VStack(spacing: 0) {
-                SettingsNavigationRow(title: "문의하기") {
-                    onNavigate(.support)
+                SettingsNavigationRow(title: RecapExternalLink.support.title) {
+                    openURL(RecapExternalLink.support.url)
                 }
                 SettingsNavigationRow(title: "오픈소스 라이선스") {
                     onNavigate(.openSourceLicenses)

@@ -6,6 +6,7 @@ struct OnboardingLoginView: View {
         case apple
     }
 
+    @Environment(\.openURL) private var openURL
     @State private var isLoggingIn = false
     @State private var showsLoginFailure = false
 
@@ -103,11 +104,15 @@ struct OnboardingLoginView: View {
     private var terms: some View {
         VStack(spacing: 45) {
             HStack(spacing: 10) {
-                Button("이용약관") {}
+                Button(RecapExternalLink.termsOfService.title) {
+                    openURL(RecapExternalLink.termsOfService.url)
+                }
                 Rectangle()
                     .fill(Color.recapGray100)
                     .frame(width: 1, height: 15)
-                Button("개인정보 처리방침") {}
+                Button(RecapExternalLink.privacyPolicy.title) {
+                    openURL(RecapExternalLink.privacyPolicy.url)
+                }
             }
             .font(RecapFont.pretendard(size: 14, weight: .medium))
             .tracking(0.28)
