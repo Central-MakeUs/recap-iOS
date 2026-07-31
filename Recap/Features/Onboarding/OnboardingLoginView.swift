@@ -101,7 +101,7 @@ struct OnboardingLoginView: View {
     }
 
     private var terms: some View {
-        VStack(spacing: 9) {
+        VStack(spacing: 45) {
             HStack(spacing: 10) {
                 Button("이용약관") {}
                 Rectangle()
@@ -113,13 +113,14 @@ struct OnboardingLoginView: View {
             .tracking(0.28)
             .foregroundStyle(Color.recapGray500)
 
-            Text("로그인 시 이용약관 및 개인정보 처리방침에 동의하는 것으로 간주됩니다")
+            Text("로그인 시 만 14세 이상이며 이용약관 및\n개인정보 처리방침에 동의하는 것으로 간주됩니다")
                 .font(RecapFont.pretendard(size: 12, weight: .medium))
                 .tracking(-0.24)
+                .multilineTextAlignment(.center)
                 .foregroundStyle(Color.recapGray300)
         }
         .buttonStyle(.plain)
-        .onboardingFrame(x: 25, y: 742, width: 326, height: 44, alignment: .top)
+        .onboardingFrame(x: 25, y: 697, width: 326, height: 97, alignment: .top)
     }
 
     private var loginDecorations: some View {
