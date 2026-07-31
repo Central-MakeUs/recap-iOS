@@ -175,7 +175,6 @@
 			);
 			dependencies = (
 				D5000001000000000000000C /* PBXTargetDependency */,
-				C2000001000000000000000C /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				A7BB44162FF2A90B00752373 /* Recap */,
@@ -277,7 +276,6 @@
 				C20000010000000000000003 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				C20000010000000000000004 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */,
 				C20000010000000000000008 /* XCRemoteSwiftPackageReference "lottie-spm" */,
-				C2000001000000000000000A /* XCRemoteSwiftPackageReference "LicensePlist" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A7BB44152FF2A90B00752373 /* Products */;
@@ -344,10 +342,6 @@
 			isa = PBXTargetDependency;
 			target = A7BB44132FF2A90B00752373 /* Recap */;
 			targetProxy = B10000010000000000000002 /* PBXContainerItemProxy */;
-		};
-		C2000001000000000000000C /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = C2000001000000000000000B /* LicensePlistBuildTool */;
 		};
 		D5000001000000000000000C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -731,14 +725,6 @@
 				version = 4.6.1;
 			};
 		};
-		C2000001000000000000000A /* XCRemoteSwiftPackageReference "LicensePlist" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/mono0926/LicensePlist.git";
-			requirement = {
-				kind = exactVersion;
-				version = 3.28.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -756,11 +742,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C20000010000000000000008 /* XCRemoteSwiftPackageReference "lottie-spm" */;
 			productName = Lottie;
-		};
-		C2000001000000000000000B /* LicensePlistBuildTool */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C2000001000000000000000A /* XCRemoteSwiftPackageReference "LicensePlist" */;
-			productName = "plugin:LicensePlistBuildTool";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
