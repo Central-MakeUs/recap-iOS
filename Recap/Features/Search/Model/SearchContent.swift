@@ -128,6 +128,28 @@ nonisolated struct SearchResult: Identifiable, Equatable, Sendable {
         title = SearchHighlightedString(serverValue: card.title)
         summary = SearchHighlightedString(serverValue: card.summary)
     }
+
+    private init(
+        captureID: Int64,
+        card: InformationCard,
+        title: SearchHighlightedString,
+        summary: SearchHighlightedString
+    ) {
+        self.captureID = captureID
+        self.card = card
+        self.title = title
+        self.summary = summary
+    }
+
+    /// 하이라이트를 유지한 채 카드만 교체한다.
+    func with(card: InformationCard) -> SearchResult {
+        SearchResult(
+            captureID: captureID,
+            card: card,
+            title: title,
+            summary: summary
+        )
+    }
 }
 
 nonisolated struct SearchPage: Equatable, Sendable {
@@ -154,4 +176,18 @@ nonisolated struct SearchContent: Equatable, Sendable {
     let hasNext: Bool
     let nextPage: Int
     let results: [SearchResult]
+
+    func applyingFavorite(_ isFavorite: Bool, captureID: Int64) -> SearchContent {
+        SearchContent(
+            query: query,
+            totalCount: totalCount,
+            hasNext: hasNext,
+            nextPage: nextPage,
+            results: results.map { result in
+                result.captureID == captureID
+                    ? result.with(card: result.card.with(isFavorite: isFavorite))
+                    : result
+            }
+        )
+    }
 }

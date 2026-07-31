@@ -134,6 +134,57 @@ final class HomeSummaryTests: XCTestCase {
         XCTAssertEqual(HomeSummaryURLProtocol.requestCount, 1)
     }
 
+    func testToggleFavoriteUpdatesRecentCardAndNotifiesInvalidation() async throws {
+        let mutator = HomeCaptureMutatorStub()
+        let invalidationCenter = CardDataInvalidationCenter()
+        let model = HomeFeatureModel(
+            summaryLoader: SequencedHomeSummaryLoader(results: [.success(try Self.decodedSummary())]),
+            captureMutator: mutator,
+            invalidationCenter: invalidationCenter
+        )
+        await model.loadIfNeeded()
+        let cardID = try XCTUnwrap(Self.recentCard(in: model)?.id)
+
+        let isFavorite = try await model.toggleFavorite(cardID: cardID)
+
+        XCTAssertTrue(isFavorite)
+        XCTAssertEqual(mutator.favoriteUpdates, [.init(captureID: 101, isFavorite: true)])
+        XCTAssertEqual(Self.recentCard(in: model)?.isFavorite, true)
+        XCTAssertEqual(invalidationCenter.homeRevision, 1)
+    }
+
+    func testToggleFavoriteRestoresPreviousStateWhenRequestFails() async throws {
+        let invalidationCenter = CardDataInvalidationCenter()
+        let model = HomeFeatureModel(
+            summaryLoader: SequencedHomeSummaryLoader(results: [.success(try Self.decodedSummary())]),
+            captureMutator: HomeCaptureMutatorStub(favoriteError: APIError.transport),
+            invalidationCenter: invalidationCenter
+        )
+        await model.loadIfNeeded()
+        let cardID = try XCTUnwrap(Self.recentCard(in: model)?.id)
+
+        do {
+            _ = try await model.toggleFavorite(cardID: cardID)
+            XCTFail("A failed favorite update must throw")
+        } catch {
+            XCTAssertEqual(Self.recentCard(in: model)?.isFavorite, false)
+            XCTAssertEqual(invalidationCenter.homeRevision, 0)
+        }
+    }
+
+    private static func decodedSummary() throws -> HomeSummaryContent {
+        let response = try JSONDecoder.recapAPI.decode(
+            APIResponse<HomeSummaryDTO>.self,
+            from: Data(Self.summaryJSON.utf8)
+        )
+        return HomeSummaryContent(dto: try response.requiredData())
+    }
+
+    private static func recentCard(in model: HomeFeatureModel) -> InformationCard? {
+        guard case .loaded(let content) = model.state else { return nil }
+        return content.recentCards.first
+    }
+
     func testFavoritesAreSortedByOrganizedAtDescending() throws {
         let response = try JSONDecoder.recapAPI.decode(
             APIResponse<HomeSummaryDTO>.self,
@@ -352,4 +403,36 @@ private final class HomeSummaryURLProtocol: URLProtocol, @unchecked Sendable {
     }
 
     override func stopLoading() {}
+}
+
+private final class HomeCaptureMutatorStub: CaptureMutating, @unchecked Sendable {
+    struct FavoriteUpdate: Equatable {
+        let captureID: Int64
+        let isFavorite: Bool
+    }
+
+    private let lock = NSLock()
+    private let favoriteError: Error?
+    private var storedFavoriteUpdates: [FavoriteUpdate] = []
+
+    init(favoriteError: Error? = nil) {
+        self.favoriteError = favoriteError
+    }
+
+    var favoriteUpdates: [FavoriteUpdate] {
+        lock.withLock { storedFavoriteUpdates }
+    }
+
+    func deleteCapture(captureID: Int64) async throws {}
+
+    func updateFavorite(captureID: Int64, isFavorite: Bool) async throws {
+        if let favoriteError {
+            throw favoriteError
+        }
+        lock.withLock {
+            storedFavoriteUpdates.append(
+                FavoriteUpdate(captureID: captureID, isFavorite: isFavorite)
+            )
+        }
+    }
 }

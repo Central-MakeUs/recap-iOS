@@ -14,6 +14,8 @@ final class SearchFeatureModel {
     private let loader: any SearchLoading
     private let scope: SearchScope
     private let pageSize: Int
+    private let captureMutator: (any CaptureMutating)?
+    private let invalidationCenter: CardDataInvalidationCenter?
 
     private var requestGeneration = 0
     private var activeQuery = ""
@@ -24,12 +26,42 @@ final class SearchFeatureModel {
         loader: any SearchLoading,
         scope: SearchScope = .all,
         pageSize: Int = 20,
-        initialState: State = .idle
+        initialState: State = .idle,
+        captureMutator: (any CaptureMutating)? = nil,
+        invalidationCenter: CardDataInvalidationCenter? = nil
     ) {
         self.loader = loader
         self.scope = scope
         self.pageSize = pageSize
         self.state = initialState
+        self.captureMutator = captureMutator
+        self.invalidationCenter = invalidationCenter
+    }
+
+    func toggleFavorite(cardID: InformationCard.ID) async throws -> Bool {
+        guard
+            case .loaded(let content) = state,
+            let captureMutator,
+            let result = content.results.first(where: { $0.card.id == cardID })
+        else {
+            throw CaptureLifecycleError.missingCaptureID
+        }
+
+        let captureID = result.captureID
+        let targetValue = !result.card.isFavorite
+        state = .loaded(content.applyingFavorite(targetValue, captureID: captureID))
+
+        do {
+            try await captureMutator.updateFavorite(
+                captureID: captureID,
+                isFavorite: targetValue
+            )
+            invalidationCenter?.invalidate(.favoriteChanged)
+            return targetValue
+        } catch {
+            state = .loaded(content)
+            throw error
+        }
     }
 
     func search(

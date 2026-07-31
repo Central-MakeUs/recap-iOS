@@ -2,9 +2,13 @@ import SwiftUI
 
 struct AllRecentCardRow: View {
     let card: InformationCard
+    var onToggleFavorite: (() -> Void)?
 
     var body: some View {
-        RecapInformationCardRow(card: card)
+        RecapInformationCardRow(
+            card: card,
+            onToggleFavorite: onToggleFavorite
+        )
     }
 }
 

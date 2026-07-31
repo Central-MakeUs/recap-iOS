@@ -9,6 +9,8 @@ struct SearchResultsView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var query: String
+    @State private var favoriteUpdatingIDs: Set<InformationCard.ID> = []
+    @State private var toast: RecapToastContent?
 
     let mode: ScreenMode
     let model: SearchFeatureModel
@@ -52,6 +54,36 @@ struct SearchResultsView: View {
         .task(id: query) {
             guard mode == .normal else { return }
             await model.search(query: query)
+        }
+        .recapToast(toast)
+        .task(id: toast) {
+            guard toast != nil else { return }
+            try? await Task.sleep(for: .seconds(2))
+            guard !Task.isCancelled else { return }
+            toast = nil
+        }
+    }
+
+    private func toggleFavorite(_ id: InformationCard.ID) {
+        guard favoriteUpdatingIDs.insert(id).inserted else { return }
+
+        Task {
+            defer { favoriteUpdatingIDs.remove(id) }
+
+            do {
+                let isFavorite = try await model.toggleFavorite(cardID: id)
+                toast = RecapToastContent(
+                    style: .success,
+                    message: isFavorite
+                        ? "즐겨찾기에 추가했어요."
+                        : "즐겨찾기에서 해제했어요."
+                )
+            } catch {
+                toast = RecapToastContent(
+                    style: .error,
+                    message: "즐겨찾기를 변경하지 못했어요. 다시 시도해주세요."
+                )
+            }
         }
     }
 
@@ -101,7 +133,9 @@ struct SearchResultsView: View {
                     totalCount: content.totalCount,
                     results: content.results,
                     openCard: openCard,
-                    loadNextPageIfNeeded: loadNextPageIfNeeded
+                    loadNextPageIfNeeded: loadNextPageIfNeeded,
+                    onToggleFavorite: toggleFavorite,
+                    favoriteUpdatingIDs: favoriteUpdatingIDs
                 )
             }
         }
