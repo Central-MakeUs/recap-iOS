@@ -3,7 +3,7 @@ import Foundation
 struct CardEditDraft: Equatable {
     static let titleLimit = 30
     static let summaryLimit = 80
-    static let bodyLimit = 500
+    static let bodyLimit = 1000
 
     var collection: CollectionKind
     var title: String
