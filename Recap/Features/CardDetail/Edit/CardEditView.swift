@@ -7,20 +7,21 @@ struct CardEditView: View {
     let card: InformationCard
 
     private let originalDraft: CardEditDraft
-    private let saveAction: ((CardEditDraft) -> Bool)?
+    private let saveAction: ((CardEditDraft) async throws -> Void)?
     private let closeAction: (() -> Void)?
 
     @State private var draft: CardEditDraft
     @State private var isDiscardConfirmationPresented: Bool
     @State private var toast: RecapToastContent?
     @State private var isOriginalPresented = false
+    @State private var isSaving = false
 
     init(
         card: InformationCard,
         initialDraft: CardEditDraft? = nil,
         initiallyShowsDiscardConfirmation: Bool = false,
         initialToast: RecapToastContent? = nil,
-        onSave: ((CardEditDraft) -> Bool)? = nil,
+        onSave: ((CardEditDraft) async throws -> Void)? = nil,
         onClose: (() -> Void)? = nil
     ) {
         let sourceDraft = initialDraft ?? CardEditDraft(card: card)
@@ -36,7 +37,7 @@ struct CardEditView: View {
     var body: some View {
         VStack(spacing: 0) {
             CardEditHeader(
-                isSaveEnabled: draft.isSavable,
+                isSaveEnabled: draft.isSavable && !isSaving,
                 onCancel: cancel,
                 onSave: save
             )
@@ -75,23 +76,29 @@ struct CardEditView: View {
     }
 
     private func save() {
-        guard draft.isSavable else { return }
-        guard persist(draft) else {
-            toast = RecapToastContent(
-                style: .error,
-                message: "스크린샷 정보를 저장하지 못했어요. 다시 시도해주세요."
-            )
-            return
+        guard draft.isSavable, !isSaving else { return }
+        isSaving = true
+
+        Task {
+            defer { isSaving = false }
+            do {
+                try await persist(draft)
+                close()
+            } catch {
+                toast = RecapToastContent(
+                    style: .error,
+                    message: "스크린샷 정보를 저장하지 못했어요. 다시 시도해주세요."
+                )
+            }
         }
-        close()
     }
 
-    private func persist(_ draft: CardEditDraft) -> Bool {
+    private func persist(_ draft: CardEditDraft) async throws {
         if let saveAction {
-            return saveAction(draft)
+            try await saveAction(draft.normalized())
+            return
         }
         cardStore.updateCard(id: card.id, with: draft.normalized())
-        return true
     }
 
     private func close() {

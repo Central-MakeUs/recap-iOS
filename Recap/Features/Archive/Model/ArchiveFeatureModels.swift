@@ -127,20 +127,7 @@ final class ArchiveDetailFeatureModel {
             return captureID
         }
 
-        var deletedCardIDs: Set<InformationCard.ID> = []
-
-        do {
-            for (card, captureID) in zip(selectedCards, captureIDs) {
-                try await captureMutator.deleteCapture(captureID: captureID)
-                deletedCardIDs.insert(card.id)
-            }
-        } catch {
-            if !deletedCardIDs.isEmpty {
-                state = .loaded(cards.filter { !deletedCardIDs.contains($0.id) })
-                invalidationCenter.invalidate(.captureDeleted)
-            }
-            throw error
-        }
+        try await captureMutator.deleteCaptures(captureIDs: captureIDs)
 
         state = .loaded(cards.filter { !ids.contains($0.id) })
         invalidationCenter.invalidate(.captureDeleted)

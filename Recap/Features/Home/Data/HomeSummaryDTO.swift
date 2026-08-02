@@ -22,3 +22,9 @@ nonisolated struct HomeTopTypeDTO: Decodable, Sendable {
     let count: Int
     let representativeThumbnailUrl: URL?
 }
+
+nonisolated struct RecentCapturesPageDTO: Decodable, Sendable {
+    let count: Int
+    let hasNext: Bool
+    let items: [HomeCaptureSummaryDTO]
+}

@@ -235,6 +235,14 @@ struct DataManagementView: View {
         .toolbar(.hidden, for: .navigationBar)
         .task {
             await model.loadDataSummary()
+            do {
+                try await consentStore.refresh()
+            } catch {
+                model.toast = RecapToastContent(
+                    style: .error,
+                    message: "AI 데이터 전송 동의 상태를 불러오지 못했어요."
+                )
+            }
         }
         .recapToast(model.toast)
         .task(id: model.toast) {
@@ -371,12 +379,31 @@ struct DataManagementView: View {
     }
 
     private func grantAIDataTransferConsent() {
-        consentStore.grantConsent()
-        showsAIConsentSheet = false
+        Task {
+            do {
+                try await consentStore.grantConsent()
+                showsAIConsentSheet = false
+            } catch {
+                showsAIConsentSheet = false
+                model.toast = RecapToastContent(
+                    style: .error,
+                    message: "AI 데이터 전송 동의를 저장하지 못했어요."
+                )
+            }
+        }
     }
 
     private func revokeAIDataTransferConsent() {
-        consentStore.revokeConsent()
+        Task {
+            do {
+                try await consentStore.revokeConsent()
+            } catch {
+                model.toast = RecapToastContent(
+                    style: .error,
+                    message: "AI 데이터 전송 동의를 철회하지 못했어요."
+                )
+            }
+        }
     }
 
     private func clearToastIfNeeded() async {
@@ -486,6 +513,7 @@ struct NotificationSettingsView: View {
     )
     .environment(
         AIDataTransferConsentStore(
+            service: PreviewAIDataTransferConsentService(),
             userDefaults: UserDefaults(suiteName: UUID().uuidString)!
         )
     )

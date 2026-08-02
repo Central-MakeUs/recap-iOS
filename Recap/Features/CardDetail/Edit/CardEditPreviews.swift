@@ -10,7 +10,7 @@ private extension SampleData {
     CardEditView(
         card: SampleData.cards[1],
         initialDraft: SampleData.cardEditDraft,
-        onSave: { _ in true }
+        onSave: { _ in }
     )
     .environment(PreviewStores.recapCardStore())
 }
@@ -21,7 +21,7 @@ private extension SampleData {
     return CardEditView(
         card: SampleData.cards[1],
         initialDraft: draft,
-        onSave: { _ in true }
+        onSave: { _ in }
     )
     .environment(PreviewStores.recapCardStore())
 }
@@ -32,7 +32,7 @@ private extension SampleData {
     return CardEditView(
         card: SampleData.cards[1],
         initialDraft: draft,
-        onSave: { _ in true }
+        onSave: { _ in }
     )
     .environment(PreviewStores.recapCardStore())
 }
@@ -43,7 +43,7 @@ private extension SampleData {
     return CardEditView(
         card: SampleData.cards[1],
         initialDraft: draft,
-        onSave: { _ in true }
+        onSave: { _ in }
     )
     .environment(PreviewStores.recapCardStore())
 }
@@ -56,7 +56,7 @@ private extension SampleData {
             style: .error,
             message: "스크린샷 정보를 저장하지 못했어요. 다시 시도해주세요."
         ),
-        onSave: { _ in false }
+        onSave: { _ in throw APIError.offline }
     )
     .environment(PreviewStores.recapCardStore())
 }
@@ -66,7 +66,7 @@ private extension SampleData {
         card: SampleData.cards[1],
         initialDraft: SampleData.cardEditDraft,
         initiallyShowsDiscardConfirmation: true,
-        onSave: { _ in true }
+        onSave: { _ in }
     )
     .environment(PreviewStores.recapCardStore())
 }

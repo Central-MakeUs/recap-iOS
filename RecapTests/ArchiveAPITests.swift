@@ -493,6 +493,12 @@ private final class CaptureMutatorStub: CaptureMutating, @unchecked Sendable {
         }
     }
 
+    func deleteCaptures(captureIDs: [Int64]) async throws {
+        lock.withLock {
+            storedDeletedCaptureIDs.append(contentsOf: captureIDs)
+        }
+    }
+
     func updateFavorite(captureID: Int64, isFavorite: Bool) async throws {
         lock.withLock {
             storedFavoriteUpdates.append(
@@ -500,6 +506,10 @@ private final class CaptureMutatorStub: CaptureMutating, @unchecked Sendable {
             )
         }
     }
+
+
+    func updateCapture(captureID: Int64, draft: CardEditDraft) async throws {}
+    func reportCapture(captureID: Int64, reason: CaptureReportReason, detail: String?) async throws {}
 }
 
 @MainActor
