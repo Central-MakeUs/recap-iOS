@@ -38,4 +38,11 @@ actor PreviewCardRepository {
         }
         cards.removeAll { $0.captureID == captureID }
     }
+
+    func deleteCards(captureIDs: [Int64]) {
+        let ids = Set(captureIDs)
+        cards.removeAll { card in
+            card.captureID.map(ids.contains) ?? false
+        }
+    }
 }

@@ -3,6 +3,18 @@ import Foundation
 @MainActor
 protocol HomeSummaryLoading {
     func fetchSummary() async throws -> HomeSummaryContent
+    func fetchRecentCaptures(page: Int, size: Int) async throws -> RecentCapturesPage
+}
+
+extension HomeSummaryLoading {
+    func fetchRecentCaptures(page: Int, size: Int) async throws -> RecentCapturesPage {
+        let cards = (try await fetchSummary()).recentCards
+        return RecentCapturesPage(
+            totalCount: cards.count,
+            hasNext: false,
+            cards: cards
+        )
+    }
 }
 
 @MainActor
@@ -24,5 +36,21 @@ final class HomeSummaryService: HomeSummaryLoading {
         )
 
         return HomeSummaryContent(dto: try response.requiredData())
+    }
+
+    func fetchRecentCaptures(page: Int, size: Int) async throws -> RecentCapturesPage {
+        let response: APIResponse<RecentCapturesPageDTO> = try await networkClient.send(
+            APIEndpoint(
+                method: .get,
+                path: "/api/v1/home/recent-captures",
+                queryItems: [
+                    URLQueryItem(name: "page", value: String(page)),
+                    URLQueryItem(name: "size", value: String(size))
+                ],
+                headers: ["Accept": "application/json"]
+            )
+            .authorized()
+        )
+        return RecentCapturesPage(dto: try response.requiredData())
     }
 }

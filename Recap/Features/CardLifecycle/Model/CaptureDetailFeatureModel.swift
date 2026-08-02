@@ -76,6 +76,17 @@ final class CaptureDetailFeatureModel {
         invalidationCenter.invalidate(.captureDeleted)
     }
 
+    func report(reason: CaptureReportReason) async throws {
+        guard let captureID = card.captureID else {
+            throw CaptureLifecycleError.missingCaptureID
+        }
+        try await captureService.reportCapture(
+            captureID: captureID,
+            reason: reason,
+            detail: nil
+        )
+    }
+
     func refreshImageURLAfterFailure(_ failedURL: URL) async {
         guard
             failedURL == card.originalImageURL || failedURL == card.thumbnailURL,

@@ -14,6 +14,21 @@ final class CaptureLifecycleServiceTests: XCTestCase {
         try await service.acknowledgeOrganizeResult(batchID: 7)
         _ = try await service.captureDetail(captureID: 11)
         try await service.updateFavorite(captureID: 11, isFavorite: true)
+        try await service.updateCapture(
+            captureID: 11,
+            draft: CardEditDraft(
+                collection: .knowledge,
+                title: "수정 제목 ",
+                summary: "수정 요약 ",
+                body: "수정 본문 "
+            )
+        )
+        try await service.deleteCaptures(captureIDs: [11, 12])
+        try await service.reportCapture(
+            captureID: 11,
+            reason: .inaccurateContent,
+            detail: "가격이 달라요"
+        )
         try await service.deleteCapture(captureID: 11)
 
         XCTAssertEqual(client.endpoints.map(\.path), [
@@ -25,6 +40,9 @@ final class CaptureLifecycleServiceTests: XCTestCase {
             "/api/v1/captures/organize/7/ack",
             "/api/v1/captures/11",
             "/api/v1/captures/11/favorite",
+            "/api/v1/captures/11",
+            "/api/v1/captures/bulk-delete",
+            "/api/v1/captures/11/report",
             "/api/v1/captures/11"
         ])
         XCTAssertTrue(client.endpoints.allSatisfy { $0.authorization == .bearer })
@@ -38,6 +56,19 @@ final class CaptureLifecycleServiceTests: XCTestCase {
 
         let favoriteBody = try jsonBody(from: client.endpoints[7])
         XCTAssertEqual(favoriteBody["isFavorite"] as? Bool, true)
+
+        let updateBody = try jsonBody(from: client.endpoints[8])
+        XCTAssertEqual(updateBody["title"] as? String, "수정 제목")
+        XCTAssertEqual(updateBody["summary"] as? String, "수정 요약")
+        XCTAssertEqual(updateBody["body"] as? String, "수정 본문")
+        XCTAssertEqual(updateBody["cardType"] as? String, "KNOWLEDGE")
+
+        let bulkDeleteBody = try jsonBody(from: client.endpoints[9])
+        XCTAssertEqual(bulkDeleteBody["captureIds"] as? [Int], [11, 12])
+
+        let reportBody = try jsonBody(from: client.endpoints[10])
+        XCTAssertEqual(reportBody["reason"] as? String, "INACCURATE_CONTENT")
+        XCTAssertEqual(reportBody["detail"] as? String, "가격이 달라요")
     }
 
     func testPresignedUploadUsesPutWithoutAuthorizationHeader() async throws {
@@ -329,6 +360,48 @@ final class CaptureDetailFeatureModelTests: XCTestCase {
         XCTAssertEqual(model.card.originalImageURL, refreshedURL)
     }
 
+    func testCardEditUpdatesServerThenRefreshesDetailAndInvalidatesLists() async throws {
+        let originalCard = Self.card(isFavorite: false)
+        let updatedCard = InformationCard(
+            id: UUID(),
+            captureID: 42,
+            title: "서버 수정 제목",
+            summary: "서버 수정 요약",
+            collection: .shopping,
+            dateText: "",
+            location: "",
+            businessHours: "",
+            category: "쇼핑 · 상품",
+            confirmationLabel: nil,
+            memo: "서버 수정 본문",
+            tags: [],
+            isFavorite: false
+        )
+        let service = RefreshingCaptureService(detail: updatedCard)
+        let invalidationCenter = CardDataInvalidationCenter()
+        let model = CaptureDetailFeatureModel(
+            card: originalCard,
+            captureService: service,
+            invalidationCenter: invalidationCenter
+        )
+        let draft = CardEditDraft(
+            collection: .shopping,
+            title: "수정 제목",
+            summary: "수정 요약",
+            body: "수정 본문"
+        )
+
+        try await model.update(with: draft)
+
+        XCTAssertEqual(service.updatedCaptureID, 42)
+        XCTAssertEqual(service.updatedDraft, draft)
+        XCTAssertEqual(service.detailRequestCount, 1)
+        XCTAssertEqual(model.card.id, originalCard.id)
+        XCTAssertEqual(model.card.title, "서버 수정 제목")
+        XCTAssertEqual(invalidationCenter.homeRevision, 1)
+        XCTAssertEqual(invalidationCenter.archiveDetailRevision, 1)
+    }
+
     func testFavoriteChangeInvalidatesOnlyRelatedData() {
         let invalidationCenter = CardDataInvalidationCenter()
 
@@ -495,7 +568,10 @@ private final class CaptureServiceStub: CaptureServing, @unchecked Sendable {
         throw APIError.missingResponseData
     }
     func updateFavorite(captureID: Int64, isFavorite: Bool) async throws {}
+    func updateCapture(captureID: Int64, draft: CardEditDraft) async throws {}
     func deleteCapture(captureID: Int64) async throws {}
+    func deleteCaptures(captureIDs: [Int64]) async throws {}
+    func reportCapture(captureID: Int64, reason: CaptureReportReason, detail: String?) async throws {}
 }
 
 private final class ImageUploaderStub: PresignedImageUploading, @unchecked Sendable {
@@ -541,15 +617,22 @@ private final class FailingFavoriteCaptureService: CaptureServing, @unchecked Se
     func updateFavorite(captureID: Int64, isFavorite: Bool) async throws {
         throw APIError.transport
     }
+    func updateCapture(captureID: Int64, draft: CardEditDraft) async throws {
+        throw APIError.transport
+    }
     func deleteCapture(captureID: Int64) async throws {
         lock.withLock { storedDeletedCaptureID = captureID }
     }
+    func deleteCaptures(captureIDs: [Int64]) async throws {}
+    func reportCapture(captureID: Int64, reason: CaptureReportReason, detail: String?) async throws {}
 }
 
 private final class RefreshingCaptureService: CaptureServing, @unchecked Sendable {
     private let lock = NSLock()
     private let detail: InformationCard
     private var storedDetailRequestCount = 0
+    private var storedUpdatedCaptureID: Int64?
+    private var storedUpdatedDraft: CardEditDraft?
 
     init(detail: InformationCard) {
         self.detail = detail
@@ -557,6 +640,14 @@ private final class RefreshingCaptureService: CaptureServing, @unchecked Sendabl
 
     var detailRequestCount: Int {
         lock.withLock { storedDetailRequestCount }
+    }
+
+    var updatedCaptureID: Int64? {
+        lock.withLock { storedUpdatedCaptureID }
+    }
+
+    var updatedDraft: CardEditDraft? {
+        lock.withLock { storedUpdatedDraft }
     }
 
     func issueUploadURLs(count: Int) async throws -> [UploadItemDTO] { [] }
@@ -574,7 +665,15 @@ private final class RefreshingCaptureService: CaptureServing, @unchecked Sendabl
         return detail
     }
     func updateFavorite(captureID: Int64, isFavorite: Bool) async throws {}
+    func updateCapture(captureID: Int64, draft: CardEditDraft) async throws {
+        lock.withLock {
+            storedUpdatedCaptureID = captureID
+            storedUpdatedDraft = draft
+        }
+    }
     func deleteCapture(captureID: Int64) async throws {}
+    func deleteCaptures(captureIDs: [Int64]) async throws {}
+    func reportCapture(captureID: Int64, reason: CaptureReportReason, detail: String?) async throws {}
 }
 
 private final class PresignedUploadURLProtocol: URLProtocol, @unchecked Sendable {

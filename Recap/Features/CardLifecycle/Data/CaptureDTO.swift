@@ -71,3 +71,28 @@ nonisolated struct CaptureUpdateRequestDTO: Encodable, Equatable, Sendable {
     let body: String
     let cardType: CardTypeCode
 }
+
+nonisolated struct BulkDeleteRequestDTO: Encodable, Equatable, Sendable {
+    let captureIds: [Int64]
+}
+
+nonisolated enum CaptureReportReason: String, CaseIterable, Encodable, Sendable {
+    case inaccurateContent = "INACCURATE_CONTENT"
+    case inappropriateContent = "INAPPROPRIATE_CONTENT"
+    case sensitiveInfo = "SENSITIVE_INFO"
+    case other = "OTHER"
+
+    var title: String {
+        switch self {
+        case .inaccurateContent: "내용이 부정확해요"
+        case .inappropriateContent: "부적절한 내용이 포함되었어요"
+        case .sensitiveInfo: "민감한 정보가 포함되었어요"
+        case .other: "기타"
+        }
+    }
+}
+
+nonisolated struct CaptureReportRequestDTO: Encodable, Equatable, Sendable {
+    let reason: CaptureReportReason
+    let detail: String?
+}

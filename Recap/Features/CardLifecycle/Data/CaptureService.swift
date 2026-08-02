@@ -2,6 +2,7 @@ import Foundation
 
 protocol CaptureDeleting: Sendable {
     func deleteCapture(captureID: Int64) async throws
+    func deleteCaptures(captureIDs: [Int64]) async throws
 }
 
 protocol CaptureFavoriteUpdating: Sendable {
@@ -12,7 +13,15 @@ protocol CaptureUpdating: Sendable {
     func updateCapture(captureID: Int64, draft: CardEditDraft) async throws
 }
 
-protocol CaptureMutating: CaptureDeleting, CaptureFavoriteUpdating, CaptureUpdating {}
+protocol CaptureReporting: Sendable {
+    func reportCapture(
+        captureID: Int64,
+        reason: CaptureReportReason,
+        detail: String?
+    ) async throws
+}
+
+protocol CaptureMutating: CaptureDeleting, CaptureFavoriteUpdating, CaptureUpdating, CaptureReporting {}
 
 protocol CaptureServing: CaptureMutating, Sendable {
     func issueUploadURLs(count: Int) async throws -> [UploadItemDTO]
@@ -128,7 +137,6 @@ final class CaptureService: CaptureServing, @unchecked Sendable {
         guard let cardType = CardTypeCode(collectionKind: draft.collection) else {
             throw APIError.malformedRequest
         }
-
         let normalizedDraft = draft.normalized()
         let endpoint = try jsonEndpoint(
             method: .patch,
@@ -148,6 +156,29 @@ final class CaptureService: CaptureServing, @unchecked Sendable {
             method: .delete,
             path: "/api/v1/captures/\(captureID)",
             authorization: .bearer
+        )
+        let _: EmptyResponse = try await networkClient.send(endpoint)
+    }
+
+    func deleteCaptures(captureIDs: [Int64]) async throws {
+        guard !captureIDs.isEmpty else { return }
+        let endpoint = try jsonEndpoint(
+            method: .post,
+            path: "/api/v1/captures/bulk-delete",
+            payload: BulkDeleteRequestDTO(captureIds: captureIDs)
+        )
+        let _: EmptyResponse = try await networkClient.send(endpoint)
+    }
+
+    func reportCapture(
+        captureID: Int64,
+        reason: CaptureReportReason,
+        detail: String? = nil
+    ) async throws {
+        let endpoint = try jsonEndpoint(
+            method: .post,
+            path: "/api/v1/captures/\(captureID)/report",
+            payload: CaptureReportRequestDTO(reason: reason, detail: detail)
         )
         let _: EmptyResponse = try await networkClient.send(endpoint)
     }

@@ -54,6 +54,43 @@ final class HomeSummaryTests: XCTestCase {
         XCTAssertEqual(endpoint.headers["Accept"], "application/json")
     }
 
+    func testRecentCapturesUsesPagedProtectedEndpoint() async throws {
+        let dto = RecentCapturesPageDTO(
+            count: 1,
+            hasNext: true,
+            items: [
+                HomeCaptureSummaryDTO(
+                    captureId: 301,
+                    title: "페이지 카드",
+                    summary: "요약",
+                    typeCode: .knowledge,
+                    thumbnailUrl: nil,
+                    isFavorite: false,
+                    organizedAt: Date(timeIntervalSince1970: 1_785_000_000)
+                )
+            ]
+        )
+        let networkClient = HomeNetworkClientStub(
+            response: APIResponse(success: true, data: dto)
+        )
+        let service = HomeSummaryService(networkClient: networkClient)
+
+        let page = try await service.fetchRecentCaptures(page: 2, size: 20)
+
+        XCTAssertEqual(page.totalCount, 1)
+        XCTAssertTrue(page.hasNext)
+        XCTAssertEqual(page.cards.map(\.captureID), [301])
+
+        let endpoint = try XCTUnwrap(networkClient.lastEndpoint)
+        XCTAssertEqual(endpoint.method, .get)
+        XCTAssertEqual(endpoint.path, "/api/v1/home/recent-captures")
+        XCTAssertEqual(endpoint.authorization, .bearer)
+        XCTAssertEqual(
+            Dictionary(uniqueKeysWithValues: endpoint.queryItems.map { ($0.name, $0.value) }),
+            ["page": "2", "size": "20"]
+        )
+    }
+
     func testHomeFeatureModelExposesFailureAndRetries() async {
         let expected = HomeSummaryContent(
             recentCards: [],
@@ -424,6 +461,7 @@ private final class HomeCaptureMutatorStub: CaptureMutating, @unchecked Sendable
     }
 
     func deleteCapture(captureID: Int64) async throws {}
+    func deleteCaptures(captureIDs: [Int64]) async throws {}
 
     func updateFavorite(captureID: Int64, isFavorite: Bool) async throws {
         if let favoriteError {
@@ -435,4 +473,7 @@ private final class HomeCaptureMutatorStub: CaptureMutating, @unchecked Sendable
             )
         }
     }
+
+    func updateCapture(captureID: Int64, draft: CardEditDraft) async throws {}
+    func reportCapture(captureID: Int64, reason: CaptureReportReason, detail: String?) async throws {}
 }

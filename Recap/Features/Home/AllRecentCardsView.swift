@@ -1,10 +1,11 @@
+import Observation
 import SwiftUI
 
 struct AllRecentCardsContainerView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppRouter.self) private var router
 
-    @State private var model: HomeFeatureModel
+    @State private var model: AllRecentCardsModel
     @State private var loadedRevision: Int?
     let invalidationCenter: CardDataInvalidationCenter
 
@@ -15,8 +16,8 @@ struct AllRecentCardsContainerView: View {
     ) {
         self.invalidationCenter = invalidationCenter
         _model = State(
-            initialValue: HomeFeatureModel(
-                summaryLoader: summaryLoader,
+            initialValue: AllRecentCardsModel(
+                loader: summaryLoader,
                 captureMutator: captureMutator,
                 invalidationCenter: invalidationCenter
             )
@@ -26,28 +27,25 @@ struct AllRecentCardsContainerView: View {
     var body: some View {
         AllRecentCardsView(
             cards: cards,
+            totalCount: model.totalCount,
+            isLoadingNextPage: model.isLoadingNextPage,
             onBack: dismiss.callAsFunction,
             onSearch: { router.navigate(.search) },
             onSelectCard: { router.navigate(.remoteCardDetail($0)) },
-            onToggleFavorite: { try await model.toggleFavorite(cardID: $0) }
+            onToggleFavorite: { try await model.toggleFavorite(cardID: $0) },
+            onLoadMore: model.loadNextPage
         )
         .task(id: reloadTrigger) {
             let revision = invalidationCenter.homeRevision
-            if loadedRevision == nil {
-                await model.loadIfNeeded()
-            } else if loadedRevision != revision {
-                await model.reload()
-            }
+            if loadedRevision == nil { await model.load() }
+            else if loadedRevision != revision { await model.reload() }
             guard !Task.isCancelled else { return }
             loadedRevision = revision
         }
     }
 
     private var cards: [InformationCard] {
-        guard case .loaded(let content) = model.state else {
-            return []
-        }
-        return content.recentCards
+        model.cards
     }
 
     private var reloadTrigger: Int {
@@ -57,10 +55,13 @@ struct AllRecentCardsContainerView: View {
 
 struct AllRecentCardsView: View {
     let cards: [InformationCard]
+    let totalCount: Int
+    let isLoadingNextPage: Bool
     let onBack: () -> Void
     let onSearch: () -> Void
     let onSelectCard: (InformationCard) -> Void
     var onToggleFavorite: (InformationCard.ID) async throws -> Bool = { _ in false }
+    var onLoadMore: () async -> Void = {}
 
     @State private var favoriteUpdatingIDs: Set<InformationCard.ID> = []
     @State private var toast: RecapToastContent?
@@ -77,7 +78,7 @@ struct AllRecentCardsView: View {
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 0) {
                     Text(
-                        "\(Text("\(cards.count)").font(RecapFont.pretendard(size: 14, weight: .semibold)).foregroundStyle(Color.recapGray700)) recaps"
+                        "\(Text("\(totalCount)").font(RecapFont.pretendard(size: 14, weight: .semibold)).foregroundStyle(Color.recapGray700)) recaps"
                     )
                         .font(RecapFont.pretendard(size: 14, weight: .regular))
                         .tracking(-0.28)
@@ -98,6 +99,17 @@ struct AllRecentCardsView: View {
                         .onTapGesture {
                             onSelectCard(card)
                         }
+                        .task {
+                            guard card.id == cards.last?.id else { return }
+                            await onLoadMore()
+                        }
+                    }
+
+                    if isLoadingNextPage {
+                        ProgressView()
+                            .tint(Color.recapBlue300)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 20)
                     }
                 }
             }
@@ -177,9 +189,99 @@ private struct AllRecentCardsNavigationBar: View {
     NavigationStack {
         AllRecentCardsView(
             cards: SampleData.recentCards,
+            totalCount: SampleData.recentCards.count,
+            isLoadingNextPage: false,
             onBack: {},
             onSearch: {},
             onSelectCard: { _ in }
         )
+    }
+}
+
+@MainActor
+@Observable
+private final class AllRecentCardsModel {
+    private static let pageSize = 20
+
+    private let loader: any HomeSummaryLoading
+    private let captureMutator: any CaptureMutating
+    private let invalidationCenter: CardDataInvalidationCenter
+
+    private(set) var cards: [InformationCard] = []
+    private(set) var totalCount = 0
+    private(set) var hasNext = false
+    private(set) var isLoadingNextPage = false
+    private var nextPage = 0
+
+    init(
+        loader: any HomeSummaryLoading,
+        captureMutator: any CaptureMutating,
+        invalidationCenter: CardDataInvalidationCenter
+    ) {
+        self.loader = loader
+        self.captureMutator = captureMutator
+        self.invalidationCenter = invalidationCenter
+    }
+
+    func load() async {
+        nextPage = 0
+        cards = []
+        await requestPage(reset: true)
+    }
+
+    func reload() async {
+        await load()
+    }
+
+    func loadNextPage() async {
+        guard hasNext, !isLoadingNextPage else { return }
+        await requestPage(reset: false)
+    }
+
+    func toggleFavorite(cardID: InformationCard.ID) async throws -> Bool {
+        guard
+            let index = cards.firstIndex(where: { $0.id == cardID }),
+            let captureID = cards[index].captureID
+        else {
+            throw CaptureLifecycleError.missingCaptureID
+        }
+
+        let previous = cards[index].isFavorite
+        let target = !previous
+        cards[index] = cards[index].with(isFavorite: target)
+
+        do {
+            try await captureMutator.updateFavorite(captureID: captureID, isFavorite: target)
+            invalidationCenter.invalidate(.favoriteChanged)
+            return target
+        } catch {
+            cards[index] = cards[index].with(isFavorite: previous)
+            throw error
+        }
+    }
+
+    private func requestPage(reset: Bool) async {
+        guard !isLoadingNextPage else { return }
+        isLoadingNextPage = true
+        defer { isLoadingNextPage = false }
+
+        do {
+            let page = try await loader.fetchRecentCaptures(
+                page: nextPage,
+                size: Self.pageSize
+            )
+            cards = reset ? page.cards : cards + page.cards
+            totalCount = page.totalCount
+            hasNext = page.hasNext
+            nextPage += 1
+        } catch is CancellationError {
+            return
+        } catch {
+            if reset {
+                cards = []
+                totalCount = 0
+                hasNext = false
+            }
+        }
     }
 }
