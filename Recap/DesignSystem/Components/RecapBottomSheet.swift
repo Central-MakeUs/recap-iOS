@@ -43,12 +43,15 @@ private struct RecapBottomSheetModifier<SheetContent: View>: ViewModifier {
     let onDismiss: (() -> Void)?
     let sheetContent: () -> SheetContent
 
+    @State private var isCoverPresented = false
+
     func body(content: Content) -> some View {
         content
-            .accessibilityHidden(isPresented)
-            .fullScreenCover(isPresented: $isPresented, onDismiss: onDismiss) {
+            .accessibilityHidden(isCoverPresented)
+            .fullScreenCover(isPresented: $isCoverPresented, onDismiss: onDismiss) {
                 RecapBottomSheetContainer(
                     isPresented: $isPresented,
+                    isCoverPresented: $isCoverPresented,
                     height: height,
                     cornerRadius: cornerRadius,
                     dragIndicator: dragIndicator,
@@ -56,11 +59,24 @@ private struct RecapBottomSheetModifier<SheetContent: View>: ViewModifier {
                 )
                 .presentationBackground(.clear)
             }
+            .onChange(of: isPresented, initial: true) { _, shouldPresent in
+                guard shouldPresent else { return }
+                setCoverPresentedWithoutAnimation(true)
+            }
+    }
+
+    private func setCoverPresentedWithoutAnimation(_ isPresented: Bool) {
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            isCoverPresented = isPresented
+        }
     }
 }
 
 private struct RecapBottomSheetContainer<Content: View>: View {
     @Binding var isPresented: Bool
+    @Binding var isCoverPresented: Bool
 
     let height: CGFloat
     let cornerRadius: CGFloat
@@ -68,6 +84,11 @@ private struct RecapBottomSheetContainer<Content: View>: View {
     let content: () -> Content
 
     @State private var dragOffset: CGFloat = 0
+    @State private var isSheetVisible = false
+    @State private var transitionTask: Task<Void, Never>?
+
+    private let presentationDuration = 0.28
+    private let dismissalDuration = 0.22
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -95,11 +116,22 @@ private struct RecapBottomSheetContainer<Content: View>: View {
                             .padding(.top, dragIndicator.topPadding)
                     }
                 }
-                .offset(y: dragOffset)
+                .offset(y: isSheetVisible ? dragOffset : height)
                 .simultaneousGesture(dismissGesture)
         }
         .ignoresSafeArea()
         .accessibilityAction(.escape, dismiss)
+        .onAppear(perform: presentSheet)
+        .onChange(of: isPresented) { _, shouldPresent in
+            if shouldPresent {
+                presentSheet()
+            } else {
+                dismissSheet()
+            }
+        }
+        .onDisappear {
+            transitionTask?.cancel()
+        }
     }
 
     private var dismissGesture: some Gesture {
@@ -123,6 +155,37 @@ private struct RecapBottomSheetContainer<Content: View>: View {
 
     private func dismiss() {
         isPresented = false
+    }
+
+    private func presentSheet() {
+        transitionTask?.cancel()
+        transitionTask = Task { @MainActor in
+            await Task.yield()
+            guard !Task.isCancelled, isPresented else { return }
+
+            withAnimation(.easeOut(duration: presentationDuration)) {
+                isSheetVisible = true
+            }
+        }
+    }
+
+    private func dismissSheet() {
+        transitionTask?.cancel()
+        transitionTask = Task { @MainActor in
+            withAnimation(.easeIn(duration: dismissalDuration)) {
+                isSheetVisible = false
+                dragOffset = 0
+            }
+
+            try? await Task.sleep(for: .seconds(dismissalDuration))
+            guard !Task.isCancelled else { return }
+
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) {
+                isCoverPresented = false
+            }
+        }
     }
 }
 
