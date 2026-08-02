@@ -27,6 +27,7 @@ struct CardDetailActionPanel: View {
                 Text("정리 결과 신고")
                     .font(RecapFont.pretendard(size: 14, weight: .regular))
                     .tracking(-0.28)
+                    .underline()
                     .foregroundStyle(Color.recapGray500)
                     .frame(maxWidth: .infinity)
                     .frame(height: 20)

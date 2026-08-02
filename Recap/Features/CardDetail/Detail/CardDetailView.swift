@@ -14,6 +14,7 @@ struct CardDetailView: View {
     @State private var isEditing = false
     @State private var isOriginalPresented = false
     @State private var isReportReasonPresented = false
+    @State private var selectedReportReason: CaptureReportReason?
     @State private var pendingPanelAction: CardDetailPanelAction?
     @State private var isFavoriteMutationRunning = false
 
@@ -23,6 +24,10 @@ struct CardDetailView: View {
 
     private var displayedCard: InformationCard {
         model.card
+    }
+
+    private var reportSheetHeight: CGFloat {
+        selectedReportReason == .other ? 453 : 375
     }
 
     @MainActor
@@ -46,6 +51,7 @@ struct CardDetailView: View {
         )
         _isDeleteConfirmationPresented = State(initialValue: initiallyShowsDeleteConfirmation)
         _toast = State(initialValue: initialToast)
+        _selectedReportReason = State(initialValue: nil)
         _pendingPanelAction = State(initialValue: nil)
     }
 
@@ -115,10 +121,15 @@ struct CardDetailView: View {
         }
         .recapBottomSheet(
             isPresented: $isReportReasonPresented,
-            height: 453,
-            cornerRadius: 20
+            height: reportSheetHeight,
+            cornerRadius: 20,
+            onDismiss: resetReportSheet
         ) {
-            CardDetailReportSheet(onSubmit: report)
+            CardDetailReportSheet(
+                selectedReason: $selectedReportReason,
+                onSubmit: report,
+                onClose: closeReportSheet
+            )
         }
         .navigationDestination(isPresented: $isEditing) {
             CardEditView(
@@ -241,6 +252,14 @@ struct CardDetailView: View {
                 )
             }
         }
+    }
+
+    private func closeReportSheet() {
+        isReportReasonPresented = false
+    }
+
+    private func resetReportSheet() {
+        selectedReportReason = nil
     }
 
     private func deleteCard() {
