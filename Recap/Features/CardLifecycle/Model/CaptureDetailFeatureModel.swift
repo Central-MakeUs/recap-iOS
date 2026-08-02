@@ -28,29 +28,21 @@ final class CaptureDetailFeatureModel {
 
         do {
             let detail = try await captureService.captureDetail(captureID: captureID)
-            card = InformationCard(
-                id: card.id,
-                captureID: detail.captureID,
-                title: detail.title,
-                summary: detail.summary,
-                collection: detail.collection,
-                organizedAt: detail.organizedAt,
-                dateText: detail.dateText,
-                location: detail.location,
-                businessHours: detail.businessHours,
-                category: detail.category,
-                confirmationLabel: detail.confirmationLabel,
-                memo: detail.memo,
-                tags: detail.tags,
-                originalImageAssetName: detail.originalImageAssetName,
-                thumbnailAssetName: detail.thumbnailAssetName,
-                originalImageURL: detail.originalImageURL,
-                thumbnailURL: detail.thumbnailURL,
-                isFavorite: detail.isFavorite
-            )
+            card = preservingIdentity(of: detail)
         } catch {
             // 목록 응답을 유지한다. 기존 상세 UI를 네트워크 오류 화면으로 교체하지 않는다.
         }
+    }
+
+    func update(with draft: CardEditDraft) async throws {
+        guard let captureID = card.captureID else {
+            throw CaptureLifecycleError.missingCaptureID
+        }
+
+        try await captureService.updateCapture(captureID: captureID, draft: draft)
+        let detail = try await captureService.captureDetail(captureID: captureID)
+        card = preservingIdentity(of: detail)
+        invalidationCenter.invalidate(.captureUpdated)
     }
 
     func toggleFavorite() async throws -> Bool {
@@ -94,5 +86,28 @@ final class CaptureDetailFeatureModel {
 
         hasRefreshedImageURL = true
         await loadDetail()
+    }
+
+    private func preservingIdentity(of detail: InformationCard) -> InformationCard {
+        InformationCard(
+            id: card.id,
+            captureID: detail.captureID,
+            title: detail.title,
+            summary: detail.summary,
+            collection: detail.collection,
+            organizedAt: detail.organizedAt,
+            dateText: detail.dateText,
+            location: detail.location,
+            businessHours: detail.businessHours,
+            category: detail.category,
+            confirmationLabel: detail.confirmationLabel,
+            memo: detail.memo,
+            tags: detail.tags,
+            originalImageAssetName: detail.originalImageAssetName,
+            thumbnailAssetName: detail.thumbnailAssetName,
+            originalImageURL: detail.originalImageURL,
+            thumbnailURL: detail.thumbnailURL,
+            isFavorite: detail.isFavorite
+        )
     }
 }

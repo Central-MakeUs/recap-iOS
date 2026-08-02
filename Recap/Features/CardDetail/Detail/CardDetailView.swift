@@ -113,7 +113,10 @@ struct CardDetailView: View {
             .presentationCornerRadius(20)
         }
         .navigationDestination(isPresented: $isEditing) {
-            CardEditView(card: displayedCard)
+            CardEditView(
+                card: displayedCard,
+                onSave: saveCardEdit
+            )
         }
         .fullScreenCover(isPresented: $isOriginalPresented) {
             CardOriginalPreviewSheet(
@@ -172,6 +175,11 @@ struct CardDetailView: View {
                 )
             }
         }
+    }
+
+    private func saveCardEdit(_ draft: CardEditDraft) async throws {
+        try await model.update(with: draft)
+        cardStore.cacheRemoteCards([model.card])
     }
 
     private func requestEdit() {

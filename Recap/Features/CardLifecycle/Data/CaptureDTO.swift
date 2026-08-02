@@ -64,3 +64,10 @@ nonisolated struct CaptureDetailDTO: Decodable, Sendable {
 nonisolated struct FavoriteRequestDTO: Encodable, Sendable {
     let isFavorite: Bool
 }
+
+nonisolated struct CaptureUpdateRequestDTO: Encodable, Equatable, Sendable {
+    let title: String
+    let summary: String
+    let body: String
+    let cardType: CardTypeCode
+}

@@ -3,6 +3,7 @@ import Observation
 nonisolated enum CardDataChange: Sendable {
     case captureCreated
     case favoriteChanged
+    case captureUpdated
     case captureDeleted
     case organizeResultAcknowledged
 }
@@ -42,7 +43,7 @@ final class CardDataInvalidationCenter {
             archiveHomeRevision.favorites &+= 1
             archiveDetailRevision &+= 1
             searchRevision &+= 1
-        case .captureCreated, .captureDeleted, .organizeResultAcknowledged:
+        case .captureCreated, .captureUpdated, .captureDeleted, .organizeResultAcknowledged:
             homeRevision &+= 1
             archiveHomeRevision.types &+= 1
             archiveHomeRevision.favorites &+= 1

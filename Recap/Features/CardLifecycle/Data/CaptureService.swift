@@ -8,7 +8,11 @@ protocol CaptureFavoriteUpdating: Sendable {
     func updateFavorite(captureID: Int64, isFavorite: Bool) async throws
 }
 
-protocol CaptureMutating: CaptureDeleting, CaptureFavoriteUpdating {}
+protocol CaptureUpdating: Sendable {
+    func updateCapture(captureID: Int64, draft: CardEditDraft) async throws
+}
+
+protocol CaptureMutating: CaptureDeleting, CaptureFavoriteUpdating, CaptureUpdating {}
 
 protocol CaptureServing: CaptureMutating, Sendable {
     func issueUploadURLs(count: Int) async throws -> [UploadItemDTO]
@@ -116,6 +120,25 @@ final class CaptureService: CaptureServing, @unchecked Sendable {
             method: .patch,
             path: "/api/v1/captures/\(captureID)/favorite",
             payload: FavoriteRequestDTO(isFavorite: isFavorite)
+        )
+        let _: EmptyResponse = try await networkClient.send(endpoint)
+    }
+
+    func updateCapture(captureID: Int64, draft: CardEditDraft) async throws {
+        guard let cardType = CardTypeCode(collectionKind: draft.collection) else {
+            throw APIError.malformedRequest
+        }
+
+        let normalizedDraft = draft.normalized()
+        let endpoint = try jsonEndpoint(
+            method: .patch,
+            path: "/api/v1/captures/\(captureID)",
+            payload: CaptureUpdateRequestDTO(
+                title: normalizedDraft.title,
+                summary: normalizedDraft.summary,
+                body: normalizedDraft.body,
+                cardType: cardType
+            )
         )
         let _: EmptyResponse = try await networkClient.send(endpoint)
     }

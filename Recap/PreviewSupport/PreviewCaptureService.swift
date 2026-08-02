@@ -46,6 +46,9 @@ final class PreviewCaptureService: CaptureServing, @unchecked Sendable {
             isFavorite: isFavorite
         )
     }
+    func updateCapture(captureID: Int64, draft: CardEditDraft) async throws {
+        try await cardRepository.updateCard(captureID: captureID, draft: draft)
+    }
     func deleteCapture(captureID: Int64) async throws {
         try await cardRepository.deleteCard(captureID: captureID)
     }
