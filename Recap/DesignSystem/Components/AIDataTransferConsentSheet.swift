@@ -21,7 +21,7 @@ struct AIDataTransferConsentSheet: View {
         VStack(alignment: .leading, spacing: 0) {
             transferIcon
                 .padding(.horizontal, 22)
-                .padding(.top, 18)
+                .padding(.top, 36)
 
             Text("AI 분석을 위해 이미지를 전송해요")
                 .font(RecapFont.pretendard(size: 18, weight: .semibold))
