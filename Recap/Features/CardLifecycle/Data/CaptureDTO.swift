@@ -84,9 +84,9 @@ nonisolated enum CaptureReportReason: String, CaseIterable, Encodable, Sendable 
 
     var title: String {
         switch self {
-        case .inaccurateContent: "내용이 부정확해요"
-        case .inappropriateContent: "부적절한 내용이 포함되었어요"
-        case .sensitiveInfo: "민감한 정보가 포함되었어요"
+        case .inaccurateContent: "내용이 부정확함"
+        case .inappropriateContent: "부적절한 내용이 포함됨"
+        case .sensitiveInfo: "민감한 정보가 포함됨"
         case .other: "기타"
         }
     }

@@ -76,14 +76,14 @@ final class CaptureDetailFeatureModel {
         invalidationCenter.invalidate(.captureDeleted)
     }
 
-    func report(reason: CaptureReportReason) async throws {
+    func report(reason: CaptureReportReason, detail: String?) async throws {
         guard let captureID = card.captureID else {
             throw CaptureLifecycleError.missingCaptureID
         }
         try await captureService.reportCapture(
             captureID: captureID,
             reason: reason,
-            detail: nil
+            detail: detail
         )
     }
 

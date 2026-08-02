@@ -110,9 +110,15 @@ struct CardDetailView: View {
                 onReport: requestReport,
                 onClose: closeActionPanel
             )
-            .presentationDetents([.height(296)])
+            .presentationDetents([.height(288)])
             .presentationDragIndicator(.visible)
             .presentationCornerRadius(20)
+        }
+        .sheet(isPresented: $isReportReasonPresented) {
+            CardDetailReportSheet(onSubmit: report)
+                .presentationDetents([.height(453)])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(20)
         }
         .navigationDestination(isPresented: $isEditing) {
             CardEditView(
@@ -134,18 +140,6 @@ struct CardDetailView: View {
             confirmTitle: "삭제",
             onConfirm: deleteCard
         )
-        .confirmationDialog(
-            "AI 결과 신고",
-            isPresented: $isReportReasonPresented,
-            titleVisibility: .visible
-        ) {
-            ForEach(CaptureReportReason.allCases, id: \.rawValue) { reason in
-                Button(reason.title) { report(reason) }
-            }
-            Button("취소", role: .cancel) {}
-        } message: {
-            Text("신고할 사유를 선택해주세요.")
-        }
         .recapToast(toast)
         .task(id: toast) {
             await clearToastIfNeeded()
@@ -231,15 +225,19 @@ struct CardDetailView: View {
         }
     }
 
-    private func report(_ reason: CaptureReportReason) {
+    private func report(_ reason: CaptureReportReason, detail: String?) {
+        isReportReasonPresented = false
         Task {
             do {
-                try await model.report(reason: reason)
-                toast = RecapToastContent(style: .success, message: "AI 결과를 신고했어요.")
+                try await model.report(reason: reason, detail: detail)
+                toast = RecapToastContent(
+                    style: .success,
+                    message: "신고가 접수됐어요. 검토 후 개선에 반영할게요."
+                )
             } catch {
                 toast = RecapToastContent(
                     style: .error,
-                    message: "AI 결과를 신고하지 못했어요. 다시 시도해주세요."
+                    message: "신고를 접수하지 못했어요. 다시 시도해주세요."
                 )
             }
         }
