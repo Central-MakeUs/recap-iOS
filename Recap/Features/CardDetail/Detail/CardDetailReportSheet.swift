@@ -82,19 +82,15 @@ struct CardDetailReportSheet: View {
 
     private var primaryButton: some View {
         Button(action: performPrimaryAction) {
-            Group {
-                if selectedReason == nil {
-                    Text("닫기")
-                        .font(RecapFont.pretendard(size: 15, weight: .medium))
-                        .tracking(-0.3)
-                        .foregroundStyle(Color.recapGray700)
-                } else {
-                    Text("신고하기")
-                        .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                        .tracking(-0.28)
-                        .foregroundStyle(.white)
-                }
-            }
+            Text("신고하기")
+                .font(
+                    RecapFont.pretendard(
+                        size: selectedReason == nil ? 15 : 14,
+                        weight: selectedReason == nil ? .medium : .semibold
+                    )
+                )
+                .tracking(selectedReason == nil ? -0.3 : -0.28)
+                .foregroundStyle(selectedReason == nil ? Color.recapGray700 : .white)
             .frame(maxWidth: .infinity)
             .frame(height: 50)
             .background(selectedReason == nil ? Color.white : Color.recapBlue300)
@@ -107,6 +103,7 @@ struct CardDetailReportSheet: View {
             }
         }
         .buttonStyle(.plain)
+        .disabled(selectedReason == nil)
     }
 
     private func reasonButton(_ reason: CaptureReportReason) -> some View {
@@ -147,11 +144,7 @@ struct CardDetailReportSheet: View {
     }
 
     private func performPrimaryAction() {
-        if selectedReason == nil {
-            onClose()
-        } else {
-            submit()
-        }
+        submit()
     }
 
     private func submit() {
