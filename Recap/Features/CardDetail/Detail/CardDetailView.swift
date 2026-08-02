@@ -100,8 +100,10 @@ struct CardDetailView: View {
         .background(Color.recapBackground)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
-        .sheet(
+        .recapBottomSheet(
             isPresented: $isActionPanelPresented,
+            height: 288,
+            cornerRadius: 20,
             onDismiss: handleActionPanelDismissal
         ) {
             CardDetailActionPanel(
@@ -110,15 +112,13 @@ struct CardDetailView: View {
                 onReport: requestReport,
                 onClose: closeActionPanel
             )
-            .presentationDetents([.height(288)])
-            .presentationDragIndicator(.visible)
-            .presentationCornerRadius(20)
         }
-        .sheet(isPresented: $isReportReasonPresented) {
+        .recapBottomSheet(
+            isPresented: $isReportReasonPresented,
+            height: 453,
+            cornerRadius: 20
+        ) {
             CardDetailReportSheet(onSubmit: report)
-                .presentationDetents([.height(453)])
-                .presentationDragIndicator(.visible)
-                .presentationCornerRadius(20)
         }
         .navigationDestination(isPresented: $isEditing) {
             CardEditView(

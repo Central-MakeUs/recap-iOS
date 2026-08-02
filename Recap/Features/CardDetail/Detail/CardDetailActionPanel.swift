@@ -53,8 +53,7 @@ struct CardDetailActionPanel: View {
         }
         .padding(.top, 39)
         .padding(.horizontal, CardDetailStyle.horizontalPadding)
-        .frame(height: 288, alignment: .top)
-        .background(Color.white)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     private func filledActionButton(

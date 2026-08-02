@@ -72,8 +72,7 @@ struct CardDetailReportSheet: View {
         .padding(.top, 39)
         .padding(.horizontal, 16)
         .padding(.bottom, 20)
-        .frame(height: 453, alignment: .top)
-        .background(Color.white)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     private func reasonButton(_ reason: CaptureReportReason) -> some View {

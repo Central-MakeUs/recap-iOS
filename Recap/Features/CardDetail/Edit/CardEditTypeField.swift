@@ -11,12 +11,12 @@ struct CardEditTypeField: View {
             actionTitle: "변경",
             action: { isTypeSelectionPresented = true }
         )
-        .sheet(isPresented: $isTypeSelectionPresented) {
+        .recapBottomSheet(
+            isPresented: $isTypeSelectionPresented,
+            height: 384,
+            cornerRadius: 32
+        ) {
             CardEditTypeSelectionSheet(selection: $collection)
-                .presentationDetents([.height(384)])
-                .presentationDragIndicator(.visible)
-                .presentationCornerRadius(32)
-                .presentationBackground(Color.white)
         }
     }
 }

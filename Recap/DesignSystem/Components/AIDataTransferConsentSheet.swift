@@ -19,12 +19,6 @@ struct AIDataTransferConsentSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Capsule()
-                .fill(Color.recapGray200)
-                .frame(width: 43, height: 5)
-                .frame(maxWidth: .infinity)
-                .padding(.top, 13)
-
             transferIcon
                 .padding(.horizontal, 22)
                 .padding(.top, 18)
@@ -99,7 +93,7 @@ struct AIDataTransferConsentSheet: View {
                 .padding(.top, 12)
         }
         .padding(.bottom, 21)
-        .background(Color.white)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .fullScreenCover(isPresented: $showsPrivacyPolicy) {
             NavigationStack {
                 PrivacyInformationView()
@@ -137,18 +131,22 @@ private struct AIDataTransferConsentPresentation: ViewModifier {
     let onConsent: () -> Void
 
     func body(content: Content) -> some View {
-        content
-            .sheet(isPresented: $isPresented) {
-                AIDataTransferConsentSheet(
-                    primaryButtonTitle: primaryButtonTitle,
-                    onConsent: onConsent,
-                    onCancel: dismiss
-                )
-                .presentationDetents([.height(532)])
-                .presentationDragIndicator(.hidden)
-                .presentationCornerRadius(32)
-                .presentationBackground(Color.white)
-            }
+        content.recapBottomSheet(
+            isPresented: $isPresented,
+            height: 532,
+            cornerRadius: 32,
+            dragIndicator: RecapBottomSheetDragIndicator(
+                width: 43,
+                height: 5,
+                topPadding: 13
+            )
+        ) {
+            AIDataTransferConsentSheet(
+                primaryButtonTitle: primaryButtonTitle,
+                onConsent: onConsent,
+                onCancel: dismiss
+            )
+        }
     }
 
     private func dismiss() {

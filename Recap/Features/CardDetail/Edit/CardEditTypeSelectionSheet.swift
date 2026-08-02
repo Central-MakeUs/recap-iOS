@@ -51,8 +51,7 @@ struct CardEditTypeSelectionSheet: View {
             .padding(.bottom, 20)
         }
         .padding(.top, 24)
-        .frame(height: 384)
-        .background(Color.white)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     private func confirmSelection() {
