@@ -16,8 +16,15 @@ struct CardEditTypeField: View {
             height: 384,
             cornerRadius: 32
         ) {
-            CardEditTypeSelectionSheet(selection: $collection)
+            CardEditTypeSelectionSheet(
+                selection: $collection,
+                onSelectionConfirmed: closeTypeSelection
+            )
         }
+    }
+
+    private func closeTypeSelection() {
+        isTypeSelectionPresented = false
     }
 }
 

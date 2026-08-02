@@ -1,19 +1,18 @@
 import SwiftUI
 
 struct CardEditTypeSelectionSheet: View {
-    @Environment(\.dismiss) private var dismiss
-
     @Binding private var selection: CollectionKind
     @State private var pendingSelection: CollectionKind
 
-    private let columns = Array(
-        repeating: GridItem(.flexible(), spacing: 8),
-        count: 3
-    )
+    private let onSelectionConfirmed: () -> Void
 
-    init(selection: Binding<CollectionKind>) {
+    init(
+        selection: Binding<CollectionKind>,
+        onSelectionConfirmed: @escaping () -> Void
+    ) {
         _selection = selection
         _pendingSelection = State(initialValue: selection.wrappedValue)
+        self.onSelectionConfirmed = onSelectionConfirmed
     }
 
     var body: some View {
@@ -24,21 +23,13 @@ struct CardEditTypeSelectionSheet: View {
                 .foregroundStyle(Color.recapGray900)
                 .padding(.leading, 22)
 
-            LazyVGrid(columns: columns, spacing: 20) {
-                ForEach(CollectionKind.allCases) { kind in
-                    Button {
-                        pendingSelection = kind
-                    } label: {
-                        RecapChip(
-                            configuration: .category(
-                                kind,
-                                size: .large,
-                                isSelected: pendingSelection == kind
-                            )
-                        )
+            Grid(horizontalSpacing: 8, verticalSpacing: 20) {
+                ForEach(categoryRows.indices, id: \.self) { rowIndex in
+                    GridRow {
+                        ForEach(categoryRows[rowIndex]) { kind in
+                            categoryButton(for: kind)
+                        }
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityAddTraits(pendingSelection == kind ? .isSelected : [])
                 }
             }
             .padding(.horizontal, 16)
@@ -56,12 +47,39 @@ struct CardEditTypeSelectionSheet: View {
 
     private func confirmSelection() {
         selection = pendingSelection
-        dismiss()
+        onSelectionConfirmed()
+    }
+
+    private var categoryRows: [[CollectionKind]] {
+        let categories = CollectionKind.allCases
+
+        return stride(from: 0, to: categories.count, by: 3).map { startIndex in
+            Array(categories[startIndex..<min(startIndex + 3, categories.count)])
+        }
+    }
+
+    private func categoryButton(for kind: CollectionKind) -> some View {
+        Button {
+            pendingSelection = kind
+        } label: {
+            RecapChip(
+                configuration: .category(
+                    kind,
+                    size: .large,
+                    isSelected: pendingSelection == kind
+                )
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(pendingSelection == kind ? .isSelected : [])
     }
 }
 
 #Preview("정보카드 유형 선택") {
     @Previewable @State var selection = CollectionKind.schedule
 
-    CardEditTypeSelectionSheet(selection: $selection)
+    CardEditTypeSelectionSheet(
+        selection: $selection,
+        onSelectionConfirmed: PreviewActions.noop
+    )
 }

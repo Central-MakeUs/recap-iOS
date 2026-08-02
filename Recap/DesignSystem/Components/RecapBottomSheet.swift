@@ -116,6 +116,7 @@ private struct RecapBottomSheetContainer<Content: View>: View {
                             .padding(.top, dragIndicator.topPadding)
                     }
                 }
+                .compositingGroup()
                 .offset(y: isSheetVisible ? dragOffset : height)
                 .simultaneousGesture(dismissGesture)
         }
