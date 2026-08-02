@@ -81,6 +81,9 @@ struct AppShellView: View {
         .task(id: toast) {
             await clearToastIfNeeded()
         }
+        .task {
+            try? await aiDataTransferConsentStore.refresh()
+        }
         .task(id: scenePhase) {
             organizeNotificationController.setApplicationInBackground(scenePhase == .background)
             guard scenePhase == .active else { return }
@@ -166,6 +169,7 @@ struct AppShellView: View {
             userDefaults: UserDefaults(suiteName: UUID().uuidString)!
         ),
         aiDataTransferConsentStore: AIDataTransferConsentStore(
+            service: PreviewAIDataTransferConsentService(),
             userDefaults: UserDefaults(suiteName: UUID().uuidString)!
         )
     )

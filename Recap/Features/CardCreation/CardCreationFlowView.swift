@@ -10,6 +10,7 @@ struct CardCreationFlowView: View {
     @State private var isNotificationPermissionGuidePresented = false
     @State private var isExitConfirmationPresented = false
     @State private var isAIConsentSheetPresented = false
+    @State private var consentErrorMessage: String?
 
     @MainActor
     init(viewModel: CardCreationFlowViewModel) {
@@ -33,7 +34,7 @@ struct CardCreationFlowView: View {
                     message: viewModel.failedLoadCount > 0
                         ? "\(viewModel.failedLoadCount)장의 이미지를 불러오지 못했어요."
                         : nil,
-                    toastMessage: nil,
+                    toastMessage: consentErrorMessage,
                     onBack: requestExit,
                     onAdd: presentAdditionalPicker,
                     onRemove: viewModel.removeScreenshot,
@@ -158,22 +159,35 @@ struct CardCreationFlowView: View {
     }
 
     private func confirmSelection() {
-        guard consentStore.hasConsented else {
-            isAIConsentSheetPresented = true
-            return
-        }
-
         Task {
+            do {
+                try await consentStore.refresh()
+            } catch {
+                consentErrorMessage = "AI 데이터 전송 동의 상태를 확인하지 못했어요."
+                return
+            }
+
+            guard consentStore.hasConsented else {
+                isAIConsentSheetPresented = true
+                return
+            }
+
+            consentErrorMessage = nil
             await continueAfterConsent()
         }
     }
 
     private func grantConsentAndContinue() {
-        consentStore.grantConsent()
-        isAIConsentSheetPresented = false
-
         Task {
-            await continueAfterConsent()
+            do {
+                try await consentStore.grantConsent()
+                consentErrorMessage = nil
+                isAIConsentSheetPresented = false
+                await continueAfterConsent()
+            } catch {
+                consentErrorMessage = "AI 데이터 전송 동의를 저장하지 못했어요."
+                isAIConsentSheetPresented = false
+            }
         }
     }
 
