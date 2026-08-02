@@ -43,8 +43,11 @@ struct AIDataTransferConsentSheet: View {
             .padding(.horizontal, 22)
             .padding(.top, 13)
 
-            Button("개인정보 처리방침") {
+            Button {
                 showsPrivacyPolicy = true
+            } label: {
+                Text("개인정보 처리방침")
+                    .underline()
             }
             .buttonStyle(.plain)
             .font(RecapFont.pretendard(size: 14, weight: .regular))
