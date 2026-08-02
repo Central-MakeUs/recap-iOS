@@ -94,7 +94,7 @@ final class RecapDependencies {
         return RecapDependencies(
             sessionStore: sessionStore,
             onboardingProgressStore: OnboardingProgressStore(
-                persistence: InMemoryOnboardingProgressPersistence(.completed)
+                persistence: UserDefaultsOnboardingProgressPersistence()
             ),
             networkClient: authenticatedNetworkClient,
             homeSummaryLoader: HomeSummaryService(networkClient: authenticatedNetworkClient),
