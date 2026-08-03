@@ -13,10 +13,15 @@ final class PreviewArchiveLoader: ArchiveLoading {
         return ArchiveHomeContent(
             summaries: CollectionKind.folderCases.map { kind in
                 let cardsForKind = cards.filter { $0.collection == kind }
+                let recentTitles = cardsForKind
+                    .sorted { ($0.organizedAt ?? .distantPast) > ($1.organizedAt ?? .distantPast) }
+                    .prefix(2)
+                    .map(\.title)
+                    .joined(separator: " · ")
                 return CollectionSummary(
                     kind: kind,
                     count: cardsForKind.count,
-                    previewTitle: cardsForKind.first?.title ?? "카드 없음"
+                    previewTitle: recentTitles
                 )
             },
             favoriteCount: cards.filter(\.isFavorite).count,

@@ -31,7 +31,7 @@ struct CollectionHomeFolderGrid: View {
 #Preview("보관함 폴더 격자") {
     CollectionHomeFolderGrid(
         summaries: SampleData.collectionSummaries + [
-            CollectionSummary(kind: .other, count: 0, previewTitle: "카드 없음")
+            CollectionSummary(kind: .other, count: 0, previewTitle: "")
         ],
         onOpenArchive: { _ in }
     )
