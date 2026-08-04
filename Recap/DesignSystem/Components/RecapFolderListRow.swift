@@ -25,11 +25,13 @@ struct RecapFolderListRow: View {
                         .foregroundStyle(Color.recapGray300)
                 }
 
-                Text(subtitle)
-                    .font(RecapFont.pretendard(size: 13, weight: .medium))
-                    .tracking(-0.26)
-                    .foregroundStyle(Color.recapGray500)
-                    .lineLimit(1)
+                if !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(RecapFont.pretendard(size: 13, weight: .medium))
+                        .tracking(-0.26)
+                        .foregroundStyle(Color.recapGray500)
+                        .lineLimit(1)
+                }
             }
         }
         .padding(.horizontal, 20)
@@ -54,7 +56,7 @@ struct RecapFolderListRow: View {
 
         RecapFolderListRow(
             title: "기타",
-            subtitle: "분류가 아직 확정되지 않은 카드",
+            subtitle: "",
             count: 0,
             kind: .other
         )
