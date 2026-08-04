@@ -4,9 +4,15 @@ struct CollectionHomeFolderGrid: View {
     let summaries: [CollectionSummary]
     let onOpenArchive: (CollectionKind) -> Void
 
+    private let columns = [
+        GridItem(.flexible(minimum: 99), spacing: 0, alignment: .leading),
+        GridItem(.flexible(minimum: 99), spacing: 0, alignment: .center),
+        GridItem(.flexible(minimum: 99), spacing: 0, alignment: .trailing)
+    ]
+
     var body: some View {
         LazyVGrid(
-            columns: Array(repeating: GridItem(.fixed(99), spacing: 23), count: 3),
+            columns: columns,
             alignment: .leading,
             spacing: 15
         ) {
@@ -24,7 +30,7 @@ struct CollectionHomeFolderGrid: View {
                 .buttonStyle(.plain)
             }
         }
-        .frame(width: 343, alignment: .leading)
+        .frame(maxWidth: .infinity)
     }
 }
 
