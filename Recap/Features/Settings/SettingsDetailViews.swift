@@ -37,8 +37,6 @@ struct SettingsDetailView: View {
             UsageGuideView()
         case .privacyPolicy:
             PrivacyInformationView()
-        case .support:
-            SettingsUnavailableView(title: "문의하기")
         case .openSourceLicenses:
             OpenSourceLicensesView()
         }
