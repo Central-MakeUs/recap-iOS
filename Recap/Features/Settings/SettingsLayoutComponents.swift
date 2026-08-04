@@ -74,11 +74,10 @@ struct SettingsNavigationRow: View {
 
                 RecapIconView(icon: .forward, size: 16, color: Color.recapGray300)
             }
-            .frame(height: SettingsLayout.rowHeight)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .frame(height: SettingsLayout.rowHeight)
         .clipped()
     }
 }
