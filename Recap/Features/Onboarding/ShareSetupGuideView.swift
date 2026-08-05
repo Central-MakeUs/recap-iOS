@@ -136,9 +136,16 @@ struct FirstCleanupStartView: View {
                 .foregroundStyle(Color.recapGray500)
                 .onboardingFrame(x: 22, y: 58, width: 300, height: 21, alignment: .leading)
 
+            // 정적 일러스트는 상단 폴더 캐릭터만 남기고, 카드 줄은 애니메이션으로 대체한다.
             Image("OnboardingFirstCleanupIllustration")
                 .resizable()
-                .onboardingFrame(x: 0, y: 105, width: 375, height: 333)
+                .frame(width: 375, height: 333)
+                .frame(width: 375, height: 170, alignment: .top)
+                .clipped()
+                .onboardingFrame(x: 0, y: 105, width: 375, height: 170)
+
+            RecapLottieView(name: "onboarding_final", playback: .loop)
+                .onboardingFrame(x: 0, y: 258, width: 375, height: 200)
         }
     }
 }

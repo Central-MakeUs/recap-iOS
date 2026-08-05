@@ -1,44 +1,48 @@
 import SwiftUI
 
 struct CardCreationProcessingView: View {
+    /// Figma 03-03_정리 시작(375x812) 기준 절대 y 좌표.
+    private enum Layout {
+        static let titleTop: CGFloat = 240
+        static let subtitleTop: CGFloat = 276
+        static let animationTop: CGFloat = 280
+        static let animationSize: CGFloat = 240
+        static let progressBarTop: CGFloat = 509
+        static let bubbleTop: CGFloat = 540
+    }
+
     let progress: Double
     let notificationsEnabled: Bool
     let onCancel: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
-                .frame(height: 157)
-
-            CardCreationProcessingBubble(
-                notificationsEnabled: notificationsEnabled
-            )
-
-            Image("CardCreationProcessingIllustration")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 179, height: 161)
-                .padding(.top, 11)
-
-            CardCreationProgressBar(progress: progress)
-                .frame(height: 4)
-                .padding(.horizontal, 30)
-                .padding(.top, 19)
-
+        ZStack(alignment: .top) {
             Text("스크린샷을 분석 · 정리 하고있어요")
                 .font(RecapFont.pretendard(size: 18, weight: .semibold))
                 .tracking(-0.36)
                 .foregroundStyle(Color.recapGray900)
-                .padding(.top, 29)
+                .padding(.top, Layout.titleTop)
 
-            Text("정리가 끝나면 바로 알려드릴게요!")
+            Text(subtitle)
                 .font(RecapFont.pretendard(size: 15, weight: .medium))
                 .tracking(-0.3)
                 .foregroundStyle(Color.recapGray500)
-                .padding(.top, 6)
+                .padding(.top, Layout.subtitleTop)
 
-            Spacer(minLength: 20)
+            RecapLottieView(name: "analyzing", playback: .loop)
+                .frame(width: Layout.animationSize, height: Layout.animationSize)
+                .padding(.top, Layout.animationTop)
 
+            CardCreationProgressBar(progress: progress)
+                .frame(height: 4)
+                .padding(.horizontal, 30)
+                .padding(.top, Layout.progressBarTop)
+
+            CardCreationProcessingBubble()
+                .padding(.top, Layout.bubbleTop)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .overlay(alignment: .bottom) {
             RecapButton(
                 title: "정리 취소",
                 style: .secondary,
@@ -48,46 +52,91 @@ struct CardCreationProcessingView: View {
             .padding(.bottom, 31)
         }
         .background(Color.recapBackground)
-        .ignoresSafeArea(.container, edges: .bottom)
+        // Figma 좌표는 상태 바를 포함한 화면 최상단 기준이다.
+        .ignoresSafeArea(.container, edges: [.top, .bottom])
+    }
+
+    private var subtitle: String {
+        if notificationsEnabled {
+            "정리가 끝나면 바로 알려드릴게요!"
+        } else {
+            "정리 결과는 앱에서 확인할 수 있어요!"
+        }
     }
 }
 
+/// 위쪽 꼬리가 달린 말풍선. 2초 주기로 4pt 위아래로 움직인다.
 private struct CardCreationProcessingBubble: View {
-    let notificationsEnabled: Bool
-
     private enum Layout {
-        static let frameSize = CGSize(width: 194.67, height: 67.67)
-        static let bodyHeight = frameSize.height * 170 / 203
+        static let bodySize = CGSize(width: 189, height: 54)
+        static let tailSize = CGSize(width: 16, height: 6)
+        static let cornerRadius: CGFloat = 27.68
     }
+
+    @State private var isFloating = false
 
     var body: some View {
         ZStack(alignment: .top) {
-            Image("CardCreationProcessingBubble")
-                .resizable()
-                .scaledToFit()
-                .frame(width: Layout.frameSize.width, height: Layout.frameSize.height)
+            RoundedRectangle(cornerRadius: Layout.cornerRadius, style: .continuous)
+                .fill(.white)
+                .strokeBorder(Color.recapBlue300, lineWidth: 1)
+                .frame(width: Layout.bodySize.width, height: Layout.bodySize.height)
+                .padding(.top, Layout.tailSize.height)
 
-            Text(message)
+            BubbleTailShape()
+                .fill(.white)
+                .overlay {
+                    BubbleTailEdgesShape()
+                        .stroke(Color.recapBlue300, lineWidth: 1)
+                }
+                .frame(width: Layout.tailSize.width, height: Layout.tailSize.height + 1)
+
+            Text("앱을 종료해도 백그라운드에서\n정리가 계속 진행돼요!")
                 .font(RecapFont.pretendard(size: 13, weight: .medium))
                 .tracking(-0.26)
                 .lineSpacing(0)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Color.recapBlue300)
                 .frame(
-                    width: Layout.frameSize.width,
-                    height: Layout.bodyHeight,
+                    width: Layout.bodySize.width,
+                    height: Layout.bodySize.height,
                     alignment: .center
                 )
+                .padding(.top, Layout.tailSize.height)
         }
-        .frame(width: Layout.frameSize.width, height: Layout.frameSize.height)
+        .frame(
+            width: Layout.bodySize.width,
+            height: Layout.bodySize.height + Layout.tailSize.height
+        )
+        .offset(y: isFloating ? -4 : 0)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1).repeatForever(autoreverses: true)) {
+                isFloating = true
+            }
+        }
     }
+}
 
-    private var message: String {
-        if notificationsEnabled {
-            "앱을 종료해도 백그라운드에서\n정리가 계속 진행돼요!"
-        } else {
-            "정리 결과는 앱에서\n확인할 수 있어요!"
-        }
+/// 꼬리 삼각형 채움. 말풍선 몸통 테두리를 덮도록 1pt 겹친다.
+private struct BubbleTailShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.closeSubpath()
+        return path
+    }
+}
+
+/// 꼬리 삼각형의 빗변 두 개만 그린다. 밑변은 몸통과 이어져야 하므로 긋지 않는다.
+private struct BubbleTailEdgesShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.midX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        return path
     }
 }
 
@@ -122,11 +171,18 @@ struct CardCreationProgressBar: View {
         .padding()
 }
 
-#Preview("CardCreation processing bubble") {
-    VStack(spacing: 24) {
-        CardCreationProcessingBubble(notificationsEnabled: true)
-        CardCreationProcessingBubble(notificationsEnabled: false)
-    }
-    .padding()
-    .background(Color.recapBackground)
+#Preview("정리 진행 - 알림 허용") {
+    CardCreationProcessingView(
+        progress: 0.75,
+        notificationsEnabled: true,
+        onCancel: {}
+    )
+}
+
+#Preview("정리 진행 - 알림 미허용") {
+    CardCreationProcessingView(
+        progress: 0.75,
+        notificationsEnabled: false,
+        onCancel: {}
+    )
 }
