@@ -277,7 +277,7 @@ struct DataManagementView: View {
     }
 
     private var dataSummary: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 11) {
             HStack(alignment: .top, spacing: 0) {
                 VStack(alignment: .leading, spacing: 7) {
                     Text("정리된 스크린샷")
@@ -296,15 +296,15 @@ struct DataManagementView: View {
                     .scaledToFit()
                     .frame(width: 61, height: 53)
             }
+            .frame(height: 60, alignment: .top)
 
             Text("제목, 요약, 본문 등 정리된 정보와 원본 이미지가 서버에 보관돼요.")
                 .font(SettingsTypography.body)
                 .foregroundStyle(Color.recapGray500)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 11)
+                .frame(maxWidth: .infinity, minHeight: 40, alignment: .topLeading)
         }
+        .frame(height: 111)
         .padding(20)
-        .frame(height: 151, alignment: .top)
         .background(
             Color.recapGray50,
             in: RoundedRectangle(cornerRadius: 10, style: .continuous)
