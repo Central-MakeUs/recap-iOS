@@ -7,16 +7,13 @@ enum MainTab: String, CaseIterable, Identifiable, Hashable {
     var id: String { rawValue }
 }
 
-enum SettingsRoute: String, CaseIterable, Hashable, Identifiable {
+enum SettingsRoute: Hashable {
     case accountManagement
     case notificationSettings
     case dataManagement
     case usageGuide
     case privacyPolicy
-    case support
     case openSourceLicenses
-
-    var id: String { rawValue }
 }
 
 enum InitialRange: String, CaseIterable, Identifiable, Hashable {

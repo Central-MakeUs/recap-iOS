@@ -10,9 +10,7 @@ struct CardCreationProcessingView: View {
             Spacer()
                 .frame(height: 157)
 
-            CardCreationProcessingBubble(
-                notificationsEnabled: notificationsEnabled
-            )
+            CardCreationProcessingBubble()
 
             Image("CardCreationProcessingIllustration")
                 .resizable()
@@ -31,7 +29,7 @@ struct CardCreationProcessingView: View {
                 .foregroundStyle(Color.recapGray900)
                 .padding(.top, 29)
 
-            Text("정리가 끝나면 바로 알려드릴게요!")
+            Text(resultGuide)
                 .font(RecapFont.pretendard(size: 15, weight: .medium))
                 .tracking(-0.3)
                 .foregroundStyle(Color.recapGray500)
@@ -50,11 +48,15 @@ struct CardCreationProcessingView: View {
         .background(Color.recapBackground)
         .ignoresSafeArea(.container, edges: .bottom)
     }
+
+    private var resultGuide: String {
+        notificationsEnabled
+            ? "정리가 끝나면 바로 알려드릴게요!"
+            : "정리 결과는 앱에서 확인할 수 있어요!"
+    }
 }
 
 private struct CardCreationProcessingBubble: View {
-    let notificationsEnabled: Bool
-
     private enum Layout {
         static let frameSize = CGSize(width: 194.67, height: 67.67)
         static let bodyHeight = frameSize.height * 170 / 203
@@ -67,7 +69,7 @@ private struct CardCreationProcessingBubble: View {
                 .scaledToFit()
                 .frame(width: Layout.frameSize.width, height: Layout.frameSize.height)
 
-            Text(message)
+            Text("앱을 종료해도 백그라운드에서\n정리가 계속 진행돼요!")
                 .font(RecapFont.pretendard(size: 13, weight: .medium))
                 .tracking(-0.26)
                 .lineSpacing(0)
@@ -80,14 +82,6 @@ private struct CardCreationProcessingBubble: View {
                 )
         }
         .frame(width: Layout.frameSize.width, height: Layout.frameSize.height)
-    }
-
-    private var message: String {
-        if notificationsEnabled {
-            "앱을 종료해도 백그라운드에서\n정리가 계속 진행돼요!"
-        } else {
-            "정리 결과는 앱에서\n확인할 수 있어요!"
-        }
     }
 }
 
@@ -123,10 +117,7 @@ struct CardCreationProgressBar: View {
 }
 
 #Preview("CardCreation processing bubble") {
-    VStack(spacing: 24) {
-        CardCreationProcessingBubble(notificationsEnabled: true)
-        CardCreationProcessingBubble(notificationsEnabled: false)
-    }
+    CardCreationProcessingBubble()
     .padding()
     .background(Color.recapBackground)
 }
