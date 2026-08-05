@@ -39,23 +39,14 @@ struct RecapLoadFailureView: View {
                 .foregroundStyle(Color.recapGray300)
                 .padding(.top, 13)
 
-            Button(action: retry) {
-                HStack(spacing: 5) {
-                    Image("HomeRetryIcon")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 24, height: 24)
-
-                    Text("다시 불러오기")
-                        .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                        .tracking(-0.28)
-                        .foregroundStyle(Color.recapBlue300)
-                }
-                .frame(width: 155, height: 45)
-                .background(Color.recapBlue50)
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            }
-            .buttonStyle(.plain)
+            RecapButton(
+                title: "다시 불러오기",
+                assetImageName: "HomeRetryIcon",
+                style: .secondary,
+                size: .medium,
+                action: retry
+            )
+            .frame(width: 155)
             .padding(.top, 23)
         }
         .frame(maxWidth: .infinity)
@@ -86,23 +77,14 @@ struct RecapLoadFailureView: View {
                 .foregroundStyle(Color.recapGray300)
                 .padding(.top, 9)
 
-            Button(action: retry) {
-                HStack(spacing: 5) {
-                    Image("HomeRetryIcon")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 24, height: 24)
-
-                    Text("다시 불러오기")
-                        .font(RecapFont.pretendard(size: 14, weight: .semibold))
-                        .tracking(-0.28)
-                }
-                .foregroundStyle(Color.recapBlue300)
-                .frame(width: 155, height: 45)
-                .background(Color.recapBlue50)
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            }
-            .buttonStyle(.plain)
+            RecapButton(
+                title: "다시 불러오기",
+                assetImageName: "HomeRetryIcon",
+                style: .secondary,
+                size: .medium,
+                action: retry
+            )
+            .frame(width: 155)
             .padding(.top, 23)
         }
         .frame(maxWidth: .infinity)

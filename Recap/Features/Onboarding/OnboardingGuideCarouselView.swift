@@ -115,10 +115,8 @@ struct OnboardingGuideCarouselView: View {
                     .tracking(-0.28)
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.recapBlue300)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(RecapButtonStyle(style: .primary, size: .large))
             .onboardingFrame(x: 16, y: 679, width: 343, height: 50)
 
             secondaryButton(title: "나중에 하기") {
