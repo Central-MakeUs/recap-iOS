@@ -82,7 +82,7 @@ struct CollectionHomeView: View {
                             summaries: folderSummaries,
                             onOpenArchive: openArchive
                         )
-                        .padding(.top, 21)
+                        .padding(.top, 28)
                     } else {
                         CollectionHomeFolderList(
                             summaries: folderSummaries,
