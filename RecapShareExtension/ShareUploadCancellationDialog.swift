@@ -20,17 +20,15 @@ struct ShareUploadCancellationDialog: View {
                 .padding(.top, 10)
 
             HStack(spacing: 14) {
-                dialogButton(
+                RecapPopupButton(
                     title: "계속정리하기",
-                    foregroundColor: Color("RecapGray700"),
-                    backgroundColor: Color("RecapGray50"),
+                    style: .secondary,
                     action: onContinue
                 )
 
-                dialogButton(
+                RecapPopupButton(
                     title: "나가기",
-                    foregroundColor: .white,
-                    backgroundColor: Color("RecapBlue300"),
+                    style: .primary,
                     action: onExit
                 )
             }
@@ -43,24 +41,6 @@ struct ShareUploadCancellationDialog: View {
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 
-    private func dialogButton(
-        title: String,
-        foregroundColor: Color,
-        backgroundColor: Color,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Text(title)
-                .font(.custom("Pretendard-SemiBold", size: 14))
-                .tracking(-0.28)
-                .foregroundStyle(foregroundColor)
-                .frame(maxWidth: .infinity)
-                .frame(height: 45)
-                .background(backgroundColor)
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-        }
-        .buttonStyle(.plain)
-    }
 }
 
 #Preview("공유 업로드 취소 확인") {

@@ -81,28 +81,7 @@ struct CardDetailReportSheet: View {
     }
 
     private var primaryButton: some View {
-        Button(action: performPrimaryAction) {
-            Text("신고하기")
-                .font(
-                    RecapFont.pretendard(
-                        size: selectedReason == nil ? 15 : 14,
-                        weight: selectedReason == nil ? .medium : .semibold
-                    )
-                )
-                .tracking(selectedReason == nil ? -0.3 : -0.28)
-                .foregroundStyle(selectedReason == nil ? Color.recapGray700 : .white)
-            .frame(maxWidth: .infinity)
-            .frame(height: 50)
-            .background(selectedReason == nil ? Color.white : Color.recapBlue300)
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .overlay {
-                if selectedReason == nil {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .stroke(Color.recapGray100, lineWidth: 1)
-                }
-            }
-        }
-        .buttonStyle(.plain)
+        RecapButton(title: "신고하기", action: performPrimaryAction)
         .disabled(selectedReason == nil)
     }
 

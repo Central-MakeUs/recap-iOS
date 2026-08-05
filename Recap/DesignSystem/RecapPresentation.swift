@@ -30,11 +30,6 @@ enum RecapPresentation {
         let background: Color
     }
 
-    struct SettingsItem {
-        let title: String
-        let systemImage: String
-    }
-
     static func tabItem(for tab: MainTab) -> TabItem {
         switch tab {
         case .home:
@@ -225,22 +220,4 @@ enum RecapPresentation {
         }
     }
 
-    static func settingsItem(for route: SettingsRoute) -> SettingsItem {
-        switch route {
-        case .accountManagement:
-            SettingsItem(title: "계정 관리", systemImage: "person.crop.circle")
-        case .notificationSettings:
-            SettingsItem(title: "알림 설정", systemImage: "bell")
-        case .dataManagement:
-            SettingsItem(title: "데이터 관리", systemImage: "tray.full")
-        case .usageGuide:
-            SettingsItem(title: "이용 안내", systemImage: "info.circle")
-        case .privacyPolicy:
-            SettingsItem(title: "개인정보 처리 안내", systemImage: "lock.shield")
-        case .support:
-            SettingsItem(title: "문의하기", systemImage: "envelope")
-        case .openSourceLicenses:
-            SettingsItem(title: "오픈소스 라이선스", systemImage: "doc.text")
-        }
-    }
 }

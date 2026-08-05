@@ -82,7 +82,7 @@ struct CollectionHomeView: View {
                             summaries: folderSummaries,
                             onOpenArchive: openArchive
                         )
-                        .padding(.top, 21)
+                        .padding(.top, 28)
                     } else {
                         CollectionHomeFolderList(
                             summaries: folderSummaries,
@@ -146,7 +146,7 @@ struct CollectionHomeView: View {
             byKind[kind] ?? CollectionSummary(
                 kind: kind,
                 count: kind == .other ? otherCount : 0,
-                previewTitle: "카드 없음"
+                previewTitle: ""
             )
         }
     }

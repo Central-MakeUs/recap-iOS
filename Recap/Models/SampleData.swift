@@ -150,10 +150,16 @@ enum SampleData {
 
     nonisolated static let collectionSummaries: [CollectionSummary] = CollectionKind.folderCases.map { kind in
         let display = RecapPresentation.collectionDisplay(for: kind)
+        let recentTitles = cards
+            .filter { $0.collection == kind }
+            .sorted { ($0.organizedAt ?? .distantPast) > ($1.organizedAt ?? .distantPast) }
+            .prefix(2)
+            .map(\.title)
+            .joined(separator: " · ")
         return CollectionSummary(
             kind: kind,
             count: display.sampleCount,
-            previewTitle: cards.first { $0.collection == kind }?.title ?? "카드 없음"
+            previewTitle: recentTitles
         )
     }
 

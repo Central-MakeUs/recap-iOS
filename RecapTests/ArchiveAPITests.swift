@@ -22,7 +22,7 @@ final class ArchiveAPITests: XCTestCase {
         XCTAssertEqual(content.favoriteCount, 1)
         XCTAssertEqual(content.otherCount, 1)
         XCTAssertEqual(content.summaries.first?.kind, .shopping)
-        XCTAssertEqual(content.summaries.first?.previewTitle, "대표 제목")
+        XCTAssertEqual(content.summaries.first?.previewTitle, "최근 제목 · 이전 제목")
     }
 
     func testArchiveHomeFavoriteRefreshRequestsOnlyFavorites() async throws {
@@ -43,6 +43,16 @@ final class ArchiveAPITests: XCTestCase {
         XCTAssertEqual(refreshed.summaries, current.summaries)
         XCTAssertEqual(refreshed.favoriteCount, 1)
         XCTAssertEqual(refreshed.otherCount, current.otherCount)
+    }
+
+    func testArchiveStorageTypeWithoutRepresentativeTitlesUsesEmptyPreviewTitle() {
+        let dto = ArchiveStorageTypeDTO(
+            typeCode: .shopping,
+            count: 0,
+            representativeTitles: []
+        )
+
+        XCTAssertEqual(CollectionSummary(archiveDTO: dto).previewTitle, "")
     }
 
     func testFavoritesDoesNotSendSortQuery() async throws {
@@ -429,7 +439,7 @@ private final class ArchiveNetworkClientStub: NetworkClient, @unchecked Sendable
         {
           "typeCode": "SHOPPING",
           "count": 1,
-          "representativeTitles": ["대표 제목"]
+          "representativeTitles": ["최근 제목", "이전 제목", "제외할 제목"]
         }
       ],
       "error": null
