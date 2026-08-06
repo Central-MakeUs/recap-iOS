@@ -10,7 +10,7 @@ actor ShareExtensionUploadPipeline {
 
     private let baseURL: URL
     private let session: URLSession
-    private let tokenStore: ShareExtensionTokenStore
+    private let tokenStore: any ShareTokenStoring
     private let pollingInterval: Duration
     private let maximumPollingAttempts: Int
     private let encoder = JSONEncoder()
@@ -20,7 +20,7 @@ actor ShareExtensionUploadPipeline {
     init(
         baseURL: URL,
         session: URLSession = .shared,
-        tokenStore: ShareExtensionTokenStore,
+        tokenStore: any ShareTokenStoring,
         pollingInterval: Duration = .seconds(1),
         maximumPollingAttempts: Int = 120
     ) {
@@ -108,10 +108,13 @@ actor ShareExtensionUploadPipeline {
             throw ShareExtensionUploadError.invalidResponse
         }
 
+        // 배치가 종료 상태에 도달할 때만 비운다.
+        // 취소로 이 메서드가 중단될 때 비워버리면 cancelCurrentProcess()가
+        // batchID를 찾지 못해 서버 취소 요청을 건너뛴다.
         currentBatchID = organize.batchId
-        defer { currentBatchID = nil }
 
         if organize.status.isTerminal {
+            currentBatchID = nil
             await progress(1)
             return ShareOrganizeResult(
                 batchID: organize.batchId,
@@ -135,6 +138,7 @@ actor ShareExtensionUploadPipeline {
             }
 
             if status.status.isTerminal {
+                currentBatchID = nil
                 await progress(1)
                 return ShareOrganizeResult(
                     batchID: status.batchId,
@@ -327,7 +331,13 @@ actor ShareExtensionUploadPipeline {
     }
 }
 
-struct ShareExtensionTokenStore: Sendable {
+/// 서버 토큰의 저장소. 테스트에서 키체인 대신 가짜 저장소를 넣기 위해 분리한다.
+protocol ShareTokenStoring: Sendable {
+    func load() throws -> ShareServerTokenRecord
+    func save(_ record: ShareServerTokenRecord) throws
+}
+
+struct ShareExtensionTokenStore: ShareTokenStoring {
     private let accessGroup: String?
     private let service = "com.centralmakeus.recap.secure-storage"
     private let account = "server-token-record"
