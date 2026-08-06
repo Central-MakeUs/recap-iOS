@@ -141,7 +141,7 @@ private struct RecapFolderFrontShape: Shape {
                 let display = RecapPresentation.collectionDisplay(for: kind)
                 RecapFolderCard(
                     title: display.title,
-                    count: display.sampleCount,
+                    count: SampleData.sampleCount(for: kind),
                     kind: kind
                 )
             }
