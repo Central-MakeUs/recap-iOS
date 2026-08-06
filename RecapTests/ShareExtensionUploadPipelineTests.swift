@@ -3,17 +3,17 @@ import XCTest
 
 /// 공유 확장 업로드 파이프라인의 취소 동작을 검증한다.
 /// 네트워크는 `ShareUploadStubURLProtocol`이 전부 가로채므로 실제 요청은 나가지 않는다.
+@MainActor
 final class ShareExtensionUploadPipelineTests: XCTestCase {
-    private var pipeline: ShareExtensionUploadPipeline!
-
-    override func setUp() {
-        super.setUp()
+    /// `setUp`/`tearDown` 오버라이드는 nonisolated라 프로퍼티를 건드리지 않고,
+    /// 매 테스트가 자기 파이프라인을 만든다.
+    private func makePipeline() -> ShareExtensionUploadPipeline {
         ShareUploadStubURLProtocol.reset()
 
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [ShareUploadStubURLProtocol.self]
 
-        pipeline = ShareExtensionUploadPipeline(
+        return ShareExtensionUploadPipeline(
             baseURL: URL(string: "https://example.invalid")!,
             session: URLSession(configuration: configuration),
             tokenStore: ShareUploadStubTokenStore(),
@@ -22,15 +22,10 @@ final class ShareExtensionUploadPipelineTests: XCTestCase {
         )
     }
 
-    override func tearDown() {
-        pipeline = nil
-        ShareUploadStubURLProtocol.reset()
-        super.tearDown()
-    }
-
     /// 정리 도중 취소하면 서버 배치도 취소해야 한다.
     /// 회귀 대상: `organize`가 중단되며 batchID를 비워버려 취소 요청이 누락되던 문제.
     func testCancellingOrganizeSendsCancelRequestForCurrentBatch() async throws {
+        let pipeline = makePipeline()
         let organizeStarted = expectation(description: "서버가 batchID를 발급했다")
         ShareUploadStubURLProtocol.onOrganizeIssued = { organizeStarted.fulfill() }
 
@@ -58,6 +53,7 @@ final class ShareExtensionUploadPipelineTests: XCTestCase {
     /// 취소 순서가 뒤바뀌어도 배치가 남지 않아야 한다.
     /// task를 먼저 취소한 뒤 취소 요청을 보내는 경로를 재현한다.
     func testCancelSurvivesTaskCancellationHappeningFirst() async throws {
+        let pipeline = makePipeline()
         let organizeStarted = expectation(description: "서버가 batchID를 발급했다")
         ShareUploadStubURLProtocol.onOrganizeIssued = { organizeStarted.fulfill() }
 
@@ -84,6 +80,7 @@ final class ShareExtensionUploadPipelineTests: XCTestCase {
 
     /// 정상 완료한 배치는 취소 요청을 보내지 않아야 한다.
     func testCompletedOrganizeDoesNotSendCancelRequest() async throws {
+        let pipeline = makePipeline()
         ShareUploadStubURLProtocol.organizeCompletesImmediately = true
 
         let result = try await pipeline.organize(images: [Self.imageData]) { _ in }
@@ -97,7 +94,7 @@ final class ShareExtensionUploadPipelineTests: XCTestCase {
         )
     }
 
-    static let batchID: Int64 = 4242
+    static var batchID: Int64 { ShareUploadStubURLProtocol.batchID }
     private static let imageData = Data([0xFF, 0xD8, 0xFF, 0xD9])
 }
 
@@ -116,7 +113,7 @@ private struct ShareUploadStubTokenStore: ShareTokenStoring {
 }
 
 /// 나가는 요청을 기록하고 미리 정한 응답을 돌려준다. 소켓은 열리지 않는다.
-private final class ShareUploadStubURLProtocol: URLProtocol, @unchecked Sendable {
+private final class ShareUploadStubURLProtocol: URLProtocol {
     struct RecordedRequest: CustomStringConvertible {
         let method: String
         let path: String
@@ -124,15 +121,18 @@ private final class ShareUploadStubURLProtocol: URLProtocol, @unchecked Sendable
         var description: String { "\(method) \(path)" }
     }
 
+    /// 스텁이 발급하는 고정 batchID.
+    static let batchID: Int64 = 4242
+
     private static let lock = NSLock()
-    private static var _recorded: [RecordedRequest] = []
+    nonisolated(unsafe) private static var _recorded: [RecordedRequest] = []
 
     static var recordedRequests: [RecordedRequest] {
         lock.withLock { _recorded }
     }
 
     /// batchID가 발급된 직후 호출된다.
-    nonisolated(unsafe) static var onOrganizeIssued: (() -> Void)?
+    nonisolated(unsafe) static var onOrganizeIssued: (@Sendable () -> Void)?
     /// true면 organize 응답이 곧바로 completed로 온다.
     nonisolated(unsafe) static var organizeCompletesImmediately = false
 
@@ -176,7 +176,7 @@ private final class ShareUploadStubURLProtocol: URLProtocol, @unchecked Sendable
     }
 
     private static func responseBody(path: String, method: String) -> Data {
-        let batchID = ShareExtensionUploadPipelineTests.batchID
+        let batchID = Self.batchID
 
         if path.hasSuffix("/captures/upload-urls") {
             return json("""

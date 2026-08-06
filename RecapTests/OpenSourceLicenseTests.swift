@@ -1,6 +1,7 @@
 import XCTest
 @testable import Recap
 
+@MainActor
 final class OpenSourceLicenseTests: XCTestCase {
     /// LicensePlistBuildTool이 앱 번들에 넣은 plist를 실제로 읽어내는지 확인한다.
     /// 플러그인이 동작하지 않으면 목록이 비어 이 테스트가 실패한다.

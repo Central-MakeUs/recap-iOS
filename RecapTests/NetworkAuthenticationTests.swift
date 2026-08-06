@@ -6,6 +6,7 @@
 import XCTest
 @testable import Recap
 
+@MainActor
 final class NetworkAuthenticationTests: XCTestCase {
     override func tearDown() {
         StubURLProtocol.reset()
@@ -337,7 +338,7 @@ final class NetworkAuthenticationTests: XCTestCase {
     func testRedactedNetworkLogRecordOmitsBodyHeadersAndTokens() async throws {
         let token = "sensitive-provider-token"
         let expectation = expectation(description: "network log record")
-        var records: [NetworkLogRecord] = []
+        let records = NetworkLogRecordCollector()
 
         StubURLProtocol.response = .http(
             statusCode: 200,
@@ -360,7 +361,7 @@ final class NetworkAuthenticationTests: XCTestCase {
         )
         await fulfillment(of: [expectation], timeout: 2)
 
-        let record = try XCTUnwrap(records.last)
+        let record = try XCTUnwrap(records.all.last)
         XCTAssertEqual(record.url?.absoluteString, "https://example.test/api/v1/auth/oauth/kakao/login")
         XCTAssertEqual(record.statusCode, 200)
         XCTAssertNotNil(record.requestID)
@@ -407,6 +408,20 @@ final class NetworkAuthenticationTests: XCTestCase {
     }
 }
 
+/// 로그 기록을 잠금으로 보호해 동시 실행 클로저에서 안전하게 모은다.
+private final class NetworkLogRecordCollector: @unchecked Sendable {
+    private let lock = NSLock()
+    private var storage: [NetworkLogRecord] = []
+
+    func append(_ record: NetworkLogRecord) {
+        lock.withLock { storage.append(record) }
+    }
+
+    var all: [NetworkLogRecord] {
+        lock.withLock { storage }
+    }
+}
+
 private final class StubURLProtocol: URLProtocol {
     enum Response {
         case http(statusCode: Int, headers: [String: String] = [:], body: Data)
@@ -415,10 +430,10 @@ private final class StubURLProtocol: URLProtocol {
     }
 
     private static let lock = NSLock()
-    private static var lockedResponse: Response = .http(statusCode: 200, body: Data())
-    private static var lockedResponses: [Response] = []
-    private static var lockedLastRequest: URLRequest?
-    private static var lockedRequests: [URLRequest] = []
+    nonisolated(unsafe) private static var lockedResponse: Response = .http(statusCode: 200, body: Data())
+    nonisolated(unsafe) private static var lockedResponses: [Response] = []
+    nonisolated(unsafe) private static var lockedLastRequest: URLRequest?
+    nonisolated(unsafe) private static var lockedRequests: [URLRequest] = []
 
     static var response: Response {
         get {

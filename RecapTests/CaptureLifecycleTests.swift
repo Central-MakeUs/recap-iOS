@@ -1,6 +1,7 @@
 import XCTest
 @testable import Recap
 
+@MainActor
 final class CaptureLifecycleServiceTests: XCTestCase {
     func testCaptureServiceBuildsBackendContractEndpoints() async throws {
         let client = CaptureNetworkClientStub()
@@ -678,8 +679,8 @@ private final class RefreshingCaptureService: CaptureServing, @unchecked Sendabl
 
 private final class PresignedUploadURLProtocol: URLProtocol, @unchecked Sendable {
     private static let lock = NSLock()
-    private static var storedRequest: URLRequest?
-    private static var storedBody: Data?
+    nonisolated(unsafe) private static var storedRequest: URLRequest?
+    nonisolated(unsafe) private static var storedBody: Data?
 
     static var lastRequest: URLRequest? {
         lock.withLock { storedRequest }

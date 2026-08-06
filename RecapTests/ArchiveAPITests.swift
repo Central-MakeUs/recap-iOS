@@ -556,10 +556,10 @@ private final class CancellationThenSuccessArchiveLoader: ArchiveLoading {
 
 private final class ArchiveURLProtocol: URLProtocol, @unchecked Sendable {
     private static let lock = NSLock()
-    private static var storedHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
-    private static var storedRequestCount = 0
+    nonisolated(unsafe) private static var storedHandler: (@Sendable (URLRequest) throws -> (HTTPURLResponse, Data))?
+    nonisolated(unsafe) private static var storedRequestCount = 0
 
-    static var handler: ((URLRequest) throws -> (HTTPURLResponse, Data))? {
+    static var handler: (@Sendable (URLRequest) throws -> (HTTPURLResponse, Data))? {
         get { lock.withLock { storedHandler } }
         set { lock.withLock { storedHandler = newValue } }
     }
