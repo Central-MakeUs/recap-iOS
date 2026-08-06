@@ -1,3 +1,4 @@
+import Synchronization
 import XCTest
 @testable import Recap
 
@@ -37,24 +38,23 @@ final class AppVersionServiceTests: XCTestCase {
     }
 }
 
-private final class AppVersionNetworkClientStub: NetworkClient, @unchecked Sendable {
-    private let lock = NSLock()
-    private let response: Any
-    private var recordedEndpoint: APIEndpoint?
+private final class AppVersionNetworkClientStub: NetworkClient {
+    private let response: any Sendable
+    private let recordedEndpoint = Mutex<APIEndpoint?>(nil)
 
-    init<Response>(response: Response) {
+    init<Response: Sendable>(response: Response) {
         self.response = response
     }
 
     var endpoint: APIEndpoint? {
-        lock.withLock { recordedEndpoint }
+        recordedEndpoint.withLock { $0 }
     }
 
     func send<Response: Decodable>(
         _ endpoint: APIEndpoint,
         as responseType: Response.Type
     ) async throws -> Response {
-        lock.withLock { recordedEndpoint = endpoint }
+        recordedEndpoint.withLock { $0 = endpoint }
         guard let response = response as? Response else {
             throw APIError.decoding
         }

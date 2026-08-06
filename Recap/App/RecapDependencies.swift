@@ -237,7 +237,7 @@ private final class PreviewHomeSummaryLoader: HomeSummaryLoading {
     }
 }
 
-private final class PreviewNetworkClient: NetworkClient, @unchecked Sendable {
+private final class PreviewNetworkClient: NetworkClient {
     func send<Response: Decodable>(
         _ endpoint: APIEndpoint,
         as responseType: Response.Type
@@ -284,7 +284,7 @@ private extension RecapSessionState {
     }
 }
 
-private final class MockAuthenticationNetworkClient: NetworkClient, @unchecked Sendable {
+private final class MockAuthenticationNetworkClient: NetworkClient {
     func send<Response: Decodable>(
         _ endpoint: APIEndpoint,
         as responseType: Response.Type

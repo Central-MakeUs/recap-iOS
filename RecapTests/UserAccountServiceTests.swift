@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 import XCTest
 @testable import Recap
 
@@ -146,26 +147,23 @@ private final class DataDeletionServiceSpy: UserAccountServing {
     }
 }
 
-private final class UserAccountNetworkClientStub: NetworkClient, @unchecked Sendable {
-    private let lock = NSLock()
-    private var storedEndpoints: [APIEndpoint] = []
-    private let responses: [String: Any]
+private final class UserAccountNetworkClientStub: NetworkClient {
+    private let storedEndpoints = Mutex<[APIEndpoint]>([])
+    private let responses: [String: any Sendable]
 
-    init(responses: [String: Any]) {
+    init(responses: [String: any Sendable]) {
         self.responses = responses
     }
 
     var endpoints: [APIEndpoint] {
-        lock.withLock { storedEndpoints }
+        storedEndpoints.withLock { $0 }
     }
 
     func send<Response: Decodable>(
         _ endpoint: APIEndpoint,
         as responseType: Response.Type
     ) async throws -> Response {
-        lock.withLock {
-            storedEndpoints.append(endpoint)
-        }
+        storedEndpoints.withLock { $0.append(endpoint) }
 
         guard let response = responses[endpoint.path] as? Response else {
             throw APIError.decoding

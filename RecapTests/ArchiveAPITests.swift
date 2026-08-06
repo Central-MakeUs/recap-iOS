@@ -406,21 +406,18 @@ final class ArchiveAPITests: XCTestCase {
     }
 }
 
-private final class ArchiveNetworkClientStub: NetworkClient, @unchecked Sendable {
-    private let lock = NSLock()
-    private var storedEndpoints: [APIEndpoint] = []
+private final class ArchiveNetworkClientStub: NetworkClient {
+    private let storedEndpoints = Mutex<[APIEndpoint]>([])
 
     var endpoints: [APIEndpoint] {
-        lock.withLock { storedEndpoints }
+        storedEndpoints.withLock { $0 }
     }
 
     func send<Response: Decodable>(
         _ endpoint: APIEndpoint,
         as responseType: Response.Type
     ) async throws -> Response {
-        lock.withLock {
-            storedEndpoints.append(endpoint)
-        }
+        storedEndpoints.withLock { $0.append(endpoint) }
 
         let data: Data
         switch endpoint.path {
@@ -480,39 +477,38 @@ private final class SequencedArchiveLoader: ArchiveLoading {
     }
 }
 
-private final class CaptureMutatorStub: CaptureMutating, @unchecked Sendable {
-    struct FavoriteUpdate: Equatable {
+private final class CaptureMutatorStub: CaptureMutating {
+    struct FavoriteUpdate: Equatable, Sendable {
         let captureID: Int64
         let isFavorite: Bool
     }
 
-    private let lock = NSLock()
-    private var storedDeletedCaptureIDs: [Int64] = []
-    private var storedFavoriteUpdates: [FavoriteUpdate] = []
+    private struct State {
+        var deletedCaptureIDs: [Int64] = []
+        var favoriteUpdates: [FavoriteUpdate] = []
+    }
+
+    private let state = Mutex(State())
 
     var deletedCaptureIDs: [Int64] {
-        lock.withLock { storedDeletedCaptureIDs }
+        state.withLock(\.deletedCaptureIDs)
     }
 
     var favoriteUpdates: [FavoriteUpdate] {
-        lock.withLock { storedFavoriteUpdates }
+        state.withLock(\.favoriteUpdates)
     }
 
     func deleteCapture(captureID: Int64) async throws {
-        lock.withLock {
-            storedDeletedCaptureIDs.append(captureID)
-        }
+        state.withLock { $0.deletedCaptureIDs.append(captureID) }
     }
 
     func deleteCaptures(captureIDs: [Int64]) async throws {
-        lock.withLock {
-            storedDeletedCaptureIDs.append(contentsOf: captureIDs)
-        }
+        state.withLock { $0.deletedCaptureIDs.append(contentsOf: captureIDs) }
     }
 
     func updateFavorite(captureID: Int64, isFavorite: Bool) async throws {
-        lock.withLock {
-            storedFavoriteUpdates.append(
+        state.withLock {
+            $0.favoriteUpdates.append(
                 FavoriteUpdate(captureID: captureID, isFavorite: isFavorite)
             )
         }
@@ -555,7 +551,7 @@ private final class CancellationThenSuccessArchiveLoader: ArchiveLoading {
     }
 }
 
-private final class ArchiveURLProtocol: URLProtocol, @unchecked Sendable {
+private final class ArchiveURLProtocol: URLProtocol {
     /// URL 로딩 스레드에서 병렬로 호출되므로 상태를 통째로 잠금 뒤에 둔다.
     private struct State {
         var handler: (@Sendable (URLRequest) throws -> (HTTPURLResponse, Data))?

@@ -1,6 +1,6 @@
 import Foundation
 
-final class PreviewCaptureService: CaptureServing, @unchecked Sendable {
+final class PreviewCaptureService: CaptureServing {
     private let cardRepository: PreviewCardRepository
 
     init(cardRepository: PreviewCardRepository = PreviewCardRepository()) {

@@ -1,3 +1,4 @@
+import Synchronization
 import XCTest
 @testable import Recap
 
@@ -143,26 +144,31 @@ final class AuthenticatedNetworkClientTests: XCTestCase {
     )
 }
 
-private final class SequencedNetworkClientStub: NetworkClient, @unchecked Sendable {
-    private let lock = NSLock()
-    private var results: [Result<Any, Error>]
-    private var lockedRequests: [APIEndpoint] = []
+private final class SequencedNetworkClientStub: NetworkClient {
+    typealias StubResult = Result<any Sendable, any Error & Sendable>
 
-    init(results: [Result<Any, Error>]) {
-        self.results = results
+    private struct State {
+        var results: [StubResult]
+        var requests: [APIEndpoint] = []
+    }
+
+    private let state: Mutex<State>
+
+    init(results: [StubResult]) {
+        state = Mutex(State(results: results))
     }
 
     var requests: [APIEndpoint] {
-        lock.withLock { lockedRequests }
+        state.withLock(\.requests)
     }
 
     func send<Response: Decodable>(
         _ endpoint: APIEndpoint,
         as responseType: Response.Type
     ) async throws -> Response {
-        let result: Result<Any, Error> = lock.withLock {
-            lockedRequests.append(endpoint)
-            return results.removeFirst()
+        let result = state.withLock { state -> StubResult in
+            state.requests.append(endpoint)
+            return state.results.removeFirst()
         }
 
         let value = try result.get()

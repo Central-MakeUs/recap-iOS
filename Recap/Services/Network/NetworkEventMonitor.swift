@@ -5,6 +5,7 @@
 
 import Alamofire
 import Foundation
+import Synchronization
 
 nonisolated struct NetworkLogRecord: Equatable, Sendable, CustomStringConvertible {
     var url: URL?
@@ -24,10 +25,11 @@ nonisolated struct NetworkLogRecord: Equatable, Sendable, CustomStringConvertibl
     }
 }
 
-final class NetworkEventMonitor: EventMonitor, @unchecked Sendable {
+final class NetworkEventMonitor: EventMonitor {
     let queue = DispatchQueue(label: "com.recap.network-event-monitor")
 
-    private var startedAt: [ObjectIdentifier: Date] = [:]
+    /// `queue` 위에서만 접근하지만 컴파일러가 그 사실을 알 수 없어 잠금으로 표현한다.
+    private let startedAt = Mutex<[ObjectIdentifier: Date]>([:])
     private let record: @Sendable (NetworkLogRecord) -> Void
 
     init(record: @escaping @Sendable (NetworkLogRecord) -> Void = { _ in }) {
@@ -36,7 +38,7 @@ final class NetworkEventMonitor: EventMonitor, @unchecked Sendable {
 
     func requestDidResume(_ request: Request) {
         queue.async {
-            self.startedAt[ObjectIdentifier(request)] = Date()
+            self.startedAt.withLock { $0[ObjectIdentifier(request)] = Date() }
         }
     }
 
@@ -46,7 +48,9 @@ final class NetworkEventMonitor: EventMonitor, @unchecked Sendable {
         with error: AFError?
     ) {
         queue.async {
-            let startedAt = self.startedAt.removeValue(forKey: ObjectIdentifier(request))
+            let startedAt = self.startedAt.withLock {
+                $0.removeValue(forKey: ObjectIdentifier(request))
+            }
             let duration = startedAt.map { Date().timeIntervalSince($0) } ?? 0
             let httpResponse = task.response as? HTTPURLResponse
             let originalRequest = task.originalRequest

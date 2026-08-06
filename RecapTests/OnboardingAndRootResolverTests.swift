@@ -96,7 +96,7 @@ final class OnboardingProgressStoreTests: XCTestCase {
     }
 }
 
-private final class ResolverNetworkClientStub: NetworkClient, @unchecked Sendable {
+private final class ResolverNetworkClientStub: NetworkClient {
     func send<Response: Decodable>(
         _ endpoint: APIEndpoint,
         as responseType: Response.Type

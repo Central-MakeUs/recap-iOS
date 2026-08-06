@@ -335,11 +335,13 @@ private extension SearchResultDTO {
     }
 }
 
-private final class SearchNetworkClientStub: NetworkClient, @unchecked Sendable {
-    private let response: Any
-    private(set) var endpoints: [APIEndpoint] = []
+private final class SearchNetworkClientStub: NetworkClient {
+    private let response: any Sendable
+    private let recordedEndpoints = Mutex<[APIEndpoint]>([])
 
-    init<Response>(response: Response) {
+    var endpoints: [APIEndpoint] { recordedEndpoints.withLock { $0 } }
+
+    init<Response: Sendable>(response: Response) {
         self.response = response
     }
 
@@ -347,7 +349,7 @@ private final class SearchNetworkClientStub: NetworkClient, @unchecked Sendable 
         _ endpoint: APIEndpoint,
         as responseType: Response.Type
     ) async throws -> Response {
-        endpoints.append(endpoint)
+        recordedEndpoints.withLock { $0.append(endpoint) }
         guard let response = response as? Response else {
             throw APIError.decoding
         }

@@ -410,16 +410,15 @@ final class NetworkAuthenticationTests: XCTestCase {
 }
 
 /// 로그 기록을 잠금으로 보호해 동시 실행 클로저에서 안전하게 모은다.
-private final class NetworkLogRecordCollector: @unchecked Sendable {
-    private let lock = NSLock()
-    private var storage: [NetworkLogRecord] = []
+private final class NetworkLogRecordCollector: Sendable {
+    private let storage = Mutex<[NetworkLogRecord]>([])
 
     func append(_ record: NetworkLogRecord) {
-        lock.withLock { storage.append(record) }
+        storage.withLock { $0.append(record) }
     }
 
     var all: [NetworkLogRecord] {
-        lock.withLock { storage }
+        storage.withLock { $0 }
     }
 }
 

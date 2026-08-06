@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 import XCTest
 @testable import Recap
 
@@ -110,24 +111,23 @@ final class AIDataTransferConsentStoreTests: XCTestCase {
     }
 }
 
-private final class AIDataTransferConsentNetworkClientStub: NetworkClient, @unchecked Sendable {
-    private let lock = NSLock()
+private final class AIDataTransferConsentNetworkClientStub: NetworkClient {
     private let status: AIDataTransferConsentStatusDTO
-    private var recordedEndpoints: [APIEndpoint] = []
+    private let recordedEndpoints = Mutex<[APIEndpoint]>([])
 
     init(status: AIDataTransferConsentStatusDTO) {
         self.status = status
     }
 
     var endpoints: [APIEndpoint] {
-        lock.withLock { recordedEndpoints }
+        recordedEndpoints.withLock { $0 }
     }
 
     func send<Response: Decodable>(
         _ endpoint: APIEndpoint,
         as responseType: Response.Type
     ) async throws -> Response {
-        lock.withLock { recordedEndpoints.append(endpoint) }
+        recordedEndpoints.withLock { $0.append(endpoint) }
 
         if Response.self == EmptyResponse.self,
            let response = EmptyResponse() as? Response {

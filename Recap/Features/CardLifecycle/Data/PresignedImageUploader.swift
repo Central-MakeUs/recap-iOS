@@ -4,7 +4,7 @@ protocol PresignedImageUploading: Sendable {
     func upload(_ data: Data, to url: URL) async throws
 }
 
-final class URLSessionPresignedImageUploader: PresignedImageUploading, @unchecked Sendable {
+final class URLSessionPresignedImageUploader: PresignedImageUploading {
     private let session: URLSession
 
     init(session: URLSession = .shared) {
