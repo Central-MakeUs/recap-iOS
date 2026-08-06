@@ -149,7 +149,6 @@ enum SampleData {
     nonisolated static let recentCards: [InformationCard] = Array(cards.prefix(3))
 
     nonisolated static let collectionSummaries: [CollectionSummary] = CollectionKind.folderCases.map { kind in
-        let display = RecapPresentation.collectionDisplay(for: kind)
         let recentTitles = cards
             .filter { $0.collection == kind }
             .sorted { ($0.organizedAt ?? .distantPast) > ($1.organizedAt ?? .distantPast) }
@@ -158,9 +157,24 @@ enum SampleData {
             .joined(separator: " · ")
         return CollectionSummary(
             kind: kind,
-            count: display.sampleCount,
+            count: sampleCount(for: kind),
             previewTitle: recentTitles
         )
+    }
+
+    /// 폴더 카드에 보여줄 더미 개수. 표현이 아니라 샘플 데이터라 여기에 둔다.
+    nonisolated static func sampleCount(for kind: CollectionKind) -> Int {
+        switch kind {
+        case .shopping: 20
+        case .place: 23
+        case .schedule: 10
+        case .knowledge: 12
+        case .content: 1
+        case .benefits: 5
+        case .capture: 12
+        case .career: 12
+        case .other: 0
+        }
     }
 
     nonisolated static func cards(in kind: CollectionKind) -> [InformationCard] {

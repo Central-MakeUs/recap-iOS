@@ -1,3 +1,4 @@
+import Synchronization
 import XCTest
 @testable import Recap
 
@@ -284,7 +285,7 @@ final class HomeSummaryTests: XCTestCase {
     }
     """
 
-    private static let summaryJSON = """
+    nonisolated private static let summaryJSON = """
     {
       "success": true,
       "data": {
@@ -324,26 +325,23 @@ final class HomeSummaryTests: XCTestCase {
     """
 }
 
-private final class HomeNetworkClientStub: NetworkClient, @unchecked Sendable {
-    private let lock = NSLock()
-    private let response: Any
-    private var endpoint: APIEndpoint?
+private final class HomeNetworkClientStub: NetworkClient {
+    private let response: any Sendable
+    private let recordedEndpoint = Mutex<APIEndpoint?>(nil)
 
-    init<Response>(response: Response) {
+    init<Response: Sendable>(response: Response) {
         self.response = response
     }
 
     var lastEndpoint: APIEndpoint? {
-        lock.withLock { endpoint }
+        recordedEndpoint.withLock { $0 }
     }
 
     func send<Response: Decodable>(
         _ endpoint: APIEndpoint,
         as responseType: Response.Type
     ) async throws -> Response {
-        lock.withLock {
-            self.endpoint = endpoint
-        }
+        recordedEndpoint.withLock { $0 = endpoint }
 
         guard let typedResponse = response as? Response else {
             throw APIError.decoding
@@ -400,25 +398,26 @@ private final class CancellationThenSuccessHomeSummaryLoader: HomeSummaryLoading
     }
 }
 
-private final class HomeSummaryURLProtocol: URLProtocol, @unchecked Sendable {
-    private static let lock = NSLock()
-    private static var storedHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
-    private static var storedRequestCount = 0
+private final class HomeSummaryURLProtocol: URLProtocol {
+    /// URL 로딩 스레드에서 병렬로 호출되므로 상태를 통째로 잠금 뒤에 둔다.
+    private struct State {
+        var handler: (@Sendable (URLRequest) throws -> (HTTPURLResponse, Data))?
+        var requestCount = 0
+    }
 
-    static var handler: ((URLRequest) throws -> (HTTPURLResponse, Data))? {
-        get { lock.withLock { storedHandler } }
-        set { lock.withLock { storedHandler = newValue } }
+    private static let state = Mutex(State())
+
+    static var handler: (@Sendable (URLRequest) throws -> (HTTPURLResponse, Data))? {
+        get { state.withLock(\.handler) }
+        set { state.withLock { $0.handler = newValue } }
     }
 
     static var requestCount: Int {
-        lock.withLock { storedRequestCount }
+        state.withLock(\.requestCount)
     }
 
     static func reset() {
-        lock.withLock {
-            storedHandler = nil
-            storedRequestCount = 0
-        }
+        state.withLock { $0 = State() }
     }
 
     override class func canInit(with request: URLRequest) -> Bool { true }
@@ -427,9 +426,7 @@ private final class HomeSummaryURLProtocol: URLProtocol, @unchecked Sendable {
     override func startLoading() {
         do {
             let handler = try XCTUnwrap(Self.handler)
-            Self.lock.withLock {
-                Self.storedRequestCount += 1
-            }
+            Self.state.withLock { $0.requestCount += 1 }
             let (response, data) = try handler(request)
             client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
             client?.urlProtocol(self, didLoad: data)
@@ -442,22 +439,21 @@ private final class HomeSummaryURLProtocol: URLProtocol, @unchecked Sendable {
     override func stopLoading() {}
 }
 
-private final class HomeCaptureMutatorStub: CaptureMutating, @unchecked Sendable {
-    struct FavoriteUpdate: Equatable {
+private final class HomeCaptureMutatorStub: CaptureMutating {
+    struct FavoriteUpdate: Equatable, Sendable {
         let captureID: Int64
         let isFavorite: Bool
     }
 
-    private let lock = NSLock()
-    private let favoriteError: Error?
-    private var storedFavoriteUpdates: [FavoriteUpdate] = []
+    private let favoriteError: (any Error & Sendable)?
+    private let storedFavoriteUpdates = Mutex<[FavoriteUpdate]>([])
 
-    init(favoriteError: Error? = nil) {
+    init(favoriteError: (any Error & Sendable)? = nil) {
         self.favoriteError = favoriteError
     }
 
     var favoriteUpdates: [FavoriteUpdate] {
-        lock.withLock { storedFavoriteUpdates }
+        storedFavoriteUpdates.withLock { $0 }
     }
 
     func deleteCapture(captureID: Int64) async throws {}
@@ -467,10 +463,8 @@ private final class HomeCaptureMutatorStub: CaptureMutating, @unchecked Sendable
         if let favoriteError {
             throw favoriteError
         }
-        lock.withLock {
-            storedFavoriteUpdates.append(
-                FavoriteUpdate(captureID: captureID, isFavorite: isFavorite)
-            )
+        storedFavoriteUpdates.withLock {
+            $0.append(FavoriteUpdate(captureID: captureID, isFavorite: isFavorite))
         }
     }
 

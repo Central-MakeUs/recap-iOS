@@ -1,3 +1,4 @@
+import Synchronization
 import XCTest
 @testable import Recap
 
@@ -272,17 +273,24 @@ private actor SessionLoginGate {
     }
 }
 
-private final class SessionNetworkClientStub: NetworkClient, @unchecked Sendable {
+private final class SessionNetworkClientStub: NetworkClient {
     private let loginResponse: ServerTokenRecord?
-    private let refreshError: Error?
-    private let logoutError: Error?
-    private(set) var sendCount = 0
-    private(set) var logoutSendCount = 0
+    private let refreshError: (any Error & Sendable)?
+    private let logoutError: (any Error & Sendable)?
+    private let counts = Mutex(Counts())
+
+    private struct Counts {
+        var send = 0
+        var logout = 0
+    }
+
+    var sendCount: Int { counts.withLock(\.send) }
+    var logoutSendCount: Int { counts.withLock(\.logout) }
 
     init(
         loginResponse: ServerTokenRecord?,
-        refreshError: Error? = nil,
-        logoutError: Error? = nil
+        refreshError: (any Error & Sendable)? = nil,
+        logoutError: (any Error & Sendable)? = nil
     ) {
         self.loginResponse = loginResponse
         self.refreshError = refreshError
@@ -290,10 +298,10 @@ private final class SessionNetworkClientStub: NetworkClient, @unchecked Sendable
     }
 
     func send<Response: Decodable>(_ endpoint: APIEndpoint, as responseType: Response.Type) async throws -> Response {
-        sendCount += 1
+        counts.withLock { $0.send += 1 }
 
         if endpoint.path == "/api/v1/auth/logout" {
-            logoutSendCount += 1
+            counts.withLock { $0.logout += 1 }
             if let logoutError { throw logoutError }
             guard let typed = AuthLogoutResponse(success: true) as? Response else {
                 throw APIError.decoding

@@ -1,19 +1,20 @@
+import Synchronization
 import XCTest
 @testable import Recap
 
 /// 공유 확장 업로드 파이프라인의 취소 동작을 검증한다.
 /// 네트워크는 `ShareUploadStubURLProtocol`이 전부 가로채므로 실제 요청은 나가지 않는다.
+@MainActor
 final class ShareExtensionUploadPipelineTests: XCTestCase {
-    private var pipeline: ShareExtensionUploadPipeline!
-
-    override func setUp() {
-        super.setUp()
+    /// `setUp`/`tearDown` 오버라이드는 nonisolated라 프로퍼티를 건드리지 않고,
+    /// 매 테스트가 자기 파이프라인을 만든다.
+    private func makePipeline() -> ShareExtensionUploadPipeline {
         ShareUploadStubURLProtocol.reset()
 
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [ShareUploadStubURLProtocol.self]
 
-        pipeline = ShareExtensionUploadPipeline(
+        return ShareExtensionUploadPipeline(
             baseURL: URL(string: "https://example.invalid")!,
             session: URLSession(configuration: configuration),
             tokenStore: ShareUploadStubTokenStore(),
@@ -22,17 +23,12 @@ final class ShareExtensionUploadPipelineTests: XCTestCase {
         )
     }
 
-    override func tearDown() {
-        pipeline = nil
-        ShareUploadStubURLProtocol.reset()
-        super.tearDown()
-    }
-
     /// 정리 도중 취소하면 서버 배치도 취소해야 한다.
     /// 회귀 대상: `organize`가 중단되며 batchID를 비워버려 취소 요청이 누락되던 문제.
     func testCancellingOrganizeSendsCancelRequestForCurrentBatch() async throws {
+        let pipeline = makePipeline()
         let organizeStarted = expectation(description: "서버가 batchID를 발급했다")
-        ShareUploadStubURLProtocol.onOrganizeIssued = { organizeStarted.fulfill() }
+        ShareUploadStubURLProtocol.onOrganizeIssued { organizeStarted.fulfill() }
 
         let organizing = Task {
             try await pipeline.organize(images: [Self.imageData]) { _ in }
@@ -58,8 +54,9 @@ final class ShareExtensionUploadPipelineTests: XCTestCase {
     /// 취소 순서가 뒤바뀌어도 배치가 남지 않아야 한다.
     /// task를 먼저 취소한 뒤 취소 요청을 보내는 경로를 재현한다.
     func testCancelSurvivesTaskCancellationHappeningFirst() async throws {
+        let pipeline = makePipeline()
         let organizeStarted = expectation(description: "서버가 batchID를 발급했다")
-        ShareUploadStubURLProtocol.onOrganizeIssued = { organizeStarted.fulfill() }
+        ShareUploadStubURLProtocol.onOrganizeIssued { organizeStarted.fulfill() }
 
         let organizing = Task {
             try await pipeline.organize(images: [Self.imageData]) { _ in }
@@ -84,7 +81,8 @@ final class ShareExtensionUploadPipelineTests: XCTestCase {
 
     /// 정상 완료한 배치는 취소 요청을 보내지 않아야 한다.
     func testCompletedOrganizeDoesNotSendCancelRequest() async throws {
-        ShareUploadStubURLProtocol.organizeCompletesImmediately = true
+        let pipeline = makePipeline()
+        ShareUploadStubURLProtocol.completeOrganizeImmediately()
 
         let result = try await pipeline.organize(images: [Self.imageData]) { _ in }
         XCTAssertEqual(result.batchID, Self.batchID)
@@ -97,7 +95,7 @@ final class ShareExtensionUploadPipelineTests: XCTestCase {
         )
     }
 
-    static let batchID: Int64 = 4242
+    static var batchID: Int64 { ShareUploadStubURLProtocol.batchID }
     private static let imageData = Data([0xFF, 0xD8, 0xFF, 0xD9])
 }
 
@@ -116,7 +114,7 @@ private struct ShareUploadStubTokenStore: ShareTokenStoring {
 }
 
 /// 나가는 요청을 기록하고 미리 정한 응답을 돌려준다. 소켓은 열리지 않는다.
-private final class ShareUploadStubURLProtocol: URLProtocol, @unchecked Sendable {
+private final class ShareUploadStubURLProtocol: URLProtocol {
     struct RecordedRequest: CustomStringConvertible {
         let method: String
         let path: String
@@ -124,22 +122,34 @@ private final class ShareUploadStubURLProtocol: URLProtocol, @unchecked Sendable
         var description: String { "\(method) \(path)" }
     }
 
-    private static let lock = NSLock()
-    private static var _recorded: [RecordedRequest] = []
+    /// 스텁이 발급하는 고정 batchID.
+    static let batchID: Int64 = 4242
+
+    /// 테스트 스레드와 URL 로딩 스레드가 함께 건드리므로 전부 잠금 뒤에 둔다.
+    private struct State {
+        var recorded: [RecordedRequest] = []
+        var onOrganizeIssued: (@Sendable () -> Void)?
+        var organizeCompletesImmediately = false
+    }
+
+    private static let state = Mutex(State())
 
     static var recordedRequests: [RecordedRequest] {
-        lock.withLock { _recorded }
+        state.withLock(\.recorded)
     }
 
     /// batchID가 발급된 직후 호출된다.
-    nonisolated(unsafe) static var onOrganizeIssued: (() -> Void)?
+    static func onOrganizeIssued(_ handler: @escaping @Sendable () -> Void) {
+        state.withLock { $0.onOrganizeIssued = handler }
+    }
+
     /// true면 organize 응답이 곧바로 completed로 온다.
-    nonisolated(unsafe) static var organizeCompletesImmediately = false
+    static func completeOrganizeImmediately() {
+        state.withLock { $0.organizeCompletesImmediately = true }
+    }
 
     static func reset() {
-        lock.withLock { _recorded = [] }
-        onOrganizeIssued = nil
-        organizeCompletesImmediately = false
+        state.withLock { $0 = State() }
     }
 
     override class func canInit(with request: URLRequest) -> Bool { true }
@@ -154,8 +164,8 @@ private final class ShareUploadStubURLProtocol: URLProtocol, @unchecked Sendable
 
         let path = url.path
         let method = request.httpMethod ?? "GET"
-        Self.lock.withLock {
-            Self._recorded.append(RecordedRequest(method: method, path: path))
+        Self.state.withLock {
+            $0.recorded.append(RecordedRequest(method: method, path: path))
         }
 
         let body = Self.responseBody(path: path, method: method)
@@ -171,12 +181,12 @@ private final class ShareUploadStubURLProtocol: URLProtocol, @unchecked Sendable
         client?.urlProtocolDidFinishLoading(self)
 
         if path.hasSuffix("/captures/organize"), method == "POST" {
-            Self.onOrganizeIssued?()
+            Self.state.withLock(\.onOrganizeIssued)?()
         }
     }
 
     private static func responseBody(path: String, method: String) -> Data {
-        let batchID = ShareExtensionUploadPipelineTests.batchID
+        let batchID = Self.batchID
 
         if path.hasSuffix("/captures/upload-urls") {
             return json("""
@@ -187,7 +197,8 @@ private final class ShareUploadStubURLProtocol: URLProtocol, @unchecked Sendable
         }
 
         if path.hasSuffix("/captures/organize"), method == "POST" {
-            let status = organizeCompletesImmediately ? "COMPLETED" : "PROCESSING"
+            let completed = state.withLock(\.organizeCompletesImmediately)
+            let status = completed ? "COMPLETED" : "PROCESSING"
             return json("""
             {"success":true,"data":{
               "batchId":\(batchID),"status":"\(status)","totalCount":1

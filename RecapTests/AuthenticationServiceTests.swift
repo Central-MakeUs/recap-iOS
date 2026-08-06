@@ -1,3 +1,4 @@
+import Synchronization
 import XCTest
 @testable import Recap
 
@@ -256,13 +257,20 @@ private final class SocialLoginProviderStub: SocialLoginProviding {
     }
 }
 
-private final class AuthenticationNetworkClientSpy: NetworkClient, @unchecked Sendable {
-    var sendCount = 0
-    var lastEndpoint: APIEndpoint?
-    private let response: Any?
-    private let error: Error?
+private final class AuthenticationNetworkClientSpy: NetworkClient {
+    private struct State {
+        var sendCount = 0
+        var lastEndpoint: APIEndpoint?
+    }
 
-    init(response: Any? = nil, error: Error? = nil) {
+    private let state = Mutex(State())
+    private let response: (any Sendable)?
+    private let error: (any Error & Sendable)?
+
+    var sendCount: Int { state.withLock(\.sendCount) }
+    var lastEndpoint: APIEndpoint? { state.withLock(\.lastEndpoint) }
+
+    init(response: (any Sendable)? = nil, error: (any Error & Sendable)? = nil) {
         self.response = response
         self.error = error
     }
@@ -271,8 +279,10 @@ private final class AuthenticationNetworkClientSpy: NetworkClient, @unchecked Se
         _ endpoint: APIEndpoint,
         as responseType: Response.Type
     ) async throws -> Response {
-        sendCount += 1
-        lastEndpoint = endpoint
+        state.withLock {
+            $0.sendCount += 1
+            $0.lastEndpoint = endpoint
+        }
 
         if let error {
             throw error

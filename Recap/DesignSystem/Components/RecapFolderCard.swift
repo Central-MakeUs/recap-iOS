@@ -138,10 +138,9 @@ private struct RecapFolderFrontShape: Shape {
             spacing: 15
         ) {
             ForEach(CollectionKind.allCases) { kind in
-                let display = RecapPresentation.collectionDisplay(for: kind)
                 RecapFolderCard(
-                    title: display.title,
-                    count: display.sampleCount,
+                    title: kind.displayTitle,
+                    count: SampleData.sampleCount(for: kind),
                     kind: kind
                 )
             }
