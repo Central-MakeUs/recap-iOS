@@ -1,3 +1,4 @@
+import Synchronization
 import XCTest
 @testable import Recap
 
@@ -27,7 +28,7 @@ final class ShareExtensionUploadPipelineTests: XCTestCase {
     func testCancellingOrganizeSendsCancelRequestForCurrentBatch() async throws {
         let pipeline = makePipeline()
         let organizeStarted = expectation(description: "서버가 batchID를 발급했다")
-        ShareUploadStubURLProtocol.onOrganizeIssued = { organizeStarted.fulfill() }
+        ShareUploadStubURLProtocol.onOrganizeIssued { organizeStarted.fulfill() }
 
         let organizing = Task {
             try await pipeline.organize(images: [Self.imageData]) { _ in }
@@ -55,7 +56,7 @@ final class ShareExtensionUploadPipelineTests: XCTestCase {
     func testCancelSurvivesTaskCancellationHappeningFirst() async throws {
         let pipeline = makePipeline()
         let organizeStarted = expectation(description: "서버가 batchID를 발급했다")
-        ShareUploadStubURLProtocol.onOrganizeIssued = { organizeStarted.fulfill() }
+        ShareUploadStubURLProtocol.onOrganizeIssued { organizeStarted.fulfill() }
 
         let organizing = Task {
             try await pipeline.organize(images: [Self.imageData]) { _ in }
@@ -81,7 +82,7 @@ final class ShareExtensionUploadPipelineTests: XCTestCase {
     /// 정상 완료한 배치는 취소 요청을 보내지 않아야 한다.
     func testCompletedOrganizeDoesNotSendCancelRequest() async throws {
         let pipeline = makePipeline()
-        ShareUploadStubURLProtocol.organizeCompletesImmediately = true
+        ShareUploadStubURLProtocol.completeOrganizeImmediately()
 
         let result = try await pipeline.organize(images: [Self.imageData]) { _ in }
         XCTAssertEqual(result.batchID, Self.batchID)
@@ -124,22 +125,31 @@ private final class ShareUploadStubURLProtocol: URLProtocol {
     /// 스텁이 발급하는 고정 batchID.
     static let batchID: Int64 = 4242
 
-    private static let lock = NSLock()
-    nonisolated(unsafe) private static var _recorded: [RecordedRequest] = []
+    /// 테스트 스레드와 URL 로딩 스레드가 함께 건드리므로 전부 잠금 뒤에 둔다.
+    private struct State {
+        var recorded: [RecordedRequest] = []
+        var onOrganizeIssued: (@Sendable () -> Void)?
+        var organizeCompletesImmediately = false
+    }
+
+    private static let state = Mutex(State())
 
     static var recordedRequests: [RecordedRequest] {
-        lock.withLock { _recorded }
+        state.withLock(\.recorded)
     }
 
     /// batchID가 발급된 직후 호출된다.
-    nonisolated(unsafe) static var onOrganizeIssued: (@Sendable () -> Void)?
+    static func onOrganizeIssued(_ handler: @escaping @Sendable () -> Void) {
+        state.withLock { $0.onOrganizeIssued = handler }
+    }
+
     /// true면 organize 응답이 곧바로 completed로 온다.
-    nonisolated(unsafe) static var organizeCompletesImmediately = false
+    static func completeOrganizeImmediately() {
+        state.withLock { $0.organizeCompletesImmediately = true }
+    }
 
     static func reset() {
-        lock.withLock { _recorded = [] }
-        onOrganizeIssued = nil
-        organizeCompletesImmediately = false
+        state.withLock { $0 = State() }
     }
 
     override class func canInit(with request: URLRequest) -> Bool { true }
@@ -154,8 +164,8 @@ private final class ShareUploadStubURLProtocol: URLProtocol {
 
         let path = url.path
         let method = request.httpMethod ?? "GET"
-        Self.lock.withLock {
-            Self._recorded.append(RecordedRequest(method: method, path: path))
+        Self.state.withLock {
+            $0.recorded.append(RecordedRequest(method: method, path: path))
         }
 
         let body = Self.responseBody(path: path, method: method)
@@ -171,7 +181,7 @@ private final class ShareUploadStubURLProtocol: URLProtocol {
         client?.urlProtocolDidFinishLoading(self)
 
         if path.hasSuffix("/captures/organize"), method == "POST" {
-            Self.onOrganizeIssued?()
+            Self.state.withLock(\.onOrganizeIssued)?()
         }
     }
 
@@ -187,7 +197,8 @@ private final class ShareUploadStubURLProtocol: URLProtocol {
         }
 
         if path.hasSuffix("/captures/organize"), method == "POST" {
-            let status = organizeCompletesImmediately ? "COMPLETED" : "PROCESSING"
+            let completed = state.withLock(\.organizeCompletesImmediately)
+            let status = completed ? "COMPLETED" : "PROCESSING"
             return json("""
             {"success":true,"data":{
               "batchId":\(batchID),"status":"\(status)","totalCount":1

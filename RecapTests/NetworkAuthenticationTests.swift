@@ -3,6 +3,7 @@
 //  RecapTests
 //
 
+import Synchronization
 import XCTest
 @testable import Recap
 
@@ -429,61 +430,46 @@ private final class StubURLProtocol: URLProtocol {
         case failure(Error)
     }
 
-    private static let lock = NSLock()
-    nonisolated(unsafe) private static var lockedResponse: Response = .http(statusCode: 200, body: Data())
-    nonisolated(unsafe) private static var lockedResponses: [Response] = []
-    nonisolated(unsafe) private static var lockedLastRequest: URLRequest?
-    nonisolated(unsafe) private static var lockedRequests: [URLRequest] = []
+    /// URL 로딩 스레드에서 병렬로 호출되므로 상태를 통째로 잠금 뒤에 둔다.
+    private struct State {
+        var response: Response = .http(statusCode: 200, body: Data())
+        var queued: [Response] = []
+        var lastRequest: URLRequest?
+        var requests: [URLRequest] = []
+    }
+
+    private static let state = Mutex(State())
 
     static var response: Response {
-        get {
-            lock.lock()
-            defer { lock.unlock() }
-            return lockedResponse
-        }
+        get { state.withLock(\.response) }
         set {
-            lock.lock()
-            lockedResponse = newValue
-            lockedResponses = [newValue]
-            lock.unlock()
+            state.withLock {
+                $0.response = newValue
+                $0.queued = [newValue]
+            }
         }
     }
 
     static var responses: [Response] {
-        get {
-            lock.lock()
-            defer { lock.unlock() }
-            return lockedResponses
-        }
+        get { state.withLock(\.queued) }
         set {
-            lock.lock()
-            lockedResponses = newValue
-            if let last = newValue.last {
-                lockedResponse = last
+            state.withLock {
+                $0.queued = newValue
+                if let last = newValue.last { $0.response = last }
             }
-            lock.unlock()
         }
     }
 
     static var lastRequest: URLRequest? {
-        lock.lock()
-        defer { lock.unlock() }
-        return lockedLastRequest
+        state.withLock(\.lastRequest)
     }
 
     static var requests: [URLRequest] {
-        lock.lock()
-        defer { lock.unlock() }
-        return lockedRequests
+        state.withLock(\.requests)
     }
 
     static func reset() {
-        lock.lock()
-        lockedResponse = .http(statusCode: 200, body: Data())
-        lockedResponses = []
-        lockedLastRequest = nil
-        lockedRequests = []
-        lock.unlock()
+        state.withLock { $0 = State() }
     }
 
     override class func canInit(with request: URLRequest) -> Bool {
@@ -495,13 +481,11 @@ private final class StubURLProtocol: URLProtocol {
     }
 
     override func startLoading() {
-        Self.lock.lock()
-        Self.lockedLastRequest = request
-        Self.lockedRequests.append(request)
-        let response = Self.lockedResponses.isEmpty
-            ? Self.lockedResponse
-            : Self.lockedResponses.removeFirst()
-        Self.lock.unlock()
+        let response = Self.state.withLock { state -> Response in
+            state.lastRequest = request
+            state.requests.append(request)
+            return state.queued.isEmpty ? state.response : state.queued.removeFirst()
+        }
 
         switch response {
         case let .http(statusCode, headers, body):

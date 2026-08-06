@@ -1,3 +1,4 @@
+import Synchronization
 import XCTest
 @testable import Recap
 
@@ -678,16 +679,20 @@ private final class RefreshingCaptureService: CaptureServing, @unchecked Sendabl
 }
 
 private final class PresignedUploadURLProtocol: URLProtocol, @unchecked Sendable {
-    private static let lock = NSLock()
-    nonisolated(unsafe) private static var storedRequest: URLRequest?
-    nonisolated(unsafe) private static var storedBody: Data?
+    /// URL 로딩 스레드에서 병렬로 호출되므로 상태를 통째로 잠금 뒤에 둔다.
+    private struct State {
+        var request: URLRequest?
+        var body: Data?
+    }
+
+    private static let state = Mutex(State())
 
     static var lastRequest: URLRequest? {
-        lock.withLock { storedRequest }
+        state.withLock(\.request)
     }
 
     static var lastBody: Data? {
-        lock.withLock { storedBody }
+        state.withLock(\.body)
     }
 
     override class func canInit(with request: URLRequest) -> Bool { true }
@@ -697,9 +702,9 @@ private final class PresignedUploadURLProtocol: URLProtocol, @unchecked Sendable
     }
 
     override func startLoading() {
-        Self.lock.withLock {
-            Self.storedRequest = request
-            Self.storedBody = request.httpBody ?? request.httpBodyStream?.readAllData()
+        Self.state.withLock {
+            $0.request = request
+            $0.body = request.httpBody ?? request.httpBodyStream?.readAllData()
         }
 
         let response = HTTPURLResponse(
