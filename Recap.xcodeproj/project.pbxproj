@@ -11,6 +11,7 @@
 		C20000010000000000000002 /* KakaoSDKUser in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000006 /* KakaoSDKUser */; };
 		C20000010000000000000007 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000009 /* Lottie */; };
 		D50000010000000000000001 /* RecapShareExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = D50000010000000000000003 /* RecapShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E10000010000000000000002 /* ShareExtensionUploadPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000010000000000000001 /* ShareExtensionUploadPipeline.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +52,7 @@
 		C40000010000000000000002 /* Secrets.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig.example; sourceTree = "<group>"; };
 		C40000010000000000000004 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		D50000010000000000000003 /* RecapShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RecapShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		E10000010000000000000001 /* ShareExtensionUploadPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ShareExtensionUploadPipeline.swift; path = RecapShareExtension/ShareExtensionUploadPipeline.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -325,6 +327,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E10000010000000000000002 /* ShareExtensionUploadPipeline.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

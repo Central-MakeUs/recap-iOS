@@ -212,9 +212,11 @@ final class ShareExtensionViewModel {
     }
 
     func cancelOrganizing() async {
+        // 서버 취소를 먼저 보낸다. task를 먼저 취소하면 organize가 중단되면서
+        // batchID가 사라져 서버에 고아 배치가 남는다.
+        await pipeline.cancelCurrentProcess()
         organizingTask?.cancel()
         organizingTask = nil
-        await pipeline.cancelCurrentProcess()
         extensionContext?.cancelRequest(withError: CocoaError(.userCancelled))
     }
 
