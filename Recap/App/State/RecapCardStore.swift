@@ -1,7 +1,7 @@
 import Foundation
 import Observation
 
-nonisolated enum RecapCardCollection {
+enum RecapCardCollection {
     static func search(_ cards: [InformationCard], query: String) -> [InformationCard] {
         guard !query.isEmpty else { return [] }
         return cards.filter { card in

@@ -1,7 +1,6 @@
 import XCTest
 @testable import Recap
 
-@MainActor
 final class AppLaunchDestinationResolverTests: XCTestCase {
     private let token = ServerTokenRecord(
         accessToken: "access",
