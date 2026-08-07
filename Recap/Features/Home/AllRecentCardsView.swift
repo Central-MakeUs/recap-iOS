@@ -117,6 +117,7 @@ struct AllRecentCardsView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
         .recapToast(toast)
         .task(id: toast) {
             guard toast != nil else { return }

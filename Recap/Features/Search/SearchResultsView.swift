@@ -51,6 +51,7 @@ struct SearchResultsView: View {
         .background(Color.recapBackground)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
         .task(id: query) {
             guard mode == .normal else { return }
             await model.search(query: query)
