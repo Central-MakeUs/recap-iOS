@@ -1,38 +1,27 @@
 import Foundation
 import Observation
 
+/// AI 데이터 전송 동의 상태. 원본은 서버이며 로컬에 남기지 않는다.
+/// 읽는 쪽(설정 화면, 카드 생성 흐름)이 모두 표시 직전에 `refresh()`를 호출하므로
+/// 캐시 없이도 항상 서버 값을 본다.
 @MainActor
 @Observable
 final class AIDataTransferConsentStore {
-    private enum Key {
-        static let hasConsented = "aiDataTransferConsent.hasConsented"
-        static let consentedAt = "aiDataTransferConsent.consentedAt"
-    }
-
-    private let userDefaults: UserDefaults
     private let service: any AIDataTransferConsentServing
-    private(set) var hasConsented: Bool
+    private(set) var hasConsented = false
     private(set) var consentedAt: Date?
 
-    init(
-        service: any AIDataTransferConsentServing,
-        userDefaults: UserDefaults = .standard
-    ) {
+    init(service: any AIDataTransferConsentServing) {
         self.service = service
-        self.userDefaults = userDefaults
-        hasConsented = userDefaults.bool(forKey: Key.hasConsented)
-        consentedAt = userDefaults.object(forKey: Key.consentedAt) as? Date
     }
 
     func refresh() async throws {
-        let status = try await service.fetchConsentStatus()
-        apply(status)
+        apply(try await service.fetchConsentStatus())
     }
 
     func grantConsent() async throws {
         try await service.grantConsent()
-        let status = try await service.fetchConsentStatus()
-        apply(status)
+        apply(try await service.fetchConsentStatus())
     }
 
     func revokeConsent() async throws {
@@ -43,12 +32,5 @@ final class AIDataTransferConsentStore {
     private func apply(_ status: AIDataTransferConsentStatus) {
         hasConsented = status.hasConsented
         consentedAt = status.consentedAt
-        userDefaults.set(status.hasConsented, forKey: Key.hasConsented)
-
-        if let consentedAt = status.consentedAt {
-            userDefaults.set(consentedAt, forKey: Key.consentedAt)
-        } else {
-            userDefaults.removeObject(forKey: Key.consentedAt)
-        }
     }
 }

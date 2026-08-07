@@ -155,8 +155,7 @@ final class RecapDependencies {
                 userDefaults: UserDefaults(suiteName: UUID().uuidString)!
             ),
             aiDataTransferConsentStore: AIDataTransferConsentStore(
-                service: PreviewAIDataTransferConsentService(),
-                userDefaults: UserDefaults(suiteName: UUID().uuidString)!
+                service: PreviewAIDataTransferConsentService()
             ),
             appVersionService: PreviewAppVersionService(),
             kakaoLoginProvider: PreviewSocialLoginProvider(provider: .kakao),
@@ -201,8 +200,7 @@ final class RecapDependencies {
             cardDataInvalidationCenter: CardDataInvalidationCenter(),
             organizeNotificationController: OrganizeNotificationController(),
             aiDataTransferConsentStore: AIDataTransferConsentStore(
-                service: PreviewAIDataTransferConsentService(),
-                userDefaults: UserDefaults(suiteName: UUID().uuidString)!
+                service: PreviewAIDataTransferConsentService()
             ),
             appVersionService: PreviewAppVersionService(),
             kakaoLoginProvider: MockSocialLoginProvider(provider: .kakao),

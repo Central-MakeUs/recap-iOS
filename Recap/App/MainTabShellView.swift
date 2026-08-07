@@ -169,8 +169,7 @@ struct AppShellView: View {
             userDefaults: UserDefaults(suiteName: UUID().uuidString)!
         ),
         aiDataTransferConsentStore: AIDataTransferConsentStore(
-            service: PreviewAIDataTransferConsentService(),
-            userDefaults: UserDefaults(suiteName: UUID().uuidString)!
+            service: PreviewAIDataTransferConsentService()
         )
     )
 }
