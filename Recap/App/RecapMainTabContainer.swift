@@ -118,7 +118,7 @@ enum RecapMainTabChromePolicy {
         case nil:
             true
         case .search, .allRecentCards, .archiveFavorites, .archiveDetail,
-             .cardDetail, .remoteCardDetail, .cardCreationStart, .settings:
+             .remoteCardDetail, .cardCreationStart, .settings:
             false
         }
     }
