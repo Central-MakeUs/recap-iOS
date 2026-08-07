@@ -90,6 +90,7 @@ struct SettingsView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
     }
 
 }

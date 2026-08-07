@@ -53,6 +53,7 @@ struct CollectionHomeView: View {
         }
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
     }
 
     private var loadedContent: some View {

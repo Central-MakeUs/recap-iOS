@@ -41,6 +41,7 @@ struct OpenSourceLicensesView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
         .navigationDestination(item: $selectedLicense) { license in
             OpenSourceLicenseDetailView(license: license)
         }
@@ -73,6 +74,7 @@ private struct OpenSourceLicenseDetailView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
     }
 }
 

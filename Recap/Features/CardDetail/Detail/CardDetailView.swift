@@ -106,6 +106,7 @@ struct CardDetailView: View {
         .background(Color.recapBackground)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
         .recapBottomSheet(
             isPresented: $isActionPanelPresented,
             height: 288,

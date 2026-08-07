@@ -37,6 +37,7 @@ struct CardCreationEntryView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
     }
 
     private var header: some View {
