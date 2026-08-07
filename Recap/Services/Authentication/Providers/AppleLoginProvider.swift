@@ -80,12 +80,39 @@ protocol AppleAuthorizationAuthorizing: AnyObject {
     func authorize(scopes: [ASAuthorization.Scope]) async throws -> AppleAuthorizationCredential
 }
 
+/// 로그인 시트를 붙일 창을 고른다.
+/// 연결된 scene이 하나도 없으면 nil을 돌려주며, 호출부가 로그인 실패로 처리한다.
+@MainActor
+enum ApplePresentationAnchorResolver {
+    static func anchor(in scenes: [UIWindowScene]) -> ASPresentationAnchor? {
+        if let keyWindow = scenes.flatMap(\.windows).first(where: { $0.isKeyWindow }) {
+            return keyWindow
+        }
+        guard let scene = scenes.first else {
+            return nil
+        }
+        return UIWindow(windowScene: scene)
+    }
+}
+
 @MainActor
 private final class AppleAuthorizationControllerAuthorizer: AppleAuthorizationAuthorizing {
     private var session: AppleAuthorizationControllerSession?
 
+    private static func presentationAnchor() -> ASPresentationAnchor? {
+        ApplePresentationAnchorResolver.anchor(
+            in: UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        )
+    }
+
     func authorize(scopes: [ASAuthorization.Scope]) async throws -> AppleAuthorizationCredential {
         guard session == nil else {
+            throw SocialLoginError.providerFailure
+        }
+
+        // 로그인 시트를 띄울 창을 먼저 확보한다. 백그라운드 전환 직후처럼 연결된
+        // scene이 없으면 컨트롤러를 만들기 전에 실패시켜 로그인 실패로 처리한다.
+        guard let anchor = Self.presentationAnchor() else {
             throw SocialLoginError.providerFailure
         }
 
@@ -94,7 +121,10 @@ private final class AppleAuthorizationControllerAuthorizer: AppleAuthorizationAu
                 let request = ASAuthorizationAppleIDProvider().createRequest()
                 request.requestedScopes = scopes
 
-                let session = AppleAuthorizationControllerSession(continuation: continuation) { [weak self] in
+                let session = AppleAuthorizationControllerSession(
+                    anchor: anchor,
+                    continuation: continuation
+                ) { [weak self] in
                     self?.session = nil
                 }
                 let controller = ASAuthorizationController(authorizationRequests: [request])
@@ -118,13 +148,16 @@ private final class AppleAuthorizationControllerAuthorizer: AppleAuthorizationAu
 private final class AppleAuthorizationControllerSession: NSObject {
     var controller: ASAuthorizationController?
 
+    private let anchor: ASPresentationAnchor
     private var continuation: CheckedContinuation<AppleAuthorizationCredential, any Error>?
     private let onFinish: () -> Void
 
     init(
+        anchor: ASPresentationAnchor,
         continuation: CheckedContinuation<AppleAuthorizationCredential, any Error>,
         onFinish: @escaping () -> Void
     ) {
+        self.anchor = anchor
         self.continuation = continuation
         self.onFinish = onFinish
     }
@@ -175,30 +208,15 @@ extension AppleAuthorizationControllerSession: ASAuthorizationControllerDelegate
 }
 
 extension AppleAuthorizationControllerSession: ASAuthorizationControllerPresentationContextProviding {
+    /// `authorize(scopes:)`에서 미리 확보해 둔 창을 그대로 돌려준다.
+    /// 창을 못 구하는 경우는 여기 오기 전에 걸러지므로 실패할 여지가 없다.
     nonisolated func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
         if Thread.isMainThread {
-            return MainActor.assumeIsolated {
-                Self.presentationAnchor()
-            }
+            return MainActor.assumeIsolated { anchor }
         }
 
         return DispatchQueue.main.sync {
-            MainActor.assumeIsolated {
-                Self.presentationAnchor()
-            }
+            MainActor.assumeIsolated { anchor }
         }
-    }
-
-    @MainActor
-    private static func presentationAnchor() -> ASPresentationAnchor {
-        let scenes = UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-        if let keyWindow = scenes.flatMap(\.windows).first(where: { $0.isKeyWindow }) {
-            return keyWindow
-        }
-        guard let scene = scenes.first else {
-            preconditionFailure("Sign in with Apple requires an active window scene.")
-        }
-        return UIWindow(windowScene: scene)
     }
 }
