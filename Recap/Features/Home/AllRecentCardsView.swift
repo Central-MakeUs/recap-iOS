@@ -68,12 +68,15 @@ struct AllRecentCardsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
+            // 제목 아래 16pt까지가 헤더다. 이 여백이 스크롤 영역에 있으면
+            // 목록을 올렸을 때 카드가 제목에 바짝 붙는다.
             AllRecentCardsNavigationBar(
                 onBack: onBack,
                 onSearch: onSearch
             )
             .padding(.horizontal, 16)
             .padding(.top, 19)
+            .padding(.bottom, 16)
 
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 0) {
@@ -85,7 +88,7 @@ struct AllRecentCardsView: View {
                         .foregroundStyle(Color.recapGray500)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 16)
-                        .padding(.top, 25)
+                        .padding(.top, 9)
                         .padding(.bottom, 7)
 
                     ForEach(cards) { card in
