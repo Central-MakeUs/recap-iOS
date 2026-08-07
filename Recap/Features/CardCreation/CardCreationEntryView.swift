@@ -1,22 +1,5 @@
 import SwiftUI
 
-struct CardCreationContainerView: View {
-    @Environment(AppRouter.self) private var router
-
-    var body: some View {
-        CardCreationEntryView(onAction: handleAction)
-    }
-
-    private func handleAction(_ action: CardCreationAction) {
-        switch action {
-        case .start:
-            router.navigate(.cardCreationStart)
-        case .openSettings:
-            router.navigate(.settings)
-        }
-    }
-}
-
 struct CardCreationEntryView: View {
     let onAction: (CardCreationAction) -> Void
 

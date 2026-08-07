@@ -39,10 +39,6 @@ final class RecapCardStore {
         cards.filter(\.isFavorite)
     }
 
-    var uncategorizedCards: [InformationCard] {
-        cards.filter { $0.collection == .other }
-    }
-
     var collectionSummaries: [CollectionSummary] {
         CollectionKind.folderCases.map { kind in
             let cardsForKind = cards(in: kind)
@@ -65,10 +61,6 @@ final class RecapCardStore {
 
     func cards(in kind: CollectionKind) -> [InformationCard] {
         cards.filter { $0.collection == kind }
-    }
-
-    func card(id: InformationCard.ID) -> InformationCard? {
-        cards.first { $0.id == id }
     }
 
     func search(_ query: String) -> [InformationCard] {
