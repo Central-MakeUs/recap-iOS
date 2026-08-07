@@ -511,8 +511,7 @@ struct NotificationSettingsView: View {
     )
     .environment(
         AIDataTransferConsentStore(
-            service: PreviewAIDataTransferConsentService(),
-            userDefaults: UserDefaults(suiteName: UUID().uuidString)!
+            service: PreviewAIDataTransferConsentService()
         )
     )
 }
