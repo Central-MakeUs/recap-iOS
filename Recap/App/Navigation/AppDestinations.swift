@@ -81,15 +81,6 @@ extension View {
                 captureMutator: captureService,
                 invalidationCenter: cardDataInvalidationCenter
             )
-        case .cardDetail(let id):
-            if let card = cardStore.card(id: id) {
-                CardDetailView(
-                    card: card,
-                    captureService: captureService,
-                    invalidationCenter: cardDataInvalidationCenter,
-                    onDeleted: onCardDeleted
-                )
-            }
         case .remoteCardDetail(let card):
             RemoteCardDetailDestination(
                 card: card,
