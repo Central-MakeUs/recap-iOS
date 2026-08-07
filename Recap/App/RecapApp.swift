@@ -16,7 +16,6 @@ struct RecapApp: App {
         let configuration = AppConfiguration.live()
         self.configuration = configuration
 
-        RecapFont.registerFonts()
 
         switch configuration.runtimeProfile {
         case .mock:
