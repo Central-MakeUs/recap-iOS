@@ -1,2 +1,2 @@
 KAKAO_NATIVE_APP_KEY =
-#include? "Secrets.xcconfig"
+#include "Secrets.xcconfig"

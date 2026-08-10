@@ -21,6 +21,12 @@ final class KakaoLoginProvider: SocialLoginProviding {
         do {
             try Task.checkCancellation()
 
+            // SDK가 초기화되지 않은 채로 로그인을 호출하면 SDK 내부의
+            // `try! KakaoSDK.shared.appKey()`가 크래시를 낸다. 먼저 걸러 실패로 넘긴다.
+            guard client.isSDKInitialized() else {
+                throw SocialLoginError.unavailable
+            }
+
             let token: String?
             if client.isKakaoTalkLoginAvailable() {
                 token = try await client.loginWithKakaoTalk()
@@ -48,17 +54,20 @@ final class KakaoLoginProvider: SocialLoginProviding {
 
 @MainActor
 struct KakaoLoginClient {
+    var isSDKInitialized: () -> Bool
     var isKakaoTalkLoginAvailable: () -> Bool
     var loginWithKakaoTalk: () async throws -> String?
     var loginWithKakaoAccount: () async throws -> String?
     var socialLoginError: (Error) -> SocialLoginError?
 
     init(
+        isSDKInitialized: @escaping () -> Bool = { true },
         isKakaoTalkLoginAvailable: @escaping () -> Bool,
         loginWithKakaoTalk: @escaping () async throws -> String?,
         loginWithKakaoAccount: @escaping () async throws -> String?,
         socialLoginError: @escaping (Error) -> SocialLoginError?
     ) {
+        self.isSDKInitialized = isSDKInitialized
         self.isKakaoTalkLoginAvailable = isKakaoTalkLoginAvailable
         self.loginWithKakaoTalk = loginWithKakaoTalk
         self.loginWithKakaoAccount = loginWithKakaoAccount
@@ -68,6 +77,10 @@ struct KakaoLoginClient {
 
 extension KakaoLoginClient {
     static let live = KakaoLoginClient(
+        isSDKInitialized: {
+            // `appKey()`는 초기화 전이면 `MustInitAppKey`를 던진다.
+            (try? KakaoSDK.shared.appKey()) != nil
+        },
         isKakaoTalkLoginAvailable: {
             UserApi.isKakaoTalkLoginAvailable()
         },
