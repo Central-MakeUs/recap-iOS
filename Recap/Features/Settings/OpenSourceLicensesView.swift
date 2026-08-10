@@ -23,9 +23,10 @@ struct OpenSourceLicensesView: View {
                         .foregroundStyle(Color.recapGray500)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, SettingsLayout.horizontalPadding)
-                        .padding(.top, 25)
+                        .padding(.top, 32)
                 } else {
-                    VStack(spacing: 0) {
+                    // 개인정보 처리 안내 화면의 외부 링크 목록과 같은 간격을 쓴다.
+                    VStack(spacing: SettingsLayout.rowSpacing) {
                         ForEach(licenses) { license in
                             SettingsNavigationRow(title: license.name) {
                                 selectedLicense = license
@@ -33,14 +34,15 @@ struct OpenSourceLicensesView: View {
                         }
                     }
                     .padding(.horizontal, SettingsLayout.horizontalPadding)
-                    .padding(.top, 15)
-                    .padding(.bottom, 40)
+                    .padding(.top, 32)
+                    .padding(.bottom, 32)
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
         .navigationDestination(item: $selectedLicense) { license in
             OpenSourceLicenseDetailView(license: license)
         }
@@ -73,6 +75,7 @@ private struct OpenSourceLicenseDetailView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
     }
 }
 

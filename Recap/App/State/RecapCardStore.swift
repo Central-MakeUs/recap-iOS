@@ -39,10 +39,6 @@ final class RecapCardStore {
         cards.filter(\.isFavorite)
     }
 
-    var uncategorizedCards: [InformationCard] {
-        cards.filter { $0.collection == .other }
-    }
-
     var collectionSummaries: [CollectionSummary] {
         CollectionKind.folderCases.map { kind in
             let cardsForKind = cards(in: kind)
@@ -65,10 +61,6 @@ final class RecapCardStore {
 
     func cards(in kind: CollectionKind) -> [InformationCard] {
         cards.filter { $0.collection == kind }
-    }
-
-    func card(id: InformationCard.ID) -> InformationCard? {
-        cards.first { $0.id == id }
     }
 
     func search(_ query: String) -> [InformationCard] {
@@ -105,7 +97,9 @@ final class RecapCardStore {
     }
 }
 
-extension InformationCard {
+/// 순수 값 복사라 격리가 필요 없다. `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`
+/// 아래에서는 extension 멤버가 암묵적으로 MainActor가 되므로 명시한다.
+nonisolated extension InformationCard {
     func with(editDraft draft: CardEditDraft) -> InformationCard {
         InformationCard(
             id: id,
@@ -117,7 +111,7 @@ extension InformationCard {
             dateText: dateText,
             location: location,
             businessHours: businessHours,
-            category: RecapPresentation.collectionDisplay(for: draft.collection).title,
+            category: draft.collection.displayTitle,
             confirmationLabel: confirmationLabel,
             memo: draft.body,
             tags: tags,

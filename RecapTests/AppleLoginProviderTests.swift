@@ -1,4 +1,5 @@
 import AuthenticationServices
+import UIKit
 import XCTest
 @testable import Recap
 
@@ -71,6 +72,12 @@ final class AppleLoginProviderTests: XCTestCase {
         )
 
         await assertProviderToken(provider, throws: .providerFailure)
+    }
+
+    /// 회귀 대상: 연결된 scene이 없을 때 `preconditionFailure`로 크래시하던 문제.
+    /// 이제 nil을 돌려주고 호출부가 로그인 실패로 처리한다.
+    func testPresentationAnchorIsNilWhenNoWindowSceneExists() {
+        XCTAssertNil(ApplePresentationAnchorResolver.anchor(in: []))
     }
 
     func testOverlappingProviderRequestsAreRejected() async throws {

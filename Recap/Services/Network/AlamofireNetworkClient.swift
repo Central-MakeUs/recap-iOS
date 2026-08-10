@@ -6,7 +6,7 @@
 import Alamofire
 import Foundation
 
-final class AlamofireNetworkClient: NetworkClient, @unchecked Sendable {
+final class AlamofireNetworkClient: NetworkClient {
     private let configuration: NetworkConfiguration
     private let session: Session
     private let decoder: JSONDecoder

@@ -1,6 +1,8 @@
+import Synchronization
 import XCTest
 @testable import Recap
 
+@MainActor
 final class CaptureLifecycleServiceTests: XCTestCase {
     func testCaptureServiceBuildsBackendContractEndpoints() async throws {
         let client = CaptureNetworkClientStub()
@@ -462,19 +464,18 @@ final class CaptureDetailFeatureModelTests: XCTestCase {
     }
 }
 
-private final class CaptureNetworkClientStub: NetworkClient, @unchecked Sendable {
-    private let lock = NSLock()
-    private var storedEndpoints: [APIEndpoint] = []
+private final class CaptureNetworkClientStub: NetworkClient {
+    private let storedEndpoints = Mutex<[APIEndpoint]>([])
 
     var endpoints: [APIEndpoint] {
-        lock.withLock { storedEndpoints }
+        storedEndpoints.withLock { $0 }
     }
 
     func send<Response: Decodable>(
         _ endpoint: APIEndpoint,
         as responseType: Response.Type
     ) async throws -> Response {
-        lock.withLock { storedEndpoints.append(endpoint) }
+        storedEndpoints.withLock { $0.append(endpoint) }
 
         if responseType == EmptyResponse.self {
             return EmptyResponse() as! Response
@@ -513,38 +514,41 @@ private final class CaptureNetworkClientStub: NetworkClient, @unchecked Sendable
     }
 }
 
-private final class CaptureServiceStub: CaptureServing, @unchecked Sendable {
-    private let lock = NSLock()
+private final class CaptureServiceStub: CaptureServing {
+    private struct State {
+        var statusResults: [OrganizeStatusResponseDTO]
+        var organizedImageKeys: [String] = []
+        var statusRequestCount = 0
+        var acknowledgedBatchIDs: [Int64] = []
+    }
+
     private let uploadItems: [UploadItemDTO]
-    private var statusResults: [OrganizeStatusResponseDTO]
-    private var storedOrganizedImageKeys: [String] = []
-    private var storedStatusRequestCount = 0
-    private var storedAcknowledgedBatchIDs: [Int64] = []
+    private let state: Mutex<State>
 
     init(
         uploadItems: [UploadItemDTO],
         statusResults: [OrganizeStatusResponseDTO]
     ) {
         self.uploadItems = uploadItems
-        self.statusResults = statusResults
+        state = Mutex(State(statusResults: statusResults))
     }
 
     var organizedImageKeys: [String] {
-        lock.withLock { storedOrganizedImageKeys }
+        state.withLock(\.organizedImageKeys)
     }
 
     var statusRequestCount: Int {
-        lock.withLock { storedStatusRequestCount }
+        state.withLock(\.statusRequestCount)
     }
 
     var acknowledgedBatchIDs: [Int64] {
-        lock.withLock { storedAcknowledgedBatchIDs }
+        state.withLock(\.acknowledgedBatchIDs)
     }
 
     func issueUploadURLs(count: Int) async throws -> [UploadItemDTO] { uploadItems }
 
     func organize(imageKeys: [String]) async throws -> OrganizeResponseDTO {
-        lock.withLock { storedOrganizedImageKeys = imageKeys }
+        state.withLock { $0.organizedImageKeys = imageKeys }
         return OrganizeResponseDTO(
             batchId: 9,
             totalCount: imageKeys.count,
@@ -553,16 +557,16 @@ private final class CaptureServiceStub: CaptureServing, @unchecked Sendable {
     }
 
     func organizeStatus(batchID: Int64) async throws -> OrganizeStatusResponseDTO {
-        lock.withLock {
-            storedStatusRequestCount += 1
-            return statusResults.removeFirst()
+        state.withLock {
+            $0.statusRequestCount += 1
+            return $0.statusResults.removeFirst()
         }
     }
 
     func cancelOrganize(batchID: Int64) async throws {}
     func pendingOrganizeResult() async throws -> PendingOrganizeResultDTO? { nil }
     func acknowledgeOrganizeResult(batchID: Int64) async throws {
-        lock.withLock { storedAcknowledgedBatchIDs.append(batchID) }
+        state.withLock { $0.acknowledgedBatchIDs.append(batchID) }
     }
     func captureDetail(captureID: Int64) async throws -> InformationCard {
         throw APIError.missingResponseData
@@ -574,31 +578,29 @@ private final class CaptureServiceStub: CaptureServing, @unchecked Sendable {
     func reportCapture(captureID: Int64, reason: CaptureReportReason, detail: String?) async throws {}
 }
 
-private final class ImageUploaderStub: PresignedImageUploading, @unchecked Sendable {
-    private let lock = NSLock()
-    private var storedUploadedURLs: [URL] = []
+private final class ImageUploaderStub: PresignedImageUploading {
+    private let storedUploadedURLs = Mutex<[URL]>([])
 
     var uploadedURLs: [URL] {
-        lock.withLock { storedUploadedURLs }
+        storedUploadedURLs.withLock { $0 }
     }
 
     func upload(_ data: Data, to url: URL) async throws {
-        lock.withLock { storedUploadedURLs.append(url) }
+        storedUploadedURLs.withLock { $0.append(url) }
     }
 }
 
-private final class FailingImageUploader: PresignedImageUploading, @unchecked Sendable {
+private final class FailingImageUploader: PresignedImageUploading {
     func upload(_ data: Data, to url: URL) async throws {
         throw CaptureLifecycleError.uploadFailed
     }
 }
 
-private final class FailingFavoriteCaptureService: CaptureServing, @unchecked Sendable {
-    private let lock = NSLock()
-    private var storedDeletedCaptureID: Int64?
+private final class FailingFavoriteCaptureService: CaptureServing {
+    private let storedDeletedCaptureID = Mutex<Int64?>(nil)
 
     var deletedCaptureID: Int64? {
-        lock.withLock { storedDeletedCaptureID }
+        storedDeletedCaptureID.withLock { $0 }
     }
 
     func issueUploadURLs(count: Int) async throws -> [UploadItemDTO] { [] }
@@ -621,33 +623,36 @@ private final class FailingFavoriteCaptureService: CaptureServing, @unchecked Se
         throw APIError.transport
     }
     func deleteCapture(captureID: Int64) async throws {
-        lock.withLock { storedDeletedCaptureID = captureID }
+        storedDeletedCaptureID.withLock { $0 = captureID }
     }
     func deleteCaptures(captureIDs: [Int64]) async throws {}
     func reportCapture(captureID: Int64, reason: CaptureReportReason, detail: String?) async throws {}
 }
 
-private final class RefreshingCaptureService: CaptureServing, @unchecked Sendable {
-    private let lock = NSLock()
+private final class RefreshingCaptureService: CaptureServing {
+    private struct State {
+        var detailRequestCount = 0
+        var updatedCaptureID: Int64?
+        var updatedDraft: CardEditDraft?
+    }
+
     private let detail: InformationCard
-    private var storedDetailRequestCount = 0
-    private var storedUpdatedCaptureID: Int64?
-    private var storedUpdatedDraft: CardEditDraft?
+    private let state = Mutex(State())
 
     init(detail: InformationCard) {
         self.detail = detail
     }
 
     var detailRequestCount: Int {
-        lock.withLock { storedDetailRequestCount }
+        state.withLock(\.detailRequestCount)
     }
 
     var updatedCaptureID: Int64? {
-        lock.withLock { storedUpdatedCaptureID }
+        state.withLock(\.updatedCaptureID)
     }
 
     var updatedDraft: CardEditDraft? {
-        lock.withLock { storedUpdatedDraft }
+        state.withLock(\.updatedDraft)
     }
 
     func issueUploadURLs(count: Int) async throws -> [UploadItemDTO] { [] }
@@ -661,14 +666,14 @@ private final class RefreshingCaptureService: CaptureServing, @unchecked Sendabl
     func pendingOrganizeResult() async throws -> PendingOrganizeResultDTO? { nil }
     func acknowledgeOrganizeResult(batchID: Int64) async throws {}
     func captureDetail(captureID: Int64) async throws -> InformationCard {
-        lock.withLock { storedDetailRequestCount += 1 }
+        state.withLock { $0.detailRequestCount += 1 }
         return detail
     }
     func updateFavorite(captureID: Int64, isFavorite: Bool) async throws {}
     func updateCapture(captureID: Int64, draft: CardEditDraft) async throws {
-        lock.withLock {
-            storedUpdatedCaptureID = captureID
-            storedUpdatedDraft = draft
+        state.withLock {
+            $0.updatedCaptureID = captureID
+            $0.updatedDraft = draft
         }
     }
     func deleteCapture(captureID: Int64) async throws {}
@@ -676,17 +681,21 @@ private final class RefreshingCaptureService: CaptureServing, @unchecked Sendabl
     func reportCapture(captureID: Int64, reason: CaptureReportReason, detail: String?) async throws {}
 }
 
-private final class PresignedUploadURLProtocol: URLProtocol, @unchecked Sendable {
-    private static let lock = NSLock()
-    private static var storedRequest: URLRequest?
-    private static var storedBody: Data?
+private final class PresignedUploadURLProtocol: URLProtocol {
+    /// URL 로딩 스레드에서 병렬로 호출되므로 상태를 통째로 잠금 뒤에 둔다.
+    private struct State {
+        var request: URLRequest?
+        var body: Data?
+    }
+
+    private static let state = Mutex(State())
 
     static var lastRequest: URLRequest? {
-        lock.withLock { storedRequest }
+        state.withLock(\.request)
     }
 
     static var lastBody: Data? {
-        lock.withLock { storedBody }
+        state.withLock(\.body)
     }
 
     override class func canInit(with request: URLRequest) -> Bool { true }
@@ -696,9 +705,9 @@ private final class PresignedUploadURLProtocol: URLProtocol, @unchecked Sendable
     }
 
     override func startLoading() {
-        Self.lock.withLock {
-            Self.storedRequest = request
-            Self.storedBody = request.httpBody ?? request.httpBodyStream?.readAllData()
+        Self.state.withLock {
+            $0.request = request
+            $0.body = request.httpBody ?? request.httpBodyStream?.readAllData()
         }
 
         let response = HTTPURLResponse(

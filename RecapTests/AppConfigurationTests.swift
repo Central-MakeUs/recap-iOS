@@ -1,6 +1,7 @@
 import XCTest
 @testable import Recap
 
+@MainActor
 final class AppConfigurationTests: XCTestCase {
     func testBundledRuntimeProfileMatchesInfoPlist() throws {
         let bundledProfile = try XCTUnwrap(

@@ -25,6 +25,7 @@ struct OnboardingDesignCanvas<Content: View>: View {
         }
         .ignoresSafeArea()
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
     }
 }
 

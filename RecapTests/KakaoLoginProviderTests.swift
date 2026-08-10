@@ -3,6 +3,36 @@ import XCTest
 
 @MainActor
 final class KakaoLoginProviderTests: XCTestCase {
+    /// 회귀 대상: SDK 미초기화 상태에서 로그인하면 SDK 내부 `try!`가 앱을 죽이던 문제.
+    /// 이제 호출 전에 걸러 `unavailable`로 넘긴다.
+    func testUninitializedSDKThrowsUnavailableWithoutCallingSDK() async {
+        let provider = KakaoLoginProvider(
+            client: KakaoLoginClient(
+                isSDKInitialized: { false },
+                isKakaoTalkLoginAvailable: {
+                    XCTFail("SDK 미초기화 시 SDK를 호출하면 안 된다")
+                    return true
+                },
+                loginWithKakaoTalk: {
+                    XCTFail("SDK 미초기화 시 SDK를 호출하면 안 된다")
+                    return "talk-access-token"
+                },
+                loginWithKakaoAccount: {
+                    XCTFail("SDK 미초기화 시 SDK를 호출하면 안 된다")
+                    return "account-access-token"
+                },
+                socialLoginError: { _ in nil }
+            )
+        )
+
+        do {
+            _ = try await provider.providerToken()
+            XCTFail("unavailable이 전달되어야 한다")
+        } catch {
+            XCTAssertEqual(error as? SocialLoginError, .unavailable)
+        }
+    }
+
     func testProviderUsesKakaoTalkWhenAvailable() async throws {
         let provider = KakaoLoginProvider(
             client: KakaoLoginClient(

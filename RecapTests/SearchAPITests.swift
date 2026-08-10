@@ -1,3 +1,4 @@
+import Synchronization
 import XCTest
 @testable import Recap
 
@@ -276,7 +277,7 @@ final class SearchAPITests: XCTestCase {
         )
     }
 
-    private static let searchJSON = """
+    nonisolated private static let searchJSON = """
     {
       "success": true,
       "data": {
@@ -334,11 +335,13 @@ private extension SearchResultDTO {
     }
 }
 
-private final class SearchNetworkClientStub: NetworkClient, @unchecked Sendable {
-    private let response: Any
-    private(set) var endpoints: [APIEndpoint] = []
+private final class SearchNetworkClientStub: NetworkClient {
+    private let response: any Sendable
+    private let recordedEndpoints = Mutex<[APIEndpoint]>([])
 
-    init<Response>(response: Response) {
+    var endpoints: [APIEndpoint] { recordedEndpoints.withLock { $0 } }
+
+    init<Response: Sendable>(response: Response) {
         self.response = response
     }
 
@@ -346,7 +349,7 @@ private final class SearchNetworkClientStub: NetworkClient, @unchecked Sendable 
         _ endpoint: APIEndpoint,
         as responseType: Response.Type
     ) async throws -> Response {
-        endpoints.append(endpoint)
+        recordedEndpoints.withLock { $0.append(endpoint) }
         guard let response = response as? Response else {
             throw APIError.decoding
         }
@@ -385,24 +388,25 @@ private final class RecordingSearchLoader: SearchLoading {
 }
 
 private final class SearchURLProtocol: URLProtocol {
-    private static let lock = NSLock()
-    private static var storedHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
-    private static var storedRequestCount = 0
+    /// URL 로딩 스레드에서 병렬로 호출되므로 상태를 통째로 잠금 뒤에 둔다.
+    private struct State {
+        var handler: (@Sendable (URLRequest) throws -> (HTTPURLResponse, Data))?
+        var requestCount = 0
+    }
 
-    static var handler: ((URLRequest) throws -> (HTTPURLResponse, Data))? {
-        get { lock.withLock { storedHandler } }
-        set { lock.withLock { storedHandler = newValue } }
+    private static let state = Mutex(State())
+
+    static var handler: (@Sendable (URLRequest) throws -> (HTTPURLResponse, Data))? {
+        get { state.withLock(\.handler) }
+        set { state.withLock { $0.handler = newValue } }
     }
 
     static var requestCount: Int {
-        lock.withLock { storedRequestCount }
+        state.withLock(\.requestCount)
     }
 
     static func reset() {
-        lock.withLock {
-            storedHandler = nil
-            storedRequestCount = 0
-        }
+        state.withLock { $0 = State() }
     }
 
     override class func canInit(with request: URLRequest) -> Bool { true }
@@ -411,9 +415,7 @@ private final class SearchURLProtocol: URLProtocol {
     override func startLoading() {
         do {
             let handler = try XCTUnwrap(Self.handler)
-            Self.lock.withLock {
-                Self.storedRequestCount += 1
-            }
+            Self.state.withLock { $0.requestCount += 1 }
             let (response, data) = try handler(request)
             client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
             client?.urlProtocol(self, didLoad: data)

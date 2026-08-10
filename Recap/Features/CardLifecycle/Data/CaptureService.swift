@@ -33,7 +33,7 @@ protocol CaptureServing: CaptureMutating, Sendable {
     func captureDetail(captureID: Int64) async throws -> InformationCard
 }
 
-final class CaptureService: CaptureServing, @unchecked Sendable {
+final class CaptureService: CaptureServing {
     private let networkClient: any NetworkClient
     private let encoder: JSONEncoder
 

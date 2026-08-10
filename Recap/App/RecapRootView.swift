@@ -17,7 +17,7 @@ struct RecapRootView: View {
         self.init(
             dependencies: dependencies,
             router: AppRouter(),
-            cardStore: RecapCardStore(cards: SampleData.cards),
+            cardStore: RecapCardStore(cards: []),
             initiallyShowsSplash: initiallyShowsSplash
         )
     }

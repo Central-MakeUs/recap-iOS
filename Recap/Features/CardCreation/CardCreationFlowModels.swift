@@ -212,18 +212,3 @@ final class CardCreationFlowViewModel {
         step = .picking
     }
 }
-
-enum CardCreationSampleData {
-    static let screenshots: [CardCreationScreenshot] = [
-        CardCreationScreenshot(kind: .shopping, assetName: "HomeFavoriteKeyboard"),
-        CardCreationScreenshot(kind: .place, assetName: "HomeRecentJeju"),
-        CardCreationScreenshot(kind: .schedule, assetName: "HomeFavoriteMove"),
-        CardCreationScreenshot(kind: .knowledge, assetName: "HomeRecentReturn"),
-        CardCreationScreenshot(kind: .content, assetName: "HomeRecentPasta"),
-        CardCreationScreenshot(kind: .benefits, assetName: "HomeFavoriteTax"),
-        CardCreationScreenshot(kind: .capture),
-        CardCreationScreenshot(kind: .career),
-        CardCreationScreenshot(kind: .other)
-    ]
-
-}

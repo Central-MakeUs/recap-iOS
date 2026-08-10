@@ -155,8 +155,7 @@ final class RecapDependencies {
                 userDefaults: UserDefaults(suiteName: UUID().uuidString)!
             ),
             aiDataTransferConsentStore: AIDataTransferConsentStore(
-                service: PreviewAIDataTransferConsentService(),
-                userDefaults: UserDefaults(suiteName: UUID().uuidString)!
+                service: PreviewAIDataTransferConsentService()
             ),
             appVersionService: PreviewAppVersionService(),
             kakaoLoginProvider: PreviewSocialLoginProvider(provider: .kakao),
@@ -201,8 +200,7 @@ final class RecapDependencies {
             cardDataInvalidationCenter: CardDataInvalidationCenter(),
             organizeNotificationController: OrganizeNotificationController(),
             aiDataTransferConsentStore: AIDataTransferConsentStore(
-                service: PreviewAIDataTransferConsentService(),
-                userDefaults: UserDefaults(suiteName: UUID().uuidString)!
+                service: PreviewAIDataTransferConsentService()
             ),
             appVersionService: PreviewAppVersionService(),
             kakaoLoginProvider: MockSocialLoginProvider(provider: .kakao),
@@ -237,7 +235,7 @@ private final class PreviewHomeSummaryLoader: HomeSummaryLoading {
     }
 }
 
-private final class PreviewNetworkClient: NetworkClient, @unchecked Sendable {
+private final class PreviewNetworkClient: NetworkClient {
     func send<Response: Decodable>(
         _ endpoint: APIEndpoint,
         as responseType: Response.Type
@@ -284,7 +282,7 @@ private extension RecapSessionState {
     }
 }
 
-private final class MockAuthenticationNetworkClient: NetworkClient, @unchecked Sendable {
+private final class MockAuthenticationNetworkClient: NetworkClient {
     func send<Response: Decodable>(
         _ endpoint: APIEndpoint,
         as responseType: Response.Type

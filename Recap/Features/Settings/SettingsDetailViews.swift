@@ -96,6 +96,7 @@ struct AccountManagementView: View {
         }
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
         .task {
             await model.loadAccountInfo()
         }
@@ -231,6 +232,7 @@ struct DataManagementView: View {
         }
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
         .task {
             await model.loadDataSummary()
             do {
@@ -441,6 +443,7 @@ struct NotificationSettingsView: View {
         }
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
         .task {
             await refreshSystemNotificationPermission()
         }
@@ -511,8 +514,7 @@ struct NotificationSettingsView: View {
     )
     .environment(
         AIDataTransferConsentStore(
-            service: PreviewAIDataTransferConsentService(),
-            userDefaults: UserDefaults(suiteName: UUID().uuidString)!
+            service: PreviewAIDataTransferConsentService()
         )
     )
 }
