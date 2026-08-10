@@ -138,6 +138,7 @@
 				D50000010000000000000005 /* RecapShareExtension */,
 				B10000010000000000000003 /* RecapTests */,
 				A7BB44152FF2A90B00752373 /* Products */,
+				A7D29AC1302A04A300D2AD79 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -149,6 +150,14 @@
 				B10000010000000000000001 /* RecapTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		A7D29AC1302A04A300D2AD79 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				E10000010000000000000001 /* ShareExtensionUploadPipeline.swift */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		C40000010000000000000003 /* Config */ = {
@@ -187,6 +196,7 @@
 				C20000010000000000000005 /* Alamofire */,
 				C20000010000000000000006 /* KakaoSDKUser */,
 				C20000010000000000000009 /* Lottie */,
+				C2000001000000000000000B /* ConfettiSwiftUI */,
 			);
 			productName = Recap;
 			productReference = A7BB44142FF2A90B00752373 /* Recap.app */;
@@ -278,6 +288,7 @@
 				C20000010000000000000003 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				C20000010000000000000004 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */,
 				C20000010000000000000008 /* XCRemoteSwiftPackageReference "lottie-spm" */,
+				C2000001000000000000000A /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A7BB44152FF2A90B00752373 /* Products */;
@@ -728,6 +739,14 @@
 				version = 4.6.1;
 			};
 		};
+		C2000001000000000000000A /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/simibac/ConfettiSwiftUI.git";
+			requirement = {
+				kind = exactVersion;
+				version = 3.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -745,6 +764,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C20000010000000000000008 /* XCRemoteSwiftPackageReference "lottie-spm" */;
 			productName = Lottie;
+		};
+		C2000001000000000000000B /* ConfettiSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C2000001000000000000000A /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */;
+			productName = ConfettiSwiftUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

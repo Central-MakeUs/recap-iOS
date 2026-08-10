@@ -1,3 +1,4 @@
+import ConfettiSwiftUI
 import SwiftUI
 
 struct CardCreationResultView: View {
@@ -97,9 +98,13 @@ private struct CardCreationCompleteResultContent: View {
         static let characterTop: CGFloat = 215
         static let characterHeight: CGFloat = 300
         static let subtitleTop: CGFloat = 481
+        /// 체크 아이콘이 커지는 시점. 이때 컨페티가 터진다.
+        static let confettiDelay: Duration = .milliseconds(420)
     }
 
     let organizedCount: Int
+
+    @State private var confettiTrigger = 0
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -125,6 +130,22 @@ private struct CardCreationCompleteResultContent: View {
                 .tracking(-0.3)
                 .foregroundStyle(Color.recapGray500)
                 .padding(.top, Layout.subtitleTop)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        // 체크 아이콘 중심에서 터져 화면 전체로 퍼진 뒤 아래로 떨어진다.
+        .confettiCannon(
+            trigger: $confettiTrigger,
+            num: 60,
+            confettis: [.shape(.square), .shape(.slimRectangle)],
+            colors: [.recapBlue500, .recapBlue300, .recapBlue50],
+            confettiSize: 8,
+            rainHeight: 900,
+            radius: 420,
+            hapticFeedback: false
+        )
+        .task {
+            try? await Task.sleep(for: Layout.confettiDelay)
+            confettiTrigger += 1
         }
     }
 }
