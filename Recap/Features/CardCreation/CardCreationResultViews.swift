@@ -94,9 +94,9 @@ private struct CardCreationCompleteResultContent: View {
         static let checkTop: CGFloat = 188
         static let checkSize: CGFloat = 45
         static let titleTop: CGFloat = 240
-        static let characterTop: CGFloat = 254
+        static let characterTop: CGFloat = 215
         static let characterHeight: CGFloat = 300
-        static let subtitleTop: CGFloat = 513
+        static let subtitleTop: CGFloat = 481
     }
 
     let organizedCount: Int
