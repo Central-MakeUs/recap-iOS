@@ -7,10 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A7D2A0C3302A117A00D2AD79 /* ConfettiSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = C2000001000000000000000B /* ConfettiSwiftUI */; };
 		C20000010000000000000001 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000005 /* Alamofire */; };
 		C20000010000000000000002 /* KakaoSDKUser in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000006 /* KakaoSDKUser */; };
 		C20000010000000000000007 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000009 /* Lottie */; };
-		D50000010000000000000001 /* RecapShareExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = D50000010000000000000003 /* RecapShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		D50000010000000000000001 /* RecapShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D50000010000000000000003 /* RecapShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E10000010000000000000002 /* ShareExtensionUploadPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000010000000000000001 /* ShareExtensionUploadPipeline.swift */; };
 /* End PBXBuildFile section */
 
@@ -32,15 +33,15 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		D5000001000000000000000B /* Embed App Extensions */ = {
+		D5000001000000000000000B /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				D50000010000000000000001 /* RecapShareExtension.appex in Embed App Extensions */,
+				D50000010000000000000001 /* RecapShareExtension.appex in Embed Foundation Extensions */,
 			);
-			name = "Embed App Extensions";
+			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -106,6 +107,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A7D2A0C3302A117A00D2AD79 /* ConfettiSwiftUI in Frameworks */,
 				C20000010000000000000001 /* Alamofire in Frameworks */,
 				C20000010000000000000002 /* KakaoSDKUser in Frameworks */,
 				C20000010000000000000007 /* Lottie in Frameworks */,
@@ -138,6 +140,7 @@
 				D50000010000000000000005 /* RecapShareExtension */,
 				B10000010000000000000003 /* RecapTests */,
 				A7BB44152FF2A90B00752373 /* Products */,
+				A7D29AC1302A04A300D2AD79 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -149,6 +152,14 @@
 				B10000010000000000000001 /* RecapTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		A7D29AC1302A04A300D2AD79 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				E10000010000000000000001 /* ShareExtensionUploadPipeline.swift */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		C40000010000000000000003 /* Config */ = {
@@ -171,7 +182,7 @@
 				A7BB44102FF2A90B00752373 /* Sources */,
 				A7BB44112FF2A90B00752373 /* Frameworks */,
 				A7BB44122FF2A90B00752373 /* Resources */,
-				D5000001000000000000000B /* Embed App Extensions */,
+				D5000001000000000000000B /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
@@ -187,6 +198,7 @@
 				C20000010000000000000005 /* Alamofire */,
 				C20000010000000000000006 /* KakaoSDKUser */,
 				C20000010000000000000009 /* Lottie */,
+				C2000001000000000000000B /* ConfettiSwiftUI */,
 			);
 			productName = Recap;
 			productReference = A7BB44142FF2A90B00752373 /* Recap.app */;
@@ -246,7 +258,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2650;
-				LastUpgradeCheck = 2650;
+				LastUpgradeCheck = 2660;
 				TargetAttributes = {
 					A7BB44132FF2A90B00752373 = {
 						CreatedOnToolsVersion = 26.5;
@@ -278,6 +290,7 @@
 				C20000010000000000000003 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				C20000010000000000000004 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */,
 				C20000010000000000000008 /* XCRemoteSwiftPackageReference "lottie-spm" */,
+				C2000001000000000000000A /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A7BB44152FF2A90B00752373 /* Products */;
@@ -413,6 +426,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -470,6 +484,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -728,6 +743,14 @@
 				version = 4.6.1;
 			};
 		};
+		C2000001000000000000000A /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/simibac/ConfettiSwiftUI.git";
+			requirement = {
+				kind = exactVersion;
+				version = 3.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -745,6 +768,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C20000010000000000000008 /* XCRemoteSwiftPackageReference "lottie-spm" */;
 			productName = Lottie;
+		};
+		C2000001000000000000000B /* ConfettiSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C2000001000000000000000A /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */;
+			productName = ConfettiSwiftUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
