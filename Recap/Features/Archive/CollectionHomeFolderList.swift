@@ -24,6 +24,7 @@ struct CollectionHomeFolderList: View {
     }
 }
 
+#if DEBUG
 #Preview("보관함 폴더 목록") {
     ScrollView {
         CollectionHomeFolderList(
@@ -34,3 +35,4 @@ struct CollectionHomeFolderList: View {
         )
     }
 }
+#endif

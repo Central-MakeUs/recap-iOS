@@ -22,7 +22,9 @@ struct CardDetailCategoryAndDateRow: View {
     }
 }
 
+#if DEBUG
 #Preview("정보카드 카테고리 및 날짜") {
     CardDetailCategoryAndDateRow(card: SampleData.cards[1])
     .padding()
 }
+#endif

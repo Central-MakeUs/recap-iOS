@@ -196,6 +196,7 @@ private struct OnboardingBackgroundDecorations: View {
     }
 }
 
+#if DEBUG
 #Preview("Onboarding login") {
     OnboardingLoginView(onStart: {})
 }
@@ -203,3 +204,4 @@ private struct OnboardingBackgroundDecorations: View {
 #Preview("Onboarding login failure") {
     OnboardingLoginView(onStart: {}, login: { _ in .failure })
 }
+#endif

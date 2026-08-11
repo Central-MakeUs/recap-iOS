@@ -17,10 +17,15 @@ struct CardCreationFlowView: View {
         _viewModel = State(initialValue: viewModel)
     }
 
+#if DEBUG
+    /// 프리뷰 전용. 실제 흐름은 `init(viewModel:)`으로 의존성을 주입받는다.
     @MainActor
     init() {
-        _viewModel = State(initialValue: CardCreationFlowViewModel())
+        _viewModel = State(
+            initialValue: CardCreationFlowViewModel(processor: PreviewCardCreationPipeline())
+        )
     }
+#endif
 
     var body: some View {
         Group {
@@ -222,6 +227,7 @@ struct CardCreationFlowView: View {
 }
 
 
+#if DEBUG
 #Preview("CardCreation processing") {
     CardCreationProcessingView(
         progress: 0.75,
@@ -241,3 +247,4 @@ struct CardCreationFlowView: View {
 #Preview("CardCreation failure") {
     CardCreationResultView(state: .failure, onDone: {})
 }
+#endif

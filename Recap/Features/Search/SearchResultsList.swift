@@ -48,6 +48,7 @@ struct SearchResultsList: View {
     }
 }
 
+#if DEBUG
 #Preview("검색 결과 목록") {
     let results = SampleData.search("파스타").map(SearchResult.init(card:))
 
@@ -59,3 +60,4 @@ struct SearchResultsList: View {
     )
     .background(Color.recapBackground)
 }
+#endif

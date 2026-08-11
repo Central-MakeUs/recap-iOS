@@ -172,6 +172,7 @@ struct SearchResultsView: View {
     }
 }
 
+#if DEBUG
 #Preview("Search home - recent terms") {
     NavigationStack {
         SearchResultsView(
@@ -224,6 +225,7 @@ struct SearchResultsView: View {
         )
     }
 }
+#endif
 
 @MainActor
 private func previewRecentSearchStore(
@@ -234,6 +236,7 @@ private func previewRecentSearchStore(
     )
 }
 
+#if DEBUG
 @MainActor
 private func previewSearchModel(
     query: String = "",
@@ -259,3 +262,4 @@ private func previewSearchModel(
         initialState: initialState
     )
 }
+#endif

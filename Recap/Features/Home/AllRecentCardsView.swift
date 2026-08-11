@@ -189,6 +189,7 @@ private struct AllRecentCardsNavigationBar: View {
     }
 }
 
+#if DEBUG
 #Preview {
     NavigationStack {
         AllRecentCardsView(
@@ -201,6 +202,7 @@ private struct AllRecentCardsNavigationBar: View {
         )
     }
 }
+#endif
 
 @MainActor
 @Observable

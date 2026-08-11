@@ -193,6 +193,7 @@ private struct ScreenshotDataImage: View {
     }
 }
 
+#if DEBUG
 #Preview("03-02_선택 이미지 확인") {
     SelectedScreenshotsConfirmationView(
         screenshots: previewScreenshots,
@@ -218,6 +219,7 @@ private struct ScreenshotDataImage: View {
         onConfirm: {}
     )
 }
+#endif
 
 private var previewScreenshots: [SelectedScreenshot] {
     (0..<5).map { index in

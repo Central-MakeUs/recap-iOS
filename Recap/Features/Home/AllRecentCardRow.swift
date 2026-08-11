@@ -12,6 +12,7 @@ struct AllRecentCardRow: View {
     }
 }
 
+#if DEBUG
 #Preview("전체 최신 카드 행") {
     VStack(spacing: 0) {
         ForEach(SampleData.recentCards) { card in
@@ -19,3 +20,4 @@ struct AllRecentCardRow: View {
         }
     }
 }
+#endif

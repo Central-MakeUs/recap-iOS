@@ -1,3 +1,4 @@
+#if DEBUG
 import Foundation
 
 @MainActor
@@ -43,3 +44,4 @@ final class PreviewArchiveLoader: ArchiveLoading {
         }
     }
 }
+#endif

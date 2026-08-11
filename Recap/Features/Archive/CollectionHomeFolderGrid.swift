@@ -34,6 +34,7 @@ struct CollectionHomeFolderGrid: View {
     }
 }
 
+#if DEBUG
 #Preview("보관함 폴더 격자") {
     CollectionHomeFolderGrid(
         summaries: SampleData.collectionSummaries + [
@@ -43,3 +44,4 @@ struct CollectionHomeFolderGrid: View {
     )
     .padding()
 }
+#endif

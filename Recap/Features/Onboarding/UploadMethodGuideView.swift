@@ -28,6 +28,7 @@ struct UploadMethodGuideView: View {
     }
 }
 
+#if DEBUG
 #Preview("Upload method guide") {
     OnboardingGuideCarouselView(
         initialProgress: .uploadGuide,
@@ -37,3 +38,4 @@ struct UploadMethodGuideView: View {
         onSkip: {}
     )
 }
+#endif

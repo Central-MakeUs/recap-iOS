@@ -39,6 +39,7 @@ struct CardDetailImageSection: View {
     }
 }
 
+#if DEBUG
 #Preview("정보카드 이미지 - 로딩 실패") {
     CardDetailImageSection(
         card: SampleData.cards[1],
@@ -46,3 +47,4 @@ struct CardDetailImageSection: View {
         onOpenOriginal: {}
     )
 }
+#endif

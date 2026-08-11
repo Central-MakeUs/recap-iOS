@@ -120,6 +120,7 @@ final class RecapDependencies {
         )
     }
 
+#if DEBUG
     static func preview(
         sessionState: RecapSessionState,
         onboardingProgress: OnboardingProgress
@@ -214,8 +215,10 @@ final class RecapDependencies {
             onboardingProgress: .notStarted
         )
     }
+#endif
 }
 
+#if DEBUG
 @MainActor
 private final class PreviewHomeSummaryLoader: HomeSummaryLoading {
     private let cardRepository: PreviewCardRepository
@@ -339,3 +342,5 @@ private final class MockSocialLoginProvider: SocialLoginProviding {
         "mock-provider-token"
     }
 }
+
+#endif

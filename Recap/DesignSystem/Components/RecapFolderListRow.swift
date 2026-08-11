@@ -45,6 +45,7 @@ struct RecapFolderListRow: View {
     }
 }
 
+#if DEBUG
 #Preview("폴더 목록 행") {
     VStack(spacing: 0) {
         RecapFolderListRow(
@@ -62,3 +63,4 @@ struct RecapFolderListRow: View {
         )
     }
 }
+#endif

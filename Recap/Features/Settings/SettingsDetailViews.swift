@@ -490,6 +490,7 @@ struct NotificationSettingsView: View {
     }
 }
 
+#if DEBUG
 #Preview("알림 설정") {
     NotificationSettingsView()
         .environment(
@@ -518,3 +519,4 @@ struct NotificationSettingsView: View {
         )
     )
 }
+#endif

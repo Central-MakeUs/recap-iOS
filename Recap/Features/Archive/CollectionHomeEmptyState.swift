@@ -27,7 +27,9 @@ struct CollectionHomeEmptyState: View {
     }
 }
 
+#if DEBUG
 #Preview("보관함 빈 상태") {
     CollectionHomeEmptyState(onImportScreenshots: {})
         .padding()
 }
+#endif

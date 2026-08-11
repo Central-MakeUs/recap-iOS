@@ -153,6 +153,7 @@ struct AppShellView: View {
     }
 }
 
+#if DEBUG
 #Preview("App shell") {
     AppShellView(
         router: AppRouter(),
@@ -173,7 +174,9 @@ struct AppShellView: View {
         )
     )
 }
+#endif
 
+#if DEBUG
 @MainActor
 private final class PreviewHomeSummaryLoaderForAppShell: HomeSummaryLoading {
     func fetchSummary() async throws -> HomeSummaryContent {
@@ -185,3 +188,4 @@ private final class PreviewHomeSummaryLoaderForAppShell: HomeSummaryLoading {
         )
     }
 }
+#endif

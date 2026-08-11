@@ -252,15 +252,3 @@ private extension OrganizeNotificationMessage {
         }
     }
 }
-
-actor PreviewOrganizeNotificationDelivery: OrganizeNotificationDelivering {
-    func authorizationStatus() async -> OrganizeNotificationAuthorizationStatus {
-        .authorized
-    }
-
-    func requestAuthorization() async throws -> Bool {
-        true
-    }
-
-    func deliver(_ message: OrganizeNotificationMessage) async throws {}
-}

@@ -7,12 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C2000001000000000000000E /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = C2000001000000000000000C /* Lottie */; };
-		C2000001000000000000000F /* ConfettiSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = C2000001000000000000000D /* ConfettiSwiftUI */; };
 		A7D2A0C3302A117A00D2AD79 /* ConfettiSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = C2000001000000000000000B /* ConfettiSwiftUI */; };
 		C20000010000000000000001 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000005 /* Alamofire */; };
 		C20000010000000000000002 /* KakaoSDKUser in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000006 /* KakaoSDKUser */; };
 		C20000010000000000000007 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000009 /* Lottie */; };
+		C2000001000000000000000E /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = C2000001000000000000000C /* Lottie */; };
+		C2000001000000000000000F /* ConfettiSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = C2000001000000000000000D /* ConfettiSwiftUI */; };
 		D50000010000000000000001 /* RecapShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D50000010000000000000003 /* RecapShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E10000010000000000000002 /* ShareExtensionUploadPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000010000000000000001 /* ShareExtensionUploadPipeline.swift */; };
 /* End PBXBuildFile section */
@@ -614,6 +614,8 @@
 			baseConfigurationReference = C40000010000000000000001 /* App.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				APP_RUNTIME_PROFILE = live;
+				"APP_RUNTIME_PROFILE[sdk=iphonesimulator*]" = mock;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				BACKEND_BASE_URL = "https://re-cap.duckdns.org";
 				CODE_SIGN_ENTITLEMENTS = RecapShareExtension/RecapShareExtension.entitlements;
@@ -651,6 +653,7 @@
 			baseConfigurationReference = C40000010000000000000001 /* App.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				APP_RUNTIME_PROFILE = live;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				BACKEND_BASE_URL = "https://re-cap.duckdns.org";
 				CODE_SIGN_ENTITLEMENTS = RecapShareExtension/RecapShareExtension.entitlements;

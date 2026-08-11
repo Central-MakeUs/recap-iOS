@@ -115,8 +115,10 @@ private struct SpeechBubbleShape: Shape {
     }
 }
 
+#if DEBUG
 #Preview {
     RecapSpeechBubble(text: "5초만에 시작하기")
         .padding()
         .background(Color.recapBackground)
 }
+#endif

@@ -154,6 +154,7 @@ private struct RecapScreenshotThumbnailShape: InsettableShape {
     }
 }
 
+#if DEBUG
 #Preview("스크린샷 썸네일") {
     RecapScreenshotThumbnail(
         kind: .shopping,
@@ -200,3 +201,4 @@ private struct RecapScreenshotThumbnailShape: InsettableShape {
     .frame(width: 62, height: 80)
     .padding()
 }
+#endif

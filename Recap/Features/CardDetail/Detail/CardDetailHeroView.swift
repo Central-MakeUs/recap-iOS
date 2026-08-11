@@ -40,8 +40,10 @@ struct CardDetailHeroView<HeroImage: View>: View {
     }
 }
 
+#if DEBUG
 #Preview("정보카드 히어로") {
     CardDetailHeroView(onExpand: {}) {
         Color.gray
     }
 }
+#endif

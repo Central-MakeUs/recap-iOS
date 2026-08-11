@@ -65,6 +65,8 @@ struct CardOriginalPreviewSheet: View {
     }
 }
 
+#if DEBUG
 #Preview("원본 이미지 전체 보기") {
     CardOriginalPreviewSheet(card: SampleData.cards[0])
 }
+#endif

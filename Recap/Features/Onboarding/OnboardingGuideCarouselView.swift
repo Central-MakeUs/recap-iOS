@@ -158,6 +158,7 @@ struct OnboardingGuideCarouselView: View {
     }
 }
 
+#if DEBUG
 #Preview("온보딩 안내 캐러셀") {
     OnboardingGuideCarouselView(
         initialProgress: .uploadGuide,
@@ -167,3 +168,4 @@ struct OnboardingGuideCarouselView: View {
         onSkip: {}
     )
 }
+#endif

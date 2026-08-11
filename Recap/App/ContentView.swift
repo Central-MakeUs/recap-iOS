@@ -19,6 +19,7 @@ struct ContentView: View {
     }
 }
 
+#if DEBUG
 #Preview {
     ContentView(
         dependencies: .preview(
@@ -27,3 +28,4 @@ struct ContentView: View {
         )
     )
 }
+#endif

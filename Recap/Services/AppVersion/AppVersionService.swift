@@ -62,18 +62,3 @@ nonisolated struct AppVersionStatusDTO: Decodable, Equatable, Sendable {
     let minimumVersion: String?
     let updateUrl: String?
 }
-
-@MainActor
-final class PreviewAppVersionService: AppVersionChecking {
-    private let status: AppVersionStatus
-
-    init(status: AppVersionStatus = .init(
-        requiresUpdate: false,
-        minimumVersion: nil,
-        updateURL: nil
-    )) {
-        self.status = status
-    }
-
-    func checkCurrentVersion() async throws -> AppVersionStatus { status }
-}

@@ -28,8 +28,10 @@ struct CardEditTypeField: View {
     }
 }
 
+#if DEBUG
 #Preview("정보카드 유형 입력") {
     @Previewable @State var collection = CollectionKind.schedule
     CardEditTypeField(collection: $collection)
         .padding()
 }
+#endif

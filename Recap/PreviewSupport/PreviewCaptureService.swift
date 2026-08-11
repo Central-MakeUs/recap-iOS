@@ -1,3 +1,4 @@
+#if DEBUG
 import Foundation
 
 final class PreviewCaptureService: CaptureServing {
@@ -93,3 +94,4 @@ actor PreviewCardCreationPipeline: CardCreationProcessing {
 
     func cancelCurrentProcess() async {}
 }
+#endif

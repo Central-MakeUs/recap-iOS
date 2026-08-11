@@ -166,8 +166,10 @@ private struct SettingsSupportSection: View {
     }
 }
 
+#if DEBUG
 #Preview("설정") {
     NavigationStack {
         SettingsView()
     }
 }
+#endif

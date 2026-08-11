@@ -57,7 +57,7 @@ final class CardCreationFlowViewModel {
         step: CardCreationFlowStep = .picking,
         screenshots: [CardCreationScreenshot]? = nil,
         progress: CardCreationProgress = .initial,
-        processor: (any CardCreationProcessing)? = nil,
+        processor: any CardCreationProcessing,
         invalidationCenter: CardDataInvalidationCenter? = nil,
         notificationController: OrganizeNotificationController? = nil,
         backgroundExecution: (any OrganizeBackgroundExecuting)? = nil
@@ -69,10 +69,10 @@ final class CardCreationFlowViewModel {
             screenshot.imageData.map { SelectedScreenshot(imageData: $0) }
         }
         self.progress = progress
-        self.processor = processor ?? PreviewCardCreationPipeline()
+        self.processor = processor
         self.invalidationCenter = invalidationCenter
         self.notificationController = notificationController
-        self.backgroundExecution = backgroundExecution ?? PreviewOrganizeBackgroundExecution()
+        self.backgroundExecution = backgroundExecution ?? NoopOrganizeBackgroundExecution()
     }
 
     var selectedCount: Int { selectedScreenshots.count }

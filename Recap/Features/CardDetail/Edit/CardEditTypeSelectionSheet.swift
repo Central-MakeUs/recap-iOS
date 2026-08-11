@@ -75,6 +75,7 @@ struct CardEditTypeSelectionSheet: View {
     }
 }
 
+#if DEBUG
 #Preview("정보카드 유형 선택") {
     @Previewable @State var selection = CollectionKind.schedule
 
@@ -83,3 +84,4 @@ struct CardEditTypeSelectionSheet: View {
         onSelectionConfirmed: PreviewActions.noop
     )
 }
+#endif

@@ -8,7 +8,7 @@ final class RecapTests: XCTestCase {
     }
 
     func testCardCreationFlowShowsConfirmationAfterPhotosPickerSelection() {
-        let viewModel = CardCreationFlowViewModel()
+        let viewModel = CardCreationFlowViewModel(processor: PreviewCardCreationPipeline())
 
         viewModel.receivePickerSelection(
             imageData: [Data([0x01])],
@@ -24,7 +24,7 @@ final class RecapTests: XCTestCase {
     }
 
     func testCardCreationFlowReportsFailureWhenPickerCannotLoadASelection() {
-        let viewModel = CardCreationFlowViewModel()
+        let viewModel = CardCreationFlowViewModel(processor: PreviewCardCreationPipeline())
 
         viewModel.receivePickerSelection(
             imageData: [],
@@ -36,7 +36,7 @@ final class RecapTests: XCTestCase {
     }
 
     func testCardCreationFlowAppendsAndRemovesScreenshotsBeforeProcessing() throws {
-        let viewModel = CardCreationFlowViewModel()
+        let viewModel = CardCreationFlowViewModel(processor: PreviewCardCreationPipeline())
 
         viewModel.receivePickerSelection(
             imageData: [Data([0x01]), Data([0x02])],

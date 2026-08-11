@@ -190,6 +190,7 @@ private struct RecapBottomSheetContainer<Content: View>: View {
     }
 }
 
+#if DEBUG
 #Preview("공통 바텀 시트") {
     @Previewable @State var isPresented = true
 
@@ -205,3 +206,4 @@ private struct RecapBottomSheetContainer<Content: View>: View {
                 .padding(.top, 40)
         }
 }
+#endif

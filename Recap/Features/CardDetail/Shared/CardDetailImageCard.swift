@@ -36,9 +36,11 @@ struct CardDetailImageCard<Content: View>: View {
     }
 }
 
+#if DEBUG
 #Preview("정보카드 이미지 카드") {
     CardDetailImageCard(onExpand: {}) {
         Color.gray
     }
     .padding(.horizontal, CardDetailStyle.horizontalPadding)
 }
+#endif

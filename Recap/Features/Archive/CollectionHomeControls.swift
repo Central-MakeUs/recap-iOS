@@ -102,6 +102,7 @@ struct CollectionHomeFavoritesLink: View {
     }
 }
 
+#if DEBUG
 #Preview("보관함 헤더") {
     @Previewable @State var layoutMode = CollectionHomeView.LayoutMode.grid
 
@@ -113,3 +114,4 @@ struct CollectionHomeFavoritesLink: View {
     CollectionHomeFavoritesLink(count: 3)
         .padding()
 }
+#endif

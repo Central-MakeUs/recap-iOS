@@ -145,6 +145,7 @@ private struct HomeSectionEmptyMessage: View {
     }
 }
 
+#if DEBUG
 #Preview("Home sections") {
     ScrollView {
         VStack(spacing: 26) {
@@ -176,3 +177,4 @@ private struct HomeSectionEmptyMessage: View {
     .padding(.horizontal, 16)
     .background(Color.recapBackground)
 }
+#endif

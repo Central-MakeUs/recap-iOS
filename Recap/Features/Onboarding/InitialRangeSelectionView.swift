@@ -119,6 +119,8 @@ private struct RangeOptionCard: View {
     }
 }
 
+#if DEBUG
 #Preview {
     InitialRangeSelectionView(selectedRange: .constant(.thirtyDays), onBack: {}, onContinue: {})
 }
+#endif
