@@ -215,6 +215,8 @@ struct CardCreationFlowView: View {
     }
 
     private func continueWithoutNotifications() {
+        // 끔으로 저장해 다음 정리에서 안내가 다시 뜨지 않게 한다.
+        viewModel.declineNotificationPermissionGuide()
         dismissNotificationPermissionGuide()
         viewModel.beginProcessing()
     }

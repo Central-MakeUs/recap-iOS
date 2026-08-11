@@ -2,7 +2,7 @@ import XCTest
 @testable import Recap
 
 @MainActor
-final class OrganizeNotificationControllerTests: XCTestCase {
+final class OrganizeNotificationStoreTests: XCTestCase {
     func testToggleEnablesPreferenceAfterSystemAuthorization() async {
         let delivery = OrganizeNotificationDeliverySpy(status: .authorized)
         let fixture = makeFixture(delivery: delivery)
@@ -30,6 +30,35 @@ final class OrganizeNotificationControllerTests: XCTestCase {
         XCTAssertEqual(requestCount, 0)
         XCTAssertFalse(fixture.controller.isEnabled)
         XCTAssertNil(fixture.userDefaults.object(forKey: fixture.preferenceKey))
+    }
+
+    func testPermissionGuideIsNotPresentedAgainAfterBeingDeclined() async {
+        let delivery = OrganizeNotificationDeliverySpy(status: .notDetermined)
+        let fixture = makeFixture(delivery: delivery, storedPreference: nil)
+
+        let firstVisit = await fixture.controller.shouldPresentPermissionGuide()
+        fixture.controller.declinePermissionGuide()
+        let secondVisit = await fixture.controller.shouldPresentPermissionGuide()
+
+        XCTAssertTrue(firstVisit)
+        XCTAssertFalse(secondVisit, "안내는 최초 1회만 노출돼야 한다")
+        XCTAssertFalse(fixture.userDefaults.bool(forKey: fixture.preferenceKey))
+    }
+
+    /// "나중에 하기"는 끔으로 저장된다. 설정 화면에서 다시 켤 수 있어야 한다.
+    func testDeclinedPermissionGuideCanBeEnabledFromSettings() async {
+        let delivery = OrganizeNotificationDeliverySpy(status: .notDetermined)
+        let fixture = makeFixture(delivery: delivery, storedPreference: nil)
+
+        _ = await fixture.controller.shouldPresentPermissionGuide()
+        fixture.controller.declinePermissionGuide()
+        XCTAssertFalse(fixture.controller.isEnabled)
+
+        await delivery.setStatus(.authorized)
+        let action = await fixture.controller.toggleOrganizeNotifications()
+
+        XCTAssertEqual(action, .none)
+        XCTAssertTrue(fixture.controller.isEnabled)
     }
 
     func testPermissionGuideConfirmationRequestsPermissionAndEnablesPreference() async {
@@ -158,11 +187,11 @@ final class OrganizeNotificationControllerTests: XCTestCase {
         isEnabled: Bool = false,
         storedPreference: Bool? = false
     ) -> (
-        controller: OrganizeNotificationController,
+        controller: OrganizeNotificationStore,
         userDefaults: UserDefaults,
         preferenceKey: String
     ) {
-        let suiteName = "OrganizeNotificationControllerTests.\(UUID().uuidString)"
+        let suiteName = "OrganizeNotificationStoreTests.\(UUID().uuidString)"
         let userDefaults = UserDefaults(suiteName: suiteName)!
         let preferenceKey = "organize-notification-enabled"
         if let storedPreference {
@@ -170,7 +199,7 @@ final class OrganizeNotificationControllerTests: XCTestCase {
         }
 
         return (
-            OrganizeNotificationController(
+            OrganizeNotificationStore(
                 delivery: delivery,
                 userDefaults: userDefaults,
                 preferenceKey: preferenceKey

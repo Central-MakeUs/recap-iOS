@@ -11,7 +11,7 @@ extension View {
         userAccountService: any UserAccountServing,
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
-        organizeNotificationController: OrganizeNotificationController,
+        organizeNotificationStore: OrganizeNotificationStore,
         onCardDeleted: @escaping () -> Void,
         onAccountWithdrawalCompleted: @escaping () -> Void,
         onAccountDataDeleted: @escaping () -> Void
@@ -27,7 +27,7 @@ extension View {
                 userAccountService: userAccountService,
                 cardCreationProcessor: cardCreationProcessor,
                 cardDataInvalidationCenter: cardDataInvalidationCenter,
-                organizeNotificationController: organizeNotificationController,
+                organizeNotificationStore: organizeNotificationStore,
                 onCardDeleted: onCardDeleted,
                 onAccountWithdrawalCompleted: onAccountWithdrawalCompleted,
                 onAccountDataDeleted: onAccountDataDeleted
@@ -47,7 +47,7 @@ extension View {
         userAccountService: any UserAccountServing,
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
-        organizeNotificationController: OrganizeNotificationController,
+        organizeNotificationStore: OrganizeNotificationStore,
         onCardDeleted: @escaping () -> Void,
         onAccountWithdrawalCompleted: @escaping () -> Void,
         onAccountDataDeleted: @escaping () -> Void
@@ -93,7 +93,7 @@ extension View {
                 viewModel: CardCreationFlowViewModel(
                     processor: cardCreationProcessor,
                     invalidationCenter: cardDataInvalidationCenter,
-                    notificationController: organizeNotificationController,
+                    notificationStore: organizeNotificationStore,
                     backgroundExecution: SystemOrganizeBackgroundExecution()
                 )
             )

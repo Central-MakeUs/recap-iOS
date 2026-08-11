@@ -12,7 +12,7 @@ struct AppShellView: View {
     let userAccountService: any UserAccountServing
     let cardCreationProcessor: any CardCreationProcessing
     let cardDataInvalidationCenter: CardDataInvalidationCenter
-    let organizeNotificationController: OrganizeNotificationController
+    let organizeNotificationStore: OrganizeNotificationStore
     let aiDataTransferConsentStore: AIDataTransferConsentStore
     var onLogout: () -> Void = {}
     var onAccountWithdrawalCompleted: () -> Void = {}
@@ -29,7 +29,7 @@ struct AppShellView: View {
         userAccountService: any UserAccountServing,
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
-        organizeNotificationController: OrganizeNotificationController,
+        organizeNotificationStore: OrganizeNotificationStore,
         aiDataTransferConsentStore: AIDataTransferConsentStore,
         onLogout: @escaping () -> Void = {},
         onAccountWithdrawalCompleted: @escaping () -> Void = {}
@@ -43,7 +43,7 @@ struct AppShellView: View {
         self.userAccountService = userAccountService
         self.cardCreationProcessor = cardCreationProcessor
         self.cardDataInvalidationCenter = cardDataInvalidationCenter
-        self.organizeNotificationController = organizeNotificationController
+        self.organizeNotificationStore = organizeNotificationStore
         self.aiDataTransferConsentStore = aiDataTransferConsentStore
         self.onLogout = onLogout
         self.onAccountWithdrawalCompleted = onAccountWithdrawalCompleted
@@ -65,7 +65,7 @@ struct AppShellView: View {
                 userAccountService: userAccountService,
                 cardCreationProcessor: cardCreationProcessor,
                 cardDataInvalidationCenter: cardDataInvalidationCenter,
-                organizeNotificationController: organizeNotificationController,
+                organizeNotificationStore: organizeNotificationStore,
                 onUpload: openCardCreationFlow,
                 onCardDeleted: showCardDeletedToast,
                 onAccountWithdrawalCompleted: onAccountWithdrawalCompleted,
@@ -74,7 +74,7 @@ struct AppShellView: View {
         }
         .environment(router)
         .environment(cardStore)
-        .environment(organizeNotificationController)
+        .environment(organizeNotificationStore)
         .environment(aiDataTransferConsentStore)
         .environment(\.recapLogout, onLogout)
         .recapToast(toast)
@@ -85,7 +85,7 @@ struct AppShellView: View {
             try? await aiDataTransferConsentStore.refresh()
         }
         .task(id: scenePhase) {
-            organizeNotificationController.setApplicationInBackground(scenePhase == .background)
+            organizeNotificationStore.setApplicationInBackground(scenePhase == .background)
             guard scenePhase == .active else { return }
             await showPendingOrganizeResultIfNeeded()
         }
@@ -165,7 +165,7 @@ struct AppShellView: View {
         userAccountService: PreviewUserAccountService(),
         cardCreationProcessor: PreviewCardCreationPipeline(),
         cardDataInvalidationCenter: CardDataInvalidationCenter(),
-        organizeNotificationController: OrganizeNotificationController(
+        organizeNotificationStore: OrganizeNotificationStore(
             delivery: PreviewOrganizeNotificationDelivery(),
             userDefaults: UserDefaults(suiteName: UUID().uuidString)!
         ),

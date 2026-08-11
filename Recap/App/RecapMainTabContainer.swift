@@ -25,7 +25,7 @@ struct RecapMainTabContainer: View {
     let userAccountService: any UserAccountServing
     let cardCreationProcessor: any CardCreationProcessing
     let cardDataInvalidationCenter: CardDataInvalidationCenter
-    let organizeNotificationController: OrganizeNotificationController
+    let organizeNotificationStore: OrganizeNotificationStore
     let onUpload: () -> Void
     let onCardDeleted: () -> Void
     let onAccountWithdrawalCompleted: () -> Void
@@ -93,7 +93,7 @@ struct RecapMainTabContainer: View {
                     userAccountService: userAccountService,
                     cardCreationProcessor: cardCreationProcessor,
                     cardDataInvalidationCenter: cardDataInvalidationCenter,
-                    organizeNotificationController: organizeNotificationController,
+                    organizeNotificationStore: organizeNotificationStore,
                     onCardDeleted: onCardDeleted,
                     onAccountWithdrawalCompleted: onAccountWithdrawalCompleted,
                     onAccountDataDeleted: onAccountDataDeleted

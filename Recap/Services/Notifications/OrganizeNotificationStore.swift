@@ -67,7 +67,7 @@ final class SystemOrganizeNotificationDelivery: OrganizeNotificationDelivering {
 
 @MainActor
 @Observable
-final class OrganizeNotificationController {
+final class OrganizeNotificationStore {
     enum SystemPermissionAction: Equatable {
         case none
         case openSettings
@@ -101,10 +101,18 @@ final class OrganizeNotificationController {
         isPreferenceEnabled && authorizationStatus.allowsNotifications
     }
 
+    /// 알림 켬/끔 값은 세 상태를 갖는다. 저장 안 됨(안내를 아직 안 봄), `true`(켬),
+    /// `false`(끔). 권한이 미설정이고 아직 안내를 안 본 경우에만 노출한다.
     func shouldPresentPermissionGuide() async -> Bool {
         await refreshAuthorization()
         return userDefaults.object(forKey: preferenceKey) == nil
             && authorizationStatus == .notDetermined
+    }
+
+    /// "나중에 하기". 끔으로 저장해 안내가 다시 뜨지 않게 한다. 이후 알림 유도는
+    /// 설정 화면이 담당하며, 거기서 다시 켤 수 있다.
+    func declinePermissionGuide() {
+        savePreference(false)
     }
 
     func prepareForOrganize() async {

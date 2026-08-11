@@ -50,7 +50,7 @@ final class CardCreationFlowViewModel {
     private(set) var failedLoadCount = 0
     private let processor: any CardCreationProcessing
     private let invalidationCenter: CardDataInvalidationCenter?
-    private let notificationController: OrganizeNotificationController?
+    private let notificationStore: OrganizeNotificationStore?
     private let backgroundExecution: any OrganizeBackgroundExecuting
 
     init(
@@ -59,7 +59,7 @@ final class CardCreationFlowViewModel {
         progress: CardCreationProgress = .initial,
         processor: any CardCreationProcessing,
         invalidationCenter: CardDataInvalidationCenter? = nil,
-        notificationController: OrganizeNotificationController? = nil,
+        notificationStore: OrganizeNotificationStore? = nil,
         backgroundExecution: (any OrganizeBackgroundExecuting)? = nil
     ) {
         let screenshots = screenshots ?? []
@@ -71,13 +71,13 @@ final class CardCreationFlowViewModel {
         self.progress = progress
         self.processor = processor
         self.invalidationCenter = invalidationCenter
-        self.notificationController = notificationController
+        self.notificationStore = notificationStore
         self.backgroundExecution = backgroundExecution ?? NoopOrganizeBackgroundExecution()
     }
 
     var selectedCount: Int { selectedScreenshots.count }
     var areOrganizeNotificationsEnabled: Bool {
-        notificationController?.isEnabled ?? false
+        notificationStore?.isEnabled ?? false
     }
 
     func receivePickerSelection(imageData: [Data], failedCount: Int, appending: Bool) {
@@ -123,11 +123,15 @@ final class CardCreationFlowViewModel {
     }
 
     func shouldPresentNotificationPermissionGuide() async -> Bool {
-        await notificationController?.shouldPresentPermissionGuide() ?? false
+        await notificationStore?.shouldPresentPermissionGuide() ?? false
+    }
+
+    func declineNotificationPermissionGuide() {
+        notificationStore?.declinePermissionGuide()
     }
 
     func requestNotificationPermission() async {
-        await notificationController?.requestPermissionForOrganize()
+        await notificationStore?.requestPermissionForOrganize()
     }
 
     func cancelProcessing() async {
@@ -139,7 +143,7 @@ final class CardCreationFlowViewModel {
     func processSelectedScreenshots() async {
         let images = selectedScreenshots.map(\.imageData)
 
-        await notificationController?.prepareForOrganize()
+        await notificationStore?.prepareForOrganize()
         backgroundExecution.begin()
         defer { backgroundExecution.end() }
 
@@ -155,7 +159,7 @@ final class CardCreationFlowViewModel {
             if result.successCount > 0 {
                 invalidationCenter?.invalidate(.captureCreated)
             }
-            await notificationController?.notifyOrganizeResult(result)
+            await notificationStore?.notifyOrganizeResult(result)
 
             switch result.status {
             case .completed:
@@ -171,7 +175,7 @@ final class CardCreationFlowViewModel {
             return
         } catch {
             failedLoadCount = max(failedLoadCount, images.count)
-            await notificationController?.notifyOrganizeFailure()
+            await notificationStore?.notifyOrganizeFailure()
             step = .failure
         }
     }

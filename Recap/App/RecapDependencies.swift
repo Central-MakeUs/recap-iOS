@@ -12,7 +12,7 @@ final class RecapDependencies {
     let userAccountService: any UserAccountServing
     let cardCreationProcessor: any CardCreationProcessing
     let cardDataInvalidationCenter: CardDataInvalidationCenter
-    let organizeNotificationController: OrganizeNotificationController
+    let organizeNotificationStore: OrganizeNotificationStore
     let aiDataTransferConsentStore: AIDataTransferConsentStore
     let appVersionService: any AppVersionChecking
 
@@ -30,7 +30,7 @@ final class RecapDependencies {
         userAccountService: any UserAccountServing,
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
-        organizeNotificationController: OrganizeNotificationController,
+        organizeNotificationStore: OrganizeNotificationStore,
         aiDataTransferConsentStore: AIDataTransferConsentStore,
         appVersionService: any AppVersionChecking,
         kakaoLoginProvider: any SocialLoginProviding,
@@ -46,7 +46,7 @@ final class RecapDependencies {
         self.userAccountService = userAccountService
         self.cardCreationProcessor = cardCreationProcessor
         self.cardDataInvalidationCenter = cardDataInvalidationCenter
-        self.organizeNotificationController = organizeNotificationController
+        self.organizeNotificationStore = organizeNotificationStore
         self.aiDataTransferConsentStore = aiDataTransferConsentStore
         self.appVersionService = appVersionService
         self.kakaoLoginProvider = kakaoLoginProvider
@@ -110,7 +110,7 @@ final class RecapDependencies {
                 imageUploader: URLSessionPresignedImageUploader()
             ),
             cardDataInvalidationCenter: CardDataInvalidationCenter(),
-            organizeNotificationController: OrganizeNotificationController(),
+            organizeNotificationStore: OrganizeNotificationStore(),
             aiDataTransferConsentStore: AIDataTransferConsentStore(
                 service: AIDataTransferConsentService(networkClient: authenticatedNetworkClient)
             ),
@@ -151,7 +151,7 @@ final class RecapDependencies {
             userAccountService: PreviewUserAccountService(capturedCount: SampleData.cards.count),
             cardCreationProcessor: PreviewCardCreationPipeline(),
             cardDataInvalidationCenter: CardDataInvalidationCenter(),
-            organizeNotificationController: OrganizeNotificationController(
+            organizeNotificationStore: OrganizeNotificationStore(
                 delivery: PreviewOrganizeNotificationDelivery(),
                 userDefaults: UserDefaults(suiteName: UUID().uuidString)!
             ),
@@ -199,7 +199,7 @@ final class RecapDependencies {
             ),
             cardCreationProcessor: PreviewCardCreationPipeline(),
             cardDataInvalidationCenter: CardDataInvalidationCenter(),
-            organizeNotificationController: OrganizeNotificationController(),
+            organizeNotificationStore: OrganizeNotificationStore(),
             aiDataTransferConsentStore: AIDataTransferConsentStore(
                 service: PreviewAIDataTransferConsentService()
             ),
