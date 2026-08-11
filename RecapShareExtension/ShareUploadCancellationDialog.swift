@@ -43,6 +43,7 @@ struct ShareUploadCancellationDialog: View {
 
 }
 
+#if DEBUG
 #Preview("공유 업로드 취소 확인") {
     ZStack {
         Color.black.opacity(0.30)
@@ -54,3 +55,4 @@ struct ShareUploadCancellationDialog: View {
         )
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if DEBUG
 import SwiftUI
 #Preview("Figma primitives") {
     ZStack {
@@ -12,3 +13,4 @@ import SwiftUI
         .padding()
     }
 }
+#endif

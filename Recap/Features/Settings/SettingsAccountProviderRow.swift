@@ -45,6 +45,7 @@ struct SettingsAccountProviderRow: View {
     }
 }
 
+#if DEBUG
 #Preview("로그인 정보") {
     VStack(spacing: 0) {
         SettingsAccountProviderRow(
@@ -61,3 +62,4 @@ struct SettingsAccountProviderRow: View {
     .padding(.horizontal, SettingsLayout.horizontalPadding)
     .background(Color.recapBackground)
 }
+#endif

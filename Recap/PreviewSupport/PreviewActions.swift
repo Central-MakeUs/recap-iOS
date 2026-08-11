@@ -1,3 +1,4 @@
+#if DEBUG
 enum PreviewActions {
     nonisolated static func noop() {}
 
@@ -12,3 +13,4 @@ enum PreviewActions {
     nonisolated static func handleSearch(_ action: SearchAction) {}
 
 }
+#endif

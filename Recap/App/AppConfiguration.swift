@@ -6,7 +6,9 @@
 import Foundation
 
 enum AppRuntimeProfile: String, Sendable {
+    #if DEBUG
     case mock
+    #endif
     case live
 }
 

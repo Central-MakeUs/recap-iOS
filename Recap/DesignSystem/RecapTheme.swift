@@ -56,6 +56,7 @@ extension View {
     }
 }
 
+#if DEBUG
 #Preview("Theme card") {
     ZStack {
         Color.recapBackground.ignoresSafeArea()
@@ -72,3 +73,4 @@ extension View {
         .padding()
     }
 }
+#endif

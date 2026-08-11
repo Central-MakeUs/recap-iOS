@@ -55,6 +55,8 @@ struct CardDetailView: View {
         _pendingPanelAction = State(initialValue: nil)
     }
 
+#if DEBUG
+    /// 프리뷰 전용. 실제 화면은 captureService를 주입받는 init을 쓴다.
     @MainActor
     init(
         card: InformationCard,
@@ -74,6 +76,7 @@ struct CardDetailView: View {
         )
     }
 
+#endif
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .top) {
@@ -293,6 +296,7 @@ private enum CardDetailPanelAction {
     case report
 }
 
+#if DEBUG
 #Preview("정보카드 상세") {
     NavigationStack {
         CardDetailView(card: SampleData.cards[1])
@@ -300,3 +304,4 @@ private enum CardDetailPanelAction {
     .environment(AppRouter())
     .environment(PreviewStores.recapCardStore())
 }
+#endif

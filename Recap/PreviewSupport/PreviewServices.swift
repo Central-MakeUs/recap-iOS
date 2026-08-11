@@ -1,3 +1,4 @@
+#if DEBUG
 import Foundation
 
 // 프리뷰와 시뮬레이터 목 프로필에서 쓰는 서비스 구현.
@@ -75,12 +76,6 @@ final class PreviewAppVersionService: AppVersionChecking {
     func checkCurrentVersion() async throws -> AppVersionStatus { status }
 }
 
-@MainActor
-final class PreviewOrganizeBackgroundExecution: OrganizeBackgroundExecuting {
-    func begin() {}
-    func end() {}
-}
-
 actor PreviewOrganizeNotificationDelivery: OrganizeNotificationDelivering {
     func authorizationStatus() async -> OrganizeNotificationAuthorizationStatus {
         .authorized
@@ -92,3 +87,4 @@ actor PreviewOrganizeNotificationDelivery: OrganizeNotificationDelivering {
 
     func deliver(_ message: OrganizeNotificationMessage) async throws {}
 }
+#endif

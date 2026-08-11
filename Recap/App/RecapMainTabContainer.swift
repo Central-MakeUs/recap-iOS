@@ -156,6 +156,7 @@ struct RecapMainTabBarToolbar: View {
     }
 }
 
+#if DEBUG
 #Preview("메인 탭 바와 업로드") {
     @Previewable @State var selection = MainTab.home
 
@@ -166,3 +167,4 @@ struct RecapMainTabBarToolbar: View {
     )
     .background(Color.recapGray50)
 }
+#endif

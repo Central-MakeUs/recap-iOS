@@ -167,6 +167,7 @@ struct CardCreationProgressBar: View {
     }
 }
 
+#if DEBUG
 #Preview("CardCreation progress bar") {
     CardCreationProgressBar(progress: 0.75)
         .frame(width: 315, height: 4)
@@ -188,3 +189,4 @@ struct CardCreationProgressBar: View {
         onCancel: {}
     )
 }
+#endif

@@ -1,3 +1,4 @@
+#if DEBUG
 import Foundation
 
 actor PreviewCardRepository {
@@ -46,3 +47,4 @@ actor PreviewCardRepository {
         }
     }
 }
+#endif

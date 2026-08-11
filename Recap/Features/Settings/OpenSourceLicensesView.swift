@@ -79,6 +79,7 @@ private struct OpenSourceLicenseDetailView: View {
     }
 }
 
+#if DEBUG
 #Preview("오픈소스 라이선스") {
     NavigationStack {
         OpenSourceLicensesView(
@@ -96,3 +97,4 @@ private struct OpenSourceLicenseDetailView: View {
         OpenSourceLicensesView(licenses: [])
     }
 }
+#endif

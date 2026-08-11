@@ -1,3 +1,4 @@
+#if DEBUG
 import SwiftUI
 
 private extension SampleData {
@@ -6,6 +7,7 @@ private extension SampleData {
     }
 }
 
+#if DEBUG
 #Preview("정보카드 수정") {
     CardEditView(
         card: SampleData.cards[1],
@@ -70,3 +72,5 @@ private extension SampleData {
     )
     .environment(PreviewStores.recapCardStore())
 }
+#endif
+#endif

@@ -20,6 +20,7 @@ struct RecapImageCard: View {
     }
 }
 
+#if DEBUG
 #Preview("이미지 카드") {
     HStack(spacing: 16) {
         RecapImageCard(
@@ -34,3 +35,4 @@ struct RecapImageCard: View {
     }
     .padding()
 }
+#endif

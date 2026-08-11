@@ -162,6 +162,7 @@ struct CollectionHomeView: View {
     }
 }
 
+#if DEBUG
 #Preview("보관함 홈 폴더형") {
     NavigationStack {
         CollectionHomeView(
@@ -205,3 +206,4 @@ struct CollectionHomeView: View {
         )
     }
 }
+#endif

@@ -56,7 +56,9 @@ private struct SearchFailureIllustration: View {
     }
 }
 
+#if DEBUG
 #Preview("검색 실패") {
     SearchFailureView(onRetry: PreviewActions.noop)
         .background(Color.recapBackground)
 }
+#endif

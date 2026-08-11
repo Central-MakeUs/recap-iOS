@@ -59,8 +59,10 @@ private struct SystemUIconsExpandShape: Shape {
     }
 }
 
+#if DEBUG
 #Preview("원본 이미지 확장 버튼") {
     CardExpandButton(action: {})
         .padding(20)
         .background(Color.gray)
 }
+#endif

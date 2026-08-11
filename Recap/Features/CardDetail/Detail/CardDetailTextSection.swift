@@ -39,9 +39,11 @@ struct CardDetailTextSection: View {
     }
 }
 
+#if DEBUG
 #Preview("정보카드 텍스트") {
     CardDetailTextSection(
         card: SampleData.cards[1],
         contentWidth: 375
     )
 }
+#endif

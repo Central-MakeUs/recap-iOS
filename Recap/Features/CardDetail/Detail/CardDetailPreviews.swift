@@ -1,5 +1,6 @@
 import SwiftUI
 
+#if DEBUG
 #Preview("즐겨찾기 완료") {
     NavigationStack {
         CardDetailView(
@@ -74,3 +75,4 @@ import SwiftUI
     .environment(AppRouter())
     .environment(PreviewStores.recapCardStore())
 }
+#endif

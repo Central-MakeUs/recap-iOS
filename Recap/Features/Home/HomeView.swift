@@ -169,6 +169,7 @@ struct HomeView: View {
     }
 }
 
+#if DEBUG
 #Preview("Home with cards") {
     NavigationStack {
         HomeView(
@@ -228,3 +229,4 @@ struct HomeView: View {
         )
     }
 }
+#endif

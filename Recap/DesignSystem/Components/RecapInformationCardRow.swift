@@ -158,6 +158,7 @@ private extension String {
     }
 }
 
+#if DEBUG
 #Preview("card/category") {
     RecapInformationCardRow(card: SampleData.cards[2])
 }
@@ -199,3 +200,4 @@ private extension String {
     )
     .frame(width: 430)
 }
+#endif

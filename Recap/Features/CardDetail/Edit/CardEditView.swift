@@ -121,9 +121,11 @@ struct CardEditView: View {
     }
 }
 
+#if DEBUG
 #Preview("정보카드 수정 화면") {
     NavigationStack {
         CardEditView(card: SampleData.cards[1])
     }
     .environment(PreviewStores.recapCardStore())
 }
+#endif

@@ -59,6 +59,7 @@ struct RecapHomeFavoriteCard: View {
     }
 }
 
+#if DEBUG
 #Preview("홈 카드") {
     ScrollView(.horizontal, showsIndicators: false) {
         HStack(alignment: .top, spacing: 16) {
@@ -78,3 +79,4 @@ struct RecapHomeFavoriteCard: View {
     )
     .padding()
 }
+#endif

@@ -75,6 +75,7 @@ struct OrganizeNotificationPermissionModal: View {
     }
 }
 
+#if DEBUG
 #Preview("알림 권한 안내") {
     ZStack {
         Color.recapBackground
@@ -86,3 +87,4 @@ struct OrganizeNotificationPermissionModal: View {
         )
     }
 }
+#endif

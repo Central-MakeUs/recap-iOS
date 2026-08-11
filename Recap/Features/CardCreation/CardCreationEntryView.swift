@@ -61,6 +61,8 @@ struct CardCreationEntryView: View {
     private func openSettings() { onAction(.openSettings) }
 }
 
+#if DEBUG
 #Preview("CardCreation entry") {
     CardCreationEntryView(onAction: PreviewActions.handleCardCreation)
 }
+#endif

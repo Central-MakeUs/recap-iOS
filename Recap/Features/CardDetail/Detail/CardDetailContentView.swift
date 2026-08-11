@@ -31,6 +31,7 @@ struct CardDetailContentView: View {
     }
 }
 
+#if DEBUG
 #Preview("정보카드 상세 콘텐츠") {
     CardDetailContentView(
         card: SampleData.cards[1],
@@ -39,3 +40,4 @@ struct CardDetailContentView: View {
         onOpenOriginal: {}
     )
 }
+#endif

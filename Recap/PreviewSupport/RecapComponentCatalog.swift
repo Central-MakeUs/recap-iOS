@@ -1,3 +1,4 @@
+#if DEBUG
 import SwiftUI
 
 struct RecapComponentCatalog: View {
@@ -195,3 +196,4 @@ struct RecapComponentCatalog: View {
 #Preview("Figma 공통 컴포넌트 전체") {
     RecapComponentCatalog()
 }
+#endif

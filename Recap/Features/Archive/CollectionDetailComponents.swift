@@ -164,6 +164,7 @@ struct CollectionDetailEmptyState: View {
     }
 }
 
+#if DEBUG
 #Preview("보관함 상세 헤더") {
     @Previewable @State var query = ""
 
@@ -216,3 +217,4 @@ struct CollectionDetailEmptyState: View {
 #Preview("즐겨찾기 빈 상태") {
     CollectionDetailEmptyState(scope: .favorites)
 }
+#endif

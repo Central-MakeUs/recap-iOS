@@ -1,3 +1,4 @@
+#if DEBUG
 import Foundation
 
 enum SampleData {
@@ -195,3 +196,4 @@ enum SampleData {
         }
     }
 }
+#endif

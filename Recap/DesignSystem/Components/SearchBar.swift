@@ -71,6 +71,7 @@ struct SearchBarDisplay: View {
     }
 }
 
+#if DEBUG
 #Preview("Search bars") {
     ZStack {
         Color.recapBackground.ignoresSafeArea()
@@ -82,3 +83,4 @@ struct SearchBarDisplay: View {
         .padding()
     }
 }
+#endif

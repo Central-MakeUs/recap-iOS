@@ -130,6 +130,7 @@ private struct RecapFolderFrontShape: Shape {
     }
 }
 
+#if DEBUG
 #Preview("폴더 카드") {
     ZStack {
         Color.recapBackground.ignoresSafeArea()
@@ -148,3 +149,4 @@ private struct RecapFolderFrontShape: Shape {
         .padding()
     }
 }
+#endif

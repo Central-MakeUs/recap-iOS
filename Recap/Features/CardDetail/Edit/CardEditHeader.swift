@@ -31,6 +31,8 @@ struct CardEditHeader: View {
     }
 }
 
+#if DEBUG
 #Preview("정보카드 수정 헤더") {
     CardEditHeader(isSaveEnabled: true, onCancel: {}, onSave: {})
 }
+#endif

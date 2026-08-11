@@ -157,9 +157,11 @@ private struct AIDataTransferConsentPresentation: ViewModifier {
     }
 }
 
+#if DEBUG
 #Preview("AI 전송 동의") {
     AIDataTransferConsentSheet(
         onConsent: PreviewActions.noop,
         onCancel: PreviewActions.noop
     )
 }
+#endif

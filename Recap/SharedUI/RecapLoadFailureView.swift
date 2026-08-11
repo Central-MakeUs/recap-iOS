@@ -91,6 +91,7 @@ struct RecapLoadFailureView: View {
     }
 }
 
+#if DEBUG
 #Preview("Home load failure") {
     RecapLoadFailureView(style: .home, retry: {})
 }
@@ -98,3 +99,4 @@ struct RecapLoadFailureView: View {
 #Preview("Archive load failure") {
     RecapLoadFailureView(style: .archive, retry: {})
 }
+#endif

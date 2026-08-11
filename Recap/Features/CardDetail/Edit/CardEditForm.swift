@@ -71,6 +71,7 @@ struct CardEditForm: View {
     }
 }
 
+#if DEBUG
 #Preview("정보카드 수정 폼") {
     @Previewable @State var draft = CardEditDraft(card: SampleData.cards[1])
 
@@ -80,3 +81,4 @@ struct CardEditForm: View {
         onOpenOriginal: {}
     )
 }
+#endif

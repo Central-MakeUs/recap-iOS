@@ -13,6 +13,7 @@ protocol ShareExtensionOrganizing: Sendable {
 
 extension ShareExtensionUploadPipeline: ShareExtensionOrganizing {}
 
+#if DEBUG
 /// 시뮬레이터에서 로그인 없이 화면을 확인하기 위한 구현.
 ///
 /// 앱이 `APP_RUNTIME_PROFILE=mock`에서 `PreviewCaptureService`를 쓰는 것과 같은
@@ -46,3 +47,4 @@ actor ShareExtensionMockPipeline: ShareExtensionOrganizing {
     func cancelCurrentProcess() async {}
     func acknowledge(batchID: Int64) async {}
 }
+#endif

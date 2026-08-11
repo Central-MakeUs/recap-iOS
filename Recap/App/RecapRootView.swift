@@ -157,6 +157,7 @@ struct RecapRootView: View {
     }
 }
 
+#if DEBUG
 #Preview("Onboarding start") {
     RecapRootView(
         dependencies: .preview(
@@ -203,3 +204,4 @@ struct RecapRootView: View {
         initiallyShowsSplash: false
     )
 }
+#endif

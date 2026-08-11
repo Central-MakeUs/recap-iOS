@@ -157,9 +157,11 @@ final class ShareExtensionViewModel {
             forInfoDictionaryKey: "APP_RUNTIME_PROFILE"
         ) as? String
 
+        #if DEBUG
         if profile?.lowercased() == "mock" {
             return ShareExtensionMockPipeline()
         }
+        #endif
         return ShareExtensionUploadPipeline.live()
     }
 

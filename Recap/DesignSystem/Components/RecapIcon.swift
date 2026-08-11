@@ -158,6 +158,7 @@ struct RecapIconView: View {
     }
 }
 
+#if DEBUG
 #Preview("Recap icons") {
     ScrollView(.horizontal, showsIndicators: true) {
         LazyHStack(spacing: RecapTheme.Spacing.medium) {
@@ -174,3 +175,4 @@ struct RecapIconView: View {
     }
     .background(Color.recapBackground)
 }
+#endif

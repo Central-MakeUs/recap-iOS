@@ -144,6 +144,7 @@ private struct CategoryPalette {
     }
 }
 
+#if DEBUG
 #Preview("Chips - 카테고리 S") {
     VStack(alignment: .leading, spacing: 12) {
         ForEach(CollectionKind.allCases) { kind in
@@ -175,3 +176,4 @@ private struct CategoryPalette {
     RecapChip(configuration: .recentSearch("검색어 01234"))
         .padding()
 }
+#endif

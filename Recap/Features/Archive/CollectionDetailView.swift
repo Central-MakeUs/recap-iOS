@@ -561,6 +561,7 @@ struct CollectionDetailView: View {
     }
 }
 
+#if DEBUG
 #Preview("보관함 상세") {
     NavigationStack {
         CollectionDetailView(
@@ -626,7 +627,9 @@ struct CollectionDetailView: View {
     }
     .environment(RecapMainTabChromeState())
 }
+#endif
 
+#if DEBUG
 @MainActor
 private func previewArchiveSearchModel(
     scope: ArchiveDetailScope
@@ -636,3 +639,4 @@ private func previewArchiveSearchModel(
         scope: scope.searchScope
     )
 }
+#endif

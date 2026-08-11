@@ -79,6 +79,7 @@ struct SettingsSwitch: View {
     }
 }
 
+#if DEBUG
 #Preview("알림 설정 컴포넌트") {
     VStack(spacing: 24) {
         SettingsNotificationPermissionBanner(enableNotifications: {})
@@ -88,3 +89,4 @@ struct SettingsSwitch: View {
     .padding(SettingsLayout.horizontalPadding)
     .background(Color.recapBackground)
 }
+#endif

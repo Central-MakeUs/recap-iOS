@@ -221,6 +221,7 @@ private struct CardCreationFailureResultContent: View {
     }
 }
 
+#if DEBUG
 #Preview("CardCreation result - complete") {
     CardCreationResultView(
         state: .complete,
@@ -246,3 +247,4 @@ private struct CardCreationFailureResultContent: View {
         onDone: {}
     )
 }
+#endif

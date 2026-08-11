@@ -47,6 +47,7 @@ struct RecapCategoryIcon: View {
     }
 }
 
+#if DEBUG
 #Preview("카테고리 아이콘") {
     HStack {
         RecapCategoryIcon(kind: .shopping)
@@ -54,3 +55,4 @@ struct RecapCategoryIcon: View {
     }
     .padding()
 }
+#endif

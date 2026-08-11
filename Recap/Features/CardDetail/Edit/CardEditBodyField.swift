@@ -20,6 +20,7 @@ struct CardEditBodyField: View {
     }
 }
 
+#if DEBUG
 #Preview("정보카드 본문 입력 - 짧은 본문") {
     @Previewable @State var text = "논현손칼국수: 언주역 최애 칼국수집. 사리 추가·공기밥 추가 무료"
     CardEditBodyField(body: $text, showsRequiredError: false)
@@ -34,3 +35,4 @@ struct CardEditBodyField: View {
     CardEditBodyField(body: $text, showsRequiredError: false)
         .padding()
 }
+#endif

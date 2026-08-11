@@ -78,6 +78,7 @@ extension View {
     }
 }
 
+#if DEBUG
 #Preview("토스트 - 성공") {
     RecapToast(style: .success, message: "즐겨찾기에 추가했어요.")
 }
@@ -89,3 +90,4 @@ extension View {
 #Preview("토스트 - 오류") {
     RecapToast(style: .error, message: "스크린샷을 삭제하지 못했어요. 다시 시도해주세요.")
 }
+#endif

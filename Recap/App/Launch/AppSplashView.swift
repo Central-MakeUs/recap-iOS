@@ -14,6 +14,8 @@ struct AppSplashView: View {
     }
 }
 
+#if DEBUG
 #Preview("App splash") {
     AppSplashView(onFinished: {})
 }
+#endif

@@ -27,6 +27,7 @@ struct SearchTopBar: View {
     }
 }
 
+#if DEBUG
 #Preview("검색 상단") {
     SearchTopBar(
         query: .constant(""),
@@ -35,3 +36,4 @@ struct SearchTopBar: View {
     )
     .background(Color.recapBackground)
 }
+#endif
