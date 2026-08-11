@@ -418,7 +418,7 @@ struct NotificationSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
     @Environment(\.scenePhase) private var scenePhase
-    @Environment(OrganizeNotificationController.self) private var notifications
+    @Environment(OrganizeNotificationStore.self) private var notifications
 
     var body: some View {
         VStack(spacing: 0) {
@@ -494,7 +494,7 @@ struct NotificationSettingsView: View {
 #Preview("알림 설정") {
     NotificationSettingsView()
         .environment(
-            OrganizeNotificationController(
+            OrganizeNotificationStore(
                 delivery: PreviewOrganizeNotificationDelivery(),
                 userDefaults: UserDefaults(suiteName: UUID().uuidString)!
             )

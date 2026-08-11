@@ -67,7 +67,7 @@ final class SystemOrganizeNotificationDelivery: OrganizeNotificationDelivering {
 
 @MainActor
 @Observable
-final class OrganizeNotificationController {
+final class OrganizeNotificationStore {
     enum SystemPermissionAction: Equatable {
         case none
         case openSettings

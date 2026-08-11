@@ -2,7 +2,7 @@ import XCTest
 @testable import Recap
 
 @MainActor
-final class OrganizeNotificationControllerTests: XCTestCase {
+final class OrganizeNotificationStoreTests: XCTestCase {
     func testToggleEnablesPreferenceAfterSystemAuthorization() async {
         let delivery = OrganizeNotificationDeliverySpy(status: .authorized)
         let fixture = makeFixture(delivery: delivery)
@@ -158,11 +158,11 @@ final class OrganizeNotificationControllerTests: XCTestCase {
         isEnabled: Bool = false,
         storedPreference: Bool? = false
     ) -> (
-        controller: OrganizeNotificationController,
+        controller: OrganizeNotificationStore,
         userDefaults: UserDefaults,
         preferenceKey: String
     ) {
-        let suiteName = "OrganizeNotificationControllerTests.\(UUID().uuidString)"
+        let suiteName = "OrganizeNotificationStoreTests.\(UUID().uuidString)"
         let userDefaults = UserDefaults(suiteName: suiteName)!
         let preferenceKey = "organize-notification-enabled"
         if let storedPreference {
@@ -170,7 +170,7 @@ final class OrganizeNotificationControllerTests: XCTestCase {
         }
 
         return (
-            OrganizeNotificationController(
+            OrganizeNotificationStore(
                 delivery: delivery,
                 userDefaults: userDefaults,
                 preferenceKey: preferenceKey
