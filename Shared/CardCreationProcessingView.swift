@@ -109,11 +109,13 @@ private struct CardCreationProcessingBubble: View {
             height: Layout.bodySize.height + Layout.tailSize.height
         )
         .offset(y: isFloating ? -4 : 0)
-        .onAppear {
-            withAnimation(.easeInOut(duration: 1).repeatForever(autoreverses: true)) {
-                isFloating = true
-            }
-        }
+        // `onAppear`에서 `withAnimation`으로 걸면 뷰가 트랜잭션보다 먼저 나타나는
+        // 경우에 반복 애니메이션이 붙지 않는다. 값 변화에 직접 거는 편이 견고하다.
+        .animation(
+            .easeInOut(duration: 1).repeatForever(autoreverses: true),
+            value: isFloating
+        )
+        .onAppear { isFloating = true }
     }
 }
 
