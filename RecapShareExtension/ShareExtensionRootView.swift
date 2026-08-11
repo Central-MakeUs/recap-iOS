@@ -136,16 +136,31 @@ final class ShareExtensionViewModel {
     private(set) var notificationsEnabled = false
 
     private weak var extensionContext: NSExtensionContext?
-    private let pipeline: ShareExtensionUploadPipeline
+    private let pipeline: any ShareExtensionOrganizing
     private var didLoad = false
     @ObservationIgnored private var organizingTask: Task<Void, Never>?
 
     init(
         extensionContext: NSExtensionContext?,
-        pipeline: ShareExtensionUploadPipeline = ShareExtensionUploadPipeline.live()
+        pipeline: (any ShareExtensionOrganizing)? = nil
     ) {
         self.extensionContext = extensionContext
-        self.pipeline = pipeline
+        self.pipeline = pipeline ?? Self.resolvePipeline()
+    }
+
+    /// 앱과 같은 `APP_RUNTIME_PROFILE`을 따른다. 시뮬레이터 빌드는 `mock`이라
+    /// 로그인 없이 정리 화면을 확인할 수 있다.
+    private static func resolvePipeline(
+        bundle: Bundle = .main
+    ) -> any ShareExtensionOrganizing {
+        let profile = bundle.object(
+            forInfoDictionaryKey: "APP_RUNTIME_PROFILE"
+        ) as? String
+
+        if profile?.lowercased() == "mock" {
+            return ShareExtensionMockPipeline()
+        }
+        return ShareExtensionUploadPipeline.live()
     }
 
     func loadSharedImages() async {
