@@ -63,30 +63,3 @@ nonisolated struct AIDataTransferConsentStatusDTO: Decodable, Equatable, Sendabl
     let consented: Bool
     let consentedAt: Date?
 }
-
-@MainActor
-final class PreviewAIDataTransferConsentService: AIDataTransferConsentServing {
-    private var status: AIDataTransferConsentStatus
-
-    init(
-        hasConsented: Bool = false,
-        consentedAt: Date? = nil
-    ) {
-        status = AIDataTransferConsentStatus(
-            hasConsented: hasConsented,
-            consentedAt: consentedAt
-        )
-    }
-
-    func fetchConsentStatus() async throws -> AIDataTransferConsentStatus {
-        status
-    }
-
-    func grantConsent() async throws {
-        status = AIDataTransferConsentStatus(hasConsented: true, consentedAt: .now)
-    }
-
-    func revokeConsent() async throws {
-        status = AIDataTransferConsentStatus(hasConsented: false, consentedAt: nil)
-    }
-}

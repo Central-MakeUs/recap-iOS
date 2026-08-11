@@ -28,9 +28,3 @@ final class SystemOrganizeBackgroundExecution: OrganizeBackgroundExecuting {
         UIApplication.shared.endBackgroundTask(identifier)
     }
 }
-
-@MainActor
-final class PreviewOrganizeBackgroundExecution: OrganizeBackgroundExecuting {
-    func begin() {}
-    func end() {}
-}
