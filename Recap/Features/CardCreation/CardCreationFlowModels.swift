@@ -126,6 +126,10 @@ final class CardCreationFlowViewModel {
         await notificationStore?.shouldPresentPermissionGuide() ?? false
     }
 
+    func declineNotificationPermissionGuide() {
+        notificationStore?.declinePermissionGuide()
+    }
+
     func requestNotificationPermission() async {
         await notificationStore?.requestPermissionForOrganize()
     }

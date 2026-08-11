@@ -32,6 +32,35 @@ final class OrganizeNotificationStoreTests: XCTestCase {
         XCTAssertNil(fixture.userDefaults.object(forKey: fixture.preferenceKey))
     }
 
+    func testPermissionGuideIsNotPresentedAgainAfterBeingDeclined() async {
+        let delivery = OrganizeNotificationDeliverySpy(status: .notDetermined)
+        let fixture = makeFixture(delivery: delivery, storedPreference: nil)
+
+        let firstVisit = await fixture.controller.shouldPresentPermissionGuide()
+        fixture.controller.declinePermissionGuide()
+        let secondVisit = await fixture.controller.shouldPresentPermissionGuide()
+
+        XCTAssertTrue(firstVisit)
+        XCTAssertFalse(secondVisit, "안내는 최초 1회만 노출돼야 한다")
+        XCTAssertFalse(fixture.userDefaults.bool(forKey: fixture.preferenceKey))
+    }
+
+    /// "나중에 하기"는 끔으로 저장된다. 설정 화면에서 다시 켤 수 있어야 한다.
+    func testDeclinedPermissionGuideCanBeEnabledFromSettings() async {
+        let delivery = OrganizeNotificationDeliverySpy(status: .notDetermined)
+        let fixture = makeFixture(delivery: delivery, storedPreference: nil)
+
+        _ = await fixture.controller.shouldPresentPermissionGuide()
+        fixture.controller.declinePermissionGuide()
+        XCTAssertFalse(fixture.controller.isEnabled)
+
+        await delivery.setStatus(.authorized)
+        let action = await fixture.controller.toggleOrganizeNotifications()
+
+        XCTAssertEqual(action, .none)
+        XCTAssertTrue(fixture.controller.isEnabled)
+    }
+
     func testPermissionGuideConfirmationRequestsPermissionAndEnablesPreference() async {
         let delivery = OrganizeNotificationDeliverySpy(status: .notDetermined)
         let fixture = makeFixture(
