@@ -32,12 +32,19 @@ struct ShareExtensionRootView: View {
                     onCancel: cancelOrganizing
                 )
             case .complete(let organizedCount, _):
-                ShareOrganizeCompleteView(
-                    organizedCount: organizedCount,
+                CardCreationResultView(
+                    state: .complete,
+                    selectedCount: organizedCount,
+                    failedCount: 0,
                     onDone: finish
                 )
             case .failure:
-                ShareOrganizeFailureView(onClose: close)
+                CardCreationResultView(
+                    state: .failure,
+                    selectedCount: 0,
+                    failedCount: 0,
+                    onDone: close
+                )
             }
         }
         .task {
