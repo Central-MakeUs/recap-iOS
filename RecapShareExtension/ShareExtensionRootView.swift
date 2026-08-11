@@ -26,7 +26,7 @@ struct ShareExtensionRootView: View {
             case .confirmation:
                 confirmationView
             case .organizing(let progress):
-                ShareOrganizingView(
+                CardCreationProcessingView(
                     progress: progress,
                     notificationsEnabled: viewModel.notificationsEnabled,
                     onCancel: cancelOrganizing
