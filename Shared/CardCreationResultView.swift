@@ -90,14 +90,25 @@ struct CardCreationResultView: View {
 }
 
 private struct CardCreationCompleteResultContent: View {
-    /// Figma 03-04_정리 완료(375x812) 기준 절대 y 좌표.
+    /// Figma 03-04_정리 완료(375x812) 기준.
+    ///
+    /// 절대 y 좌표가 아니라 요소 사이 간격으로 적는다. 절대 좌표로 두면 간격이
+    /// 코드에 드러나지 않고, 글자 크기나 화면 높이가 달라질 때 어긋난다.
     private enum Layout {
-        static let checkTop: CGFloat = 188
-        static let checkSize: CGFloat = 45
-        static let titleTop: CGFloat = 240
-        static let characterTop: CGFloat = 215
-        static let characterHeight: CGFloat = 300
-        static let subtitleTop: CGFloat = 481
+        /// 화면 최상단에서 체크 아이콘까지. Figma 190.
+        static let topInset: CGFloat = 190
+        /// Figma 아이콘 40×40. 그 안의 체크는 30이고 사방 5씩 여백이 있다.
+        static let checkSize: CGFloat = 40
+        /// 체크 아래 240 - (190 + 40).
+        static let titleSpacing: CGFloat = 10
+        /// 제목(2줄, 높이 50) 아래 334 - (240 + 50).
+        static let characterSpacing: CGFloat = 44
+        static let characterSize = CGSize(width: 195.09, height: 119.43)
+        /// 캐릭터만 가운데가 아니다. Figma 좌여백 81, 우여백 98.91이라
+        /// 화면 중심에서 왼쪽으로 치우쳐 있다.
+        static let characterCenterOffset: CGFloat = -8.96
+        /// 캐릭터 아래 481 - (334 + 119.43).
+        static let subtitleSpacing: CGFloat = 27.57
         /// 체크 아이콘이 커지는 시점. 이때 컨페티가 터진다.
         static let confettiDelay: Duration = .milliseconds(420)
     }
@@ -107,10 +118,9 @@ private struct CardCreationCompleteResultContent: View {
     @State private var confettiTrigger = 0
 
     var body: some View {
-        ZStack(alignment: .top) {
+        VStack(spacing: 0) {
             RecapLottieView(name: "complete_check", playback: .playOnce)
                 .frame(width: Layout.checkSize, height: Layout.checkSize)
-                .padding(.top, Layout.checkTop)
 
             Text("\(organizedCount)개의 스크린샷을\n정리했어요")
                 .font(RecapFont.pretendard(size: 18, weight: .semibold))
@@ -118,19 +128,28 @@ private struct CardCreationCompleteResultContent: View {
                 .lineSpacing(0)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Color.recapGray900)
-                .padding(.top, Layout.titleTop)
+                .padding(.top, Layout.titleSpacing)
 
-            RecapLottieView(name: "complete_character", playback: .playOnce)
-                .frame(height: Layout.characterHeight)
-                .frame(maxWidth: .infinity)
-                .padding(.top, Layout.characterTop)
+            // 움직임은 컨페티가 담당한다. 캐릭터는 정지 이미지다.
+            Image("CardCreationCompleteCharacter")
+                .resizable()
+                .scaledToFit()
+                .frame(
+                    width: Layout.characterSize.width,
+                    height: Layout.characterSize.height
+                )
+                .offset(x: Layout.characterCenterOffset)
+                .padding(.top, Layout.characterSpacing)
 
             Text("보관함에서 확인해보세요!")
                 .font(RecapFont.pretendard(size: 15, weight: .medium))
                 .tracking(-0.3)
                 .foregroundStyle(Color.recapGray500)
-                .padding(.top, Layout.subtitleTop)
+                .padding(.top, Layout.subtitleSpacing)
+
+            Spacer(minLength: 0)
         }
+        .padding(.top, Layout.topInset)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         // 체크 아이콘 중심에서 터져 화면 전체로 퍼진 뒤 아래로 떨어진다.
         .confettiCannon(
