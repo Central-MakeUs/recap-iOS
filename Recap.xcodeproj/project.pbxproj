@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C2000001000000000000000E /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = C2000001000000000000000C /* Lottie */; };
+		C2000001000000000000000F /* ConfettiSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = C2000001000000000000000D /* ConfettiSwiftUI */; };
 		A7D2A0C3302A117A00D2AD79 /* ConfettiSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = C2000001000000000000000B /* ConfettiSwiftUI */; };
 		C20000010000000000000001 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000005 /* Alamofire */; };
 		C20000010000000000000002 /* KakaoSDKUser in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000006 /* KakaoSDKUser */; };
@@ -125,6 +127,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C2000001000000000000000E /* Lottie in Frameworks */,
+				C2000001000000000000000F /* ConfettiSwiftUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -245,6 +249,8 @@
 			);
 			name = RecapShareExtension;
 			packageProductDependencies = (
+				C2000001000000000000000C /* Lottie */,
+				C2000001000000000000000D /* ConfettiSwiftUI */,
 			);
 			productName = RecapShareExtension;
 			productReference = D50000010000000000000003 /* RecapShareExtension.appex */;
@@ -770,6 +776,16 @@
 			productName = Lottie;
 		};
 		C2000001000000000000000B /* ConfettiSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C2000001000000000000000A /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */;
+			productName = ConfettiSwiftUI;
+		};
+		C2000001000000000000000C /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C20000010000000000000008 /* XCRemoteSwiftPackageReference "lottie-spm" */;
+			productName = Lottie;
+		};
+		C2000001000000000000000D /* ConfettiSwiftUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C2000001000000000000000A /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */;
 			productName = ConfettiSwiftUI;
