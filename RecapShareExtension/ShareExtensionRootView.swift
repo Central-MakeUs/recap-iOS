@@ -83,7 +83,6 @@ struct ShareExtensionRootView: View {
             screenshots: viewModel.screenshots,
             isSubmitting: false,
             message: viewModel.message,
-            toastMessage: viewModel.toastMessage,
             onBack: presentCancellationDialog,
             onAdd: { isPhotoPickerPresented = true },
             onRemove: viewModel.removeScreenshot,
@@ -132,7 +131,6 @@ final class ShareExtensionViewModel {
     private(set) var screenshots: [SelectedScreenshot] = []
     private(set) var phase: ShareExtensionPhase = .loading
     private(set) var message: String?
-    private(set) var toastMessage: String?
     private(set) var notificationsEnabled = false
 
     private weak var extensionContext: NSExtensionContext?
