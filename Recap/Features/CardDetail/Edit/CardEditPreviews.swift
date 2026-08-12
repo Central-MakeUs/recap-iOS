@@ -2,15 +2,20 @@
 import SwiftUI
 
 private extension SampleData {
+    @MainActor
+    static var cardEditCard: Card {
+        Card(snapshot: cards[1])!
+    }
+
+    @MainActor
     static var cardEditDraft: CardEditDraft {
-        CardEditDraft(card: cards[1])
+        CardEditDraft(card: cardEditCard)
     }
 }
 
-#if DEBUG
 #Preview("정보카드 수정") {
     CardEditView(
-        card: SampleData.cards[1],
+        card: SampleData.cardEditCard,
         initialDraft: SampleData.cardEditDraft,
         onSave: { _ in }
     )
@@ -21,7 +26,7 @@ private extension SampleData {
     var draft = SampleData.cardEditDraft
     draft.title = ""
     return CardEditView(
-        card: SampleData.cards[1],
+        card: SampleData.cardEditCard,
         initialDraft: draft,
         onSave: { _ in }
     )
@@ -32,7 +37,7 @@ private extension SampleData {
     var draft = SampleData.cardEditDraft
     draft.title = ""
     return CardEditView(
-        card: SampleData.cards[1],
+        card: SampleData.cardEditCard,
         initialDraft: draft,
         onSave: { _ in }
     )
@@ -43,7 +48,7 @@ private extension SampleData {
     var draft = SampleData.cardEditDraft
     draft.title = "텍스"
     return CardEditView(
-        card: SampleData.cards[1],
+        card: SampleData.cardEditCard,
         initialDraft: draft,
         onSave: { _ in }
     )
@@ -52,7 +57,7 @@ private extension SampleData {
 
 #Preview("정보카드 수정 - 저장 실패") {
     CardEditView(
-        card: SampleData.cards[1],
+        card: SampleData.cardEditCard,
         initialDraft: SampleData.cardEditDraft,
         initialToast: RecapToastContent(
             style: .error,
@@ -65,12 +70,11 @@ private extension SampleData {
 
 #Preview("정보카드 수정 - 그만두기 확인") {
     CardEditView(
-        card: SampleData.cards[1],
+        card: SampleData.cardEditCard,
         initialDraft: SampleData.cardEditDraft,
         initiallyShowsDiscardConfirmation: true,
         onSave: { _ in }
     )
     .environment(PreviewStores.cardStore())
 }
-#endif
 #endif

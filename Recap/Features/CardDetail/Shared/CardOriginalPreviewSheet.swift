@@ -3,7 +3,7 @@ import SwiftUI
 struct CardOriginalPreviewSheet: View {
     @Environment(\.dismiss) private var dismiss
 
-    let card: InformationCard
+    let card: Card
     var onRemoteImageFailure: (URL) -> Void = { _ in }
 
     var body: some View {
@@ -67,6 +67,6 @@ struct CardOriginalPreviewSheet: View {
 
 #if DEBUG
 #Preview("원본 이미지 전체 보기") {
-    CardOriginalPreviewSheet(card: SampleData.cards[0])
+    CardOriginalPreviewSheet(card: Card(snapshot: SampleData.cards[0])!)
 }
 #endif

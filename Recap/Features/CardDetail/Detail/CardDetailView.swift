@@ -2,10 +2,12 @@ import SwiftUI
 
 struct CardDetailView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(CardStore.self) private var cardStore
 
+    let card: Card
     let imageState: CardDetailImageState
     let onDeleted: () -> Void
+
+    private let cardStore: CardStore
 
     @State private var model: CaptureDetailFeatureModel
     @State private var isDeleteConfirmationPresented: Bool
@@ -16,14 +18,9 @@ struct CardDetailView: View {
     @State private var isReportReasonPresented = false
     @State private var selectedReportReason: CaptureReportReason?
     @State private var pendingPanelAction: CardDetailPanelAction?
-    @State private var isFavoriteMutationRunning = false
 
     private var navigationContentColor: Color {
         imageState == .failedCard ? Color.recapGray900 : .white
-    }
-
-    private var displayedCard: InformationCard {
-        model.card
     }
 
     private var reportSheetHeight: CGFloat {
@@ -32,21 +29,23 @@ struct CardDetailView: View {
 
     @MainActor
     init(
-        card: InformationCard,
+        card: Card,
         captureService: any CaptureServing,
-        invalidationCenter: CardDataInvalidationCenter,
+        cardStore: CardStore,
         imageState: CardDetailImageState = .loaded,
         initiallyShowsDeleteConfirmation: Bool = false,
         initialToast: RecapToastContent? = nil,
         onDeleted: @escaping () -> Void = {}
     ) {
+        self.card = card
         self.imageState = imageState
         self.onDeleted = onDeleted
+        self.cardStore = cardStore
         _model = State(
             initialValue: CaptureDetailFeatureModel(
-                card: card,
+                captureID: card.captureID,
                 captureService: captureService,
-                invalidationCenter: invalidationCenter
+                cardStore: cardStore
             )
         )
         _isDeleteConfirmationPresented = State(initialValue: initiallyShowsDeleteConfirmation)
@@ -56,19 +55,20 @@ struct CardDetailView: View {
     }
 
 #if DEBUG
-    /// 프리뷰 전용. 실제 화면은 captureService를 주입받는 init을 쓴다.
+    /// 프리뷰 전용. 실제 화면은 스토어의 공유 `Card`와 captureService를 주입받는다.
     @MainActor
     init(
-        card: InformationCard,
+        card snapshot: InformationCard,
         imageState: CardDetailImageState = .loaded,
         initiallyShowsDeleteConfirmation: Bool = false,
         initialToast: RecapToastContent? = nil,
         onDeleted: @escaping () -> Void = {}
     ) {
+        let store = PreviewStores.cardStore()
         self.init(
-            card: card,
+            card: store.upsert(snapshot) ?? Card(snapshot: SampleData.cards[0])!,
             captureService: PreviewCaptureService(),
-            invalidationCenter: CardDataInvalidationCenter(),
+            cardStore: store,
             imageState: imageState,
             initiallyShowsDeleteConfirmation: initiallyShowsDeleteConfirmation,
             initialToast: initialToast,
@@ -81,7 +81,7 @@ struct CardDetailView: View {
         GeometryReader { geometry in
             ZStack(alignment: .top) {
                 CardDetailContentView(
-                    card: displayedCard,
+                    card: card,
                     imageState: imageState,
                     contentWidth: geometry.size.width,
                     onOpenOriginal: openOriginal,
@@ -91,7 +91,7 @@ struct CardDetailView: View {
 
                 CardDetailNavigationBar(
                     title: "스크린샷 상세",
-                    isFavorite: displayedCard.isFavorite,
+                    isFavorite: card.isFavorite,
                     foregroundColor: navigationContentColor,
                     onBack: dismiss.callAsFunction,
                     onFavorite: favorite,
@@ -137,13 +137,13 @@ struct CardDetailView: View {
         }
         .navigationDestination(isPresented: $isEditing) {
             CardEditView(
-                card: displayedCard,
+                card: card,
                 onSave: saveCardEdit
             )
         }
         .fullScreenCover(isPresented: $isOriginalPresented) {
             CardOriginalPreviewSheet(
-                card: displayedCard,
+                card: card,
                 onRemoteImageFailure: refreshRemoteImageURL
             )
         }
@@ -161,7 +161,6 @@ struct CardDetailView: View {
         }
         .task {
             await model.loadDetail()
-            cardStore.upsert(model.card)
         }
     }
 
@@ -171,33 +170,20 @@ struct CardDetailView: View {
     private func refreshRemoteImageURL(_ failedURL: URL) {
         Task {
             await model.refreshImageURLAfterFailure(failedURL)
-            cardStore.upsert(model.card)
         }
     }
 
     private func favorite() {
-        guard !isFavoriteMutationRunning else { return }
-        isFavoriteMutationRunning = true
-
-        // 상세 화면은 아직 자기 모델의 스냅샷으로 그린다(#111 4단계에서 이전).
-        // 결과만 스토어에 반영해 목록 화면들과 어긋나지 않게 한다.
-        let wasFavorite = model.card.isFavorite
         Task {
-            defer { isFavoriteMutationRunning = false }
-
-            do {
-                let isFavorite = try await model.toggleFavorite()
-                cardStore.upsert(model.card)
-                toast = RecapToastMessage.favoriteToggled(isFavorite: isFavorite).content
-            } catch {
-                toast = RecapToastMessage.favoriteToggleFailed(wasFavorite: wasFavorite).content
-            }
+            guard let content = await cardStore.toggleFavoriteReturningToast(card) else { return }
+            toast = content
         }
     }
 
     private func saveCardEdit(_ draft: CardEditDraft) async throws {
-        try await model.update(with: draft)
-        cardStore.upsert(model.card)
+        try await cardStore.saveEdit(draft, for: card)
+        // 서버가 정규화한 값(카테고리 표기 등)을 상세에 반영한다.
+        await model.loadDetail()
     }
 
     private func requestEdit() {
@@ -239,7 +225,7 @@ struct CardDetailView: View {
         isReportReasonPresented = false
         Task {
             do {
-                try await model.report(reason: reason, detail: detail)
+                try await cardStore.report(card, reason: reason, detail: detail)
                 toast = RecapToastMessage.reportAccepted.content
             } catch {
                 toast = RecapToastMessage.reportFailed.content
@@ -258,8 +244,7 @@ struct CardDetailView: View {
     private func deleteCard() {
         Task {
             do {
-                try await model.delete()
-                cardStore.remove(captureID: displayedCard.captureID)
+                try await cardStore.delete(card)
                 onDeleted()
                 dismiss()
             } catch {

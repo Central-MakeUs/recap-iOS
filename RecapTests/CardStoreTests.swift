@@ -112,6 +112,24 @@ final class CardStoreTests: XCTestCase {
         XCTAssertEqual(card.category, CollectionKind.place.displayTitle)
     }
 
+    // MARK: 신고
+
+    func testReportForwardsCaptureIDAndReason() async throws {
+        let fixture = makeStore()
+        let card = try XCTUnwrap(fixture.store.upsert(SampleData.cards[0]))
+
+        try await fixture.store.report(card, reason: .inaccurateContent, detail: "가격이 달라요")
+
+        XCTAssertEqual(
+            fixture.mutator.reports,
+            [CaptureReport(
+                captureID: card.captureID,
+                reason: .inaccurateContent,
+                detail: "가격이 달라요"
+            )]
+        )
+    }
+
     // MARK: 삭제
 
     func testRemoveDropsCard() throws {
@@ -161,8 +179,15 @@ private struct FavoriteUpdate: Equatable {
     let isFavorite: Bool
 }
 
+private struct CaptureReport: Equatable {
+    let captureID: Int64
+    let reason: CaptureReportReason
+    let detail: String?
+}
+
 private final class CaptureMutatingSpy: CaptureMutating {
     private let storedUpdates = Mutex<[FavoriteUpdate]>([])
+    private let storedReports = Mutex<[CaptureReport]>([])
     private let favoriteError: Error?
     private let favoriteDelay: Duration?
 
@@ -173,6 +198,10 @@ private final class CaptureMutatingSpy: CaptureMutating {
 
     var favoriteUpdates: [FavoriteUpdate] {
         storedUpdates.withLock { $0 }
+    }
+
+    var reports: [CaptureReport] {
+        storedReports.withLock { $0 }
     }
 
     func updateFavorite(captureID: Int64, isFavorite: Bool) async throws {
@@ -194,5 +223,9 @@ private final class CaptureMutatingSpy: CaptureMutating {
         captureID: Int64,
         reason: CaptureReportReason,
         detail: String?
-    ) async throws {}
+    ) async throws {
+        storedReports.withLock {
+            $0.append(CaptureReport(captureID: captureID, reason: reason, detail: detail))
+        }
+    }
 }

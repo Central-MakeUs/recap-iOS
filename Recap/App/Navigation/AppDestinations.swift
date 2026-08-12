@@ -70,7 +70,6 @@ extension View {
                 scope: .favorites,
                 loader: archiveLoader,
                 searchLoader: searchLoader,
-                captureMutator: captureService,
                 cardStore: cardStore,
                 invalidationCenter: cardDataInvalidationCenter
             )
@@ -79,7 +78,6 @@ extension View {
                 scope: .category(kind),
                 loader: archiveLoader,
                 searchLoader: searchLoader,
-                captureMutator: captureService,
                 cardStore: cardStore,
                 invalidationCenter: cardDataInvalidationCenter
             )
@@ -87,7 +85,6 @@ extension View {
             RemoteCardDetailDestination(
                 card: card,
                 captureService: captureService,
-                invalidationCenter: cardDataInvalidationCenter,
                 onDeleted: onCardDeleted
             )
         case .cardCreationStart:
@@ -112,20 +109,27 @@ extension View {
 private struct RemoteCardDetailDestination: View {
     @Environment(CardStore.self) private var cardStore
 
+    /// 경로 페이로드. 목록이 미리 upsert해두므로 보통 스토어에 이미 있고,
+    /// 없으면(스토어를 거치지 않은 진입) 한 프레임 뒤 합류한다.
     let card: InformationCard
     let captureService: any CaptureServing
-    let invalidationCenter: CardDataInvalidationCenter
     let onDeleted: () -> Void
 
     var body: some View {
-        CardDetailView(
-            card: card,
-            captureService: captureService,
-            invalidationCenter: invalidationCenter,
-            onDeleted: onDeleted
-        )
-            .onAppear {
-                cardStore.upsert(card)
-            }
+        if let captureID = card.captureID,
+           let sharedCard = cardStore.card(withCaptureID: captureID) {
+            CardDetailView(
+                card: sharedCard,
+                captureService: captureService,
+                cardStore: cardStore,
+                onDeleted: onDeleted
+            )
+        } else {
+            // body에서 upsert하면 갱신 중 상태 변경이라, 등록만 onAppear로 미룬다.
+            Color.recapBackground
+                .onAppear {
+                    cardStore.upsert(card)
+                }
+        }
     }
 }

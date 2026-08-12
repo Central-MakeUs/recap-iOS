@@ -89,8 +89,15 @@ final class CardStore {
         }
     }
 
-    /// 편집 내용을 반영한다. 서버 저장은 기존 편집 흐름이 담당하고, 여기서는
-    /// 공유 인스턴스만 맞춘다.
+    /// 편집을 서버에 저장하고 공유 인스턴스에 반영한다.
+    func saveEdit(_ draft: CardEditDraft, for card: Card) async throws {
+        try await captureMutator.updateCapture(captureID: card.captureID, draft: draft)
+        applyEdit(draft, toCaptureID: card.captureID)
+        invalidationCenter?.invalidate(.captureUpdated)
+    }
+
+    /// 편집 내용을 공유 인스턴스에만 반영한다. 서버 저장까지 하려면
+    /// `saveEdit(_:for:)`를 쓴다.
     ///
     /// `captureID`가 옵셔널인 것은 `InformationCard`의 유산이다. 실제로 nil인
     /// 카드는 만들어지지 않으며, 값 타입이 정리되면 함께 사라진다.
@@ -102,6 +109,34 @@ final class CardStore {
         card.collection = draft.collection
         card.category = draft.collection.displayTitle
         card.memo = draft.body
+    }
+
+    /// 카드를 서버에서 지우고 스토어에서 내린다.
+    func delete(_ card: Card) async throws {
+        try await captureMutator.deleteCapture(captureID: card.captureID)
+        cardsByID[card.captureID] = nil
+        invalidationCenter?.invalidate(.captureDeleted)
+    }
+
+    /// 여러 카드를 한 번에 지운다. 보관함의 선택 삭제가 쓴다.
+    func delete(captureIDs: [Int64]) async throws {
+        try await captureMutator.deleteCaptures(captureIDs: captureIDs)
+        captureIDs.forEach { cardsByID[$0] = nil }
+        invalidationCenter?.invalidate(.captureDeleted)
+    }
+
+    /// 카드를 신고한다. 카드 상태는 바뀌지 않지만, 서버 변경 네 종
+    /// (즐겨찾기·편집·삭제·신고)의 입구를 한곳에 둔다.
+    func report(
+        _ card: Card,
+        reason: CaptureReportReason,
+        detail: String?
+    ) async throws {
+        try await captureMutator.reportCapture(
+            captureID: card.captureID,
+            reason: reason,
+            detail: detail
+        )
     }
 
     func remove(captureID: Int64?) {

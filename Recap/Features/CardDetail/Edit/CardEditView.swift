@@ -4,7 +4,7 @@ struct CardEditView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(CardStore.self) private var cardStore
 
-    let card: InformationCard
+    let card: Card
 
     private let originalDraft: CardEditDraft
     private let saveAction: ((CardEditDraft) async throws -> Void)?
@@ -17,7 +17,7 @@ struct CardEditView: View {
     @State private var isSaving = false
 
     init(
-        card: InformationCard,
+        card: Card,
         initialDraft: CardEditDraft? = nil,
         initiallyShowsDiscardConfirmation: Bool = false,
         initialToast: RecapToastContent? = nil,
@@ -95,7 +95,7 @@ struct CardEditView: View {
             try await saveAction(draft.normalized())
             return
         }
-        cardStore.applyEdit(draft.normalized(), toCaptureID: card.captureID)
+        try await cardStore.saveEdit(draft.normalized(), for: card)
     }
 
     private func close() {
@@ -121,7 +121,7 @@ struct CardEditView: View {
 #if DEBUG
 #Preview("정보카드 수정 화면") {
     NavigationStack {
-        CardEditView(card: SampleData.cards[1])
+        CardEditView(card: Card(snapshot: SampleData.cards[1])!)
     }
     .environment(PreviewStores.cardStore())
 }

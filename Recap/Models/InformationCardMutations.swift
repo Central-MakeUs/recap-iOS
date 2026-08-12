@@ -41,17 +41,4 @@ nonisolated extension InformationCard {
             isFavorite: isFavorite
         )
     }
-
-    func with(isFavorite: Bool) -> InformationCard {
-        InformationCard(
-            id: id, captureID: captureID, title: title, summary: summary, collection: collection,
-            organizedAt: organizedAt,
-            dateText: dateText, location: location, businessHours: businessHours,
-            category: category, confirmationLabel: confirmationLabel, memo: memo,
-            tags: tags, originalImageAssetName: originalImageAssetName,
-            thumbnailAssetName: thumbnailAssetName, originalImageURL: originalImageURL,
-            thumbnailURL: thumbnailURL,
-            isFavorite: isFavorite
-        )
-    }
 }
