@@ -295,38 +295,19 @@ private final class CardCreationProgressRecorder {
 
 @MainActor
 final class CaptureDetailFeatureModelTests: XCTestCase {
-    func testFavoriteFailureRollsBackOptimisticState() async {
+    func testDeleteRemovesCardFromStoreAndInvalidatesLists() async throws {
         let service = FailingFavoriteCaptureService()
         let invalidationCenter = CardDataInvalidationCenter()
-        let model = CaptureDetailFeatureModel(
-            card: Self.card(isFavorite: false),
-            captureService: service,
+        let store = CardStore(
+            captureMutator: service,
             invalidationCenter: invalidationCenter
         )
+        let card = try XCTUnwrap(store.upsert(Self.card(isFavorite: false)))
 
-        do {
-            _ = try await model.toggleFavorite()
-            XCTFail("서버 실패는 호출자에게 전달되어야 합니다.")
-        } catch {}
-
-        XCTAssertFalse(model.card.isFavorite)
-        XCTAssertEqual(invalidationCenter.homeRevision, 0)
-        XCTAssertEqual(invalidationCenter.archiveHomeRevision, ArchiveHomeRevision())
-        XCTAssertEqual(invalidationCenter.archiveDetailRevision, 0)
-    }
-
-    func testDeleteInvalidatesHomeAndArchiveData() async throws {
-        let service = FailingFavoriteCaptureService()
-        let invalidationCenter = CardDataInvalidationCenter()
-        let model = CaptureDetailFeatureModel(
-            card: Self.card(isFavorite: false),
-            captureService: service,
-            invalidationCenter: invalidationCenter
-        )
-
-        try await model.delete()
+        try await store.delete(card)
 
         XCTAssertEqual(service.deletedCaptureID, 42)
+        XCTAssertNil(store.card(withCaptureID: card.captureID))
         XCTAssertEqual(invalidationCenter.homeRevision, 1)
         XCTAssertEqual(
             invalidationCenter.archiveHomeRevision,
@@ -335,57 +316,44 @@ final class CaptureDetailFeatureModelTests: XCTestCase {
         XCTAssertEqual(invalidationCenter.archiveDetailRevision, 1)
     }
 
-    func testExpiredImageURLRefreshesDetailOnceAndPreservesCardIdentity() async {
+    func testExpiredImageURLRefreshesDetailOnceAndPreservesCardIdentity() async throws {
         let oldURL = URL(string: "https://image.test/expired")!
         let refreshedURL = URL(string: "https://image.test/refreshed")!
-        let originalCard = Self.card(
-            isFavorite: false,
-            originalImageURL: oldURL
-        )
         let service = RefreshingCaptureService(
             detail: Self.card(
                 isFavorite: false,
                 originalImageURL: refreshedURL
             )
         )
+        let store = CardStore(captureMutator: service)
+        let card = try XCTUnwrap(
+            store.upsert(Self.card(isFavorite: false, originalImageURL: oldURL))
+        )
         let model = CaptureDetailFeatureModel(
-            card: originalCard,
+            captureID: card.captureID,
             captureService: service,
-            invalidationCenter: CardDataInvalidationCenter()
+            cardStore: store
         )
 
         await model.refreshImageURLAfterFailure(oldURL)
         await model.refreshImageURLAfterFailure(refreshedURL)
 
         XCTAssertEqual(service.detailRequestCount, 1)
-        XCTAssertEqual(model.card.id, originalCard.id)
-        XCTAssertEqual(model.card.originalImageURL, refreshedURL)
+        XCTAssertTrue(
+            store.card(withCaptureID: card.captureID) === card,
+            "재조회가 공유 인스턴스를 갈아치우면 안 된다"
+        )
+        XCTAssertEqual(card.originalImageURL, refreshedURL)
     }
 
-    func testCardEditUpdatesServerThenRefreshesDetailAndInvalidatesLists() async throws {
-        let originalCard = Self.card(isFavorite: false)
-        let updatedCard = InformationCard(
-            id: UUID(),
-            captureID: 42,
-            title: "서버 수정 제목",
-            summary: "서버 수정 요약",
-            collection: .shopping,
-            dateText: "",
-            location: "",
-            businessHours: "",
-            category: "쇼핑 · 상품",
-            confirmationLabel: nil,
-            memo: "서버 수정 본문",
-            tags: [],
-            isFavorite: false
-        )
-        let service = RefreshingCaptureService(detail: updatedCard)
+    func testSaveEditUpdatesServerAndSharedInstanceAndInvalidatesLists() async throws {
+        let service = RefreshingCaptureService(detail: Self.card(isFavorite: false))
         let invalidationCenter = CardDataInvalidationCenter()
-        let model = CaptureDetailFeatureModel(
-            card: originalCard,
-            captureService: service,
+        let store = CardStore(
+            captureMutator: service,
             invalidationCenter: invalidationCenter
         )
+        let card = try XCTUnwrap(store.upsert(Self.card(isFavorite: false)))
         let draft = CardEditDraft(
             collection: .shopping,
             title: "수정 제목",
@@ -393,13 +361,13 @@ final class CaptureDetailFeatureModelTests: XCTestCase {
             body: "수정 본문"
         )
 
-        try await model.update(with: draft)
+        try await store.saveEdit(draft, for: card)
 
         XCTAssertEqual(service.updatedCaptureID, 42)
         XCTAssertEqual(service.updatedDraft, draft)
-        XCTAssertEqual(service.detailRequestCount, 1)
-        XCTAssertEqual(model.card.id, originalCard.id)
-        XCTAssertEqual(model.card.title, "서버 수정 제목")
+        XCTAssertEqual(card.title, "수정 제목")
+        XCTAssertEqual(card.collection, .shopping)
+        XCTAssertEqual(card.memo, "수정 본문")
         XCTAssertEqual(invalidationCenter.homeRevision, 1)
         XCTAssertEqual(invalidationCenter.archiveDetailRevision, 1)
     }

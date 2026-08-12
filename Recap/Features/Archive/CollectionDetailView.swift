@@ -14,7 +14,6 @@ struct CollectionDetailContainerView: View {
         scope: ArchiveDetailScope,
         loader: any ArchiveLoading,
         searchLoader: any SearchLoading,
-        captureMutator: any CaptureMutating,
         cardStore: CardStore,
         invalidationCenter: CardDataInvalidationCenter
     ) {
@@ -24,8 +23,6 @@ struct CollectionDetailContainerView: View {
             initialValue: ArchiveDetailFeatureModel(
                 scope: scope,
                 loader: loader,
-                captureMutator: captureMutator,
-                invalidationCenter: invalidationCenter,
                 cardStore: cardStore
             )
         )

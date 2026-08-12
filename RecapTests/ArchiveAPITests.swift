@@ -141,12 +141,10 @@ final class ArchiveAPITests: XCTestCase {
 
     func testCategoryDetailSortReloadsFromServer() async {
         let loader = SequencedArchiveLoader(homeResults: [])
-        let mutator = CaptureMutatorStub()
         let otherModel = ArchiveDetailFeatureModel(
             scope: .category(.other),
             loader: loader,
-            captureMutator: mutator,
-            invalidationCenter: CardDataInvalidationCenter()
+            cardStore: CardStore(captureMutator: CaptureMutatorStub())
         )
 
         await otherModel.loadIfNeeded()
@@ -177,8 +175,7 @@ final class ArchiveAPITests: XCTestCase {
         let model = ArchiveDetailFeatureModel(
             scope: .favorites,
             loader: loader,
-            captureMutator: CaptureMutatorStub(),
-            invalidationCenter: CardDataInvalidationCenter()
+            cardStore: CardStore(captureMutator: CaptureMutatorStub())
         )
 
         await model.loadIfNeeded()
@@ -203,11 +200,14 @@ final class ArchiveAPITests: XCTestCase {
         )
         let mutator = CaptureMutatorStub()
         let invalidationCenter = CardDataInvalidationCenter()
+        let store = CardStore(
+            captureMutator: mutator,
+            invalidationCenter: invalidationCenter
+        )
         let model = ArchiveDetailFeatureModel(
             scope: .category(.shopping),
             loader: loader,
-            captureMutator: mutator,
-            invalidationCenter: invalidationCenter
+            cardStore: store
         )
 
         await model.loadIfNeeded()
@@ -215,6 +215,9 @@ final class ArchiveAPITests: XCTestCase {
 
         XCTAssertEqual(mutator.deletedCaptureIDs, [101, 102])
         XCTAssertEqual(model.state, .loaded([cards[2]]))
+        XCTAssertNil(store.card(withCaptureID: 101), "지운 카드는 스토어에서도 내려야 한다")
+        XCTAssertNil(store.card(withCaptureID: 102))
+        XCTAssertNotNil(store.card(withCaptureID: 103))
         XCTAssertEqual(invalidationCenter.homeRevision, 1)
         XCTAssertEqual(invalidationCenter.archiveDetailRevision, 1)
     }

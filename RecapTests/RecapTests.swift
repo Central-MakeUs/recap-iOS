@@ -264,8 +264,9 @@ final class RecapTests: XCTestCase {
         )
     }
 
-    func testCardMutationPreservesOriginalImageThroughEditAndFavoriteChanges() {
-        let card = SampleData.cards[1]
+    func testCardMutationPreservesOriginalImageThroughEditAndFavoriteChanges() throws {
+        let store = CardStore(captureMutator: PreviewCaptureService())
+        let card = try XCTUnwrap(store.upsert(SampleData.cards[1]))
         let draft = CardEditDraft(
             collection: .knowledge,
             title: "수정된 제목",
@@ -273,14 +274,13 @@ final class RecapTests: XCTestCase {
             body: "짧은 본문도 그대로 저장되어야 합니다."
         )
 
-        let updatedCard = card
-            .with(editDraft: draft)
-            .with(isFavorite: true)
+        store.applyEdit(draft, toCaptureID: card.captureID)
+        card.isFavorite = true
 
-        XCTAssertEqual(updatedCard.memo, draft.body)
-        XCTAssertEqual(updatedCard.originalImageAssetName, "InformationCardOriginal")
-        XCTAssertEqual(updatedCard.detailImageAssetName, "InformationCardOriginal")
-        XCTAssertTrue(updatedCard.isFavorite)
+        XCTAssertEqual(card.memo, draft.body)
+        XCTAssertEqual(card.originalImageAssetName, "InformationCardOriginal")
+        XCTAssertEqual(card.detailImageAssetName, "InformationCardOriginal")
+        XCTAssertTrue(card.isFavorite)
     }
 
     func testCardDetailImageStatesPreserveFigmaLayoutSpacing() {

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CardDetailContentView: View {
-    let card: InformationCard
+    let card: Card
     let imageState: CardDetailImageState
     let contentWidth: CGFloat
     let onOpenOriginal: () -> Void
@@ -34,7 +34,7 @@ struct CardDetailContentView: View {
 #if DEBUG
 #Preview("정보카드 상세 콘텐츠") {
     CardDetailContentView(
-        card: SampleData.cards[1],
+        card: Card(snapshot: SampleData.cards[1])!,
         imageState: .loaded,
         contentWidth: 375,
         onOpenOriginal: {}

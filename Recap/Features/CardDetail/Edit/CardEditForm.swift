@@ -2,12 +2,12 @@ import SwiftUI
 import UIKit
 
 struct CardEditForm: View {
-    let card: InformationCard
+    let card: Card
     let onOpenOriginal: () -> Void
     @Binding var draft: CardEditDraft
 
     init(
-        card: InformationCard,
+        card: Card,
         draft: Binding<CardEditDraft>,
         onOpenOriginal: @escaping () -> Void
     ) {
@@ -73,10 +73,10 @@ struct CardEditForm: View {
 
 #if DEBUG
 #Preview("정보카드 수정 폼") {
-    @Previewable @State var draft = CardEditDraft(card: SampleData.cards[1])
+    @Previewable @State var draft = CardEditDraft(card: Card(snapshot: SampleData.cards[1])!)
 
     CardEditForm(
-        card: SampleData.cards[1],
+        card: Card(snapshot: SampleData.cards[1])!,
         draft: $draft,
         onOpenOriginal: {}
     )

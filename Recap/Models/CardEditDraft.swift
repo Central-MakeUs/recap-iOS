@@ -17,7 +17,8 @@ nonisolated struct CardEditDraft: Equatable, Sendable {
         self.body = body
     }
 
-    init(card: InformationCard) {
+    @MainActor
+    init(card: Card) {
         collection = card.collection
         title = card.title
         summary = card.summary

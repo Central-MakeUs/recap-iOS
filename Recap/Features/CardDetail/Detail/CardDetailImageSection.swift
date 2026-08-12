@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CardDetailImageSection: View {
-    let card: InformationCard
+    let card: Card
     let imageState: CardDetailImageState
     let onOpenOriginal: () -> Void
     var onRemoteImageFailure: (URL) -> Void = { _ in }
@@ -42,7 +42,7 @@ struct CardDetailImageSection: View {
 #if DEBUG
 #Preview("정보카드 이미지 - 로딩 실패") {
     CardDetailImageSection(
-        card: SampleData.cards[1],
+        card: Card(snapshot: SampleData.cards[1])!,
         imageState: .failedCard,
         onOpenOriginal: {}
     )

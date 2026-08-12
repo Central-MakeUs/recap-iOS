@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CardDetailTextSection: View {
-    let card: InformationCard
+    let card: Card
     let contentWidth: CGFloat
 
     var body: some View {
@@ -42,7 +42,7 @@ struct CardDetailTextSection: View {
 #if DEBUG
 #Preview("정보카드 텍스트") {
     CardDetailTextSection(
-        card: SampleData.cards[1],
+        card: Card(snapshot: SampleData.cards[1])!,
         contentWidth: 375
     )
 }

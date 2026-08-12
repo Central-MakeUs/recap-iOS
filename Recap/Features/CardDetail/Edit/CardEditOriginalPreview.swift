@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CardEditOriginalPreview: View {
-    let card: InformationCard
+    let card: Card
     let onOpenOriginal: () -> Void
 
     var body: some View {
@@ -32,7 +32,7 @@ struct CardEditOriginalPreview: View {
 
 #if DEBUG
 #Preview("정보카드 수정 원본") {
-    CardEditOriginalPreview(card: SampleData.cards[1], onOpenOriginal: {})
+    CardEditOriginalPreview(card: Card(snapshot: SampleData.cards[1])!, onOpenOriginal: {})
         .padding(.horizontal, 16)
 }
 #endif

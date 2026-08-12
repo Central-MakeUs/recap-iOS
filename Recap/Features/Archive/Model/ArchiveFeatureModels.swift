@@ -74,10 +74,8 @@ final class ArchiveDetailFeatureModel {
     let scope: ArchiveDetailScope
 
     private let loader: any ArchiveLoading
-    private let captureMutator: any CaptureMutating
-    private let invalidationCenter: CardDataInvalidationCenter
-    /// 목록이 실릴 때마다 스냅샷을 정식 `Card`로 승격한다. 행이 스토어에서 읽는다.
-    private let cardStore: CardStore?
+    /// 목록이 실릴 때마다 스냅샷을 정식 `Card`로 승격하고, 선택 삭제를 맡긴다.
+    private let cardStore: CardStore
     private(set) var state: State = .idle {
         didSet { upsertLoadedCards() }
     }
@@ -86,20 +84,16 @@ final class ArchiveDetailFeatureModel {
     init(
         scope: ArchiveDetailScope,
         loader: any ArchiveLoading,
-        captureMutator: any CaptureMutating,
-        invalidationCenter: CardDataInvalidationCenter,
-        cardStore: CardStore? = nil
+        cardStore: CardStore
     ) {
         self.scope = scope
         self.loader = loader
-        self.captureMutator = captureMutator
-        self.invalidationCenter = invalidationCenter
         self.cardStore = cardStore
     }
 
     private func upsertLoadedCards() {
         guard case .loaded(let cards) = state else { return }
-        cardStore?.upsert(cards)
+        cardStore.upsert(cards)
     }
 
     func loadIfNeeded() async {
@@ -138,10 +132,9 @@ final class ArchiveDetailFeatureModel {
             return captureID
         }
 
-        try await captureMutator.deleteCaptures(captureIDs: captureIDs)
+        try await cardStore.delete(captureIDs: captureIDs)
 
         state = .loaded(cards.filter { !ids.contains($0.id) })
-        invalidationCenter.invalidate(.captureDeleted)
     }
 
     private func load() async {

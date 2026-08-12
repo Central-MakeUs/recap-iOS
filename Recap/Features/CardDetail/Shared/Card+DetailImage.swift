@@ -1,6 +1,6 @@
 import Foundation
 
-extension InformationCard {
+extension Card {
     var detailImageAssetName: String? {
         originalImageAssetName ?? thumbnailAssetName
     }

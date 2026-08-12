@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CardDetailCategoryAndDateRow: View {
-    let card: InformationCard
+    let card: Card
 
     var body: some View {
         HStack {
@@ -24,7 +24,7 @@ struct CardDetailCategoryAndDateRow: View {
 
 #if DEBUG
 #Preview("정보카드 카테고리 및 날짜") {
-    CardDetailCategoryAndDateRow(card: SampleData.cards[1])
+    CardDetailCategoryAndDateRow(card: Card(snapshot: SampleData.cards[1])!)
     .padding()
 }
 #endif
