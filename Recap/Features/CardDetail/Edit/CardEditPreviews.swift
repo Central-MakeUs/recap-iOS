@@ -14,7 +14,7 @@ private extension SampleData {
         initialDraft: SampleData.cardEditDraft,
         onSave: { _ in }
     )
-    .environment(PreviewStores.recapCardStore())
+    .environment(PreviewStores.cardStore())
 }
 
 #Preview("정보카드 수정 - 필수 입력 오류") {
@@ -25,7 +25,7 @@ private extension SampleData {
         initialDraft: draft,
         onSave: { _ in }
     )
-    .environment(PreviewStores.recapCardStore())
+    .environment(PreviewStores.cardStore())
 }
 
 #Preview("정보카드 수정 - 완료 비활성화") {
@@ -36,7 +36,7 @@ private extension SampleData {
         initialDraft: draft,
         onSave: { _ in }
     )
-    .environment(PreviewStores.recapCardStore())
+    .environment(PreviewStores.cardStore())
 }
 
 #Preview("정보카드 수정 - 타이핑") {
@@ -47,7 +47,7 @@ private extension SampleData {
         initialDraft: draft,
         onSave: { _ in }
     )
-    .environment(PreviewStores.recapCardStore())
+    .environment(PreviewStores.cardStore())
 }
 
 #Preview("정보카드 수정 - 저장 실패") {
@@ -60,7 +60,7 @@ private extension SampleData {
         ),
         onSave: { _ in throw APIError.offline }
     )
-    .environment(PreviewStores.recapCardStore())
+    .environment(PreviewStores.cardStore())
 }
 
 #Preview("정보카드 수정 - 그만두기 확인") {
@@ -70,7 +70,7 @@ private extension SampleData {
         initiallyShowsDiscardConfirmation: true,
         onSave: { _ in }
     )
-    .environment(PreviewStores.recapCardStore())
+    .environment(PreviewStores.cardStore())
 }
 #endif
 #endif

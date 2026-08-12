@@ -17,7 +17,7 @@ final class RecapMainTabChromeState {
 
 struct RecapMainTabContainer: View {
     let router: AppRouter
-    let cardStore: RecapCardStore
+    let cardStore: CardStore
     let homeSummaryLoader: any HomeSummaryLoading
     let archiveLoader: any ArchiveLoading
     let searchLoader: any SearchLoading

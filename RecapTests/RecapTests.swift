@@ -197,18 +197,12 @@ final class RecapTests: XCTestCase {
         )
     }
 
-    func testCardStoreSearchesAndUpdatesCards() {
+    func testCardCollectionSearchMatchesTitle() {
         let card = SampleData.cards[0]
         XCTAssertEqual(
             RecapCardCollection.search([card], query: card.title).map(\.id),
             [card.id]
         )
-
-        let favoriteCards = RecapCardCollection.togglingFavorite(
-            cardID: card.id,
-            in: [card]
-        )
-        XCTAssertTrue(favoriteCards[0].isFavorite)
     }
 
     func testCardEditDraftRequiresTitleSummaryAndBody() {

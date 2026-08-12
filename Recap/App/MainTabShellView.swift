@@ -4,7 +4,7 @@ struct AppShellView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     let router: AppRouter
-    let cardStore: RecapCardStore
+    let cardStore: CardStore
     let homeSummaryLoader: any HomeSummaryLoading
     let archiveLoader: any ArchiveLoading
     let searchLoader: any SearchLoading
@@ -21,7 +21,7 @@ struct AppShellView: View {
 
     init(
         router: AppRouter,
-        cardStore: RecapCardStore,
+        cardStore: CardStore,
         homeSummaryLoader: any HomeSummaryLoading,
         archiveLoader: any ArchiveLoading,
         searchLoader: any SearchLoading,
@@ -103,7 +103,7 @@ struct AppShellView: View {
     }
 
     private func handleAccountDataDeleted() {
-        cardStore.removeAllCards()
+        cardStore.removeAll()
         cardDataInvalidationCenter.invalidate(.captureDeleted)
     }
 
@@ -143,7 +143,7 @@ struct AppShellView: View {
 #Preview("App shell") {
     AppShellView(
         router: AppRouter(),
-        cardStore: PreviewStores.recapCardStore(),
+        cardStore: PreviewStores.cardStore(),
         homeSummaryLoader: PreviewHomeSummaryLoaderForAppShell(),
         archiveLoader: PreviewArchiveLoader(),
         searchLoader: PreviewSearchLoader(),
