@@ -83,7 +83,6 @@ struct ShareExtensionRootView: View {
             screenshots: viewModel.screenshots,
             isSubmitting: false,
             message: viewModel.message,
-            toastMessage: viewModel.toastMessage,
             onBack: presentCancellationDialog,
             onAdd: { isPhotoPickerPresented = true },
             onRemove: viewModel.removeScreenshot,
@@ -132,7 +131,6 @@ final class ShareExtensionViewModel {
     private(set) var screenshots: [SelectedScreenshot] = []
     private(set) var phase: ShareExtensionPhase = .loading
     private(set) var message: String?
-    private(set) var toastMessage: String?
     private(set) var notificationsEnabled = false
 
     private weak var extensionContext: NSExtensionContext?
@@ -176,10 +174,6 @@ final class ShareExtensionViewModel {
             $0.hasItemConformingToTypeIdentifier(UTType.image.identifier)
         }
         let providers = Array(imageProviders.prefix(20))
-
-        if imageProviders.count < attachments.count {
-            toastMessage = "이미지가 아닌 파일은 제외했어요"
-        }
 
         var loadedScreenshots: [SelectedScreenshot] = []
         for provider in providers {

@@ -512,17 +512,9 @@ struct CollectionDetailView: View {
 
             do {
                 let isFavorite = try await onToggleFavorite(id)
-                toast = RecapToastContent(
-                    style: .success,
-                    message: isFavorite
-                        ? "즐겨찾기에 추가했어요."
-                        : "즐겨찾기에서 해제했어요."
-                )
+                toast = RecapToastMessage.favoriteToggled(isFavorite: isFavorite).content
             } catch {
-                toast = RecapToastContent(
-                    style: .error,
-                    message: "즐겨찾기를 변경하지 못했어요. 다시 시도해주세요."
-                )
+                toast = RecapToastMessage.favoriteChangeFailed.content
             }
         }
     }
@@ -540,15 +532,9 @@ struct CollectionDetailView: View {
                 selectedIDs.removeAll()
                 interactionMode = .browsing
                 query = ""
-                toast = RecapToastContent(
-                    style: .success,
-                    message: "\(ids.count)개의 스크린샷을 삭제했어요."
-                )
+                toast = RecapToastMessage.screenshotsDeleted(count: ids.count).content
             } catch {
-                toast = RecapToastContent(
-                    style: .error,
-                    message: "스크린샷을 삭제하지 못했어요. 다시 시도해주세요."
-                )
+                toast = RecapToastMessage.screenshotDeleteFailed.content
             }
         }
     }

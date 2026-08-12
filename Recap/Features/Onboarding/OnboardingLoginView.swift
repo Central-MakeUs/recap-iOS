@@ -33,7 +33,10 @@ struct OnboardingLoginView: View {
             terms
 
             if showsLoginFailure {
-                RecapToast(style: .error, message: "로그인에 실패했어요. 잠시 후 다시 시도해주세요.")
+                RecapToast(
+                        style: RecapToastMessage.loginFailed.content.style,
+                        message: RecapToastMessage.loginFailed.content.message
+                    )
                     .onboardingFrame(x: 29, y: 717, width: 317, height: 45)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }

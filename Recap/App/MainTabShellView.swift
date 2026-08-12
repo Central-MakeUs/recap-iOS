@@ -87,7 +87,7 @@ struct AppShellView: View {
         .task(id: scenePhase) {
             organizeNotificationStore.setApplicationInBackground(scenePhase == .background)
             guard scenePhase == .active else { return }
-            await showPendingOrganizeResultIfNeeded()
+            await acknowledgePendingOrganizeResultIfNeeded()
         }
     }
 
@@ -99,10 +99,7 @@ struct AppShellView: View {
     }
 
     private func showCardDeletedToast() {
-        toast = RecapToastContent(
-            style: .success,
-            message: "스크린샷을 삭제했어요."
-        )
+        toast = RecapToastMessage.screenshotDeleted.content
     }
 
     private func handleAccountDataDeleted() {
@@ -117,32 +114,21 @@ struct AppShellView: View {
         toast = nil
     }
 
-    private func showPendingOrganizeResultIfNeeded() async {
+    /// 앱 밖에서 끝난 정리 결과를 서버에 확인 처리하고 카드 목록을 갱신한다.
+    ///
+    /// 결과를 알리는 화면은 따로 있고 이 시점의 토스트는 디자인에 없어 띄우지 않는다.
+    /// 확인 처리를 건너뛰면 서버가 같은 결과를 계속 돌려주므로 그 부분만 남긴다.
+    private func acknowledgePendingOrganizeResultIfNeeded() async {
         guard let result = try? await captureService.pendingOrganizeResult() else {
             return
         }
 
         switch result.status {
-        case .completed:
-            toast = RecapToastContent(
-                style: .success,
-                message: "\(result.successCount)개의 스크린샷을 정리했어요."
-            )
-        case .partialFailed:
-            toast = RecapToastContent(
-                style: .error,
-                message: "\(result.failCount)개의 스크린샷을 정리하지 못했어요."
-            )
-        case .failed:
-            toast = RecapToastContent(
-                style: .error,
-                message: "스크린샷을 정리하지 못했어요."
-            )
+        case .completed, .partialFailed, .failed:
+            break
         case .cancelled, .processing:
             return
         }
-
-        await Task.yield()
 
         do {
             try await captureService.acknowledgeOrganizeResult(batchID: result.batchId)

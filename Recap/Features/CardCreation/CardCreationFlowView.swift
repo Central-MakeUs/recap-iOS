@@ -10,7 +10,7 @@ struct CardCreationFlowView: View {
     @State private var isNotificationPermissionGuidePresented = false
     @State private var isExitConfirmationPresented = false
     @State private var isAIConsentSheetPresented = false
-    @State private var consentErrorMessage: String?
+    @State private var consentToast: RecapToastContent?
 
     @MainActor
     init(viewModel: CardCreationFlowViewModel) {
@@ -39,12 +39,12 @@ struct CardCreationFlowView: View {
                     message: viewModel.failedLoadCount > 0
                         ? "\(viewModel.failedLoadCount)장의 이미지를 불러오지 못했어요."
                         : nil,
-                    toastMessage: consentErrorMessage,
                     onBack: requestExit,
                     onAdd: presentAdditionalPicker,
                     onRemove: viewModel.removeScreenshot,
                     onConfirm: confirmSelection
                 )
+                .recapToast(consentToast)
             case .processing:
                 CardCreationProcessingView(
                     progress: viewModel.progress.fractionCompleted,
@@ -168,7 +168,7 @@ struct CardCreationFlowView: View {
             do {
                 try await consentStore.refresh()
             } catch {
-                consentErrorMessage = "AI 데이터 전송 동의 상태를 확인하지 못했어요."
+                consentToast = RecapToastMessage.aiConsentLoadFailed.content
                 return
             }
 
@@ -177,7 +177,7 @@ struct CardCreationFlowView: View {
                 return
             }
 
-            consentErrorMessage = nil
+            consentToast = nil
             await continueAfterConsent()
         }
     }
@@ -186,11 +186,11 @@ struct CardCreationFlowView: View {
         Task {
             do {
                 try await consentStore.grantConsent()
-                consentErrorMessage = nil
+                consentToast = nil
                 isAIConsentSheetPresented = false
                 await continueAfterConsent()
             } catch {
-                consentErrorMessage = "AI 데이터 전송 동의를 저장하지 못했어요."
+                consentToast = RecapToastMessage.aiConsentSaveFailed.content
                 isAIConsentSheetPresented = false
             }
         }

@@ -21,7 +21,6 @@ struct SelectedScreenshotsConfirmationView: View {
     let screenshots: [SelectedScreenshot]
     let isSubmitting: Bool
     let message: String?
-    let toastMessage: String?
     let onBack: () -> Void
     let onAdd: () -> Void
     let onRemove: (SelectedScreenshot.ID) -> Void
@@ -44,12 +43,6 @@ struct SelectedScreenshotsConfirmationView: View {
                 .padding(.horizontal, 16)
         }
         .background(Color("RecapBackground").ignoresSafeArea())
-        .overlay(alignment: .bottom) {
-            if let toastMessage {
-                excludedFileToast(message: toastMessage)
-                    .padding(.bottom, 66)
-            }
-        }
     }
 
     private var header: some View {
@@ -168,15 +161,6 @@ struct SelectedScreenshotsConfirmationView: View {
         .disabled(screenshots.isEmpty || isSubmitting)
     }
 
-    private func excludedFileToast(message: String) -> some View {
-        Text(message)
-            .font(.custom("Pretendard-Medium", size: 13))
-            .tracking(-0.26)
-            .foregroundStyle(.white)
-            .frame(width: 205, height: 39)
-            .background(Color.black.opacity(0.5))
-            .clipShape(Capsule())
-    }
 }
 
 private struct ScreenshotDataImage: View {
@@ -199,7 +183,6 @@ private struct ScreenshotDataImage: View {
         screenshots: previewScreenshots,
         isSubmitting: false,
         message: nil,
-        toastMessage: nil,
         onBack: {},
         onAdd: {},
         onRemove: { _ in },
@@ -212,7 +195,6 @@ private struct ScreenshotDataImage: View {
         screenshots: previewScreenshots,
         isSubmitting: false,
         message: nil,
-        toastMessage: "이미지가 아닌 파일은 제외했어요",
         onBack: {},
         onAdd: {},
         onRemove: { _ in },
