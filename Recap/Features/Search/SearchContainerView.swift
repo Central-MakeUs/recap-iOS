@@ -3,7 +3,7 @@ import SwiftUI
 @MainActor
 struct SearchContainerView: View {
     @Environment(AppRouter.self) private var router
-    @Environment(RecapCardStore.self) private var cardStore
+    @Environment(CardStore.self) private var cardStore
 
     @State private var model: SearchFeatureModel
     @State private var recentSearchStore: RecentSearchStore
@@ -58,7 +58,7 @@ struct SearchContainerView: View {
     private func handleAction(_ action: SearchAction) {
         switch action {
         case .openCard(let card):
-            cardStore.cacheRemoteCards([card])
+            cardStore.upsert(card)
             router.navigate(.remoteCardDetail(card))
         }
     }

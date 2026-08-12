@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CardEditView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(RecapCardStore.self) private var cardStore
+    @Environment(CardStore.self) private var cardStore
 
     let card: InformationCard
 
@@ -95,7 +95,7 @@ struct CardEditView: View {
             try await saveAction(draft.normalized())
             return
         }
-        cardStore.updateCard(id: card.id, with: draft.normalized())
+        cardStore.applyEdit(draft.normalized(), toCaptureID: card.captureID)
     }
 
     private func close() {
@@ -123,6 +123,6 @@ struct CardEditView: View {
     NavigationStack {
         CardEditView(card: SampleData.cards[1])
     }
-    .environment(PreviewStores.recapCardStore())
+    .environment(PreviewStores.cardStore())
 }
 #endif

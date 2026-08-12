@@ -4,7 +4,7 @@ struct RecapRootView: View {
     @State private var sessionStore: RecapSessionStore
     @State private var onboardingStore: OnboardingProgressStore
     @State private var router: AppRouter
-    @State private var cardStore: RecapCardStore
+    @State private var cardStore: CardStore
     @State private var isSplashPresented: Bool
     @State private var requiredUpdateStatus: AppVersionStatus?
 
@@ -17,7 +17,7 @@ struct RecapRootView: View {
         self.init(
             dependencies: dependencies,
             router: AppRouter(),
-            cardStore: RecapCardStore(cards: []),
+            cardStore: CardStore(captureMutator: dependencies.captureService),
             initiallyShowsSplash: initiallyShowsSplash
         )
     }
@@ -25,7 +25,7 @@ struct RecapRootView: View {
     init(
         dependencies: RecapDependencies,
         router: AppRouter,
-        cardStore: RecapCardStore,
+        cardStore: CardStore,
         initiallyShowsSplash: Bool = true
     ) {
         self.dependencies = dependencies
@@ -180,7 +180,7 @@ struct RecapRootView: View {
             onboardingProgress: .completed
         ),
         router: AppRouter(),
-        cardStore: PreviewStores.recapCardStore(),
+        cardStore: PreviewStores.cardStore(),
         initiallyShowsSplash: false
     )
 }

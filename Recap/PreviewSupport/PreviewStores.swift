@@ -1,7 +1,9 @@
 #if DEBUG
 enum PreviewStores {
-    static func recapCardStore() -> RecapCardStore {
-        RecapCardStore(cards: SampleData.cards)
+    static func cardStore() -> CardStore {
+        let store = CardStore(captureMutator: PreviewCaptureService())
+        store.upsert(SampleData.cards)
+        return store
     }
 }
 #endif

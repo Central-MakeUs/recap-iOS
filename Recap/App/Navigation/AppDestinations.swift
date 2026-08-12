@@ -3,7 +3,7 @@ import SwiftUI
 extension View {
     @MainActor
     func withAppNavigationDestinations(
-        cardStore: RecapCardStore,
+        cardStore: CardStore,
         homeSummaryLoader: any HomeSummaryLoading,
         archiveLoader: any ArchiveLoading,
         searchLoader: any SearchLoading,
@@ -39,7 +39,7 @@ extension View {
     @ViewBuilder
     private func destination(
         for route: AppRoute,
-        cardStore: RecapCardStore,
+        cardStore: CardStore,
         homeSummaryLoader: any HomeSummaryLoading,
         archiveLoader: any ArchiveLoading,
         searchLoader: any SearchLoading,
@@ -108,7 +108,7 @@ extension View {
 }
 
 private struct RemoteCardDetailDestination: View {
-    @Environment(RecapCardStore.self) private var cardStore
+    @Environment(CardStore.self) private var cardStore
 
     let card: InformationCard
     let captureService: any CaptureServing
@@ -123,7 +123,7 @@ private struct RemoteCardDetailDestination: View {
             onDeleted: onDeleted
         )
             .onAppear {
-                cardStore.cacheRemoteCards([card])
+                cardStore.upsert(card)
             }
     }
 }

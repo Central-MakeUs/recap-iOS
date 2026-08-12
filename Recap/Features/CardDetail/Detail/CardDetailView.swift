@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CardDetailView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(RecapCardStore.self) private var cardStore
+    @Environment(CardStore.self) private var cardStore
 
     let imageState: CardDetailImageState
     let onDeleted: () -> Void
@@ -161,7 +161,7 @@ struct CardDetailView: View {
         }
         .task {
             await model.loadDetail()
-            cardStore.cacheRemoteCards([model.card])
+            cardStore.upsert(model.card)
         }
     }
 
@@ -171,7 +171,7 @@ struct CardDetailView: View {
     private func refreshRemoteImageURL(_ failedURL: URL) {
         Task {
             await model.refreshImageURLAfterFailure(failedURL)
-            cardStore.cacheRemoteCards([model.card])
+            cardStore.upsert(model.card)
         }
     }
 
@@ -184,7 +184,7 @@ struct CardDetailView: View {
 
             do {
                 let isFavorite = try await model.toggleFavorite()
-                cardStore.cacheRemoteCards([model.card])
+                cardStore.upsert(model.card)
                 toast = RecapToastMessage.favoriteToggled(isFavorite: isFavorite).content
             } catch {
                 toast = RecapToastMessage.favoriteChangeFailed.content
@@ -194,7 +194,7 @@ struct CardDetailView: View {
 
     private func saveCardEdit(_ draft: CardEditDraft) async throws {
         try await model.update(with: draft)
-        cardStore.cacheRemoteCards([model.card])
+        cardStore.upsert(model.card)
     }
 
     private func requestEdit() {
@@ -256,7 +256,7 @@ struct CardDetailView: View {
         Task {
             do {
                 try await model.delete()
-                cardStore.removeCard(id: displayedCard.id)
+                cardStore.remove(captureID: displayedCard.captureID)
                 onDeleted()
                 dismiss()
             } catch {
@@ -285,6 +285,6 @@ private enum CardDetailPanelAction {
         CardDetailView(card: SampleData.cards[1])
     }
     .environment(AppRouter())
-    .environment(PreviewStores.recapCardStore())
+    .environment(PreviewStores.cardStore())
 }
 #endif
