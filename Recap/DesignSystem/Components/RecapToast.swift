@@ -50,18 +50,12 @@ struct RecapToast: View {
         .frame(height: 45)
         // 뒤 콘텐츠를 뭉개 긴 본문 위에서도 문구가 읽히게 한다(#110, Figma 4310:15258).
         // glassEffect는 배경 밝기를 따라가 흰 글자 대비가 무너져서 쓰지 않는다.
-        // 뒤 콘텐츠가 살짝 비치되 글자로 읽히지는 않게 한다(#110, Figma 4310:15258,
-        // 디자이너 확인 값: 흐림 8, 고르게). Material은 반경을 못 정해 형태까지
-        // 다 뭉개서 쓰지 않는다. 검정 0.50은 Figma 원값 — 흰 배경 위 흰 글자
-        // 대비 4.06:1로 WCAG AA(4.5:1)에는 못 미친다(0.55면 넘지만 비침이
-        // 죽는다). 비침을 우선한 결정이다.
-        .background {
-            ZStack {
-                RecapBackdropBlur(radius: 8)
-                Color.black.opacity(0.50)
-            }
-        }
-        .clipShape(Capsule())
+        // 뒤 콘텐츠가 살짝 비치되 글자로 읽히지는 않게 한다(#110, Figma 4310:15258).
+        // Material은 반경 지정이 안 돼 형태까지 다 뭉개고, 반경을 흉내 내는
+        // UIBlurEffect 기법은 비문서화 동작이라, 공식 API인 Liquid Glass에
+        // 검정 틴트를 얹는 쪽을 택했다. 틴트 55%는 시뮬레이터 비교에서
+        // 문구 대비와 비침이 균형을 이룬 값이다.
+        .glassEffect(.regular.tint(.black.opacity(0.55)))
     }
 }
 
