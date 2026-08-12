@@ -8,8 +8,8 @@ struct SearchResultsView: View {
     }
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(CardStore.self) private var cardStore
     @State private var query: String
-    @State private var favoriteUpdatingIDs: Set<InformationCard.ID> = []
     @State private var toast: RecapToastContent?
 
     let mode: ScreenMode
@@ -65,18 +65,10 @@ struct SearchResultsView: View {
         }
     }
 
-    private func toggleFavorite(_ id: InformationCard.ID) {
-        guard favoriteUpdatingIDs.insert(id).inserted else { return }
-
+    private func toggleFavorite(_ card: Card) {
         Task {
-            defer { favoriteUpdatingIDs.remove(id) }
-
-            do {
-                let isFavorite = try await model.toggleFavorite(cardID: id)
-                toast = RecapToastMessage.favoriteToggled(isFavorite: isFavorite).content
-            } catch {
-                toast = RecapToastMessage.favoriteChangeFailed.content
-            }
+            guard let content = await cardStore.toggleFavoriteReturningToast(card) else { return }
+            toast = content
         }
     }
 
@@ -127,8 +119,7 @@ struct SearchResultsView: View {
                     results: content.results,
                     openCard: openCard,
                     loadNextPageIfNeeded: loadNextPageIfNeeded,
-                    onToggleFavorite: toggleFavorite,
-                    favoriteUpdatingIDs: favoriteUpdatingIDs
+                    onToggleFavorite: toggleFavorite
                 )
             }
         }

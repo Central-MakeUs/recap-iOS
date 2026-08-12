@@ -219,55 +219,6 @@ final class ArchiveAPITests: XCTestCase {
         XCTAssertEqual(invalidationCenter.archiveDetailRevision, 1)
     }
 
-    func testDetailFavoriteToggleCallsAPIAndUpdatesCard() async throws {
-        let card = Self.card(id: UUID(), captureID: 101)
-        let loader = SequencedArchiveLoader(
-            homeResults: [],
-            detailCards: [card]
-        )
-        let mutator = CaptureMutatorStub()
-        let model = ArchiveDetailFeatureModel(
-            scope: .category(.shopping),
-            loader: loader,
-            captureMutator: mutator,
-            invalidationCenter: CardDataInvalidationCenter()
-        )
-
-        await model.loadIfNeeded()
-        let isFavorite = try await model.toggleFavorite(cardID: card.id)
-
-        XCTAssertTrue(isFavorite)
-        XCTAssertEqual(mutator.favoriteUpdates, [.init(captureID: 101, isFavorite: true)])
-        guard case .loaded(let cards) = model.state else {
-            return XCTFail("Expected loaded archive cards")
-        }
-        XCTAssertTrue(try XCTUnwrap(cards.first).isFavorite)
-    }
-
-    func testFavoritesToggleRemovesUnfavoritedCard() async throws {
-        let card = Self.card(id: UUID(), captureID: 101).with(isFavorite: true)
-        let loader = SequencedArchiveLoader(
-            homeResults: [],
-            detailCards: [card]
-        )
-        let mutator = CaptureMutatorStub()
-        let model = ArchiveDetailFeatureModel(
-            scope: .favorites,
-            loader: loader,
-            captureMutator: mutator,
-            invalidationCenter: CardDataInvalidationCenter()
-        )
-
-        await model.loadIfNeeded()
-        let isFavorite = try await model.toggleFavorite(cardID: card.id)
-
-        XCTAssertFalse(isFavorite)
-        guard case .loaded(let cards) = model.state else {
-            return XCTFail("Expected loaded archive cards")
-        }
-        XCTAssertTrue(cards.isEmpty)
-    }
-
     func testURLProtocolIntegrationAddsBearerAndDecodesArchiveList() async throws {
         ArchiveURLProtocol.handler = { request in
             XCTAssertEqual(request.url?.path, "/api/v1/storage/etc")

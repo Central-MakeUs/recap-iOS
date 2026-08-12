@@ -179,6 +179,9 @@ struct CardDetailView: View {
         guard !isFavoriteMutationRunning else { return }
         isFavoriteMutationRunning = true
 
+        // 상세 화면은 아직 자기 모델의 스냅샷으로 그린다(#111 4단계에서 이전).
+        // 결과만 스토어에 반영해 목록 화면들과 어긋나지 않게 한다.
+        let wasFavorite = model.card.isFavorite
         Task {
             defer { isFavoriteMutationRunning = false }
 
@@ -187,7 +190,7 @@ struct CardDetailView: View {
                 cardStore.upsert(model.card)
                 toast = RecapToastMessage.favoriteToggled(isFavorite: isFavorite).content
             } catch {
-                toast = RecapToastMessage.favoriteChangeFailed.content
+                toast = RecapToastMessage.favoriteToggleFailed(wasFavorite: wasFavorite).content
             }
         }
     }

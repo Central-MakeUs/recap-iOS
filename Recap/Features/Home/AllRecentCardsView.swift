@@ -11,15 +11,14 @@ struct AllRecentCardsContainerView: View {
 
     init(
         summaryLoader: any HomeSummaryLoading,
-        captureMutator: any CaptureMutating,
+        cardStore: CardStore,
         invalidationCenter: CardDataInvalidationCenter
     ) {
         self.invalidationCenter = invalidationCenter
         _model = State(
             initialValue: AllRecentCardsModel(
                 loader: summaryLoader,
-                captureMutator: captureMutator,
-                invalidationCenter: invalidationCenter
+                cardStore: cardStore
             )
         )
     }
@@ -32,7 +31,6 @@ struct AllRecentCardsContainerView: View {
             onBack: dismiss.callAsFunction,
             onSearch: { router.navigate(.search) },
             onSelectCard: { router.navigate(.remoteCardDetail($0)) },
-            onToggleFavorite: { try await model.toggleFavorite(cardID: $0) },
             onLoadMore: model.loadNextPage
         )
         .task(id: reloadTrigger) {
@@ -54,16 +52,16 @@ struct AllRecentCardsContainerView: View {
 }
 
 struct AllRecentCardsView: View {
+    @Environment(CardStore.self) private var cardStore
+
     let cards: [InformationCard]
     let totalCount: Int
     let isLoadingNextPage: Bool
     let onBack: () -> Void
     let onSearch: () -> Void
     let onSelectCard: (InformationCard) -> Void
-    var onToggleFavorite: (InformationCard.ID) async throws -> Bool = { _ in false }
     var onLoadMore: () async -> Void = {}
 
-    @State private var favoriteUpdatingIDs: Set<InformationCard.ID> = []
     @State private var toast: RecapToastContent?
 
     var body: some View {
@@ -91,19 +89,19 @@ struct AllRecentCardsView: View {
                         .padding(.top, 9)
                         .padding(.bottom, 7)
 
-                    ForEach(cards) { card in
+                    ForEach(rows, id: \.snapshot.id) { row in
                         AllRecentCardRow(
-                            card: card,
-                            onToggleFavorite: favoriteUpdatingIDs.contains(card.id)
+                            card: row.card,
+                            onToggleFavorite: cardStore.updatingFavoriteIDs.contains(row.card.captureID)
                                 ? nil
-                                : { toggleFavorite(card.id) }
+                                : { toggleFavorite(row.card) }
                         )
                         .contentShape(Rectangle())
                         .onTapGesture {
-                            onSelectCard(card)
+                            onSelectCard(row.snapshot)
                         }
                         .task {
-                            guard card.id == cards.last?.id else { return }
+                            guard row.snapshot.id == cards.last?.id else { return }
                             await onLoadMore()
                         }
                     }
@@ -130,18 +128,22 @@ struct AllRecentCardsView: View {
         }
     }
 
-    private func toggleFavorite(_ id: InformationCard.ID) {
-        guard favoriteUpdatingIDs.insert(id).inserted else { return }
+    /// 스냅샷은 상세 이동 페이로드로, `Card`는 표시·토글로 쓴다.
+    /// 모델이 적재 시점에 upsert하므로 스토어 조회는 실패하지 않는다.
+    private var rows: [(snapshot: InformationCard, card: Card)] {
+        cards.compactMap { snapshot in
+            guard
+                let captureID = snapshot.captureID,
+                let card = cardStore.card(withCaptureID: captureID)
+            else { return nil }
+            return (snapshot, card)
+        }
+    }
 
+    private func toggleFavorite(_ card: Card) {
         Task {
-            defer { favoriteUpdatingIDs.remove(id) }
-
-            do {
-                let isFavorite = try await onToggleFavorite(id)
-                toast = RecapToastMessage.favoriteToggled(isFavorite: isFavorite).content
-            } catch {
-                toast = RecapToastMessage.favoriteChangeFailed.content
-            }
+            guard let content = await cardStore.toggleFavoriteReturningToast(card) else { return }
+            toast = content
         }
     }
 }
@@ -193,6 +195,7 @@ private struct AllRecentCardsNavigationBar: View {
             onSelectCard: { _ in }
         )
     }
+    .environment(PreviewStores.cardStore())
 }
 #endif
 
@@ -202,10 +205,11 @@ private final class AllRecentCardsModel {
     private static let pageSize = 20
 
     private let loader: any HomeSummaryLoading
-    private let captureMutator: any CaptureMutating
-    private let invalidationCenter: CardDataInvalidationCenter
+    private let cardStore: CardStore?
 
-    private(set) var cards: [InformationCard] = []
+    private(set) var cards: [InformationCard] = [] {
+        didSet { cardStore?.upsert(cards) }
+    }
     private(set) var totalCount = 0
     private(set) var hasNext = false
     private(set) var isLoadingNextPage = false
@@ -213,12 +217,10 @@ private final class AllRecentCardsModel {
 
     init(
         loader: any HomeSummaryLoading,
-        captureMutator: any CaptureMutating,
-        invalidationCenter: CardDataInvalidationCenter
+        cardStore: CardStore? = nil
     ) {
         self.loader = loader
-        self.captureMutator = captureMutator
-        self.invalidationCenter = invalidationCenter
+        self.cardStore = cardStore
     }
 
     func load() async {
@@ -234,28 +236,6 @@ private final class AllRecentCardsModel {
     func loadNextPage() async {
         guard hasNext, !isLoadingNextPage else { return }
         await requestPage(reset: false)
-    }
-
-    func toggleFavorite(cardID: InformationCard.ID) async throws -> Bool {
-        guard
-            let index = cards.firstIndex(where: { $0.id == cardID }),
-            let captureID = cards[index].captureID
-        else {
-            throw CaptureLifecycleError.missingCaptureID
-        }
-
-        let previous = cards[index].isFavorite
-        let target = !previous
-        cards[index] = cards[index].with(isFavorite: target)
-
-        do {
-            try await captureMutator.updateFavorite(captureID: captureID, isFavorite: target)
-            invalidationCenter.invalidate(.favoriteChanged)
-            return target
-        } catch {
-            cards[index] = cards[index].with(isFavorite: previous)
-            throw error
-        }
     }
 
     private func requestPage(reset: Bool) async {

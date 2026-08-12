@@ -15,6 +15,7 @@ struct CollectionDetailContainerView: View {
         loader: any ArchiveLoading,
         searchLoader: any SearchLoading,
         captureMutator: any CaptureMutating,
+        cardStore: CardStore,
         invalidationCenter: CardDataInvalidationCenter
     ) {
         self.scope = scope
@@ -24,13 +25,15 @@ struct CollectionDetailContainerView: View {
                 scope: scope,
                 loader: loader,
                 captureMutator: captureMutator,
-                invalidationCenter: invalidationCenter
+                invalidationCenter: invalidationCenter,
+                cardStore: cardStore
             )
         )
         _searchModel = State(
             initialValue: SearchFeatureModel(
                 loader: searchLoader,
-                scope: scope.searchScope
+                scope: scope.searchScope,
+                cardStore: cardStore
             )
         )
     }
@@ -45,7 +48,6 @@ struct CollectionDetailContainerView: View {
             onRetry: retry,
             onImportScreenshots: { router.navigate(.cardCreationStart) },
             onDeleteCards: deleteCards,
-            onToggleFavorite: toggleFavorite,
             onAction: handleAction
         )
         .task(id: reloadTrigger) {
@@ -126,11 +128,6 @@ struct CollectionDetailContainerView: View {
         await searchModel.refreshCurrentQuery()
     }
 
-    private func toggleFavorite(_ id: InformationCard.ID) async throws -> Bool {
-        let isFavorite = try await model.toggleFavorite(cardID: id)
-        await searchModel.refreshCurrentQuery()
-        return isFavorite
-    }
 }
 
 private struct ArchiveDetailReloadTrigger: Hashable {
@@ -183,9 +180,9 @@ struct CollectionDetailView: View {
     @State private var query = ""
     @State private var interactionMode: InteractionMode
     @State private var selectedIDs: Set<InformationCard.ID> = []
+    @Environment(CardStore.self) private var cardStore
     @State private var isDeleteConfirmationPresented = false
     @State private var isDeleting = false
-    @State private var favoriteUpdatingIDs: Set<InformationCard.ID> = []
     @State private var toast: RecapToastContent?
 
     let scope: ArchiveDetailScope
@@ -196,7 +193,6 @@ struct CollectionDetailView: View {
     let onRetry: () -> Void
     let onImportScreenshots: () -> Void
     let onDeleteCards: (Set<InformationCard.ID>) async throws -> Void
-    let onToggleFavorite: (InformationCard.ID) async throws -> Bool
     let onAction: (ArchiveAction) -> Void
 
     init(
@@ -210,7 +206,6 @@ struct CollectionDetailView: View {
         onRetry: @escaping () -> Void = {},
         onImportScreenshots: @escaping () -> Void = {},
         onDeleteCards: @escaping (Set<InformationCard.ID>) async throws -> Void = { _ in },
-        onToggleFavorite: @escaping (InformationCard.ID) async throws -> Bool = { _ in false },
         onAction: @escaping (ArchiveAction) -> Void
     ) {
         self.scope = scope
@@ -223,7 +218,6 @@ struct CollectionDetailView: View {
         self.onRetry = onRetry
         self.onImportScreenshots = onImportScreenshots
         self.onDeleteCards = onDeleteCards
-        self.onToggleFavorite = onToggleFavorite
         self.onAction = onAction
     }
 
@@ -392,11 +386,12 @@ struct CollectionDetailView: View {
                 recapCount(cards.count)
                     .padding(.bottom, 7)
 
-                ForEach(cards) { card in
+                ForEach(rows(for: cards), id: \.snapshot.id) { row in
+                    let card = row.snapshot
                     let searchResult = highlightedResults[card.id]
 
                     RecapInformationCardRow(
-                        card: card,
+                        card: row.card,
                         metadata: scope.rowMetadata,
                         selectionState: isSelecting
                             ? selectedIDs.contains(card.id)
@@ -407,9 +402,10 @@ struct CollectionDetailView: View {
                         summaryText: searchResult?.summary.styledText(
                             defaultColor: Color.recapGray500
                         ),
-                        onToggleFavorite: isSelecting || favoriteUpdatingIDs.contains(card.id)
+                        onToggleFavorite: isSelecting
+                            || cardStore.updatingFavoriteIDs.contains(row.card.captureID)
                             ? nil
-                            : { toggleFavorite(card.id) }
+                            : { toggleFavorite(row.card) }
                     )
                     .onAppear {
                         guard let searchResult else { return }
@@ -504,18 +500,24 @@ struct CollectionDetailView: View {
         isDeleteConfirmationPresented = true
     }
 
-    private func toggleFavorite(_ id: InformationCard.ID) {
-        guard favoriteUpdatingIDs.insert(id).inserted else { return }
+    /// 스냅샷은 선택·하이라이트 키로, `Card`는 표시·토글로 쓴다.
+    /// 모델이 적재 시점에 upsert하므로 스토어 조회는 실패하지 않는다.
+    private func rows(
+        for snapshots: [InformationCard]
+    ) -> [(snapshot: InformationCard, card: Card)] {
+        snapshots.compactMap { snapshot in
+            guard
+                let captureID = snapshot.captureID,
+                let card = cardStore.card(withCaptureID: captureID)
+            else { return nil }
+            return (snapshot, card)
+        }
+    }
 
+    private func toggleFavorite(_ card: Card) {
         Task {
-            defer { favoriteUpdatingIDs.remove(id) }
-
-            do {
-                let isFavorite = try await onToggleFavorite(id)
-                toast = RecapToastMessage.favoriteToggled(isFavorite: isFavorite).content
-            } catch {
-                toast = RecapToastMessage.favoriteChangeFailed.content
-            }
+            guard let content = await cardStore.toggleFavoriteReturningToast(card) else { return }
+            toast = content
         }
     }
 
@@ -558,6 +560,7 @@ struct CollectionDetailView: View {
         )
     }
     .environment(RecapMainTabChromeState())
+    .environment(PreviewStores.cardStore())
 }
 
 #Preview("즐겨찾기 상세") {
@@ -570,6 +573,7 @@ struct CollectionDetailView: View {
         )
     }
     .environment(RecapMainTabChromeState())
+    .environment(PreviewStores.cardStore())
 }
 
 #Preview("보관함 상세 검색") {
@@ -583,6 +587,7 @@ struct CollectionDetailView: View {
         )
     }
     .environment(RecapMainTabChromeState())
+    .environment(PreviewStores.cardStore())
 }
 
 #Preview("보관함 상세 선택") {
@@ -596,6 +601,7 @@ struct CollectionDetailView: View {
         )
     }
     .environment(RecapMainTabChromeState())
+    .environment(PreviewStores.cardStore())
 }
 
 #Preview("보관함 상세 삭제 실패") {
@@ -612,6 +618,7 @@ struct CollectionDetailView: View {
         )
     }
     .environment(RecapMainTabChromeState())
+    .environment(PreviewStores.cardStore())
 }
 #endif
 

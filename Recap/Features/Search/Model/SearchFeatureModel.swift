@@ -14,12 +14,15 @@ final class SearchFeatureModel {
     private let loader: any SearchLoading
     private let scope: SearchScope
     private let pageSize: Int
-    private let captureMutator: (any CaptureMutating)?
-    private let invalidationCenter: CardDataInvalidationCenter?
+    /// 결과가 실릴 때마다 스냅샷을 정식 `Card`로 승격한다. 행이 스토어에서
+    /// 읽으므로 여기서 넣어줘야 화면에 보인다. 테스트는 넘기지 않아도 된다.
+    private let cardStore: CardStore?
 
     private var requestGeneration = 0
     private var activeQuery = ""
-    private(set) var state: State
+    private(set) var state: State {
+        didSet { upsertLoadedCards() }
+    }
     private(set) var isLoadingNextPage = false
 
     init(
@@ -27,41 +30,19 @@ final class SearchFeatureModel {
         scope: SearchScope = .all,
         pageSize: Int = 20,
         initialState: State = .idle,
-        captureMutator: (any CaptureMutating)? = nil,
-        invalidationCenter: CardDataInvalidationCenter? = nil
+        cardStore: CardStore? = nil
     ) {
         self.loader = loader
         self.scope = scope
         self.pageSize = pageSize
         self.state = initialState
-        self.captureMutator = captureMutator
-        self.invalidationCenter = invalidationCenter
+        self.cardStore = cardStore
+        upsertLoadedCards()   // didSet은 초기화 대입에는 불리지 않는다
     }
 
-    func toggleFavorite(cardID: InformationCard.ID) async throws -> Bool {
-        guard
-            case .loaded(let content) = state,
-            let captureMutator,
-            let result = content.results.first(where: { $0.card.id == cardID })
-        else {
-            throw CaptureLifecycleError.missingCaptureID
-        }
-
-        let captureID = result.captureID
-        let targetValue = !result.card.isFavorite
-        state = .loaded(content.applyingFavorite(targetValue, captureID: captureID))
-
-        do {
-            try await captureMutator.updateFavorite(
-                captureID: captureID,
-                isFavorite: targetValue
-            )
-            invalidationCenter?.invalidate(.favoriteChanged)
-            return targetValue
-        } catch {
-            state = .loaded(content)
-            throw error
-        }
+    private func upsertLoadedCards() {
+        guard case .loaded(let content) = state else { return }
+        cardStore?.upsert(content.results.map(\.card))
     }
 
     func search(

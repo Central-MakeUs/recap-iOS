@@ -413,7 +413,10 @@ final class CaptureDetailFeatureModelTests: XCTestCase {
         XCTAssertEqual(invalidationCenter.archiveHomeRevision.types, 0)
         XCTAssertEqual(invalidationCenter.archiveHomeRevision.favorites, 1)
         XCTAssertEqual(invalidationCenter.archiveHomeRevision.other, 0)
-        XCTAssertEqual(invalidationCenter.archiveDetailRevision, 1)
+        XCTAssertEqual(
+            invalidationCenter.archiveDetailRevision, 0,
+            "즐겨찾기 폴더에서 해제한 카드는 머무는 동안 남아 있어야 한다"
+        )
     }
 
     func testCaptureCreationInvalidatesAllCardCollections() {

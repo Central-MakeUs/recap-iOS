@@ -39,7 +39,15 @@ enum RecapPresentation {
     }
 
     static func organizedDateText(for card: InformationCard) -> String {
-        if let organizedAt = card.organizedAt {
+        organizedDateText(organizedAt: card.organizedAt, dateText: card.dateText)
+    }
+
+    static func organizedDateText(for card: Card) -> String {
+        organizedDateText(organizedAt: card.organizedAt, dateText: card.dateText)
+    }
+
+    private static func organizedDateText(organizedAt: Date?, dateText: String) -> String {
+        if let organizedAt {
             let components = Calendar.current.dateComponents(
                 [.month, .day],
                 from: organizedAt
@@ -49,12 +57,12 @@ enum RecapPresentation {
             }
         }
 
-        let numbers = card.dateText
+        let numbers = dateText
             .split(whereSeparator: { !$0.isNumber })
             .compactMap { Int($0) }
 
         guard numbers.count >= 2 else {
-            return card.dateText
+            return dateText
         }
         return String(
             format: "%02d월 %02d일 정리",
