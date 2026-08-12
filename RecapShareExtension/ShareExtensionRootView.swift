@@ -177,10 +177,6 @@ final class ShareExtensionViewModel {
         }
         let providers = Array(imageProviders.prefix(20))
 
-        if imageProviders.count < attachments.count {
-            toastMessage = "이미지가 아닌 파일은 제외했어요"
-        }
-
         var loadedScreenshots: [SelectedScreenshot] = []
         for provider in providers {
             if let sourceData = try? await provider.imageData(),
