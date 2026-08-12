@@ -39,9 +39,12 @@ final class CardDataInvalidationCenter {
     func invalidate(_ change: CardDataChange) {
         switch change {
         case .favoriteChanged:
+            // 보관함 상세는 건드리지 않는다. 폴더 목록의 별 상태는 공유 `Card`로
+            // 이미 실시간이고, 즐겨찾기 폴더에서 해제한 카드는 머무는 동안 남아
+            // 있다가 다시 들어올 때 빠진다(사진 앱 즐겨찾기 앨범과 같은 규칙).
+            // 즉시 빼면 잘못 누른 별을 되살릴 방법이 없다.
             homeRevision &+= 1
             archiveHomeRevision.favorites &+= 1
-            archiveDetailRevision &+= 1
             searchRevision &+= 1
         case .captureCreated, .captureUpdated, .captureDeleted, .organizeResultAcknowledged:
             homeRevision &+= 1

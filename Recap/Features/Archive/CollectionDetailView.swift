@@ -48,7 +48,6 @@ struct CollectionDetailContainerView: View {
             onRetry: retry,
             onImportScreenshots: { router.navigate(.cardCreationStart) },
             onDeleteCards: deleteCards,
-            onFavoriteToggled: refreshScopedSearch,
             onAction: handleAction
         )
         .task(id: reloadTrigger) {
@@ -129,13 +128,6 @@ struct CollectionDetailContainerView: View {
         await searchModel.refreshCurrentQuery()
     }
 
-    /// 범위 내 검색 결과의 즐겨찾기 표시를 맞추기 위한 후처리.
-    /// 토글 자체는 뷰가 `CardStore`로 직접 한다.
-    private func refreshScopedSearch() {
-        Task {
-            await searchModel.refreshCurrentQuery()
-        }
-    }
 }
 
 private struct ArchiveDetailReloadTrigger: Hashable {
@@ -201,7 +193,6 @@ struct CollectionDetailView: View {
     let onRetry: () -> Void
     let onImportScreenshots: () -> Void
     let onDeleteCards: (Set<InformationCard.ID>) async throws -> Void
-    let onFavoriteToggled: () -> Void
     let onAction: (ArchiveAction) -> Void
 
     init(
@@ -215,7 +206,6 @@ struct CollectionDetailView: View {
         onRetry: @escaping () -> Void = {},
         onImportScreenshots: @escaping () -> Void = {},
         onDeleteCards: @escaping (Set<InformationCard.ID>) async throws -> Void = { _ in },
-        onFavoriteToggled: @escaping () -> Void = {},
         onAction: @escaping (ArchiveAction) -> Void
     ) {
         self.scope = scope
@@ -228,7 +218,6 @@ struct CollectionDetailView: View {
         self.onRetry = onRetry
         self.onImportScreenshots = onImportScreenshots
         self.onDeleteCards = onDeleteCards
-        self.onFavoriteToggled = onFavoriteToggled
         self.onAction = onAction
     }
 
@@ -529,7 +518,6 @@ struct CollectionDetailView: View {
         Task {
             guard let content = await cardStore.toggleFavoriteReturningToast(card) else { return }
             toast = content
-            onFavoriteToggled()
         }
     }
 

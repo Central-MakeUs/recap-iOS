@@ -20,8 +20,9 @@ final class CardStore {
     /// `CaptureServing` 전체를 받을 이유가 없다.
     private let captureMutator: any CaptureMutating
     /// 홈 요약 등 아직 스냅샷 사본을 그리는 화면을 위한 다리. 토글 성공 시
-    /// 재조회를 유발해 그 화면들도 따라오게 한다. 모든 화면이 `Card`를 읽게
-    /// 되면(#111 5단계) 함께 사라진다.
+    /// 재조회를 유발해 그 화면들도 따라오게 한다(보관함 상세는 예외 —
+    /// `CardDataInvalidationCenter` 참고). 모든 화면이 `Card`를 읽게 되면
+    /// (#111 5단계) 함께 사라진다.
     private let invalidationCenter: CardDataInvalidationCenter?
 
     init(
