@@ -19,9 +19,17 @@ final class CardStore {
     /// 변경 4종(즐겨찾기·편집·삭제·신고)만 묶은 면. 조회·업로드까지 가진
     /// `CaptureServing` 전체를 받을 이유가 없다.
     private let captureMutator: any CaptureMutating
+    /// 홈 요약 등 아직 스냅샷 사본을 그리는 화면을 위한 다리. 토글 성공 시
+    /// 재조회를 유발해 그 화면들도 따라오게 한다. 모든 화면이 `Card`를 읽게
+    /// 되면(#111 5단계) 함께 사라진다.
+    private let invalidationCenter: CardDataInvalidationCenter?
 
-    init(captureMutator: any CaptureMutating) {
+    init(
+        captureMutator: any CaptureMutating,
+        invalidationCenter: CardDataInvalidationCenter? = nil
+    ) {
         self.captureMutator = captureMutator
+        self.invalidationCenter = invalidationCenter
     }
 
     // MARK: 조회
@@ -72,6 +80,7 @@ final class CardStore {
                 captureID: card.captureID,
                 isFavorite: card.isFavorite
             )
+            invalidationCenter?.invalidate(.favoriteChanged)
             return card.isFavorite
         } catch {
             card.isFavorite.toggle()
@@ -101,5 +110,20 @@ final class CardStore {
 
     func removeAll() {
         cardsByID.removeAll()
+    }
+}
+
+extension CardStore {
+    /// 토글하고 띄울 토스트를 돌려준다. 중복 탭이라 무시했으면 `nil`.
+    ///
+    /// 네 화면이 토글 후 토스트 고르는 코드까지 복제하지 않도록 여기로 모았다.
+    func toggleFavoriteReturningToast(_ card: Card) async -> RecapToastContent? {
+        let wasFavorite = card.isFavorite
+        do {
+            guard let isFavorite = try await toggleFavorite(card) else { return nil }
+            return RecapToastMessage.favoriteToggled(isFavorite: isFavorite).content
+        } catch {
+            return RecapToastMessage.favoriteToggleFailed(wasFavorite: wasFavorite).content
+        }
     }
 }

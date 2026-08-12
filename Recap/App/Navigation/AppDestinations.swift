@@ -56,13 +56,13 @@ extension View {
         case .search:
             SearchContainerView(
                 loader: searchLoader,
-                captureMutator: captureService,
+                cardStore: cardStore,
                 invalidationCenter: cardDataInvalidationCenter
             )
         case .allRecentCards:
             AllRecentCardsContainerView(
                 summaryLoader: homeSummaryLoader,
-                captureMutator: captureService,
+                cardStore: cardStore,
                 invalidationCenter: cardDataInvalidationCenter
             )
         case .archiveFavorites:
@@ -71,6 +71,7 @@ extension View {
                 loader: archiveLoader,
                 searchLoader: searchLoader,
                 captureMutator: captureService,
+                cardStore: cardStore,
                 invalidationCenter: cardDataInvalidationCenter
             )
         case .archiveDetail(let kind):
@@ -79,6 +80,7 @@ extension View {
                 loader: archiveLoader,
                 searchLoader: searchLoader,
                 captureMutator: captureService,
+                cardStore: cardStore,
                 invalidationCenter: cardDataInvalidationCenter
             )
         case .remoteCardDetail(let card):

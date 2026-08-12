@@ -1,12 +1,13 @@
 import SwiftUI
 
 struct SearchResultsList: View {
+    @Environment(CardStore.self) private var cardStore
+
     let totalCount: Int
     let results: [SearchResult]
     let openCard: (InformationCard.ID) -> Void
     let loadNextPageIfNeeded: (SearchResult.ID) -> Void
-    var onToggleFavorite: ((InformationCard.ID) -> Void)?
-    var favoriteUpdatingIDs: Set<InformationCard.ID> = []
+    var onToggleFavorite: ((Card) -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -17,22 +18,25 @@ struct SearchResultsList: View {
 
             VStack(spacing: 0) {
                 ForEach(results) { result in
-                    RecapInformationCardRow(
-                        card: result.card,
-                        titleText: result.title.styledText(
-                            defaultColor: Color.recapGray900
-                        ),
-                        summaryText: result.summary.styledText(
-                            defaultColor: Color.recapGray500
-                        ),
-                        onToggleFavorite: favoriteAction(for: result.card.id)
-                    )
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        openCard(result.card.id)
-                    }
-                    .onAppear {
-                        loadNextPageIfNeeded(result.id)
+                    // 모델이 적재 시점에 upsert하므로 스토어 조회는 실패하지 않는다.
+                    if let card = cardStore.card(withCaptureID: result.captureID) {
+                        RecapInformationCardRow(
+                            card: card,
+                            titleText: result.title.styledText(
+                                defaultColor: Color.recapGray900
+                            ),
+                            summaryText: result.summary.styledText(
+                                defaultColor: Color.recapGray500
+                            ),
+                            onToggleFavorite: favoriteAction(for: card)
+                        )
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            openCard(result.card.id)
+                        }
+                        .onAppear {
+                            loadNextPageIfNeeded(result.id)
+                        }
                     }
                 }
             }
@@ -40,11 +44,14 @@ struct SearchResultsList: View {
         .padding(.top, 1)
     }
 
-    private func favoriteAction(for cardID: InformationCard.ID) -> (() -> Void)? {
-        guard let onToggleFavorite, !favoriteUpdatingIDs.contains(cardID) else {
+    private func favoriteAction(for card: Card) -> (() -> Void)? {
+        guard
+            let onToggleFavorite,
+            !cardStore.updatingFavoriteIDs.contains(card.captureID)
+        else {
             return nil
         }
-        return { onToggleFavorite(cardID) }
+        return { onToggleFavorite(card) }
     }
 }
 
@@ -59,5 +66,6 @@ struct SearchResultsList: View {
         loadNextPageIfNeeded: { _ in }
     )
     .background(Color.recapBackground)
+    .environment(PreviewStores.cardStore())
 }
 #endif

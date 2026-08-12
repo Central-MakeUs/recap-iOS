@@ -55,11 +55,14 @@ struct RecapComponentCatalog: View {
             catalogTitle("card/category · card/nocategory")
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.bottom, 12)
-            RecapInformationCardRow(card: SampleData.cards[2])
-            RecapInformationCardRow(card: SampleData.cards[3], selectionState: true)
-            RecapInformationCardRow(card: SampleData.cards[4], metadata: .organizedDate)
             RecapInformationCardRow(
-                card: SampleData.cards[1],
+        card: Card(snapshot: SampleData.cards[2])!)
+            RecapInformationCardRow(
+        card: Card(snapshot: SampleData.cards[3])!, selectionState: true)
+            RecapInformationCardRow(
+        card: Card(snapshot: SampleData.cards[4])!, metadata: .organizedDate)
+            RecapInformationCardRow(
+        card: Card(snapshot: SampleData.cards[1])!,
                 metadata: .organizedDate,
                 selectionState: true
             )

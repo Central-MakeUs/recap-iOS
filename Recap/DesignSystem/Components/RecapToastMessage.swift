@@ -11,7 +11,8 @@ enum RecapToastMessage {
 
     case favoriteAdded
     case favoriteRemoved
-    case favoriteChangeFailed
+    case favoriteAddFailed
+    case favoriteRemoveFailed
 
     // MARK: 스크린샷 삭제
 
@@ -52,10 +53,10 @@ enum RecapToastMessage {
             // "즐겨찾기에서 삭제"는 카드를 지우는 동작(`screenshotDeleted`)과 헷갈린다.
             // 즐겨찾기 해제는 카드가 그대로 남으므로 "해제"로 쓴다.
             .init(style: .success, message: "즐겨찾기를 해제했어요.")
-        case .favoriteChangeFailed:
-            // 추가·해제 어느 쪽이 실패했는지 호출부가 알 수 없어 한 문구로 쓴다.
-            // 바뀌는 것은 즐겨찾기 자체가 아니라 그 설정이므로 명사구로 적는다.
-            .init(style: .error, message: "즐겨찾기 변경에 실패했어요. 다시 시도해주세요.")
+        case .favoriteAddFailed:
+            .init(style: .error, message: "즐겨찾기에 추가하지 못했어요. 다시 시도해주세요.")
+        case .favoriteRemoveFailed:
+            .init(style: .error, message: "즐겨찾기를 해제하지 못했어요. 다시 시도해주세요.")
 
         case .screenshotDeleted:
             .init(style: .success, message: "스크린샷을 삭제했어요.")
@@ -99,5 +100,10 @@ enum RecapToastMessage {
     /// 즐겨찾기 토글 결과. 네 화면이 같은 문구를 쓰도록 한곳에서 고른다.
     static func favoriteToggled(isFavorite: Bool) -> RecapToastMessage {
         isFavorite ? .favoriteAdded : .favoriteRemoved
+    }
+
+    /// 토글 실패. 결과를 모르므로 시도 전 상태로 방향을 정한다.
+    static func favoriteToggleFailed(wasFavorite: Bool) -> RecapToastMessage {
+        wasFavorite ? .favoriteRemoveFailed : .favoriteAddFailed
     }
 }

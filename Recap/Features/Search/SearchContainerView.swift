@@ -12,14 +12,13 @@ struct SearchContainerView: View {
 
     init(
         loader: any SearchLoading,
-        captureMutator: any CaptureMutating,
+        cardStore: CardStore,
         invalidationCenter: CardDataInvalidationCenter
     ) {
         _model = State(
             initialValue: SearchFeatureModel(
                 loader: loader,
-                captureMutator: captureMutator,
-                invalidationCenter: invalidationCenter
+                cardStore: cardStore
             )
         )
         _recentSearchStore = State(initialValue: RecentSearchStore())
@@ -29,14 +28,13 @@ struct SearchContainerView: View {
     init(
         loader: any SearchLoading,
         recentSearchStore: RecentSearchStore,
-        captureMutator: any CaptureMutating,
+        cardStore: CardStore,
         invalidationCenter: CardDataInvalidationCenter
     ) {
         _model = State(
             initialValue: SearchFeatureModel(
                 loader: loader,
-                captureMutator: captureMutator,
-                invalidationCenter: invalidationCenter
+                cardStore: cardStore
             )
         )
         _recentSearchStore = State(initialValue: recentSearchStore)
