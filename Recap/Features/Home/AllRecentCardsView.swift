@@ -138,17 +138,9 @@ struct AllRecentCardsView: View {
 
             do {
                 let isFavorite = try await onToggleFavorite(id)
-                toast = RecapToastContent(
-                    style: .success,
-                    message: isFavorite
-                        ? "즐겨찾기에 추가했어요."
-                        : "즐겨찾기에서 해제했어요."
-                )
+                toast = RecapToastMessage.favoriteToggled(isFavorite: isFavorite).content
             } catch {
-                toast = RecapToastContent(
-                    style: .error,
-                    message: "즐겨찾기를 변경하지 못했어요. 다시 시도해주세요."
-                )
+                toast = RecapToastMessage.favoriteChangeFailed.content
             }
         }
     }

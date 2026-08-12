@@ -185,17 +185,9 @@ struct CardDetailView: View {
             do {
                 let isFavorite = try await model.toggleFavorite()
                 cardStore.cacheRemoteCards([model.card])
-                toast = RecapToastContent(
-                    style: .success,
-                    message: isFavorite
-                        ? "즐겨찾기에 추가했어요."
-                        : "즐겨찾기에서 삭제했어요."
-                )
+                toast = RecapToastMessage.favoriteToggled(isFavorite: isFavorite).content
             } catch {
-                toast = RecapToastContent(
-                    style: .error,
-                    message: "즐겨찾기를 변경하지 못했어요. 다시 시도해주세요."
-                )
+                toast = RecapToastMessage.favoriteChangeFailed.content
             }
         }
     }
@@ -245,15 +237,9 @@ struct CardDetailView: View {
         Task {
             do {
                 try await model.report(reason: reason, detail: detail)
-                toast = RecapToastContent(
-                    style: .success,
-                    message: "신고가 접수됐어요. 검토 후 개선에 반영할게요."
-                )
+                toast = RecapToastMessage.reportAccepted.content
             } catch {
-                toast = RecapToastContent(
-                    style: .error,
-                    message: "신고를 접수하지 못했어요. 다시 시도해주세요."
-                )
+                toast = RecapToastMessage.reportFailed.content
             }
         }
     }
@@ -274,10 +260,7 @@ struct CardDetailView: View {
                 onDeleted()
                 dismiss()
             } catch {
-                toast = RecapToastContent(
-                    style: .error,
-                    message: "스크린샷을 삭제하지 못했어요. 다시 시도해주세요."
-                )
+                toast = RecapToastMessage.screenshotDeleteFailed.content
             }
         }
     }

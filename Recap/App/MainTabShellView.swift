@@ -99,10 +99,7 @@ struct AppShellView: View {
     }
 
     private func showCardDeletedToast() {
-        toast = RecapToastContent(
-            style: .success,
-            message: "스크린샷을 삭제했어요."
-        )
+        toast = RecapToastMessage.screenshotDeleted.content
     }
 
     private func handleAccountDataDeleted() {

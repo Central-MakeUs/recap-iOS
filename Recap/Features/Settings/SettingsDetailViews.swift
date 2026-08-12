@@ -238,10 +238,7 @@ struct DataManagementView: View {
             do {
                 try await consentStore.refresh()
             } catch {
-                model.toast = RecapToastContent(
-                    style: .error,
-                    message: "AI 데이터 전송 동의 상태를 불러오지 못했어요."
-                )
+                model.toast = RecapToastMessage.aiConsentLoadFailed.content
             }
         }
         .recapToast(model.toast)
@@ -385,10 +382,7 @@ struct DataManagementView: View {
                 showsAIConsentSheet = false
             } catch {
                 showsAIConsentSheet = false
-                model.toast = RecapToastContent(
-                    style: .error,
-                    message: "AI 데이터 전송 동의를 저장하지 못했어요."
-                )
+                model.toast = RecapToastMessage.aiConsentSaveFailed.content
             }
         }
     }
@@ -397,11 +391,9 @@ struct DataManagementView: View {
         Task {
             do {
                 try await consentStore.revokeConsent()
+                model.toast = RecapToastMessage.aiConsentRevoked.content
             } catch {
-                model.toast = RecapToastContent(
-                    style: .error,
-                    message: "AI 데이터 전송 동의를 철회하지 못했어요."
-                )
+                model.toast = RecapToastMessage.aiConsentRevokeFailed.content
             }
         }
     }

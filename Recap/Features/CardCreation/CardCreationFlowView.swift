@@ -168,10 +168,7 @@ struct CardCreationFlowView: View {
             do {
                 try await consentStore.refresh()
             } catch {
-                consentToast = RecapToastContent(
-                        style: .error,
-                        message: "AI 데이터 전송 동의 상태를 확인하지 못했어요."
-                    )
+                consentToast = RecapToastMessage.aiConsentLoadFailed.content
                 return
             }
 
@@ -193,10 +190,7 @@ struct CardCreationFlowView: View {
                 isAIConsentSheetPresented = false
                 await continueAfterConsent()
             } catch {
-                consentToast = RecapToastContent(
-                    style: .error,
-                    message: "AI 데이터 전송 동의를 저장하지 못했어요."
-                )
+                consentToast = RecapToastMessage.aiConsentSaveFailed.content
                 isAIConsentSheetPresented = false
             }
         }
