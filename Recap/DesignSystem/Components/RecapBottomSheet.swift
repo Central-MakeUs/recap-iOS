@@ -121,7 +121,7 @@ private struct RecapBottomSheetContainer<Content: View>: View {
                 .offset(y: isSheetVisible ? dragOffset : height)
                 .simultaneousGesture(dismissGesture)
         }
-        .ignoresSafeArea()
+        .ignoresSafeArea(.container)
         .accessibilityAction(.escape, dismiss)
         .onAppear(perform: presentSheet)
         .onChange(of: isPresented) { _, shouldPresent in
