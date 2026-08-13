@@ -55,9 +55,8 @@ struct SearchContainerView: View {
 
     private func handleAction(_ action: SearchAction) {
         switch action {
-        case .openCard(let card):
-            cardStore.upsert(card)
-            router.navigate(.remoteCardDetail(card))
+        case .openCard(let captureID):
+            router.navigate(.remoteCardDetail(captureID))
         }
     }
 }

@@ -42,6 +42,7 @@ struct RecapMainTabContainer: View {
                     tabStack(for: .home) {
                         HomeContainerView(
                             summaryLoader: homeSummaryLoader,
+                            cardStore: cardStore,
                             invalidationCenter: cardDataInvalidationCenter
                         )
                     }

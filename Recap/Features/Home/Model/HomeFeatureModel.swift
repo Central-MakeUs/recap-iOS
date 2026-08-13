@@ -11,11 +11,25 @@ final class HomeFeatureModel {
     }
 
     private let summaryLoader: any HomeSummaryLoading
+    /// 요약이 실릴 때마다 스냅샷을 정식 `Card`로 승격한다. 섹션이 스토어에서 읽는다.
+    private let cardStore: CardStore?
 
-    private(set) var state: State = .idle
+    private(set) var state: State = .idle {
+        didSet { upsertLoadedCards() }
+    }
 
-    init(summaryLoader: any HomeSummaryLoading) {
+    init(
+        summaryLoader: any HomeSummaryLoading,
+        cardStore: CardStore? = nil
+    ) {
         self.summaryLoader = summaryLoader
+        self.cardStore = cardStore
+    }
+
+    private func upsertLoadedCards() {
+        guard case .loaded(let content) = state else { return }
+        cardStore?.upsert(content.recentCards)
+        cardStore?.upsert(content.favoriteCards)
     }
 
     func loadIfNeeded() async {

@@ -372,14 +372,18 @@ final class CaptureDetailFeatureModelTests: XCTestCase {
         XCTAssertEqual(invalidationCenter.archiveDetailRevision, 1)
     }
 
-    func testFavoriteChangeInvalidatesOnlyRelatedData() {
+    func testFavoriteChangeInvalidatesOnlyArchiveHomeFavorites() {
         let invalidationCenter = CardDataInvalidationCenter()
 
         invalidationCenter.invalidate(.favoriteChanged)
 
-        XCTAssertEqual(invalidationCenter.homeRevision, 1)
+        XCTAssertEqual(
+            invalidationCenter.archiveHomeRevision.favorites, 1,
+            "보관함 홈의 즐겨찾기 개수는 서버 사실이라 재조회가 필요하다"
+        )
+        XCTAssertEqual(invalidationCenter.homeRevision, 0, "홈은 복귀 시마다 재조회한다")
+        XCTAssertEqual(invalidationCenter.searchRevision, 0, "결과 소속이 즐겨찾기와 무관하다")
         XCTAssertEqual(invalidationCenter.archiveHomeRevision.types, 0)
-        XCTAssertEqual(invalidationCenter.archiveHomeRevision.favorites, 1)
         XCTAssertEqual(invalidationCenter.archiveHomeRevision.other, 0)
         XCTAssertEqual(
             invalidationCenter.archiveDetailRevision, 0,

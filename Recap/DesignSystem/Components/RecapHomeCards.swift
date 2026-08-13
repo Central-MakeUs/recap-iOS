@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct RecapHomeRecentCard: View {
-    let card: InformationCard
+    let card: Card
 
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
@@ -28,7 +28,7 @@ struct RecapHomeRecentCard: View {
 }
 
 struct RecapHomeFavoriteCard: View {
-    let card: InformationCard
+    let card: Card
 
     var body: some View {
         VStack(alignment: .leading, spacing: 13) {
@@ -63,8 +63,8 @@ struct RecapHomeFavoriteCard: View {
 #Preview("홈 카드") {
     ScrollView(.horizontal, showsIndicators: false) {
         HStack(alignment: .top, spacing: 16) {
-            RecapHomeRecentCard(card: SampleData.cards[2])
-            RecapHomeFavoriteCard(card: SampleData.cards[3])
+            RecapHomeRecentCard(card: Card(snapshot: SampleData.cards[2])!)
+            RecapHomeFavoriteCard(card: Card(snapshot: SampleData.cards[3])!)
         }
         .padding()
     }

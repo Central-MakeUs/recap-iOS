@@ -30,7 +30,7 @@ struct AllRecentCardsContainerView: View {
             isLoadingNextPage: model.isLoadingNextPage,
             onBack: dismiss.callAsFunction,
             onSearch: { router.navigate(.search) },
-            onSelectCard: { router.navigate(.remoteCardDetail($0)) },
+            onSelectCard: { router.navigate(.remoteCardDetail($0.captureID)) },
             onLoadMore: model.loadNextPage
         )
         .task(id: reloadTrigger) {
@@ -59,7 +59,7 @@ struct AllRecentCardsView: View {
     let isLoadingNextPage: Bool
     let onBack: () -> Void
     let onSearch: () -> Void
-    let onSelectCard: (InformationCard) -> Void
+    let onSelectCard: (Card) -> Void
     var onLoadMore: () async -> Void = {}
 
     @State private var toast: RecapToastContent?
@@ -89,19 +89,19 @@ struct AllRecentCardsView: View {
                         .padding(.top, 9)
                         .padding(.bottom, 7)
 
-                    ForEach(rows, id: \.snapshot.id) { row in
+                    ForEach(rows) { card in
                         AllRecentCardRow(
-                            card: row.card,
-                            onToggleFavorite: cardStore.updatingFavoriteIDs.contains(row.card.captureID)
+                            card: card,
+                            onToggleFavorite: cardStore.updatingFavoriteIDs.contains(card.captureID)
                                 ? nil
-                                : { toggleFavorite(row.card) }
+                                : { toggleFavorite(card) }
                         )
                         .contentShape(Rectangle())
                         .onTapGesture {
-                            onSelectCard(row.snapshot)
+                            onSelectCard(card)
                         }
                         .task {
-                            guard row.snapshot.id == cards.last?.id else { return }
+                            guard card.captureID == cards.last?.captureID else { return }
                             await onLoadMore()
                         }
                     }
@@ -128,15 +128,12 @@ struct AllRecentCardsView: View {
         }
     }
 
-    /// 스냅샷은 상세 이동 페이로드로, `Card`는 표시·토글로 쓴다.
+    /// 응답은 순서·소속만 정하고, 그리기는 스토어의 공유 인스턴스로 한다.
     /// 모델이 적재 시점에 upsert하므로 스토어 조회는 실패하지 않는다.
-    private var rows: [(snapshot: InformationCard, card: Card)] {
+    private var rows: [Card] {
         cards.compactMap { snapshot in
-            guard
-                let captureID = snapshot.captureID,
-                let card = cardStore.card(withCaptureID: captureID)
-            else { return nil }
-            return (snapshot, card)
+            guard let captureID = snapshot.captureID else { return nil }
+            return cardStore.card(withCaptureID: captureID)
         }
     }
 

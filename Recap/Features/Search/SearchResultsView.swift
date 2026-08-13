@@ -138,14 +138,8 @@ struct SearchResultsView: View {
     }
 
     private func close() { dismiss() }
-    private func openCard(_ id: InformationCard.ID) {
-        guard
-            case .loaded(let content) = model.state,
-            let card = content.results.first(where: { $0.card.id == id })?.card
-        else {
-            return
-        }
-        onAction(.openCard(card))
+    private func openCard(_ captureID: Int64) {
+        onAction(.openCard(captureID))
     }
 
     private func loadNextPageIfNeeded(_ resultID: SearchResult.ID) {

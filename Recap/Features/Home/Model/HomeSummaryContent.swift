@@ -32,17 +32,6 @@ nonisolated struct HomeSummaryContent: Equatable, Sendable {
         hasAnyCapture = dto.hasAnyCapture
     }
 
-    var allCards: [InformationCard] {
-        var cardsByCaptureID: [Int64: InformationCard] = [:]
-
-        for card in recentCards + favoriteCards {
-            guard let captureID = card.captureID else { continue }
-            cardsByCaptureID[captureID] = card
-        }
-
-        return Array(cardsByCaptureID.values)
-    }
-
     static let empty = HomeSummaryContent(
         recentCards: [],
         favoriteCards: [],
