@@ -30,6 +30,7 @@ struct CardOriginalPreviewSheet: View {
                         )
                         .strokeBorder(Color.recapGray100, lineWidth: 0.5)
                     }
+                    .shadow(color: Color.black.opacity(0.13), radius: 8, x: 0, y: 1)
                     .padding(.horizontal, 34)
                     .padding(.top, 62)
                     .padding(.bottom, 25)
