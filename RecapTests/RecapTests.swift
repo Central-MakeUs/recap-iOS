@@ -1,3 +1,4 @@
+import SwiftUI
 import XCTest
 @testable import Recap
 
@@ -21,6 +22,20 @@ final class RecapTests: XCTestCase {
 
         XCTAssertEqual(size.width, 307, accuracy: 0.001)
         XCTAssertEqual(size.height, 138.15, accuracy: 0.001)
+    }
+
+    func testOriginalPreviewMagnifiesAroundPinchLocation() {
+        let offset = ZoomableImageLayout.offsetPreservingMagnificationAnchor(
+            initialOffset: .zero,
+            imageSize: CGSize(width: 300, height: 600),
+            magnificationAnchor: UnitPoint(x: 0.75, y: 0.75),
+            transformAnchor: UnitPoint(x: 0.5, y: 0),
+            initialScale: 1,
+            nextScale: 2
+        )
+
+        XCTAssertEqual(offset.width, -75, accuracy: 0.001)
+        XCTAssertEqual(offset.height, -450, accuracy: 0.001)
     }
 
     func testApplicationModuleLoads() {

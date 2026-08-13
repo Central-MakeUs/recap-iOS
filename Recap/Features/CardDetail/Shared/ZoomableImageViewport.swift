@@ -7,6 +7,8 @@ import UIKit
 /// 유지한다. 세로 제한으로 계산한 너비가 가로 경계를 넘으면 가로 제한을
 /// 우선해, 이미지가 화면 밖으로 나가지 않는다.
 struct ZoomableImageViewport: View {
+    private static let magnificationTransformAnchor = UnitPoint(x: 0.5, y: 0)
+
     private enum Metric {
         static let topInset: CGFloat = 62
         static let bottomInset: CGFloat = 25
@@ -35,13 +37,13 @@ struct ZoomableImageViewport: View {
             )
 
             imageCard(size: imageSize)
-                .scaleEffect(scale, anchor: UnitPoint(x: 0.5, y: 0))
+                .scaleEffect(scale, anchor: Self.magnificationTransformAnchor)
                 .offset(offset)
                 .shadow(color: Color.black.opacity(0.13), radius: 8, x: 0, y: 1)
                 .gesture(magnificationGesture(imageSize: imageSize, viewportSize: viewportSize))
                 .simultaneousGesture(
                     panGesture(imageSize: imageSize, viewportSize: viewportSize),
-                    isEnabled: scale > Metric.minimumScale
+                    isEnabled: scale > Metric.minimumScale && !isMagnifying
                 )
                 .onTapGesture(count: 2) {
                     toggleDoubleTapZoom(imageSize: imageSize, viewportSize: viewportSize)
@@ -106,9 +108,17 @@ struct ZoomableImageViewport: View {
                 }
 
                 let nextScale = clampedScale(scaleAtMagnificationStart * value.magnification)
+                let anchorAdjustedOffset = ZoomableImageLayout.offsetPreservingMagnificationAnchor(
+                    initialOffset: offsetAtMagnificationStart,
+                    imageSize: imageSize,
+                    magnificationAnchor: value.startAnchor,
+                    transformAnchor: Self.magnificationTransformAnchor,
+                    initialScale: scaleAtMagnificationStart,
+                    nextScale: nextScale
+                )
                 scale = nextScale
                 offset = boundedOffset(
-                    offsetAtMagnificationStart,
+                    anchorAdjustedOffset,
                     imageSize: imageSize,
                     viewportSize: viewportSize,
                     scale: nextScale
@@ -197,6 +207,26 @@ nonisolated enum ZoomableImageLayout {
             viewportSize.height / imageSize.height
         )
         return CGSize(width: imageSize.width * scale, height: imageSize.height * scale)
+    }
+
+    static func offsetPreservingMagnificationAnchor(
+        initialOffset: CGSize,
+        imageSize: CGSize,
+        magnificationAnchor: UnitPoint,
+        transformAnchor: UnitPoint,
+        initialScale: CGFloat,
+        nextScale: CGFloat
+    ) -> CGSize {
+        let scaleDifference = initialScale - nextScale
+        let anchorDistance = CGSize(
+            width: (magnificationAnchor.x - transformAnchor.x) * imageSize.width,
+            height: (magnificationAnchor.y - transformAnchor.y) * imageSize.height
+        )
+
+        return CGSize(
+            width: initialOffset.width + scaleDifference * anchorDistance.width,
+            height: initialOffset.height + scaleDifference * anchorDistance.height
+        )
     }
 }
 
