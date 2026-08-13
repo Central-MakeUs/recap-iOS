@@ -27,7 +27,6 @@ nonisolated extension InformationCard {
             summary: draft.summary,
             collection: draft.collection,
             organizedAt: organizedAt,
-            dateText: dateText,
             location: location,
             businessHours: businessHours,
             category: draft.collection.displayTitle,

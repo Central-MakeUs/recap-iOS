@@ -222,9 +222,6 @@ extension InformationCard {
             summary: dto.summary,
             collection: dto.typeCode.collectionKind,
             organizedAt: dto.organizedAt,
-            dateText: dto.organizedAt.formatted(
-                .dateTime.year().month(.twoDigits).day(.twoDigits)
-            ),
             location: "",
             businessHours: "",
             category: dto.typeCode.displayTitle,

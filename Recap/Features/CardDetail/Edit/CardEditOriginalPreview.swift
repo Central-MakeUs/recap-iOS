@@ -6,7 +6,9 @@ struct CardEditOriginalPreview: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(card.dateText)
+            // "정리됨" 라벨은 이 화면의 문구다. 디자인 목업(SampleData 원문)에는
+            // 있었지만 예전 dateText 프로덕션 경로에는 빠져 있었다.
+            Text("정리됨 \(card.fullDateText)")
                 .font(RecapFont.pretendard(size: 12, weight: .medium))
                 .tracking(-0.24)
                 .foregroundStyle(Color.recapGray300)

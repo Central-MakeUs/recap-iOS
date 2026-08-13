@@ -426,7 +426,6 @@ final class CaptureDetailFeatureModelTests: XCTestCase {
             title: "카드",
             summary: "요약",
             collection: .knowledge,
-            dateText: "",
             location: "",
             businessHours: "",
             category: "정보 · 지식",

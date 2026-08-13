@@ -348,7 +348,6 @@ final class ArchiveAPITests: XCTestCase {
             summary: "요약",
             collection: .shopping,
             organizedAt: organizedAt,
-            dateText: "",
             location: "",
             businessHours: "",
             category: "쇼핑 · 상품",
