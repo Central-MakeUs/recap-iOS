@@ -94,6 +94,7 @@ private struct RecapBottomSheetContainer<Content: View>: View {
         ZStack(alignment: .bottom) {
             Color.black.opacity(0.30)
                 .ignoresSafeArea()
+                .onTapGesture(perform: dismiss)
 
             content()
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
