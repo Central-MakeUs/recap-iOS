@@ -3,6 +3,26 @@ import XCTest
 
 @MainActor
 final class RecapTests: XCTestCase {
+    func testOriginalPreviewFitsTallImageToTheFixedHeight() {
+        let size = ZoomableImageLayout.renderedSize(
+            imageSize: CGSize(width: 1_080, height: 2_400),
+            viewportSize: CGSize(width: 307, height: 713)
+        )
+
+        XCTAssertEqual(size.width, 307, accuracy: 0.001)
+        XCTAssertEqual(size.height, 682.222, accuracy: 0.001)
+    }
+
+    func testOriginalPreviewLimitsWideImageToHorizontalInsets() {
+        let size = ZoomableImageLayout.renderedSize(
+            imageSize: CGSize(width: 2_400, height: 1_080),
+            viewportSize: CGSize(width: 307, height: 713)
+        )
+
+        XCTAssertEqual(size.width, 307, accuracy: 0.001)
+        XCTAssertEqual(size.height, 138.15, accuracy: 0.001)
+    }
+
     func testApplicationModuleLoads() {
         XCTAssertTrue(true)
     }

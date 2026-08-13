@@ -73,7 +73,7 @@ struct RecapRemoteImage<
 >: View {
     let url: URL
     let onExpiredURL: (URL) -> Void
-    @ViewBuilder let imageContent: (Image) -> ImageContent
+    @ViewBuilder let imageContent: (UIImage) -> ImageContent
     @ViewBuilder let loadingContent: () -> LoadingContent
     @ViewBuilder let failureContent: () -> FailureContent
 
@@ -85,7 +85,7 @@ struct RecapRemoteImage<
             case .idle, .loading:
                 loadingContent()
             case .loaded(let image):
-                imageContent(Image(uiImage: image))
+                imageContent(image)
             case .failed:
                 failureContent()
             }

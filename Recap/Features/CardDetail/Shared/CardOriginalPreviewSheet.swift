@@ -2,7 +2,7 @@ import SwiftUI
 
 /// 원본 스크린샷 전체 보기 (07-01_스크린샷 전체보기).
 ///
-/// 이미지는 좌우 34pt 카드로 놓이고 긴 스크린샷은 세로로 스크롤한다.
+/// 이미지는 위 62pt·아래 25pt·좌우 34pt 경계 안에서 원본 비율을 유지한다.
 /// 상단에는 검정 40%→투명 그라디언트가 이미지 위에 깔려, 어떤 스크린샷
 /// 위에서도 닫기 버튼 주변이 정리돼 보인다.
 struct CardOriginalPreviewSheet: View {
@@ -15,26 +15,7 @@ struct CardOriginalPreviewSheet: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            ScrollView(showsIndicators: true) {
-                imageContent
-                    .clipShape(
-                        RoundedRectangle(
-                            cornerRadius: CardDetailStyle.cornerRadius,
-                            style: .continuous
-                        )
-                    )
-                    .overlay {
-                        RoundedRectangle(
-                            cornerRadius: CardDetailStyle.cornerRadius,
-                            style: .continuous
-                        )
-                        .strokeBorder(Color.recapGray100, lineWidth: 0.5)
-                    }
-                    .shadow(color: Color.black.opacity(0.13), radius: 8, x: 0, y: 1)
-                    .padding(.horizontal, 34)
-                    .padding(.top, 62)
-                    .padding(.bottom, 25)
-            }
+            imageContent
 
             LinearGradient(
                 stops: [
@@ -70,36 +51,30 @@ struct CardOriginalPreviewSheet: View {
     @ViewBuilder
     private var imageContent: some View {
         Group {
-            if let assetName = card.detailImageAssetName {
-                Image(assetName)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: .infinity, alignment: .top)
+            if let assetName = card.detailImageAssetName,
+               let image = UIImage(named: assetName) {
+                ZoomableImageViewport(image: image)
             } else if let imageURL = card.originalImageURL ?? card.thumbnailURL {
                 RecapRemoteImage(
                     url: imageURL,
                     onExpiredURL: onRemoteImageFailure,
                     imageContent: { image in
-                        image
-                            .resizable()
-                            .scaledToFit()
+                        ZoomableImageViewport(image: image)
                     },
                     loadingContent: {
                         ProgressView()
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 300)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                     },
                     failureContent: {
                         CardImageFailureView()
                             .frame(maxWidth: .infinity)
-                            .frame(height: 300)
+                            .frame(maxHeight: .infinity)
                     }
                 )
-                .frame(maxWidth: .infinity, alignment: .top)
             } else {
                 CardImageFailureView()
                     .frame(maxWidth: .infinity)
-                    .frame(height: 300)
+                    .frame(maxHeight: .infinity)
             }
         }
     }
