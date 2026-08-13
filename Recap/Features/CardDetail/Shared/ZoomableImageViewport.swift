@@ -37,6 +37,7 @@ struct ZoomableImageViewport: View {
             imageCard(size: imageSize)
                 .scaleEffect(scale, anchor: UnitPoint(x: 0.5, y: 0))
                 .offset(offset)
+                .shadow(color: Color.black.opacity(0.13), radius: 8, x: 0, y: 1)
                 .gesture(magnificationGesture(imageSize: imageSize, viewportSize: viewportSize))
                 .simultaneousGesture(
                     panGesture(imageSize: imageSize, viewportSize: viewportSize),
@@ -57,23 +58,32 @@ struct ZoomableImageViewport: View {
     }
 
     private func imageCard(size: CGSize) -> some View {
-        Image(uiImage: image)
-            .resizable()
-            .frame(width: size.width, height: size.height)
-            .clipShape(
-                RoundedRectangle(
-                    cornerRadius: CardDetailStyle.cornerRadius,
-                    style: .continuous
-                )
+        ZStack {
+            RoundedRectangle(
+                cornerRadius: CardDetailStyle.cornerRadius,
+                style: .continuous
             )
-            .overlay {
-                RoundedRectangle(
-                    cornerRadius: CardDetailStyle.cornerRadius,
-                    style: .continuous
-                )
-                .strokeBorder(Color.recapGray100, lineWidth: 0.5)
-            }
-            .shadow(color: Color.black.opacity(0.13), radius: 8, x: 0, y: 1)
+            .fill(Color.recapBackground)
+
+            Image(uiImage: image)
+                .resizable()
+                .frame(width: size.width, height: size.height)
+        }
+        .frame(width: size.width, height: size.height)
+        .clipShape(
+            RoundedRectangle(
+                cornerRadius: CardDetailStyle.cornerRadius,
+                style: .continuous
+            )
+        )
+        .overlay {
+            RoundedRectangle(
+                cornerRadius: CardDetailStyle.cornerRadius,
+                style: .continuous
+            )
+            .strokeBorder(Color.recapGray100, lineWidth: 0.5)
+        }
+        .compositingGroup()
     }
 
     private func viewportSize(in size: CGSize) -> CGSize {
@@ -191,8 +201,13 @@ nonisolated enum ZoomableImageLayout {
 }
 
 #if DEBUG
-#Preview("가로 이미지") {
-    ZoomableImageViewport(image: UIImage(systemName: "photo")!)
+#Preview("불투명 원본 이미지") {
+    ZoomableImageViewport(image: UIImage(named: "InformationCardOriginal")!)
+        .background(Color.recapBackground)
+}
+
+#Preview("투명 영역이 있는 이미지") {
+    ZoomableImageViewport(image: UIImage(named: "HomeRecentReturn")!)
         .background(Color.recapBackground)
 }
 #endif
