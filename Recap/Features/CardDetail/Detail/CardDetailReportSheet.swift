@@ -87,9 +87,7 @@ struct CardDetailReportSheet: View {
 
     private func reasonButton(_ reason: CaptureReportReason) -> some View {
         Button {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                selectedReason = reason
-            }
+            selectedReason = reason
             if reason != .other {
                 detail = ""
                 isDetailFocused = false
