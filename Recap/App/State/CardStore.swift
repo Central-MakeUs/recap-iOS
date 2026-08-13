@@ -19,10 +19,8 @@ final class CardStore {
     /// 변경 4종(즐겨찾기·편집·삭제·신고)만 묶은 면. 조회·업로드까지 가진
     /// `CaptureServing` 전체를 받을 이유가 없다.
     private let captureMutator: any CaptureMutating
-    /// 홈 요약 등 아직 스냅샷 사본을 그리는 화면을 위한 다리. 토글 성공 시
-    /// 재조회를 유발해 그 화면들도 따라오게 한다(보관함 상세는 예외 —
-    /// `CardDataInvalidationCenter` 참고). 모든 화면이 `Card`를 읽게 되면
-    /// (#111 5단계) 함께 사라진다.
+    /// 목록 멤버십이 바뀌는 사건(편집·삭제·즐겨찾기 개수)을 화면들에 알린다.
+    /// 별 상태 자체는 공유 `Card`로 실시간이라 신호가 필요 없다.
     private let invalidationCenter: CardDataInvalidationCenter?
 
     init(

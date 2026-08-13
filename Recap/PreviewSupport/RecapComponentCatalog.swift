@@ -82,8 +82,8 @@ struct RecapComponentCatalog: View {
                     assetName: SampleData.cards[0].thumbnailAssetName,
                     isFavorite: true
                 )
-                RecapHomeRecentCard(card: SampleData.cards[2])
-                RecapHomeFavoriteCard(card: SampleData.cards[3])
+                RecapHomeRecentCard(card: Card(snapshot: SampleData.cards[2])!)
+                RecapHomeFavoriteCard(card: Card(snapshot: SampleData.cards[3])!)
             }
         }
     }

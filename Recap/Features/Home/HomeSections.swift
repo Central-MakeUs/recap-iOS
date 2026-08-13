@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct HomeFavoritesSection: View {
-    let cards: [InformationCard]
+    let cards: [Card]
     let openFavorites: () -> Void
-    let openCard: (InformationCard) -> Void
+    let openCard: (Card) -> Void
 
     private let columns = [
         GridItem(.flexible(), spacing: 11),
@@ -43,9 +43,9 @@ struct HomeFavoritesSection: View {
 }
 
 struct HomeRecentSection: View {
-    let cards: [InformationCard]
+    let cards: [Card]
     let openAllRecent: () -> Void
-    let openCard: (InformationCard) -> Void
+    let openCard: (Card) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -150,12 +150,12 @@ private struct HomeSectionEmptyMessage: View {
     ScrollView {
         VStack(spacing: 26) {
             HomeFavoritesSection(
-                cards: SampleData.cards.filter(\.isFavorite),
+                cards: SampleData.cards.filter(\.isFavorite).compactMap(Card.init(snapshot:)),
                 openFavorites: {},
                 openCard: { _ in }
             )
             HomeRecentSection(
-                cards: SampleData.recentCards,
+                cards: SampleData.recentCards.compactMap(Card.init(snapshot:)),
                 openAllRecent: {},
                 openCard: { _ in }
             )

@@ -160,9 +160,7 @@ final class RecapTests: XCTestCase {
         XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .search))
         XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .allRecentCards))
         XCTAssertFalse(
-            RecapMainTabChromePolicy.routeAllowsChrome(
-                for: .remoteCardDetail(SampleData.cards[0])
-            )
+            RecapMainTabChromePolicy.routeAllowsChrome(for: .remoteCardDetail(42))
         )
         XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .cardCreationStart))
         XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .settings))

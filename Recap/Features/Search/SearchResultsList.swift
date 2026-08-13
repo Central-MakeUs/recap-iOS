@@ -5,7 +5,7 @@ struct SearchResultsList: View {
 
     let totalCount: Int
     let results: [SearchResult]
-    let openCard: (InformationCard.ID) -> Void
+    let openCard: (Int64) -> Void
     let loadNextPageIfNeeded: (SearchResult.ID) -> Void
     var onToggleFavorite: ((Card) -> Void)?
 
@@ -32,7 +32,7 @@ struct SearchResultsList: View {
                         )
                         .contentShape(Rectangle())
                         .onTapGesture {
-                            openCard(result.card.id)
+                            openCard(card.captureID)
                         }
                         .onAppear {
                             loadNextPageIfNeeded(result.id)

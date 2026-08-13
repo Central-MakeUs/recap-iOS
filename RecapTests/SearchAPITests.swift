@@ -148,7 +148,7 @@ final class SearchAPITests: XCTestCase {
         XCTAssertEqual(loader.requests.map(\.query), ["파스타 레시피"])
     }
 
-    func testFavoriteInvalidationRefreshesCurrentQuery() async throws {
+    func testRefreshCurrentQueryRequestsSameQueryAgain() async throws {
         let initialResult = SearchResult(dto: .fixture(isFavorite: false))
         let refreshedResult = SearchResult(dto: .fixture(isFavorite: true))
         let loader = RecordingSearchLoader(pages: [
@@ -156,13 +156,10 @@ final class SearchAPITests: XCTestCase {
             SearchPage(count: 1, hasNext: false, items: [refreshedResult])
         ])
         let model = SearchFeatureModel(loader: loader)
-        let invalidationCenter = CardDataInvalidationCenter()
 
         await model.search(query: "파스타", debounce: .milliseconds(0))
-        invalidationCenter.invalidate(.favoriteChanged)
         await model.refreshCurrentQuery()
 
-        XCTAssertEqual(invalidationCenter.searchRevision, 1)
         XCTAssertEqual(loader.requests.map(\.query), ["파스타", "파스타"])
         guard case .loaded(let content) = model.state else {
             return XCTFail("검색 결과가 loaded 상태여야 합니다.")

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HomeContainerView: View {
     @Environment(AppRouter.self) private var router
+    @Environment(CardStore.self) private var cardStore
 
     @State private var model: HomeFeatureModel
     @State private var hasRequestedSummary = false
@@ -9,17 +10,23 @@ struct HomeContainerView: View {
 
     init(
         summaryLoader: any HomeSummaryLoading,
+        cardStore: CardStore,
         invalidationCenter: CardDataInvalidationCenter
     ) {
         self.invalidationCenter = invalidationCenter
-        _model = State(initialValue: HomeFeatureModel(summaryLoader: summaryLoader))
+        _model = State(
+            initialValue: HomeFeatureModel(
+                summaryLoader: summaryLoader,
+                cardStore: cardStore
+            )
+        )
     }
 
     var body: some View {
         HomeView(
             status: homeStatus,
-            recentCards: content.recentCards,
-            favoriteCards: content.favoriteCards,
+            recentCards: cards(for: content.recentCards),
+            favoriteCards: cards(for: content.favoriteCards),
             collectionSummaries: content.frequentTypes,
             onAction: handleAction,
             onRetry: retry
@@ -51,6 +58,15 @@ struct HomeContainerView: View {
         return content
     }
 
+    /// 응답은 순서·소속만 정하고, 그리기는 스토어의 공유 인스턴스로 한다.
+    /// 모델이 적재 시점에 upsert하므로 스토어 조회는 실패하지 않는다.
+    private func cards(for snapshots: [InformationCard]) -> [Card] {
+        snapshots.compactMap { snapshot in
+            guard let captureID = snapshot.captureID else { return nil }
+            return cardStore.card(withCaptureID: captureID)
+        }
+    }
+
     private var homeStatus: HomeStatus {
         switch model.state {
         case .idle, .loading:
@@ -72,8 +88,8 @@ struct HomeContainerView: View {
             router.navigate(.archiveFavorites)
         case .openAllRecent:
             router.navigate(.allRecentCards)
-        case .openCard(let card):
-            router.navigate(.remoteCardDetail(card))
+        case .openCard(let captureID):
+            router.navigate(.remoteCardDetail(captureID))
         case .openArchive(let kind):
             router.navigate(.archiveDetail(kind))
         case .openSettings:
@@ -95,16 +111,16 @@ private struct HomeReloadTrigger: Hashable {
 
 struct HomeView: View {
     var status: HomeStatus = .ready
-    let recentCards: [InformationCard]
-    let favoriteCards: [InformationCard]
+    let recentCards: [Card]
+    let favoriteCards: [Card]
     let collectionSummaries: [CollectionSummary]
     let onAction: (HomeAction) -> Void
     let onRetry: () -> Void
 
     init(
         status: HomeStatus = .ready,
-        recentCards: [InformationCard],
-        favoriteCards: [InformationCard] = [],
+        recentCards: [Card],
+        favoriteCards: [Card] = [],
         collectionSummaries: [CollectionSummary],
         onAction: @escaping (HomeAction) -> Void,
         onRetry: @escaping () -> Void = {}
@@ -141,14 +157,14 @@ struct HomeView: View {
                         HomeFavoritesSection(
                             cards: favoriteCards,
                             openFavorites: { onAction(.openFavorites) },
-                            openCard: { onAction(.openCard($0)) }
+                            openCard: { onAction(.openCard($0.captureID)) }
                         )
                         .padding(.top, 26)
 
                         HomeRecentSection(
                             cards: recentCards,
                             openAllRecent: { onAction(.openAllRecent) },
-                            openCard: { onAction(.openCard($0)) }
+                            openCard: { onAction(.openCard($0.captureID)) }
                         )
                         .padding(.top, 26)
 
@@ -174,8 +190,8 @@ struct HomeView: View {
     NavigationStack {
         HomeView(
             status: .ready,
-            recentCards: SampleData.recentCards,
-            favoriteCards: SampleData.cards.filter(\.isFavorite),
+            recentCards: SampleData.recentCards.compactMap(Card.init(snapshot:)),
+            favoriteCards: SampleData.cards.filter(\.isFavorite).compactMap(Card.init(snapshot:)),
             collectionSummaries: SampleData.collectionSummaries,
             onAction: PreviewActions.handleHome
         )
@@ -186,8 +202,8 @@ struct HomeView: View {
     NavigationStack {
         HomeView(
             status: .ready,
-            recentCards: Array(SampleData.recentCards.prefix(2)),
-            favoriteCards: Array(SampleData.cards.filter(\.isFavorite).prefix(2)),
+            recentCards: Array(SampleData.recentCards.prefix(2)).compactMap(Card.init(snapshot:)),
+            favoriteCards: Array(SampleData.cards.filter(\.isFavorite).prefix(2)).compactMap(Card.init(snapshot:)),
             collectionSummaries: [],
             onAction: PreviewActions.handleHome
         )

@@ -85,8 +85,8 @@ struct CollectionDetailContainerView: View {
             router.navigate(.archiveFavorites)
         case .openArchive(let kind):
             router.navigate(.archiveDetail(kind))
-        case .openCard(let card):
-            router.navigate(.remoteCardDetail(card))
+        case .openCard(let captureID):
+            router.navigate(.remoteCardDetail(captureID))
         case .selectSort(let sort):
             Task {
                 await model.selectSort(sort)
@@ -413,7 +413,7 @@ struct CollectionDetailView: View {
                         if isSelecting {
                             toggleSelection(card.id)
                         } else {
-                            onAction(.openCard(card))
+                            onAction(.openCard(row.card.captureID))
                         }
                     }
                 }
