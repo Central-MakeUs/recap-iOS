@@ -73,7 +73,7 @@ struct CardDetailTextSection: View {
 
     private var aiGeneratedNotice: some View {
         HStack(spacing: 5) {
-            RecapIconView(icon: .information, size: 16, color: Color.recapGray300)
+            RecapIconView(icon: .error, size: 16, color: Color.recapGray300)
 
             Text("AI가 생성한 정보예요. 일부 내용이 정확하지 않을 수 있어요.")
                 .font(RecapFont.pretendard(size: 12, weight: .medium))
