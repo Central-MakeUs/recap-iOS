@@ -3,12 +3,14 @@ import Foundation
 /// 카드 값의 화면 표기 규칙. 표기가 바뀌면 여기만 고친다.
 ///
 /// 프레젠테이션 계층의 확장이다 — `Card` 선언(Models)은 표기 규칙을 모른다.
+/// 고정 표기이므로 달력도 그레고리력을 명시한다. `Calendar.current`는 기기
+/// 설정(불교력·일본력 등)을 따라가 연도가 2569, 令和 7처럼 계산될 수 있다.
 extension Card {
     /// 목록 행·상세의 정리 날짜. 예: "06월 28일 정리"
     var organizedDateText: String {
         guard let organizedAt else { return "" }
 
-        let components = Calendar.current.dateComponents([.month, .day], from: organizedAt)
+        let components = Calendar(identifier: .gregorian).dateComponents([.month, .day], from: organizedAt)
         guard let month = components.month, let day = components.day else { return "" }
         return String(format: "%02d월 %02d일 정리", month, day)
     }
@@ -20,7 +22,7 @@ extension Card {
     var fullDateText: String {
         guard let organizedAt else { return "" }
 
-        let components = Calendar.current.dateComponents(
+        let components = Calendar(identifier: .gregorian).dateComponents(
             [.year, .month, .day],
             from: organizedAt
         )
