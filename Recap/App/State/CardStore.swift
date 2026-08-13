@@ -42,22 +42,20 @@ final class CardStore {
     /// 스냅샷을 정식 인스턴스로 바꾼다. 이미 있으면 그 인스턴스를 갱신해 돌려주므로
     /// 재조회가 정체성을 깨뜨리지 않는다.
     @discardableResult
-    func upsert(_ snapshot: InformationCard) -> Card? {
-        guard let captureID = snapshot.captureID else { return nil }
-
-        if let existing = cardsByID[captureID] {
+    func upsert(_ snapshot: InformationCard) -> Card {
+        if let existing = cardsByID[snapshot.captureID] {
             existing.update(from: snapshot)
             return existing
         }
 
-        guard let card = Card(snapshot: snapshot) else { return nil }
-        cardsByID[captureID] = card
+        let card = Card(snapshot: snapshot)
+        cardsByID[snapshot.captureID] = card
         return card
     }
 
     @discardableResult
     func upsert(_ snapshots: [InformationCard]) -> [Card] {
-        snapshots.compactMap { upsert($0) }
+        snapshots.map { upsert($0) }
     }
 
     // MARK: 변경
@@ -96,11 +94,8 @@ final class CardStore {
 
     /// 편집 내용을 공유 인스턴스에만 반영한다. 서버 저장까지 하려면
     /// `saveEdit(_:for:)`를 쓴다.
-    ///
-    /// `captureID`가 옵셔널인 것은 `InformationCard`의 유산이다. 실제로 nil인
-    /// 카드는 만들어지지 않으며, 값 타입이 정리되면 함께 사라진다.
-    func applyEdit(_ draft: CardEditDraft, toCaptureID captureID: Int64?) {
-        guard let captureID, let card = cardsByID[captureID] else { return }
+    func applyEdit(_ draft: CardEditDraft, toCaptureID captureID: Int64) {
+        guard let card = cardsByID[captureID] else { return }
 
         card.title = draft.title
         card.summary = draft.summary
@@ -137,8 +132,7 @@ final class CardStore {
         )
     }
 
-    func remove(captureID: Int64?) {
-        guard let captureID else { return }
+    func remove(captureID: Int64) {
         cardsByID[captureID] = nil
     }
 

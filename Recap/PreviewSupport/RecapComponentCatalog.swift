@@ -56,13 +56,13 @@ struct RecapComponentCatalog: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.bottom, 12)
             RecapInformationCardRow(
-        card: Card(snapshot: SampleData.cards[2])!)
+        card: Card(snapshot: SampleData.cards[2]))
             RecapInformationCardRow(
-        card: Card(snapshot: SampleData.cards[3])!, selectionState: true)
+        card: Card(snapshot: SampleData.cards[3]), selectionState: true)
             RecapInformationCardRow(
-        card: Card(snapshot: SampleData.cards[4])!, metadata: .organizedDate)
+        card: Card(snapshot: SampleData.cards[4]), metadata: .organizedDate)
             RecapInformationCardRow(
-        card: Card(snapshot: SampleData.cards[1])!,
+        card: Card(snapshot: SampleData.cards[1]),
                 metadata: .organizedDate,
                 selectionState: true
             )
@@ -82,8 +82,8 @@ struct RecapComponentCatalog: View {
                     assetName: SampleData.cards[0].thumbnailAssetName,
                     isFavorite: true
                 )
-                RecapHomeRecentCard(card: Card(snapshot: SampleData.cards[2])!)
-                RecapHomeFavoriteCard(card: Card(snapshot: SampleData.cards[3])!)
+                RecapHomeRecentCard(card: Card(snapshot: SampleData.cards[2]))
+                RecapHomeFavoriteCard(card: Card(snapshot: SampleData.cards[3]))
             }
         }
     }

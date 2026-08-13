@@ -503,10 +503,7 @@ struct CollectionDetailView: View {
         for snapshots: [InformationCard]
     ) -> [(snapshot: InformationCard, card: Card)] {
         snapshots.compactMap { snapshot in
-            guard
-                let captureID = snapshot.captureID,
-                let card = cardStore.card(withCaptureID: captureID)
-            else { return nil }
+            guard let card = cardStore.card(withCaptureID: snapshot.captureID) else { return nil }
             return (snapshot, card)
         }
     }

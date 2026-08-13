@@ -158,14 +158,10 @@ final class ArchiveAPITests: XCTestCase {
     }
 
     func testFavoritesSortsLocallyByOrganizedDate() async {
-        let older = Self.card(
-            id: UUID(),
-            captureID: 101,
+        let older = Self.card(captureID: 101,
             organizedAt: Date(timeIntervalSince1970: 100)
         )
-        let newer = Self.card(
-            id: UUID(),
-            captureID: 102,
+        let newer = Self.card(captureID: 102,
             organizedAt: Date(timeIntervalSince1970: 200)
         )
         let loader = SequencedArchiveLoader(
@@ -190,9 +186,9 @@ final class ArchiveAPITests: XCTestCase {
 
     func testDetailSelectionDeletionCallsAPIAndRemovesDeletedCards() async throws {
         let cards = [
-            Self.card(id: UUID(), captureID: 101),
-            Self.card(id: UUID(), captureID: 102),
-            Self.card(id: UUID(), captureID: 103)
+            Self.card(captureID: 101),
+            Self.card(captureID: 102),
+            Self.card(captureID: 103)
         ]
         let loader = SequencedArchiveLoader(
             homeResults: [],
@@ -337,12 +333,10 @@ final class ArchiveAPITests: XCTestCase {
     """
 
     nonisolated private static func card(
-        id: UUID,
         captureID: Int64,
         organizedAt: Date? = nil
     ) -> InformationCard {
         InformationCard(
-            id: id,
             captureID: captureID,
             title: "카드 \(captureID)",
             summary: "요약",

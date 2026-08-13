@@ -11,7 +11,6 @@ enum SampleData {
 
     nonisolated static let cards: [InformationCard] = [
         InformationCard(
-            id: UUID(uuidString: "11111111-1111-1111-1111-111111111111")!,
             captureID: 1,
             title: "집에서 만드는 파스타 레시피 저장아아아아아",
             summary: "재료와 조리 순서를 다시 보기 쉽게 보관",
@@ -27,7 +26,6 @@ enum SampleData {
             isFavorite: false
         ),
         InformationCard(
-            id: UUID(uuidString: "22222222-2222-2222-2222-222222222222")!,
             captureID: 2,
             title: "제주 숙소 예약 정보",
             summary: "체크인 오후 3시, 8월 1박 예약이 확정된 숙소 정보 요약",
@@ -44,7 +42,6 @@ enum SampleData {
             isFavorite: false
         ),
         InformationCard(
-            id: UUID(uuidString: "33333333-3333-3333-3333-333333333333")!,
             captureID: 3,
             title: "택배 반품 절차 정리",
             summary: "반품 접수, 수거 일정, 환불 조건을 한 번에 저장",
@@ -60,7 +57,6 @@ enum SampleData {
             isFavorite: false
         ),
         InformationCard(
-            id: UUID(uuidString: "44444444-4444-4444-4444-444444444444")!,
             captureID: 4,
             title: "연말정산 서류 목록",
             summary: "연말정산 제출에 필요한 서류 정리",
@@ -76,7 +72,6 @@ enum SampleData {
             isFavorite: true
         ),
         InformationCard(
-            id: UUID(uuidString: "55555555-5555-5555-5555-555555555555")!,
             captureID: 5,
             title: "서울 삼겹살 맛집 리스트",
             summary: "서울에서 저장한 삼겹살 맛집 후보",
@@ -92,7 +87,6 @@ enum SampleData {
             isFavorite: true
         ),
         InformationCard(
-            id: UUID(uuidString: "66666666-6666-6666-6666-666666666666")!,
             captureID: 6,
             title: "러닝 전 준비운동",
             summary: "달리기 전에 확인할 준비운동 순서",
@@ -108,7 +102,6 @@ enum SampleData {
             isFavorite: true
         ),
         InformationCard(
-            id: UUID(uuidString: "77777777-7777-7777-7777-777777777777")!,
             captureID: 7,
             title: "숙소 예약 취소 규정",
             summary: "환불 가능 기간 안내 스크린샷",
@@ -123,7 +116,6 @@ enum SampleData {
             isFavorite: false
         ),
         InformationCard(
-            id: UUID(uuidString: "88888888-8888-8888-8888-888888888888")!,
             captureID: 8,
             title: "병원 예약 안내",
             summary: "진료 예약 확인 문자 스크린샷",
@@ -138,7 +130,6 @@ enum SampleData {
             isFavorite: false
         ),
         InformationCard(
-            id: UUID(uuidString: "99999999-9999-9999-9999-999999999999")!,
             captureID: 9,
             title: "좋은 글을 쓰려면 어떻게해야",
             summary: "좋은 글을 쓰기 위한 핵심 원칙",
@@ -189,9 +180,6 @@ enum SampleData {
         cards.filter { $0.collection == kind }
     }
 
-    nonisolated static func card(id: InformationCard.ID) -> InformationCard? {
-        cards.first { $0.id == id }
-    }
 
     nonisolated static func search(_ query: String) -> [InformationCard] {
         guard !query.isEmpty else { return [] }

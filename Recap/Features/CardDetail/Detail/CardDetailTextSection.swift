@@ -42,7 +42,7 @@ struct CardDetailTextSection: View {
 #if DEBUG
 #Preview("정보카드 텍스트") {
     CardDetailTextSection(
-        card: Card(snapshot: SampleData.cards[1])!,
+        card: Card(snapshot: SampleData.cards[1]),
         contentWidth: 375
     )
 }

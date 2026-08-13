@@ -42,9 +42,7 @@ actor PreviewCardRepository {
 
     func deleteCards(captureIDs: [Int64]) {
         let ids = Set(captureIDs)
-        cards.removeAll { card in
-            card.captureID.map(ids.contains) ?? false
-        }
+        cards.removeAll { ids.contains($0.captureID) }
     }
 }
 #endif

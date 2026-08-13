@@ -73,10 +73,10 @@ struct CardEditForm: View {
 
 #if DEBUG
 #Preview("정보카드 수정 폼") {
-    @Previewable @State var draft = CardEditDraft(card: Card(snapshot: SampleData.cards[1])!)
+    @Previewable @State var draft = CardEditDraft(card: Card(snapshot: SampleData.cards[1]))
 
     CardEditForm(
-        card: Card(snapshot: SampleData.cards[1])!,
+        card: Card(snapshot: SampleData.cards[1]),
         draft: $draft,
         onOpenOriginal: {}
     )

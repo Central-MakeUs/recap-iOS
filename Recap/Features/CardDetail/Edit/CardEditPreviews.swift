@@ -4,7 +4,7 @@ import SwiftUI
 private extension SampleData {
     @MainActor
     static var cardEditCard: Card {
-        Card(snapshot: cards[1])!
+        Card(snapshot: cards[1])
     }
 
     @MainActor

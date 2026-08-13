@@ -21,7 +21,6 @@ enum RecapCardCollection {
 nonisolated extension InformationCard {
     func with(editDraft draft: CardEditDraft) -> InformationCard {
         InformationCard(
-            id: id,
             captureID: captureID,
             title: draft.title,
             summary: draft.summary,

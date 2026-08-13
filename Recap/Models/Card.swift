@@ -36,10 +36,9 @@ final class Card: Identifiable {
 
     var id: Int64 { captureID }
 
-    /// 서버 스냅샷에서 만든다. `captureID`가 없는 스냅샷은 표현할 수 없다.
-    init?(snapshot: InformationCard) {
-        guard let captureID = snapshot.captureID else { return nil }
-        self.captureID = captureID
+    /// 서버 스냅샷에서 만든다.
+    init(snapshot: InformationCard) {
+        captureID = snapshot.captureID
         title = snapshot.title
         summary = snapshot.summary
         collection = snapshot.collection

@@ -421,7 +421,6 @@ final class CaptureDetailFeatureModelTests: XCTestCase {
         originalImageURL: URL? = nil
     ) -> InformationCard {
         InformationCard(
-            id: UUID(),
             captureID: 42,
             title: "카드",
             summary: "요약",

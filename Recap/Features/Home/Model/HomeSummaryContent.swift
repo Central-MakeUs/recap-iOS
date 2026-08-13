@@ -45,7 +45,6 @@ extension InformationCard {
         let kind = dto.typeCode.collectionKind
 
         self.init(
-            id: UUID(),
             captureID: dto.captureId,
             title: dto.title,
             summary: dto.summary,

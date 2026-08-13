@@ -124,13 +124,7 @@ final class ArchiveDetailFeatureModel {
     func deleteCards(ids: Set<InformationCard.ID>) async throws {
         guard case .loaded(let cards) = state else { return }
 
-        let selectedCards = cards.filter { ids.contains($0.id) }
-        let captureIDs = try selectedCards.map { card in
-            guard let captureID = card.captureID else {
-                throw CaptureLifecycleError.missingCaptureID
-            }
-            return captureID
-        }
+        let captureIDs = cards.filter { ids.contains($0.id) }.map(\.captureID)
 
         try await cardStore.delete(captureIDs: captureIDs)
 

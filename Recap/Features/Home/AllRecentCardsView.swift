@@ -131,10 +131,7 @@ struct AllRecentCardsView: View {
     /// 응답은 순서·소속만 정하고, 그리기는 스토어의 공유 인스턴스로 한다.
     /// 모델이 적재 시점에 upsert하므로 스토어 조회는 실패하지 않는다.
     private var rows: [Card] {
-        cards.compactMap { snapshot in
-            guard let captureID = snapshot.captureID else { return nil }
-            return cardStore.card(withCaptureID: captureID)
-        }
+        cards.compactMap { cardStore.card(withCaptureID: $0.captureID) }
     }
 
     private func toggleFavorite(_ card: Card) {

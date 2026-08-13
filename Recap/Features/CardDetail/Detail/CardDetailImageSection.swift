@@ -42,7 +42,7 @@ struct CardDetailImageSection: View {
 #if DEBUG
 #Preview("정보카드 이미지 - 로딩 실패") {
     CardDetailImageSection(
-        card: Card(snapshot: SampleData.cards[1])!,
+        card: Card(snapshot: SampleData.cards[1]),
         imageState: .failedCard,
         onOpenOriginal: {}
     )

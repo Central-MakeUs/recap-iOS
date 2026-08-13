@@ -66,7 +66,7 @@ struct CardDetailView: View {
     ) {
         let store = PreviewStores.cardStore()
         self.init(
-            card: store.upsert(snapshot) ?? Card(snapshot: SampleData.cards[0])!,
+            card: store.upsert(snapshot),
             captureService: PreviewCaptureService(),
             cardStore: store,
             imageState: imageState,

@@ -216,7 +216,6 @@ nonisolated enum CaptureLifecycleError: Error, Equatable, Sendable {
 extension InformationCard {
     nonisolated init(detailDTO dto: CaptureDetailDTO) {
         self.init(
-            id: UUID(),
             captureID: dto.captureId,
             title: dto.title,
             summary: dto.summary,
