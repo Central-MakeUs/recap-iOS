@@ -100,6 +100,11 @@ struct SelectedScreenshotsConfirmationView: View {
             ScreenshotDataImage(imageData: screenshot.imageData)
                 .frame(width: 112, height: 112)
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                // 흰 스크린샷이 흰 배경에 묻히지 않게 경계를 그린다.
+                .overlay {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .strokeBorder(Color("RecapGray100"), lineWidth: 0.5)
+                }
 
             Button {
                 onRemove(screenshot.id)
@@ -124,14 +129,14 @@ struct SelectedScreenshotsConfirmationView: View {
                 .renderingMode(.template)
                 .resizable()
                 .scaledToFit()
-                .foregroundStyle(Color("RecapGray300"))
+                .foregroundStyle(Color("RecapGray200"))
                 .frame(width: 24, height: 24)
                 .frame(width: 112, height: 112)
                 .background(Color("RecapBackground"))
                 .overlay {
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
                         .strokeBorder(
-                            Color("RecapGray300"),
+                            Color("RecapGray200"),
                             style: StrokeStyle(lineWidth: 1, dash: [4, 4])
                         )
                 }
