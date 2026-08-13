@@ -26,7 +26,7 @@ struct CardExpandIcon: View {
             }
             .overlay {
                 RoundedRectangle(cornerRadius: 2)
-                    .stroke(Color.recapGray200, lineWidth: 1)
+                    .stroke(Color.recapGray200, lineWidth: 0.5)
             }
     }
 }

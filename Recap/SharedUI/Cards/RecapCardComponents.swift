@@ -28,7 +28,7 @@ struct RecapScreenshotThumbnail: View {
                     url: remoteURL,
                     onExpiredURL: onRemoteLoadFailure,
                     imageContent: { image in
-                        image
+                        Image(uiImage: image)
                             .resizable()
                             .scaledToFill()
                     },

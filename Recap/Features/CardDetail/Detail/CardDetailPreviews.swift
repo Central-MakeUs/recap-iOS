@@ -29,23 +29,9 @@ import SwiftUI
     .environment(PreviewStores.cardStore())
 }
 
-#Preview("원본 이미지 로딩 실패 - 전체") {
+#Preview("원본 이미지 폴백") {
     NavigationStack {
-        CardDetailView(
-            card: SampleData.cards[1],
-            imageState: .failedFullWidth
-        )
-    }
-    .environment(AppRouter())
-    .environment(PreviewStores.cardStore())
-}
-
-#Preview("원본 이미지 로딩 실패 - 카드") {
-    NavigationStack {
-        CardDetailView(
-            card: SampleData.cards[1],
-            imageState: .failedCard
-        )
+        CardDetailView(card: SampleData.cards[8])
     }
     .environment(AppRouter())
     .environment(PreviewStores.cardStore())

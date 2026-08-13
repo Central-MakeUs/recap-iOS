@@ -1,49 +1,62 @@
 import SwiftUI
 
+/// 원본 스크린샷 카드. 새 디자인(07-01)은 전폭 히어로 대신
+/// 가운데 놓인 134×179 카드로 이미지를 보여준다.
 struct CardDetailImageSection: View {
     let card: Card
-    let imageState: CardDetailImageState
     let onOpenOriginal: () -> Void
     var onRemoteImageFailure: (URL) -> Void = { _ in }
 
-    @ViewBuilder
     var body: some View {
-        switch imageState {
-        case .loaded:
-            CardDetailHeroView(onExpand: onOpenOriginal) {
-                RecapScreenshotThumbnail(
-                    kind: card.collection,
-                    assetName: card.detailImageAssetName,
-                    remoteURL: card.originalImageURL ?? card.thumbnailURL,
-                    onRemoteLoadFailure: onRemoteImageFailure
+        Button(action: onOpenOriginal) {
+            RecapScreenshotThumbnail(
+                kind: card.collection,
+                assetName: card.detailImageAssetName,
+                remoteURL: card.originalImageURL ?? card.thumbnailURL,
+                cornerRadius: CardDetailStyle.cornerRadius,
+                size: CardDetailStyle.detailImageSize,
+                fallbackStyle: .folderCharacter,
+                onRemoteLoadFailure: onRemoteImageFailure
+            )
+            .frame(
+                width: CardDetailStyle.detailImageSize.width,
+                height: CardDetailStyle.detailImageSize.height
+            )
+            .clipShape(
+                RoundedRectangle(
+                    cornerRadius: CardDetailStyle.cornerRadius,
+                    style: .continuous
                 )
-                .frame(height: CardDetailStyle.heroHeight)
-                .frame(maxWidth: .infinity)
-                .clipped()
+            )
+            .overlay {
+                RoundedRectangle(
+                    cornerRadius: CardDetailStyle.cornerRadius,
+                    style: .continuous
+                )
+                .strokeBorder(Color.recapGray100, lineWidth: 0.5)
             }
-        case .failedFullWidth:
-            CardDetailHeroView(onExpand: onOpenOriginal) {
-                ZStack {
-                    LinearGradient(
-                        colors: [Color.recapImageFailureFill, .white],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    CardImageFailureView()
-                }
-                .frame(height: CardDetailStyle.heroHeight)
+            .overlay(alignment: .bottomTrailing) {
+                CardExpandIcon()
+                    .padding(10)
             }
-        case .failedCard:
-            CardDetailFailedImageCard(onExpand: onOpenOriginal)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel("원본 이미지 전체 보기")
     }
 }
 
 #if DEBUG
-#Preview("정보카드 이미지 - 로딩 실패") {
+#Preview("정보카드 이미지") {
     CardDetailImageSection(
         card: Card(snapshot: SampleData.cards[1]),
-        imageState: .failedCard,
+        onOpenOriginal: {}
+    )
+}
+
+#Preview("정보카드 이미지 - 폴백") {
+    CardDetailImageSection(
+        card: Card(snapshot: SampleData.cards[8]),
         onOpenOriginal: {}
     )
 }

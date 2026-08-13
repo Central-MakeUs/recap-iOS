@@ -1,8 +1,43 @@
+import SwiftUI
 import XCTest
 @testable import Recap
 
 @MainActor
 final class RecapTests: XCTestCase {
+    func testOriginalPreviewFitsTallImageToTheFixedHeight() {
+        let size = ZoomableImageLayout.renderedSize(
+            imageSize: CGSize(width: 1_080, height: 2_400),
+            viewportSize: CGSize(width: 307, height: 713)
+        )
+
+        XCTAssertEqual(size.width, 307, accuracy: 0.001)
+        XCTAssertEqual(size.height, 682.222, accuracy: 0.001)
+    }
+
+    func testOriginalPreviewLimitsWideImageToHorizontalInsets() {
+        let size = ZoomableImageLayout.renderedSize(
+            imageSize: CGSize(width: 2_400, height: 1_080),
+            viewportSize: CGSize(width: 307, height: 713)
+        )
+
+        XCTAssertEqual(size.width, 307, accuracy: 0.001)
+        XCTAssertEqual(size.height, 138.15, accuracy: 0.001)
+    }
+
+    func testOriginalPreviewMagnifiesAroundPinchLocation() {
+        let offset = ZoomableImageLayout.offsetPreservingMagnificationAnchor(
+            initialOffset: .zero,
+            imageSize: CGSize(width: 300, height: 600),
+            magnificationAnchor: UnitPoint(x: 0.75, y: 0.75),
+            transformAnchor: UnitPoint(x: 0.5, y: 0),
+            initialScale: 1,
+            nextScale: 2
+        )
+
+        XCTAssertEqual(offset.width, -75, accuracy: 0.001)
+        XCTAssertEqual(offset.height, -450, accuracy: 0.001)
+    }
+
     func testApplicationModuleLoads() {
         XCTAssertTrue(true)
     }
@@ -279,15 +314,6 @@ final class RecapTests: XCTestCase {
         XCTAssertEqual(card.originalImageAssetName, "InformationCardOriginal")
         XCTAssertEqual(card.detailImageAssetName, "InformationCardOriginal")
         XCTAssertTrue(card.isFavorite)
-    }
-
-    func testCardDetailImageStatesPreserveFigmaLayoutSpacing() {
-        XCTAssertEqual(CardDetailImageState.loaded.imageTopInset, 0)
-        XCTAssertEqual(CardDetailImageState.loaded.metadataSpacing, 22)
-        XCTAssertEqual(CardDetailImageState.failedFullWidth.imageTopInset, 0)
-        XCTAssertEqual(CardDetailImageState.failedFullWidth.metadataSpacing, 22)
-        XCTAssertEqual(CardDetailImageState.failedCard.imageTopInset, 145)
-        XCTAssertEqual(CardDetailImageState.failedCard.metadataSpacing, 20)
     }
 
     func testOrganizedDateUsesMonthDayAndOrganizedSuffix() throws {
