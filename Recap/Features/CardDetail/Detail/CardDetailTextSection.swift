@@ -61,7 +61,7 @@ struct CardDetailTextSection: View {
 
     private var organizedDateRow: some View {
         HStack(spacing: 4) {
-            RecapIconView(icon: .aiEdit, size: 16, color: Color.recapGray300)
+            RecapIconView(icon: .aiEdit, size: 16, color: Color.recapGray200)
 
             Text(card.organizedFullDateText)
                 .font(RecapFont.pretendard(size: 12, weight: .medium))
@@ -73,7 +73,7 @@ struct CardDetailTextSection: View {
 
     private var aiGeneratedNotice: some View {
         HStack(spacing: 5) {
-            RecapIconView(icon: .error, size: 16, color: Color.recapGray300)
+            RecapIconView(icon: .error, size: 16, color: Color.recapGray200)
 
             Text("AI가 생성한 정보예요. 일부 내용이 정확하지 않을 수 있어요.")
                 .font(RecapFont.pretendard(size: 12, weight: .medium))
