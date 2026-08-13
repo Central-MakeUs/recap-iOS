@@ -39,7 +39,7 @@ nonisolated enum ArchiveSort: String, CaseIterable, Hashable, Sendable {
     }
 }
 
-extension InformationCard {
+extension CardSnapshot {
     nonisolated init(archiveDTO dto: ArchiveCaptureSummaryDTO) {
         self.init(
             captureID: dto.captureId,

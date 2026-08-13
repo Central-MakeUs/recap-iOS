@@ -86,7 +86,7 @@ nonisolated struct SearchHighlightedString: Equatable, Sendable {
 
 nonisolated struct SearchResult: Identifiable, Equatable, Sendable {
     let captureID: Int64
-    let card: InformationCard
+    let card: CardSnapshot
     let title: SearchHighlightedString
     let summary: SearchHighlightedString
 
@@ -101,7 +101,7 @@ nonisolated struct SearchResult: Identifiable, Equatable, Sendable {
         self.captureID = dto.captureId
         self.title = title
         self.summary = summary
-        self.card = InformationCard(
+        self.card = CardSnapshot(
             captureID: dto.captureId,
             title: title.plainText,
             summary: summary.plainText,
@@ -118,7 +118,7 @@ nonisolated struct SearchResult: Identifiable, Equatable, Sendable {
         )
     }
 
-    init(card: InformationCard) {
+    init(card: CardSnapshot) {
         captureID = card.captureID
         self.card = card
         title = SearchHighlightedString(serverValue: card.title)
@@ -127,7 +127,7 @@ nonisolated struct SearchResult: Identifiable, Equatable, Sendable {
 
     private init(
         captureID: Int64,
-        card: InformationCard,
+        card: CardSnapshot,
         title: SearchHighlightedString,
         summary: SearchHighlightedString
     ) {

@@ -42,7 +42,7 @@ struct AllRecentCardsContainerView: View {
         }
     }
 
-    private var cards: [InformationCard] {
+    private var cards: [CardSnapshot] {
         model.cards
     }
 
@@ -54,7 +54,7 @@ struct AllRecentCardsContainerView: View {
 struct AllRecentCardsView: View {
     @Environment(CardStore.self) private var cardStore
 
-    let cards: [InformationCard]
+    let cards: [CardSnapshot]
     let totalCount: Int
     let isLoadingNextPage: Bool
     let onBack: () -> Void
@@ -201,7 +201,7 @@ private final class AllRecentCardsModel {
     private let loader: any HomeSummaryLoading
     private let cardStore: CardStore?
 
-    private(set) var cards: [InformationCard] = [] {
+    private(set) var cards: [CardSnapshot] = [] {
         didSet { cardStore?.upsert(cards) }
     }
     private(set) var totalCount = 0

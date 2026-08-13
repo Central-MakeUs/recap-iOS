@@ -7,7 +7,7 @@ import Observation
 /// 공유하므로 한 화면에서 바꾼 값이 다른 화면에 즉시 반영되고, 화면마다 사본을
 /// 들고 재조회로 동기화할 필요가 없다.
 ///
-/// 값 타입 `InformationCard`는 네트워크 경계를 넘는 스냅샷(Sendable)으로 남고,
+/// 값 타입 `CardSnapshot`는 네트워크 경계를 넘는 스냅샷(Sendable)으로 남고,
 /// 이 클래스는 MainActor 위 화면용이다.
 ///
 /// 변경은 `CardStore`를 거친다. 프로퍼티가 열려 있지만 뷰에서 직접 고치면
@@ -37,7 +37,7 @@ final class Card: Identifiable {
     var id: Int64 { captureID }
 
     /// 서버 스냅샷에서 만든다.
-    init(snapshot: InformationCard) {
+    init(snapshot: CardSnapshot) {
         captureID = snapshot.captureID
         title = snapshot.title
         summary = snapshot.summary
@@ -57,7 +57,7 @@ final class Card: Identifiable {
     }
 
     /// 재조회로 받은 최신 스냅샷을 반영한다. 정체성(`captureID`)은 바뀌지 않는다.
-    func update(from snapshot: InformationCard) {
+    func update(from snapshot: CardSnapshot) {
         title = snapshot.title
         summary = snapshot.summary
         collection = snapshot.collection

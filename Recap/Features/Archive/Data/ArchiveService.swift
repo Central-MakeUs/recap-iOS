@@ -10,7 +10,7 @@ protocol ArchiveLoading {
     func fetchCards(
         scope: ArchiveDetailScope,
         sort: ArchiveSort
-    ) async throws -> [InformationCard]
+    ) async throws -> [CardSnapshot]
 }
 
 extension ArchiveLoading {
@@ -77,7 +77,7 @@ final class ArchiveService: ArchiveLoading {
     func fetchCards(
         scope: ArchiveDetailScope,
         sort: ArchiveSort
-    ) async throws -> [InformationCard] {
+    ) async throws -> [CardSnapshot] {
         let captureList: ArchiveCaptureListDTO
 
         switch scope {
@@ -89,7 +89,7 @@ final class ArchiveService: ArchiveLoading {
             captureList = try await fetchType(kind, sort: sort)
         }
 
-        return captureList.items.map(InformationCard.init(archiveDTO:))
+        return captureList.items.map(CardSnapshot.init(archiveDTO:))
     }
 
     private func fetchFavorites() async throws -> ArchiveCaptureListDTO {

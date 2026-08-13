@@ -419,8 +419,8 @@ final class CaptureDetailFeatureModelTests: XCTestCase {
     private static func card(
         isFavorite: Bool,
         originalImageURL: URL? = nil
-    ) -> InformationCard {
-        InformationCard(
+    ) -> CardSnapshot {
+        CardSnapshot(
             captureID: 42,
             title: "카드",
             summary: "요약",
@@ -541,7 +541,7 @@ private final class CaptureServiceStub: CaptureServing {
     func acknowledgeOrganizeResult(batchID: Int64) async throws {
         state.withLock { $0.acknowledgedBatchIDs.append(batchID) }
     }
-    func captureDetail(captureID: Int64) async throws -> InformationCard {
+    func captureDetail(captureID: Int64) async throws -> CardSnapshot {
         throw APIError.missingResponseData
     }
     func updateFavorite(captureID: Int64, isFavorite: Bool) async throws {}
@@ -586,7 +586,7 @@ private final class FailingFavoriteCaptureService: CaptureServing {
     func cancelOrganize(batchID: Int64) async throws {}
     func pendingOrganizeResult() async throws -> PendingOrganizeResultDTO? { nil }
     func acknowledgeOrganizeResult(batchID: Int64) async throws {}
-    func captureDetail(captureID: Int64) async throws -> InformationCard {
+    func captureDetail(captureID: Int64) async throws -> CardSnapshot {
         throw APIError.transport
     }
     func updateFavorite(captureID: Int64, isFavorite: Bool) async throws {
@@ -609,10 +609,10 @@ private final class RefreshingCaptureService: CaptureServing {
         var updatedDraft: CardEditDraft?
     }
 
-    private let detail: InformationCard
+    private let detail: CardSnapshot
     private let state = Mutex(State())
 
-    init(detail: InformationCard) {
+    init(detail: CardSnapshot) {
         self.detail = detail
     }
 
@@ -638,7 +638,7 @@ private final class RefreshingCaptureService: CaptureServing {
     func cancelOrganize(batchID: Int64) async throws {}
     func pendingOrganizeResult() async throws -> PendingOrganizeResultDTO? { nil }
     func acknowledgeOrganizeResult(batchID: Int64) async throws {}
-    func captureDetail(captureID: Int64) async throws -> InformationCard {
+    func captureDetail(captureID: Int64) async throws -> CardSnapshot {
         state.withLock { $0.detailRequestCount += 1 }
         return detail
     }

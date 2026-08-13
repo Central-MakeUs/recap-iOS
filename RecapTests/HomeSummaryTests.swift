@@ -180,7 +180,7 @@ final class HomeSummaryTests: XCTestCase {
         return HomeSummaryContent(dto: try response.requiredData())
     }
 
-    private static func recentCard(in model: HomeFeatureModel) -> InformationCard? {
+    private static func recentCard(in model: HomeFeatureModel) -> CardSnapshot? {
         guard case .loaded(let content) = model.state else { return nil }
         return content.recentCards.first
     }

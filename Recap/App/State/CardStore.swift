@@ -42,7 +42,7 @@ final class CardStore {
     /// 스냅샷을 정식 인스턴스로 바꾼다. 이미 있으면 그 인스턴스를 갱신해 돌려주므로
     /// 재조회가 정체성을 깨뜨리지 않는다.
     @discardableResult
-    func upsert(_ snapshot: InformationCard) -> Card {
+    func upsert(_ snapshot: CardSnapshot) -> Card {
         if let existing = cardsByID[snapshot.captureID] {
             existing.update(from: snapshot)
             return existing
@@ -54,7 +54,7 @@ final class CardStore {
     }
 
     @discardableResult
-    func upsert(_ snapshots: [InformationCard]) -> [Card] {
+    func upsert(_ snapshots: [CardSnapshot]) -> [Card] {
         snapshots.map { upsert($0) }
     }
 

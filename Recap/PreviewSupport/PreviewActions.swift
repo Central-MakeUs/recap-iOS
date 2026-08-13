@@ -2,7 +2,7 @@
 enum PreviewActions {
     nonisolated static func noop() {}
 
-    nonisolated static func handleCardSelection(_ id: InformationCard.ID) {}
+    nonisolated static func handleCardSelection(_ id: CardSnapshot.ID) {}
 
     nonisolated static func handleHome(_ action: HomeAction) {}
 

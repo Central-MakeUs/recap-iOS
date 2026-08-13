@@ -5,7 +5,7 @@ import Foundation
 /// 화면 모델들이 사본 상태를 들고 있는 동안만 필요하다. 카드가 `CardStore`의
 /// 공유 인스턴스로 옮겨가면(#111 5단계) 함께 사라진다.
 enum RecapCardCollection {
-    static func search(_ cards: [InformationCard], query: String) -> [InformationCard] {
+    static func search(_ cards: [CardSnapshot], query: String) -> [CardSnapshot] {
         guard !query.isEmpty else { return [] }
         return cards.filter { card in
             card.title.localizedCaseInsensitiveContains(query)
@@ -18,9 +18,9 @@ enum RecapCardCollection {
 
 /// 순수 값 복사라 격리가 필요 없다. `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`
 /// 아래에서는 extension 멤버가 암묵적으로 MainActor가 되므로 명시한다.
-nonisolated extension InformationCard {
-    func with(editDraft draft: CardEditDraft) -> InformationCard {
-        InformationCard(
+nonisolated extension CardSnapshot {
+    func with(editDraft draft: CardEditDraft) -> CardSnapshot {
+        CardSnapshot(
             captureID: captureID,
             title: draft.title,
             summary: draft.summary,

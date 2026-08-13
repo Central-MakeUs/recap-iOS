@@ -76,7 +76,7 @@ enum HomeStatus: String, CaseIterable, Identifiable, Hashable {
     var id: String { rawValue }
 }
 
-nonisolated struct InformationCard: Identifiable, Equatable, Sendable {
+nonisolated struct CardSnapshot: Identifiable, Equatable, Sendable {
     /// 서버가 부여한 정체성. `Card`와 같은 키를 쓴다.
     let captureID: Int64
     let title: String

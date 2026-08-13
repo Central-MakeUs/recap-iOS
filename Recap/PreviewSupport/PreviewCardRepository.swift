@@ -2,17 +2,17 @@
 import Foundation
 
 actor PreviewCardRepository {
-    private var cards: [InformationCard]
+    private var cards: [CardSnapshot]
 
-    init(cards: [InformationCard] = SampleData.cards) {
+    init(cards: [CardSnapshot] = SampleData.cards) {
         self.cards = cards
     }
 
-    func allCards() -> [InformationCard] {
+    func allCards() -> [CardSnapshot] {
         cards
     }
 
-    func card(captureID: Int64) throws -> InformationCard {
+    func card(captureID: Int64) throws -> CardSnapshot {
         guard let card = cards.first(where: { $0.captureID == captureID }) else {
             throw CaptureLifecycleError.missingCaptureID
         }

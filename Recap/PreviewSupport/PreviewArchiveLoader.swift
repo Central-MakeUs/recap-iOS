@@ -33,7 +33,7 @@ final class PreviewArchiveLoader: ArchiveLoading {
     func fetchCards(
         scope: ArchiveDetailScope,
         sort: ArchiveSort
-    ) async throws -> [InformationCard] {
+    ) async throws -> [CardSnapshot] {
         let cards = await cardRepository.allCards()
 
         switch scope {
