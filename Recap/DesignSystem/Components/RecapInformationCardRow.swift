@@ -158,26 +158,26 @@ private extension String {
 #if DEBUG
 #Preview("card/category") {
     RecapInformationCardRow(
-        card: Card(snapshot: SampleData.cards[2])!)
+        card: Card(snapshot: SampleData.cards[2]))
 }
 
 #Preview("card/nocategory") {
     RecapInformationCardRow(
-        card: Card(snapshot: SampleData.cards[3])!,
+        card: Card(snapshot: SampleData.cards[3]),
         metadata: .organizedDate
     )
 }
 
 #Preview("card/category/selected") {
     RecapInformationCardRow(
-        card: Card(snapshot: SampleData.cards[2])!,
+        card: Card(snapshot: SampleData.cards[2]),
         selectionState: true
     )
 }
 
 #Preview("card/nocategory/selected") {
     RecapInformationCardRow(
-        card: Card(snapshot: SampleData.cards[3])!,
+        card: Card(snapshot: SampleData.cards[3]),
         metadata: .organizedDate,
         selectionState: true
     )
@@ -185,7 +185,7 @@ private extension String {
 
 #Preview("card/nocategory - 320pt") {
     RecapInformationCardRow(
-        card: Card(snapshot: SampleData.cards[2])!,
+        card: Card(snapshot: SampleData.cards[2]),
         metadata: .organizedDate
     )
     .frame(width: 320)
@@ -193,7 +193,7 @@ private extension String {
 
 #Preview("card/nocategory - 430pt") {
     RecapInformationCardRow(
-        card: Card(snapshot: SampleData.cards[2])!,
+        card: Card(snapshot: SampleData.cards[2]),
         metadata: .organizedDate
     )
     .frame(width: 430)

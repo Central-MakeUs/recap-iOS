@@ -58,7 +58,7 @@ struct CardDetailView: View {
     /// 프리뷰 전용. 실제 화면은 스토어의 공유 `Card`와 captureService를 주입받는다.
     @MainActor
     init(
-        card snapshot: InformationCard,
+        card snapshot: CardSnapshot,
         imageState: CardDetailImageState = .loaded,
         initiallyShowsDeleteConfirmation: Bool = false,
         initialToast: RecapToastContent? = nil,
@@ -66,7 +66,7 @@ struct CardDetailView: View {
     ) {
         let store = PreviewStores.cardStore()
         self.init(
-            card: store.upsert(snapshot) ?? Card(snapshot: SampleData.cards[0])!,
+            card: store.upsert(snapshot),
             captureService: PreviewCaptureService(),
             cardStore: store,
             imageState: imageState,

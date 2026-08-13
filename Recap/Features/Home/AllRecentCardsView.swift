@@ -42,7 +42,7 @@ struct AllRecentCardsContainerView: View {
         }
     }
 
-    private var cards: [InformationCard] {
+    private var cards: [CardSnapshot] {
         model.cards
     }
 
@@ -54,7 +54,7 @@ struct AllRecentCardsContainerView: View {
 struct AllRecentCardsView: View {
     @Environment(CardStore.self) private var cardStore
 
-    let cards: [InformationCard]
+    let cards: [CardSnapshot]
     let totalCount: Int
     let isLoadingNextPage: Bool
     let onBack: () -> Void
@@ -131,10 +131,7 @@ struct AllRecentCardsView: View {
     /// 응답은 순서·소속만 정하고, 그리기는 스토어의 공유 인스턴스로 한다.
     /// 모델이 적재 시점에 upsert하므로 스토어 조회는 실패하지 않는다.
     private var rows: [Card] {
-        cards.compactMap { snapshot in
-            guard let captureID = snapshot.captureID else { return nil }
-            return cardStore.card(withCaptureID: captureID)
-        }
+        cards.compactMap { cardStore.card(withCaptureID: $0.captureID) }
     }
 
     private func toggleFavorite(_ card: Card) {
@@ -204,7 +201,7 @@ private final class AllRecentCardsModel {
     private let loader: any HomeSummaryLoading
     private let cardStore: CardStore?
 
-    private(set) var cards: [InformationCard] = [] {
+    private(set) var cards: [CardSnapshot] = [] {
         didSet { cardStore?.upsert(cards) }
     }
     private(set) var totalCount = 0

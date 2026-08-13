@@ -88,7 +88,7 @@ final class ArchiveAPITests: XCTestCase {
         ])
     }
 
-    func testArchiveCaptureResponseMapsToInformationCard() async throws {
+    func testArchiveCaptureResponseMapsToCardSnapshot() async throws {
         let client = ArchiveNetworkClientStub()
         let service = ArchiveService(networkClient: client)
 
@@ -158,14 +158,10 @@ final class ArchiveAPITests: XCTestCase {
     }
 
     func testFavoritesSortsLocallyByOrganizedDate() async {
-        let older = Self.card(
-            id: UUID(),
-            captureID: 101,
+        let older = Self.card(captureID: 101,
             organizedAt: Date(timeIntervalSince1970: 100)
         )
-        let newer = Self.card(
-            id: UUID(),
-            captureID: 102,
+        let newer = Self.card(captureID: 102,
             organizedAt: Date(timeIntervalSince1970: 200)
         )
         let loader = SequencedArchiveLoader(
@@ -190,9 +186,9 @@ final class ArchiveAPITests: XCTestCase {
 
     func testDetailSelectionDeletionCallsAPIAndRemovesDeletedCards() async throws {
         let cards = [
-            Self.card(id: UUID(), captureID: 101),
-            Self.card(id: UUID(), captureID: 102),
-            Self.card(id: UUID(), captureID: 103)
+            Self.card(captureID: 101),
+            Self.card(captureID: 102),
+            Self.card(captureID: 103)
         ]
         let loader = SequencedArchiveLoader(
             homeResults: [],
@@ -337,12 +333,10 @@ final class ArchiveAPITests: XCTestCase {
     """
 
     nonisolated private static func card(
-        id: UUID,
         captureID: Int64,
         organizedAt: Date? = nil
-    ) -> InformationCard {
-        InformationCard(
-            id: id,
+    ) -> CardSnapshot {
+        CardSnapshot(
             captureID: captureID,
             title: "카드 \(captureID)",
             summary: "요약",
@@ -401,13 +395,13 @@ private final class ArchiveNetworkClientStub: NetworkClient {
 @MainActor
 private final class SequencedArchiveLoader: ArchiveLoading {
     private var homeResults: [Result<ArchiveHomeContent, Error>]
-    private let detailCards: [InformationCard]
+    private let detailCards: [CardSnapshot]
     private(set) var homeRequestCount = 0
     private(set) var detailRequests: [(scope: ArchiveDetailScope, sort: ArchiveSort)] = []
 
     init(
         homeResults: [Result<ArchiveHomeContent, Error>],
-        detailCards: [InformationCard] = []
+        detailCards: [CardSnapshot] = []
     ) {
         self.homeResults = homeResults
         self.detailCards = detailCards
@@ -424,7 +418,7 @@ private final class SequencedArchiveLoader: ArchiveLoading {
     func fetchCards(
         scope: ArchiveDetailScope,
         sort: ArchiveSort
-    ) async throws -> [InformationCard] {
+    ) async throws -> [CardSnapshot] {
         detailRequests.append((scope, sort))
         return detailCards
     }
@@ -492,7 +486,7 @@ private final class CancellationThenSuccessArchiveLoader: ArchiveLoading {
     func fetchCards(
         scope: ArchiveDetailScope,
         sort: ArchiveSort
-    ) async throws -> [InformationCard] {
+    ) async throws -> [CardSnapshot] {
         []
     }
 

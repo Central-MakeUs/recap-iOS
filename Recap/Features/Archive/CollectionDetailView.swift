@@ -96,7 +96,7 @@ struct CollectionDetailContainerView: View {
         }
     }
 
-    private var cards: [InformationCard] {
+    private var cards: [CardSnapshot] {
         guard case .loaded(let cards) = model.state else {
             return []
         }
@@ -120,7 +120,7 @@ struct CollectionDetailContainerView: View {
         }
     }
 
-    private func deleteCards(_ ids: Set<InformationCard.ID>) async throws {
+    private func deleteCards(_ ids: Set<CardSnapshot.ID>) async throws {
         try await model.deleteCards(ids: ids)
         await searchModel.refreshCurrentQuery()
     }
@@ -176,25 +176,25 @@ struct CollectionDetailView: View {
 
     @State private var query = ""
     @State private var interactionMode: InteractionMode
-    @State private var selectedIDs: Set<InformationCard.ID> = []
+    @State private var selectedIDs: Set<CardSnapshot.ID> = []
     @Environment(CardStore.self) private var cardStore
     @State private var isDeleteConfirmationPresented = false
     @State private var isDeleting = false
     @State private var toast: RecapToastContent?
 
     let scope: ArchiveDetailScope
-    let cards: [InformationCard]
+    let cards: [CardSnapshot]
     let searchModel: SearchFeatureModel
     let sort: ArchiveSort
     let loadState: LoadState
     let onRetry: () -> Void
     let onImportScreenshots: () -> Void
-    let onDeleteCards: (Set<InformationCard.ID>) async throws -> Void
+    let onDeleteCards: (Set<CardSnapshot.ID>) async throws -> Void
     let onAction: (ArchiveAction) -> Void
 
     init(
         scope: ArchiveDetailScope,
-        cards: [InformationCard],
+        cards: [CardSnapshot],
         searchModel: SearchFeatureModel,
         sort: ArchiveSort = .latest,
         loadState: LoadState = .loaded,
@@ -202,7 +202,7 @@ struct CollectionDetailView: View {
         initialToast: RecapToastContent? = nil,
         onRetry: @escaping () -> Void = {},
         onImportScreenshots: @escaping () -> Void = {},
-        onDeleteCards: @escaping (Set<InformationCard.ID>) async throws -> Void = { _ in },
+        onDeleteCards: @escaping (Set<CardSnapshot.ID>) async throws -> Void = { _ in },
         onAction: @escaping (ArchiveAction) -> Void
     ) {
         self.scope = scope
@@ -344,8 +344,8 @@ struct CollectionDetailView: View {
 
     @ViewBuilder
     private func loadedContent(
-        cards: [InformationCard],
-        highlightedResults: [InformationCard.ID: SearchResult]
+        cards: [CardSnapshot],
+        highlightedResults: [CardSnapshot.ID: SearchResult]
     ) -> some View {
         if cards.isEmpty {
             recapCount(cards.count)
@@ -375,8 +375,8 @@ struct CollectionDetailView: View {
     }
 
     private func cardList(
-        cards: [InformationCard],
-        highlightedResults: [InformationCard.ID: SearchResult]
+        cards: [CardSnapshot],
+        highlightedResults: [CardSnapshot.ID: SearchResult]
     ) -> some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 0) {
@@ -421,13 +421,13 @@ struct CollectionDetailView: View {
         }
     }
 
-    private var visibleCards: [InformationCard] {
+    private var visibleCards: [CardSnapshot] {
         guard !query.isEmpty else { return cards }
         guard case .loaded(let content) = searchModel.state else { return [] }
         return sortedSearchResults(content.results).map(displayCard)
     }
 
-    private func displayCard(for result: SearchResult) -> InformationCard {
+    private func displayCard(for result: SearchResult) -> CardSnapshot {
         cards.first { $0.captureID == result.captureID } ?? result.card
     }
 
@@ -484,7 +484,7 @@ struct CollectionDetailView: View {
         interactionMode = returnToSearch ? .searching : .browsing
     }
 
-    private func toggleSelection(_ id: InformationCard.ID) {
+    private func toggleSelection(_ id: CardSnapshot.ID) {
         if selectedIDs.contains(id) {
             selectedIDs.remove(id)
         } else {
@@ -500,13 +500,10 @@ struct CollectionDetailView: View {
     /// 스냅샷은 선택·하이라이트 키로, `Card`는 표시·토글로 쓴다.
     /// 모델이 적재 시점에 upsert하므로 스토어 조회는 실패하지 않는다.
     private func rows(
-        for snapshots: [InformationCard]
-    ) -> [(snapshot: InformationCard, card: Card)] {
+        for snapshots: [CardSnapshot]
+    ) -> [(snapshot: CardSnapshot, card: Card)] {
         snapshots.compactMap { snapshot in
-            guard
-                let captureID = snapshot.captureID,
-                let card = cardStore.card(withCaptureID: captureID)
-            else { return nil }
+            guard let card = cardStore.card(withCaptureID: snapshot.captureID) else { return nil }
             return (snapshot, card)
         }
     }

@@ -32,7 +32,7 @@ struct CardEditOriginalPreview: View {
 
 #if DEBUG
 #Preview("정보카드 수정 원본") {
-    CardEditOriginalPreview(card: Card(snapshot: SampleData.cards[1])!, onOpenOriginal: {})
+    CardEditOriginalPreview(card: Card(snapshot: SampleData.cards[1]), onOpenOriginal: {})
         .padding(.horizontal, 16)
 }
 #endif

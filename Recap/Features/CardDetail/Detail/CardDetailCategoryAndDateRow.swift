@@ -24,7 +24,7 @@ struct CardDetailCategoryAndDateRow: View {
 
 #if DEBUG
 #Preview("정보카드 카테고리 및 날짜") {
-    CardDetailCategoryAndDateRow(card: Card(snapshot: SampleData.cards[1])!)
+    CardDetailCategoryAndDateRow(card: Card(snapshot: SampleData.cards[1]))
     .padding()
 }
 #endif

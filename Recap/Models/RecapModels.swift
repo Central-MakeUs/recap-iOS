@@ -76,9 +76,9 @@ enum HomeStatus: String, CaseIterable, Identifiable, Hashable {
     var id: String { rawValue }
 }
 
-nonisolated struct InformationCard: Identifiable, Hashable, Sendable {
-    let id: UUID
-    let captureID: Int64?
+nonisolated struct CardSnapshot: Identifiable, Equatable, Sendable {
+    /// 서버가 부여한 정체성. `Card`와 같은 키를 쓴다.
+    let captureID: Int64
     let title: String
     let summary: String
     let collection: CollectionKind
@@ -95,9 +95,10 @@ nonisolated struct InformationCard: Identifiable, Hashable, Sendable {
     let thumbnailURL: URL?
     var isFavorite: Bool
 
+    var id: Int64 { captureID }
+
     init(
-        id: UUID,
-        captureID: Int64? = nil,
+        captureID: Int64,
         title: String,
         summary: String,
         collection: CollectionKind,
@@ -114,7 +115,6 @@ nonisolated struct InformationCard: Identifiable, Hashable, Sendable {
         thumbnailURL: URL? = nil,
         isFavorite: Bool
     ) {
-        self.id = id
         self.captureID = captureID
         self.title = title
         self.summary = summary

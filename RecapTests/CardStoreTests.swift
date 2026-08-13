@@ -32,7 +32,7 @@ final class CardStoreTests: XCTestCase {
         )
         store.upsert(edited)
 
-        XCTAssertEqual(card?.title, "재조회로 바뀐 제목")
+        XCTAssertEqual(card.title, "재조회로 바뀐 제목")
     }
 
     func testUpsertDistinguishesDifferentCaptureIDs() {
@@ -50,7 +50,7 @@ final class CardStoreTests: XCTestCase {
 
     func testToggleFavoriteSendsTargetValueAndMutatesCard() async throws {
         let fixture = makeStore()
-        let card = try XCTUnwrap(store(fixture).upsert(SampleData.cards[0]))
+        let card = fixture.store.upsert(SampleData.cards[0])
         let initialValue = card.isFavorite
 
         let result = try await fixture.store.toggleFavorite(card)
@@ -65,7 +65,7 @@ final class CardStoreTests: XCTestCase {
 
     func testToggleFavoriteRollsBackOnFailure() async throws {
         let fixture = makeStore(favoriteError: TestError.network)
-        let card = try XCTUnwrap(fixture.store.upsert(SampleData.cards[0]))
+        let card = fixture.store.upsert(SampleData.cards[0])
         let initialValue = card.isFavorite
 
         do {
@@ -78,7 +78,7 @@ final class CardStoreTests: XCTestCase {
 
     func testToggleFavoriteIgnoresReentrantTap() async throws {
         let fixture = makeStore(favoriteDelay: .milliseconds(100))
-        let card = try XCTUnwrap(fixture.store.upsert(SampleData.cards[0]))
+        let card = fixture.store.upsert(SampleData.cards[0])
 
         async let first = fixture.store.toggleFavorite(card)
         // 첫 요청이 updatingFavoriteIDs에 들어갈 시간을 준다.
@@ -95,7 +95,7 @@ final class CardStoreTests: XCTestCase {
 
     func testApplyEditUpdatesSharedInstance() throws {
         let store = makeStore().store
-        let card = try XCTUnwrap(store.upsert(SampleData.cards[0]))
+        let card = store.upsert(SampleData.cards[0])
         let draft = CardEditDraft(
             collection: .place,
             title: "새 제목",
@@ -116,7 +116,7 @@ final class CardStoreTests: XCTestCase {
 
     func testReportForwardsCaptureIDAndReason() async throws {
         let fixture = makeStore()
-        let card = try XCTUnwrap(fixture.store.upsert(SampleData.cards[0]))
+        let card = fixture.store.upsert(SampleData.cards[0])
 
         try await fixture.store.report(card, reason: .inaccurateContent, detail: "가격이 달라요")
 
@@ -134,7 +134,7 @@ final class CardStoreTests: XCTestCase {
 
     func testRemoveDropsCard() throws {
         let store = makeStore().store
-        let card = try XCTUnwrap(store.upsert(SampleData.cards[0]))
+        let card = store.upsert(SampleData.cards[0])
 
         store.remove(captureID: card.captureID)
 
@@ -143,8 +143,8 @@ final class CardStoreTests: XCTestCase {
 
     func testRemoveAllDropsEverything() throws {
         let store = makeStore().store
-        let first = try XCTUnwrap(store.upsert(SampleData.cards[0]))
-        let second = try XCTUnwrap(store.upsert(SampleData.cards[1]))
+        let first = store.upsert(SampleData.cards[0])
+        let second = store.upsert(SampleData.cards[1])
 
         store.removeAll()
 
@@ -163,10 +163,6 @@ final class CardStoreTests: XCTestCase {
             favoriteDelay: favoriteDelay
         )
         return (CardStore(captureMutator: mutator), mutator)
-    }
-
-    private func store(_ fixture: (store: CardStore, mutator: CaptureMutatingSpy)) -> CardStore {
-        fixture.store
     }
 }
 

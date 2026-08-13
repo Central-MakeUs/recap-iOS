@@ -67,7 +67,7 @@ final class ArchiveDetailFeatureModel {
     enum State: Equatable {
         case idle
         case loading
-        case loaded([InformationCard])
+        case loaded([CardSnapshot])
         case failed
     }
 
@@ -121,16 +121,10 @@ final class ArchiveDetailFeatureModel {
         await load()
     }
 
-    func deleteCards(ids: Set<InformationCard.ID>) async throws {
+    func deleteCards(ids: Set<CardSnapshot.ID>) async throws {
         guard case .loaded(let cards) = state else { return }
 
-        let selectedCards = cards.filter { ids.contains($0.id) }
-        let captureIDs = try selectedCards.map { card in
-            guard let captureID = card.captureID else {
-                throw CaptureLifecycleError.missingCaptureID
-            }
-            return captureID
-        }
+        let captureIDs = cards.filter { ids.contains($0.id) }.map(\.captureID)
 
         try await cardStore.delete(captureIDs: captureIDs)
 
@@ -152,7 +146,7 @@ final class ArchiveDetailFeatureModel {
         }
     }
 
-    private func sortedFavorites(_ cards: [InformationCard]) -> [InformationCard] {
+    private func sortedFavorites(_ cards: [CardSnapshot]) -> [CardSnapshot] {
         cards.enumerated()
             .sorted { lhs, rhs in
                 switch (lhs.element.organizedAt, rhs.element.organizedAt) {

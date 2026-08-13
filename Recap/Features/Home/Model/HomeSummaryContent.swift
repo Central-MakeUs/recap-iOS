@@ -1,14 +1,14 @@
 import Foundation
 
 nonisolated struct HomeSummaryContent: Equatable, Sendable {
-    let recentCards: [InformationCard]
-    let favoriteCards: [InformationCard]
+    let recentCards: [CardSnapshot]
+    let favoriteCards: [CardSnapshot]
     let frequentTypes: [CollectionSummary]
     let hasAnyCapture: Bool
 
     init(
-        recentCards: [InformationCard],
-        favoriteCards: [InformationCard],
+        recentCards: [CardSnapshot],
+        favoriteCards: [CardSnapshot],
         frequentTypes: [CollectionSummary],
         hasAnyCapture: Bool
     ) {
@@ -19,7 +19,7 @@ nonisolated struct HomeSummaryContent: Equatable, Sendable {
     }
 
     init(dto: HomeSummaryDTO) {
-        recentCards = dto.recentCaptures.map(InformationCard.init(dto:))
+        recentCards = dto.recentCaptures.map(CardSnapshot.init(dto:))
         favoriteCards = dto.favorites
             .enumerated()
             .sorted { lhs, rhs in
@@ -27,7 +27,7 @@ nonisolated struct HomeSummaryContent: Equatable, Sendable {
                     ? lhs.offset < rhs.offset
                     : lhs.element.organizedAt > rhs.element.organizedAt
             }
-            .map { InformationCard(dto: $0.element) }
+            .map { CardSnapshot(dto: $0.element) }
         frequentTypes = dto.topTypes.map(CollectionSummary.init(dto:))
         hasAnyCapture = dto.hasAnyCapture
     }
@@ -40,12 +40,11 @@ nonisolated struct HomeSummaryContent: Equatable, Sendable {
     )
 }
 
-extension InformationCard {
+extension CardSnapshot {
     nonisolated init(dto: HomeCaptureSummaryDTO) {
         let kind = dto.typeCode.collectionKind
 
         self.init(
-            id: UUID(),
             captureID: dto.captureId,
             title: dto.title,
             summary: dto.summary,
@@ -66,9 +65,9 @@ extension InformationCard {
 nonisolated struct RecentCapturesPage: Equatable, Sendable {
     let totalCount: Int
     let hasNext: Bool
-    let cards: [InformationCard]
+    let cards: [CardSnapshot]
 
-    init(totalCount: Int, hasNext: Bool, cards: [InformationCard]) {
+    init(totalCount: Int, hasNext: Bool, cards: [CardSnapshot]) {
         self.totalCount = totalCount
         self.hasNext = hasNext
         self.cards = cards
@@ -77,7 +76,7 @@ nonisolated struct RecentCapturesPage: Equatable, Sendable {
     init(dto: RecentCapturesPageDTO) {
         totalCount = dto.count
         hasNext = dto.hasNext
-        cards = dto.items.map(InformationCard.init(dto:))
+        cards = dto.items.map(CardSnapshot.init(dto:))
     }
 }
 
