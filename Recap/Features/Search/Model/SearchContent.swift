@@ -108,9 +108,6 @@ nonisolated struct SearchResult: Identifiable, Equatable, Sendable {
             summary: summary.plainText,
             collection: dto.typeCode.collectionKind,
             organizedAt: dto.organizedAt,
-            dateText: dto.organizedAt.formatted(
-                .dateTime.year().month(.twoDigits).day(.twoDigits)
-            ),
             location: "",
             businessHours: "",
             category: dto.typeCode.displayTitle,

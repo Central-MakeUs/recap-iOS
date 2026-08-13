@@ -115,7 +115,7 @@ struct RecapInformationCardRow: View {
             VStack(alignment: .leading, spacing: 0) {
                 titleAndSummary
                 Spacer(minLength: 0)
-                Text(organizedDateText)
+                Text(card.organizedDateText)
                     .font(RecapFont.pretendard(size: 10, weight: .semibold))
                     .tracking(-0.2)
                     .foregroundStyle(Color.recapGray300)
@@ -143,9 +143,6 @@ struct RecapInformationCardRow: View {
         .frame(height: 58, alignment: .topLeading)
     }
 
-    private var organizedDateText: String {
-        RecapPresentation.organizedDateText(for: card)
-    }
 }
 
 private extension String {

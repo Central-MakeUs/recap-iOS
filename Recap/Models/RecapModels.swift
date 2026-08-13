@@ -83,7 +83,6 @@ nonisolated struct InformationCard: Identifiable, Hashable, Sendable {
     let summary: String
     let collection: CollectionKind
     let organizedAt: Date?
-    let dateText: String
     let location: String
     let businessHours: String
     let category: String
@@ -103,7 +102,6 @@ nonisolated struct InformationCard: Identifiable, Hashable, Sendable {
         summary: String,
         collection: CollectionKind,
         organizedAt: Date? = nil,
-        dateText: String,
         location: String,
         businessHours: String,
         category: String,
@@ -122,7 +120,6 @@ nonisolated struct InformationCard: Identifiable, Hashable, Sendable {
         self.summary = summary
         self.collection = collection
         self.organizedAt = organizedAt
-        self.dateText = dateText
         self.location = location
         self.businessHours = businessHours
         self.category = category

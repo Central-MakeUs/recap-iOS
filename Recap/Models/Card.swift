@@ -22,7 +22,6 @@ final class Card: Identifiable {
     var summary: String
     var collection: CollectionKind
     var organizedAt: Date?
-    var dateText: String
     var location: String
     var businessHours: String
     var category: String
@@ -45,7 +44,6 @@ final class Card: Identifiable {
         summary = snapshot.summary
         collection = snapshot.collection
         organizedAt = snapshot.organizedAt
-        dateText = snapshot.dateText
         location = snapshot.location
         businessHours = snapshot.businessHours
         category = snapshot.category
@@ -65,7 +63,6 @@ final class Card: Identifiable {
         summary = snapshot.summary
         collection = snapshot.collection
         organizedAt = snapshot.organizedAt
-        dateText = snapshot.dateText
         location = snapshot.location
         businessHours = snapshot.businessHours
         category = snapshot.category

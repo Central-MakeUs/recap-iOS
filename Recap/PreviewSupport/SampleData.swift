@@ -2,6 +2,13 @@
 import Foundation
 
 enum SampleData {
+    /// 프리뷰 고정 날짜. 표기 문자열은 `Card`의 프레젠테이션 확장이 만든다.
+    nonisolated private static func date(_ year: Int, _ month: Int, _ day: Int) -> Date {
+        var components = DateComponents(year: year, month: month, day: day, hour: 12)
+        components.timeZone = TimeZone(identifier: "Asia/Seoul")
+        return Calendar(identifier: .gregorian).date(from: components)!
+    }
+
     nonisolated static let cards: [InformationCard] = [
         InformationCard(
             id: UUID(uuidString: "11111111-1111-1111-1111-111111111111")!,
@@ -9,7 +16,7 @@ enum SampleData {
             title: "집에서 만드는 파스타 레시피 저장아아아아아",
             summary: "재료와 조리 순서를 다시 보기 쉽게 보관",
             collection: .knowledge,
-            dateText: "정리됨 2026. 06. 28",
+            organizedAt: date(2026, 6, 28),
             location: "레시피 페이지",
             businessHours: "조리 25분",
             category: "정보 · 지식",
@@ -25,7 +32,7 @@ enum SampleData {
             title: "제주 숙소 예약 정보",
             summary: "체크인 오후 3시, 8월 1박 예약이 확정된 숙소 정보 요약",
             collection: .schedule,
-            dateText: "정리됨 2026. 06. 27",
+            organizedAt: date(2026, 6, 27),
             location: "제주 서귀포",
             businessHours: "체크인 오후 3시",
             category: "일정 · 예약",
@@ -42,7 +49,7 @@ enum SampleData {
             title: "택배 반품 절차 정리",
             summary: "반품 접수, 수거 일정, 환불 조건을 한 번에 저장",
             collection: .shopping,
-            dateText: "정리됨 2026. 06. 26",
+            organizedAt: date(2026, 6, 26),
             location: "쇼핑몰 주문내역",
             businessHours: "수거 예정 6월 30일",
             category: "쇼핑 · 상품",
@@ -58,7 +65,7 @@ enum SampleData {
             title: "연말정산 서류 목록",
             summary: "연말정산 제출에 필요한 서류 정리",
             collection: .capture,
-            dateText: "정리됨 2026. 06. 25",
+            organizedAt: date(2026, 6, 25),
             location: "회사 안내문",
             businessHours: "제출 기한 1월 20일",
             category: "기록 · 캡처",
@@ -74,7 +81,7 @@ enum SampleData {
             title: "서울 삼겹살 맛집 리스트",
             summary: "서울에서 저장한 삼겹살 맛집 후보",
             collection: .place,
-            dateText: "정리됨 2026. 06. 24",
+            organizedAt: date(2026, 6, 24),
             location: "서울",
             businessHours: "영업시간 확인 필요",
             category: "장소 · 맛집",
@@ -90,7 +97,7 @@ enum SampleData {
             title: "러닝 전 준비운동",
             summary: "달리기 전에 확인할 준비운동 순서",
             collection: .knowledge,
-            dateText: "정리됨 2026. 06. 23",
+            organizedAt: date(2026, 6, 23),
             location: "운동 가이드",
             businessHours: "운동 전 10분",
             category: "정보 · 지식",
@@ -106,7 +113,7 @@ enum SampleData {
             title: "숙소 예약 취소 규정",
             summary: "환불 가능 기간 안내 스크린샷",
             collection: .capture,
-            dateText: "정리됨 2026. 06. 22",
+            organizedAt: date(2026, 6, 22),
             location: "예약 앱",
             businessHours: "환불 규정",
             category: "기록 · 캡처",
@@ -121,7 +128,7 @@ enum SampleData {
             title: "병원 예약 안내",
             summary: "진료 예약 확인 문자 스크린샷",
             collection: .schedule,
-            dateText: "정리됨 2026. 06. 21",
+            organizedAt: date(2026, 6, 21),
             location: "문자 메시지",
             businessHours: "오전 10:30",
             category: "일정 · 예약",
@@ -136,7 +143,7 @@ enum SampleData {
             title: "좋은 글을 쓰려면 어떻게해야",
             summary: "좋은 글을 쓰기 위한 핵심 원칙",
             collection: .content,
-            dateText: "정리됨 2026. 06. 20",
+            organizedAt: date(2026, 6, 20),
             location: "아티클",
             businessHours: "읽기 5분",
             category: "책 · 콘텐츠",

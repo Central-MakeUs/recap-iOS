@@ -290,11 +290,9 @@ final class RecapTests: XCTestCase {
         XCTAssertEqual(CardDetailImageState.failedCard.metadataSpacing, 20)
     }
 
-    func testOrganizedDateUsesMonthDayAndOrganizedSuffix() {
-        XCTAssertEqual(
-            RecapPresentation.organizedDateText(for: SampleData.cards[0]),
-            "06월 28일 정리"
-        )
+    func testOrganizedDateUsesMonthDayAndOrganizedSuffix() throws {
+        let card = try XCTUnwrap(Card(snapshot: SampleData.cards[0]))
+        XCTAssertEqual(card.organizedDateText, "06월 28일 정리")
     }
 
 }

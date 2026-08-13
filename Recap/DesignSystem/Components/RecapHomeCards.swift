@@ -40,7 +40,7 @@ struct RecapHomeFavoriteCard: View {
                 RecapIconView(
                     icon: .forward,
                     size: 16,
-                    color: Color.recapGray100
+                    color: Color.recapGray200
                 )
                 .padding(.top, 4)
             }

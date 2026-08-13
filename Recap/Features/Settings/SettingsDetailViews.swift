@@ -144,7 +144,7 @@ struct AccountManagementView: View {
             return ""
         }
 
-        let components = Calendar.current.dateComponents(
+        let components = Calendar(identifier: .gregorian).dateComponents(
             [.year, .month, .day],
             from: createdAt
         )
