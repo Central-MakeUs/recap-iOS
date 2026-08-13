@@ -10,12 +10,12 @@ struct CardOriginalPreviewSheet: View {
         VStack(spacing: 0) {
             HStack {
                 Button(action: close) {
-                    Image(systemName: "arrow.left")
-                        .font(.system(size: 20, weight: .regular))
-                        .foregroundStyle(Color.recapGray900)
-                        .frame(width: 24, height: 24)
+                    RecapIconView(icon: .cancel, size: 24, color: Color.recapGray900)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .contentShape(Rectangle().inset(by: -10))
+                .accessibilityLabel("닫기")
 
                 Spacer()
             }
@@ -23,6 +23,31 @@ struct CardOriginalPreviewSheet: View {
             .frame(height: 35)
 
             ScrollView(showsIndicators: true) {
+                imageContent
+                    .clipShape(
+                        RoundedRectangle(
+                            cornerRadius: CardDetailStyle.cornerRadius,
+                            style: .continuous
+                        )
+                    )
+                    .overlay {
+                        RoundedRectangle(
+                            cornerRadius: CardDetailStyle.cornerRadius,
+                            style: .continuous
+                        )
+                        .strokeBorder(Color.recapGray100, lineWidth: 0.5)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
+            }
+        }
+        .background(Color.recapBackground)
+        .statusBarHidden(false)
+    }
+
+    @ViewBuilder
+    private var imageContent: some View {
+        Group {
                 if let assetName = card.detailImageAssetName {
                     Image(assetName)
                         .resizable()
@@ -54,10 +79,7 @@ struct CardOriginalPreviewSheet: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 300)
                 }
-            }
         }
-        .background(Color.recapBackground)
-        .statusBarHidden(false)
     }
 
     private func close() {

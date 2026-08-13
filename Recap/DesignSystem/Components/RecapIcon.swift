@@ -30,6 +30,7 @@ enum RecapIcon: String, CaseIterable, Identifiable {
     case career
     case noImage
     case check
+    case aiEdit
 
     var id: String { rawValue }
 
@@ -64,12 +65,13 @@ enum RecapIcon: String, CaseIterable, Identifiable {
         case .career: "icon/career"
         case .noImage: "icon/noimage"
         case .check: "icon/check"
+        case .aiEdit: "si:ai-edit-fill"
         }
     }
 
     var defaultSize: CGFloat {
         switch self {
-        case .cancelCircle, .dropdown, .checkbox, .shopping, .place, .schedule, .idea, .book, .event, .record, .career:
+        case .cancelCircle, .dropdown, .checkbox, .shopping, .place, .schedule, .idea, .book, .event, .record, .career, .aiEdit:
             16
         case .plus: 30
         case .star, .starEmpty, .cancel, .back, .forward, .search, .home, .storage, .more,
@@ -113,6 +115,7 @@ enum RecapIcon: String, CaseIterable, Identifiable {
         case .career: "RecapIconCareer"
         case .noImage: "RecapIconNoImage"
         case .check: "RecapIconCheck"
+        case .aiEdit: "RecapIconAiEdit"
         }
     }
 

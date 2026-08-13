@@ -4,7 +4,6 @@ struct CardDetailView: View {
     @Environment(\.dismiss) private var dismiss
 
     let card: Card
-    let imageState: CardDetailImageState
     let onDeleted: () -> Void
 
     private let cardStore: CardStore
@@ -19,10 +18,6 @@ struct CardDetailView: View {
     @State private var selectedReportReason: CaptureReportReason?
     @State private var pendingPanelAction: CardDetailPanelAction?
 
-    private var navigationContentColor: Color {
-        imageState == .failedCard ? Color.recapGray900 : .white
-    }
-
     private var reportSheetHeight: CGFloat {
         selectedReportReason == .other ? 453 : 375
     }
@@ -32,13 +27,11 @@ struct CardDetailView: View {
         card: Card,
         captureService: any CaptureServing,
         cardStore: CardStore,
-        imageState: CardDetailImageState = .loaded,
         initiallyShowsDeleteConfirmation: Bool = false,
         initialToast: RecapToastContent? = nil,
         onDeleted: @escaping () -> Void = {}
     ) {
         self.card = card
-        self.imageState = imageState
         self.onDeleted = onDeleted
         self.cardStore = cardStore
         _model = State(
@@ -59,7 +52,6 @@ struct CardDetailView: View {
     @MainActor
     init(
         card snapshot: CardSnapshot,
-        imageState: CardDetailImageState = .loaded,
         initiallyShowsDeleteConfirmation: Bool = false,
         initialToast: RecapToastContent? = nil,
         onDeleted: @escaping () -> Void = {}
@@ -69,7 +61,6 @@ struct CardDetailView: View {
             card: store.upsert(snapshot),
             captureService: PreviewCaptureService(),
             cardStore: store,
-            imageState: imageState,
             initiallyShowsDeleteConfirmation: initiallyShowsDeleteConfirmation,
             initialToast: initialToast,
             onDeleted: onDeleted
@@ -78,32 +69,21 @@ struct CardDetailView: View {
 
 #endif
     var body: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .top) {
-                CardDetailContentView(
-                    card: card,
-                    imageState: imageState,
-                    contentWidth: geometry.size.width,
-                    onOpenOriginal: openOriginal,
-                    onRemoteImageFailure: refreshRemoteImageURL
-                )
-                .ignoresSafeArea(edges: .top)
+        VStack(spacing: 0) {
+            CardDetailNavigationBar(
+                title: "스크린샷 상세",
+                isFavorite: card.isFavorite,
+                foregroundColor: Color.recapGray900,
+                onBack: dismiss.callAsFunction,
+                onFavorite: favorite,
+                onMore: showActions
+            )
+            .padding(.top, 20)
 
-                CardDetailNavigationBar(
-                    title: "스크린샷 상세",
-                    isFavorite: card.isFavorite,
-                    foregroundColor: navigationContentColor,
-                    onBack: dismiss.callAsFunction,
-                    onFavorite: favorite,
-                    onMore: showActions
-                )
-                .frame(width: geometry.size.width)
-                .padding(.top, 20)
-            }
-            .frame(
-                width: geometry.size.width,
-                height: geometry.size.height,
-                alignment: .top
+            CardDetailContentView(
+                card: card,
+                onOpenOriginal: openOriginal,
+                onRemoteImageFailure: refreshRemoteImageURL
             )
         }
         .background(Color.recapBackground)

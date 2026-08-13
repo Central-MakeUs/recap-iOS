@@ -281,15 +281,6 @@ final class RecapTests: XCTestCase {
         XCTAssertTrue(card.isFavorite)
     }
 
-    func testCardDetailImageStatesPreserveFigmaLayoutSpacing() {
-        XCTAssertEqual(CardDetailImageState.loaded.imageTopInset, 0)
-        XCTAssertEqual(CardDetailImageState.loaded.metadataSpacing, 22)
-        XCTAssertEqual(CardDetailImageState.failedFullWidth.imageTopInset, 0)
-        XCTAssertEqual(CardDetailImageState.failedFullWidth.metadataSpacing, 22)
-        XCTAssertEqual(CardDetailImageState.failedCard.imageTopInset, 145)
-        XCTAssertEqual(CardDetailImageState.failedCard.metadataSpacing, 20)
-    }
-
     func testOrganizedDateUsesMonthDayAndOrganizedSuffix() throws {
         let card = try XCTUnwrap(Card(snapshot: SampleData.cards[0]))
         XCTAssertEqual(card.organizedDateText, "06월 28일 정리")
