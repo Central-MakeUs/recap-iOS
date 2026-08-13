@@ -15,11 +15,11 @@ extension Card {
         return String(format: "%02d월 %02d일 정리", month, day)
     }
 
-    /// 편집 화면의 연월일. 예: "2026. 06. 25"
+    /// 상세·편집 화면의 정리 날짜 전체 표기. 예: "정리됨 2026. 06. 25"
     ///
     /// 다른 표기와 마찬가지로 기기 로케일과 무관한 고정 형식이다. 예전
     /// `dateText`는 로케일을 따라가 영어 기기에서 "06/25/2026"으로 나왔다.
-    var fullDateText: String {
+    var organizedFullDateText: String {
         guard let organizedAt else { return "" }
 
         let components = Calendar(identifier: .gregorian).dateComponents(
@@ -31,6 +31,6 @@ extension Card {
             let month = components.month,
             let day = components.day
         else { return "" }
-        return String(format: "%d. %02d. %02d", year, month, day)
+        return String(format: "정리됨 %d. %02d. %02d", year, month, day)
     }
 }
