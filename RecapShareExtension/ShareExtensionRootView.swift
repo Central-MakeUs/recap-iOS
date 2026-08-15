@@ -35,14 +35,12 @@ struct ShareExtensionRootView: View {
                 CardCreationResultView(
                     state: .complete,
                     selectedCount: organizedCount,
-                    failedCount: 0,
                     onDone: finish
                 )
             case .failure:
                 CardCreationResultView(
                     state: .failure,
                     selectedCount: 0,
-                    failedCount: 0,
                     onDone: close
                 )
             }

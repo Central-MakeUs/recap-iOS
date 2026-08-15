@@ -4,7 +4,6 @@ import SwiftUI
 struct CardCreationResultView: View {
     let state: CardCreationResultState
     var selectedCount = 5
-    var failedCount = 1
     let onDone: () -> Void
 
     var body: some View {
@@ -122,7 +121,7 @@ private struct CardCreationCompleteResultContent: View {
             RecapLottieView(name: "complete_check", playback: .playOnce)
                 .frame(width: Layout.checkSize, height: Layout.checkSize)
 
-            Text("\(organizedCount)개의 스크린샷을\n정리했어요")
+            Text(CardCreationResultState.complete.title(organizedCount: organizedCount))
                 .font(RecapFont.pretendard(size: 18, weight: .semibold))
                 .tracking(-0.36)
                 .lineSpacing(0)
@@ -141,7 +140,7 @@ private struct CardCreationCompleteResultContent: View {
                 .offset(x: Layout.characterCenterOffset)
                 .padding(.top, Layout.characterSpacing)
 
-            Text("보관함에서 확인해보세요!")
+            Text(CardCreationResultState.complete.message)
                 .font(RecapFont.pretendard(size: 15, weight: .medium))
                 .tracking(-0.3)
                 .foregroundStyle(Color.recapGray500)
@@ -179,7 +178,7 @@ private struct CardCreationPartialFailureResultContent: View {
                 .scaledToFit()
                 .frame(width: 40, height: 40)
 
-            Text("일부 스크린샷을 정리하지 못했어요")
+            Text(CardCreationResultState.partialFailure.title())
                 .font(RecapFont.pretendard(size: 18, weight: .semibold))
                 .tracking(-0.36)
                 .foregroundStyle(Color.recapGray900)
@@ -200,7 +199,7 @@ private struct CardCreationPartialFailureResultContent: View {
                 .frame(width: 123, height: 95)
                 .padding(.top, 56)
 
-            Text("정리된 스크린샷은\n보관함에 저장했어요!")
+            Text(CardCreationResultState.partialFailure.message)
                 .font(RecapFont.pretendard(size: 15, weight: .medium))
                 .tracking(-0.3)
                 .lineSpacing(0)
@@ -219,7 +218,7 @@ private struct CardCreationFailureResultContent: View {
                 .scaledToFit()
                 .frame(width: 40, height: 40)
 
-            Text("스크린샷을 정리하지 못했어요")
+            Text(CardCreationResultState.failure.title())
                 .font(RecapFont.pretendard(size: 18, weight: .semibold))
                 .tracking(-0.36)
                 .foregroundStyle(Color.recapGray900)
@@ -231,7 +230,7 @@ private struct CardCreationFailureResultContent: View {
                 .frame(width: 123, height: 95)
                 .padding(.top, 56)
 
-            Text("다음에 다시 시도해주세요.")
+            Text(CardCreationResultState.failure.message)
                 .font(RecapFont.pretendard(size: 15, weight: .medium))
                 .tracking(-0.3)
                 .foregroundStyle(Color.recapGray500)
@@ -253,7 +252,6 @@ private struct CardCreationFailureResultContent: View {
     CardCreationResultView(
         state: .partialFailure,
         selectedCount: 3,
-        failedCount: 2,
         onDone: {}
     )
 }
@@ -262,7 +260,6 @@ private struct CardCreationFailureResultContent: View {
     CardCreationResultView(
         state: .failure,
         selectedCount: 0,
-        failedCount: 5,
         onDone: {}
     )
 }

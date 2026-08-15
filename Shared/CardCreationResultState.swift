@@ -6,10 +6,10 @@ enum CardCreationResultState: Hashable {
     case partialFailure
     case failure
 
-    func title(selectedCount: Int, failedCount: Int) -> String {
+    func title(organizedCount: Int = 0) -> String {
         switch self {
         case .complete:
-            "\(selectedCount)개의 스크린샷을\n정리했어요"
+            "\(organizedCount)개의 스크린샷을\n정리했어요"
         case .partialFailure:
             "일부 스크린샷을 정리하지 못했어요"
         case .failure:
