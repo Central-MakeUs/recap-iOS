@@ -12,7 +12,7 @@ enum RecapPresentation {
         let isRecommended: Bool
     }
 
-    struct CollectionDisplay {
+    struct CategoryDisplay {
         let title: String
         let subtitle: String
         let dotColor: Color
@@ -49,10 +49,10 @@ enum RecapPresentation {
         }
     }
 
-    static func collectionDisplay(for kind: CardCategory) -> CollectionDisplay {
+    static func categoryDisplay(for kind: CardCategory) -> CategoryDisplay {
         switch kind {
         case .shopping:
-            CollectionDisplay(
+            CategoryDisplay(
                 title: kind.displayTitle,
                 subtitle: "택배 반품 절차 · 노트북 가격 비교",
                 dotColor: .categoryBlue500,
@@ -60,7 +60,7 @@ enum RecapPresentation {
                 symbolName: "cart.fill"
             )
         case .place:
-            CollectionDisplay(
+            CategoryDisplay(
                 title: kind.displayTitle,
                 subtitle: "성수 카페 리스트 · 제주 맛집 후보",
                 dotColor: .categoryRed500,
@@ -68,7 +68,7 @@ enum RecapPresentation {
                 symbolName: "key.fill"
             )
         case .schedule:
-            CollectionDisplay(
+            CategoryDisplay(
                 title: kind.displayTitle,
                 subtitle: "제주 숙소 예약 · 병원 예약 안내",
                 dotColor: .categoryGreen500,
@@ -76,7 +76,7 @@ enum RecapPresentation {
                 symbolName: "clock.fill"
             )
         case .knowledge:
-            CollectionDisplay(
+            CategoryDisplay(
                 title: kind.displayTitle,
                 subtitle: "연말정산 서류목록 · 파스타레시피",
                 dotColor: .categoryYellow500,
@@ -84,7 +84,7 @@ enum RecapPresentation {
                 symbolName: "lightbulb.fill"
             )
         case .content:
-            CollectionDisplay(
+            CategoryDisplay(
                 title: kind.displayTitle,
                 subtitle: "쇼코의 미소 독후감",
                 dotColor: .categoryPink500,
@@ -92,7 +92,7 @@ enum RecapPresentation {
                 symbolName: "book.closed.fill"
             )
         case .benefits:
-            CollectionDisplay(
+            CategoryDisplay(
                 title: kind.displayTitle,
                 subtitle: "올리브영 팝업스토어 이벤트 · SKT 할인혜택",
                 dotColor: .categoryMint500,
@@ -100,7 +100,7 @@ enum RecapPresentation {
                 symbolName: "star.fill"
             )
         case .capture:
-            CollectionDisplay(
+            CategoryDisplay(
                 title: kind.displayTitle,
                 subtitle: "주간 운동기록 · 헬스장 머신 사용법",
                 dotColor: .categoryPurple500,
@@ -108,7 +108,7 @@ enum RecapPresentation {
                 symbolName: "pencil"
             )
         case .career:
-            CollectionDisplay(
+            CategoryDisplay(
                 title: kind.displayTitle,
                 subtitle: "채용 공고, 지원 일정, 취업 정보",
                 dotColor: .categoryOrange500,
@@ -116,7 +116,7 @@ enum RecapPresentation {
                 symbolName: "person.fill"
             )
         case .other:
-            CollectionDisplay(
+            CategoryDisplay(
                 title: kind.displayTitle,
                 subtitle: "분류가 아직 확정되지 않은 카드",
                 dotColor: Color.recapGray100,

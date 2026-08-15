@@ -7,7 +7,7 @@ struct CardEditTypeField: View {
     var body: some View {
         RecapActionInput(
             label: "유형",
-            value: RecapPresentation.collectionDisplay(for: category).title,
+            value: RecapPresentation.categoryDisplay(for: category).title,
             actionTitle: "변경",
             action: { isTypeSelectionPresented = true }
         )

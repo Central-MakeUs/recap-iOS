@@ -138,14 +138,14 @@ enum SampleData {
 
     nonisolated static let recentCards: [CardSnapshot] = Array(cards.prefix(3))
 
-    nonisolated static let collectionSummaries: [CollectionSummary] = CardCategory.folderCases.map { kind in
+    nonisolated static let categorySummaries: [CategorySummary] = CardCategory.folderCases.map { kind in
         let recentTitles = cards
             .filter { $0.category == kind }
             .sorted { ($0.organizedAt ?? .distantPast) > ($1.organizedAt ?? .distantPast) }
             .prefix(2)
             .map(\.title)
             .joined(separator: " · ")
-        return CollectionSummary(
+        return CategorySummary(
             kind: kind,
             count: sampleCount(for: kind),
             previewTitle: recentTitles

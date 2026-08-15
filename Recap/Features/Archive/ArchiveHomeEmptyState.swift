@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct CollectionHomeEmptyState: View {
+struct ArchiveHomeEmptyState: View {
     let onImportScreenshots: () -> Void
 
     var body: some View {
@@ -29,7 +29,7 @@ struct CollectionHomeEmptyState: View {
 
 #if DEBUG
 #Preview("보관함 빈 상태") {
-    CollectionHomeEmptyState(onImportScreenshots: {})
+    ArchiveHomeEmptyState(onImportScreenshots: {})
         .padding()
 }
 #endif

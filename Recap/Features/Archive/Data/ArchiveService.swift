@@ -36,7 +36,7 @@ final class ArchiveService: ArchiveLoading {
         async let other = fetchOther(sort: .latest)
 
         return try await ArchiveHomeContent(
-            summaries: types.map(CollectionSummary.init(archiveDTO:)),
+            summaries: types.map(CategorySummary.init(archiveDTO:)),
             favoriteCount: favorites.count,
             otherCount: other.count
         )
@@ -58,7 +58,7 @@ final class ArchiveService: ArchiveLoading {
         var otherCount = current.otherCount
 
         if scopes.contains(.types) {
-            summaries = try await fetchTypes().map(CollectionSummary.init(archiveDTO:))
+            summaries = try await fetchTypes().map(CategorySummary.init(archiveDTO:))
         }
         if scopes.contains(.favorites) {
             favoriteCount = try await fetchFavorites().count

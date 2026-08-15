@@ -31,7 +31,7 @@ private struct RecapFolderArtwork: View {
     let kind: CardCategory
 
     var body: some View {
-        let display = RecapPresentation.collectionDisplay(for: kind)
+        let display = RecapPresentation.categoryDisplay(for: kind)
 
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 7.409886837005615, style: .continuous)

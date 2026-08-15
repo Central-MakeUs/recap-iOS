@@ -42,7 +42,7 @@ struct RecapChip: View {
         case .large:
             let palette = isSelected ? CategoryPalette.selected(for: kind) : .unselected
 
-            Text(RecapPresentation.collectionDisplay(for: kind).title)
+            Text(RecapPresentation.categoryDisplay(for: kind).title)
                 .font(RecapFont.pretendard(size: 14, weight: .semibold))
                 .tracking(-0.28)
                 .foregroundStyle(palette.text)
@@ -57,7 +57,7 @@ struct RecapChip: View {
     }
 
     private func categoryTitle(kind: CardCategory, color: Color) -> some View {
-        Text(RecapPresentation.collectionDisplay(for: kind).title)
+        Text(RecapPresentation.categoryDisplay(for: kind).title)
             .font(RecapFont.pretendard(size: 10, weight: .semibold))
             .tracking(-0.20)
             .foregroundStyle(color)
@@ -65,7 +65,7 @@ struct RecapChip: View {
     }
 
     private func categoryIcon(kind: CardCategory) -> some View {
-        let display = RecapPresentation.collectionDisplay(for: kind)
+        let display = RecapPresentation.categoryDisplay(for: kind)
 
         return RecapIconView(
             icon: .categoryIcon(for: kind),

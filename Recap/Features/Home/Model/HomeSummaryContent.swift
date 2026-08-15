@@ -3,13 +3,13 @@ import Foundation
 nonisolated struct HomeSummaryContent: Equatable, Sendable {
     let recentCards: [CardSnapshot]
     let favoriteCards: [CardSnapshot]
-    let frequentTypes: [CollectionSummary]
+    let frequentTypes: [CategorySummary]
     let hasAnyCapture: Bool
 
     init(
         recentCards: [CardSnapshot],
         favoriteCards: [CardSnapshot],
-        frequentTypes: [CollectionSummary],
+        frequentTypes: [CategorySummary],
         hasAnyCapture: Bool
     ) {
         self.recentCards = recentCards
@@ -28,7 +28,7 @@ nonisolated struct HomeSummaryContent: Equatable, Sendable {
                     : lhs.element.organizedAt > rhs.element.organizedAt
             }
             .map { CardSnapshot(dto: $0.element) }
-        frequentTypes = dto.topTypes.map(CollectionSummary.init(dto:))
+        frequentTypes = dto.topTypes.map(CategorySummary.init(dto:))
         hasAnyCapture = dto.hasAnyCapture
     }
 
@@ -79,7 +79,7 @@ nonisolated struct RecentCapturesPage: Equatable, Sendable {
     }
 }
 
-private extension CollectionSummary {
+private extension CategorySummary {
     nonisolated init(dto: HomeTopTypeDTO) {
         let kind = dto.typeCode.category
 

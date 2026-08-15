@@ -232,7 +232,7 @@ private final class PreviewHomeSummaryLoader: HomeSummaryLoading {
         return HomeSummaryContent(
             recentCards: Array(cards.prefix(3)),
             favoriteCards: cards.filter(\.isFavorite),
-            frequentTypes: SampleData.collectionSummaries,
+            frequentTypes: SampleData.categorySummaries,
             hasAnyCapture: !cards.isEmpty
         )
     }

@@ -51,7 +51,7 @@ struct RecapMainTabContainer: View {
 
                 Tab("보관함", image: "RecapTabArchiveIcon", value: MainTab.archive) {
                     tabStack(for: .archive) {
-                        CollectionHomeContainerView(
+                        ArchiveHomeContainerView(
                             loader: archiveLoader,
                             invalidationCenter: cardDataInvalidationCenter
                         )

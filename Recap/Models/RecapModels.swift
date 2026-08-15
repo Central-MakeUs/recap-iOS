@@ -115,7 +115,7 @@ nonisolated struct CardSnapshot: Identifiable, Equatable, Sendable {
     }
 }
 
-nonisolated struct CollectionSummary: Identifiable, Hashable, Sendable {
+nonisolated struct CategorySummary: Identifiable, Hashable, Sendable {
     let kind: CardCategory
     let count: Int
     let previewTitle: String

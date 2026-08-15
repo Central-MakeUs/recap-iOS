@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct CollectionHomeContainerView: View {
+struct ArchiveHomeContainerView: View {
     @Environment(AppRouter.self) private var router
 
     @State private var model: ArchiveHomeFeatureModel
@@ -16,7 +16,7 @@ struct CollectionHomeContainerView: View {
     }
 
     var body: some View {
-        CollectionHomeView(
+        ArchiveHomeView(
             summaries: content.summaries,
             favoriteCount: content.favoriteCount,
             otherCount: content.otherCount,
@@ -55,7 +55,7 @@ struct CollectionHomeContainerView: View {
         return content
     }
 
-    private var loadState: CollectionHomeView.LoadState {
+    private var loadState: ArchiveHomeView.LoadState {
         switch model.state {
         case .idle, .loading:
             .loaded

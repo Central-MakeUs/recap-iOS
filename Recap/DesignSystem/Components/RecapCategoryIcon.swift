@@ -19,7 +19,7 @@ struct RecapCategoryIcon: View {
     var size: Size = .medium
 
     var body: some View {
-        let display = RecapPresentation.collectionDisplay(for: kind)
+        let display = RecapPresentation.categoryDisplay(for: kind)
 
         Group {
             if kind == .other {

@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct CollectionHomeFolderList: View {
-    let summaries: [CollectionSummary]
+struct ArchiveHomeFolderList: View {
+    let summaries: [CategorySummary]
     let onOpenArchive: (CardCategory) -> Void
 
     var body: some View {
@@ -10,7 +10,7 @@ struct CollectionHomeFolderList: View {
                 Button {
                     onOpenArchive(summary.kind)
                 } label: {
-                    let display = RecapPresentation.collectionDisplay(for: summary.kind)
+                    let display = RecapPresentation.categoryDisplay(for: summary.kind)
                     RecapFolderListRow(
                         title: display.title,
                         subtitle: summary.previewTitle,
@@ -27,9 +27,9 @@ struct CollectionHomeFolderList: View {
 #if DEBUG
 #Preview("보관함 폴더 목록") {
     ScrollView {
-        CollectionHomeFolderList(
-            summaries: SampleData.collectionSummaries + [
-                CollectionSummary(kind: .other, count: 0, previewTitle: "")
+        ArchiveHomeFolderList(
+            summaries: SampleData.categorySummaries + [
+                CategorySummary(kind: .other, count: 0, previewTitle: "")
             ],
             onOpenArchive: { _ in }
         )

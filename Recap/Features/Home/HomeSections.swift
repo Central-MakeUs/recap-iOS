@@ -82,7 +82,7 @@ struct HomeRecentSection: View {
 }
 
 struct HomeFrequentTypesSection: View {
-    let summaries: [CollectionSummary]
+    let summaries: [CategorySummary]
     let openArchive: (CardCategory) -> Void
 
     var body: some View {
@@ -98,7 +98,7 @@ struct HomeFrequentTypesSection: View {
                             VStack(spacing: 9) {
                                 RecapCategoryIcon(kind: kind, size: .large)
 
-                                Text(RecapPresentation.collectionDisplay(for: kind).title)
+                                Text(RecapPresentation.categoryDisplay(for: kind).title)
                                     .font(RecapFont.pretendard(size: 13, weight: .medium))
                                     .tracking(-0.26)
                                     .foregroundStyle(Color.recapGray700)
@@ -160,7 +160,7 @@ private struct HomeSectionEmptyMessage: View {
                 openCard: { _ in }
             )
             HomeFrequentTypesSection(
-                summaries: SampleData.collectionSummaries,
+                summaries: SampleData.categorySummaries,
                 openArchive: { _ in }
             )
         }
@@ -171,7 +171,7 @@ private struct HomeSectionEmptyMessage: View {
 
 #Preview("Frequent types aligned leading") {
     HomeFrequentTypesSection(
-        summaries: Array(SampleData.collectionSummaries.prefix(2)),
+        summaries: Array(SampleData.categorySummaries.prefix(2)),
         openArchive: { _ in }
     )
     .padding(.horizontal, 16)

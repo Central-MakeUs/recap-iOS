@@ -30,7 +30,7 @@ final class ArchiveAPITests: XCTestCase {
         let client = ArchiveNetworkClientStub()
         let service = ArchiveService(networkClient: client)
         let current = ArchiveHomeContent(
-            summaries: [CollectionSummary(kind: .shopping, count: 7, previewTitle: "기존 제목")],
+            summaries: [CategorySummary(kind: .shopping, count: 7, previewTitle: "기존 제목")],
             favoriteCount: 99,
             otherCount: 5
         )
@@ -53,7 +53,7 @@ final class ArchiveAPITests: XCTestCase {
             representativeTitles: []
         )
 
-        XCTAssertEqual(CollectionSummary(archiveDTO: dto).previewTitle, "")
+        XCTAssertEqual(CategorySummary(archiveDTO: dto).previewTitle, "")
     }
 
     func testFavoritesDoesNotSendSortQuery() async throws {

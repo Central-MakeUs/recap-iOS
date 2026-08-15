@@ -10,7 +10,7 @@ nonisolated struct ArchiveHomeRefreshScope: OptionSet, Sendable {
 }
 
 nonisolated struct ArchiveHomeContent: Equatable, Sendable {
-    let summaries: [CollectionSummary]
+    let summaries: [CategorySummary]
     let favoriteCount: Int
     let otherCount: Int
 
@@ -58,7 +58,7 @@ extension CardSnapshot {
     }
 }
 
-extension CollectionSummary {
+extension CategorySummary {
     nonisolated init(archiveDTO dto: ArchiveStorageTypeDTO) {
         self.init(
             kind: dto.typeCode.category,

@@ -19,7 +19,7 @@ final class PreviewArchiveLoader: ArchiveLoading {
                     .prefix(2)
                     .map(\.title)
                     .joined(separator: " · ")
-                return CollectionSummary(
+                return CategorySummary(
                     kind: kind,
                     count: cardsForKind.count,
                     previewTitle: recentTitles

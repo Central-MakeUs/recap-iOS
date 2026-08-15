@@ -201,7 +201,7 @@ final class RecapTests: XCTestCase {
         XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .settings))
     }
 
-    func testCollectionSelectionChromeReplacesMainTabChrome() {
+    func testArchiveSelectionChromeReplacesMainTabChrome() {
         let state = RecapMainTabChromeState()
         state.setVisible(false, for: .archive)
 

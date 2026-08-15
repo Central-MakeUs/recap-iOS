@@ -27,7 +27,7 @@ struct HomeContainerView: View {
             status: homeStatus,
             recentCards: cards(for: content.recentCards),
             favoriteCards: cards(for: content.favoriteCards),
-            collectionSummaries: content.frequentTypes,
+            categorySummaries: content.frequentTypes,
             onAction: handleAction,
             onRetry: retry
         )
@@ -110,7 +110,7 @@ struct HomeView: View {
     var status: HomeStatus = .ready
     let recentCards: [Card]
     let favoriteCards: [Card]
-    let collectionSummaries: [CollectionSummary]
+    let categorySummaries: [CategorySummary]
     let onAction: (HomeAction) -> Void
     let onRetry: () -> Void
 
@@ -118,14 +118,14 @@ struct HomeView: View {
         status: HomeStatus = .ready,
         recentCards: [Card],
         favoriteCards: [Card] = [],
-        collectionSummaries: [CollectionSummary],
+        categorySummaries: [CategorySummary],
         onAction: @escaping (HomeAction) -> Void,
         onRetry: @escaping () -> Void = {}
     ) {
         self.status = status
         self.recentCards = recentCards
         self.favoriteCards = favoriteCards
-        self.collectionSummaries = collectionSummaries
+        self.categorySummaries = categorySummaries
         self.onAction = onAction
         self.onRetry = onRetry
     }
@@ -166,7 +166,7 @@ struct HomeView: View {
                         .padding(.top, 26)
 
                         HomeFrequentTypesSection(
-                            summaries: collectionSummaries,
+                            summaries: categorySummaries,
                             openArchive: { onAction(.openArchive($0)) }
                         )
                         .padding(.top, 26)
@@ -189,7 +189,7 @@ struct HomeView: View {
             status: .ready,
             recentCards: SampleData.recentCards.compactMap(Card.init(snapshot:)),
             favoriteCards: SampleData.cards.filter(\.isFavorite).compactMap(Card.init(snapshot:)),
-            collectionSummaries: SampleData.collectionSummaries,
+            categorySummaries: SampleData.categorySummaries,
             onAction: PreviewActions.handleHome
         )
     }
@@ -201,7 +201,7 @@ struct HomeView: View {
             status: .ready,
             recentCards: Array(SampleData.recentCards.prefix(2)).compactMap(Card.init(snapshot:)),
             favoriteCards: Array(SampleData.cards.filter(\.isFavorite).prefix(2)).compactMap(Card.init(snapshot:)),
-            collectionSummaries: [],
+            categorySummaries: [],
             onAction: PreviewActions.handleHome
         )
     }
@@ -213,7 +213,7 @@ struct HomeView: View {
             status: .waiting,
             recentCards: [],
             favoriteCards: [],
-            collectionSummaries: [],
+            categorySummaries: [],
             onAction: PreviewActions.handleHome
         )
     }
@@ -225,7 +225,7 @@ struct HomeView: View {
             status: .failed,
             recentCards: [],
             favoriteCards: [],
-            collectionSummaries: [],
+            categorySummaries: [],
             onAction: PreviewActions.handleHome
         )
     }
@@ -237,7 +237,7 @@ struct HomeView: View {
             status: .loading,
             recentCards: [],
             favoriteCards: [],
-            collectionSummaries: [],
+            categorySummaries: [],
             onAction: PreviewActions.handleHome
         )
     }

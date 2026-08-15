@@ -9,7 +9,7 @@ enum ArchiveDetailScope: Hashable {
         case .favorites:
             "즐겨찾기"
         case .category(let kind):
-            RecapPresentation.collectionDisplay(for: kind).title
+            RecapPresentation.categoryDisplay(for: kind).title
         }
     }
 
@@ -38,7 +38,7 @@ enum ArchiveDetailScope: Hashable {
     }
 }
 
-struct CollectionDetailNavigationHeader: View {
+struct ArchiveDetailNavigationHeader: View {
     let scope: ArchiveDetailScope
     @Binding var query: String
     let showsSearchField: Bool
@@ -94,7 +94,7 @@ struct CollectionDetailNavigationHeader: View {
             RecapIconView(
                 icon: RecapIcon.categoryIcon(for: kind),
                 size: 20,
-                color: RecapPresentation.collectionDisplay(for: kind).dotColor
+                color: RecapPresentation.categoryDisplay(for: kind).dotColor
             )
             .padding(.leading, 13)
         case .category:
@@ -128,7 +128,7 @@ struct CollectionDetailNavigationHeader: View {
     }
 }
 
-struct CollectionDetailEmptyState: View {
+struct ArchiveDetailEmptyState: View {
     let scope: ArchiveDetailScope
     var onImportScreenshots: () -> Void = {}
 
@@ -168,7 +168,7 @@ struct CollectionDetailEmptyState: View {
 #Preview("보관함 상세 헤더") {
     @Previewable @State var query = ""
 
-    CollectionDetailNavigationHeader(
+    ArchiveDetailNavigationHeader(
         scope: .category(.shopping),
         query: $query,
         showsSearchField: false,
@@ -183,7 +183,7 @@ struct CollectionDetailEmptyState: View {
 #Preview("즐겨찾기 상세 헤더") {
     @Previewable @State var query = ""
 
-    CollectionDetailNavigationHeader(
+    ArchiveDetailNavigationHeader(
         scope: .favorites,
         query: $query,
         showsSearchField: false,
@@ -198,7 +198,7 @@ struct CollectionDetailEmptyState: View {
 #Preview("보관함 상세 검색 헤더") {
     @Previewable @State var query = ""
 
-    CollectionDetailNavigationHeader(
+    ArchiveDetailNavigationHeader(
         scope: .category(.shopping),
         query: $query,
         showsSearchField: true,
@@ -211,10 +211,10 @@ struct CollectionDetailEmptyState: View {
 }
 
 #Preview("보관함 상세 빈 상태") {
-    CollectionDetailEmptyState(scope: .category(.shopping))
+    ArchiveDetailEmptyState(scope: .category(.shopping))
 }
 
 #Preview("즐겨찾기 빈 상태") {
-    CollectionDetailEmptyState(scope: .favorites)
+    ArchiveDetailEmptyState(scope: .favorites)
 }
 #endif

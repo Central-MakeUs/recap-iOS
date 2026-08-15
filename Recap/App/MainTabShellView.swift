@@ -169,7 +169,7 @@ private final class PreviewHomeSummaryLoaderForAppShell: HomeSummaryLoading {
         HomeSummaryContent(
             recentCards: SampleData.recentCards,
             favoriteCards: SampleData.cards.filter(\.isFavorite),
-            frequentTypes: SampleData.collectionSummaries,
+            frequentTypes: SampleData.categorySummaries,
             hasAnyCapture: true
         )
     }
