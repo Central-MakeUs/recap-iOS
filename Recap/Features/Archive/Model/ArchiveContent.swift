@@ -49,7 +49,7 @@ extension CardSnapshot {
             organizedAt: dto.organizedAt,
             location: "",
             businessHours: "",
-            category: dto.typeCode.displayTitle,
+            category: dto.typeCode.collectionKind.displayTitle,
             confirmationLabel: nil,
             memo: "",
             tags: [],

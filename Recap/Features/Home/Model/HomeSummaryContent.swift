@@ -52,7 +52,7 @@ extension CardSnapshot {
             organizedAt: dto.organizedAt,
             location: "",
             businessHours: "",
-            category: dto.typeCode.displayTitle,
+            category: kind.displayTitle,
             confirmationLabel: nil,
             memo: "",
             tags: [],
@@ -87,7 +87,7 @@ private extension CollectionSummary {
         self.init(
             kind: kind,
             count: dto.count,
-            previewTitle: dto.typeCode.displayTitle,
+            previewTitle: kind.displayTitle,
             representativeThumbnailURL: dto.representativeThumbnailUrl
         )
     }
