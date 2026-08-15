@@ -34,27 +34,10 @@ nonisolated enum CardTypeCode: String, Codable, Sendable {
         }
     }
 
+    /// 분류 표시 이름의 원본은 도메인(`CollectionKind`) 한 곳이다.
+    /// 와이어 코드가 같은 이름을 따로 정의해 두 벌이 어긋날 길을 없앤다.
     var displayTitle: String {
-        switch self {
-        case .job:
-            "채용 · 취업"
-        case .shopping:
-            "쇼핑 · 상품"
-        case .place:
-            "장소 · 맛집"
-        case .schedule:
-            "일정 · 예약"
-        case .knowledge:
-            "정보 · 지식"
-        case .content:
-            "책 · 콘텐츠"
-        case .benefit:
-            "혜택 · 이벤트"
-        case .record:
-            "기록 · 캡처"
-        case .etc:
-            "기타"
-        }
+        collectionKind.displayTitle
     }
 
     init?(collectionKind: CollectionKind) {
