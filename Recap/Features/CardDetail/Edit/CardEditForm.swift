@@ -21,7 +21,7 @@ struct CardEditForm: View {
             VStack(alignment: .leading, spacing: 0) {
                 CardEditOriginalPreview(card: card, onOpenOriginal: onOpenOriginal)
 
-                CardEditTypeField(collection: $draft.collection)
+                CardEditTypeField(category: $draft.category)
                     .padding(.top, 23)
 
                 CardEditTextFieldGroup(

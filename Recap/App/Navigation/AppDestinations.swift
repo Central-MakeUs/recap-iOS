@@ -66,16 +66,16 @@ extension View {
                 invalidationCenter: cardDataInvalidationCenter
             )
         case .archiveFavorites:
-            CollectionDetailContainerView(
+            ArchiveDetailContainerView(
                 scope: .favorites,
                 loader: archiveLoader,
                 searchLoader: searchLoader,
                 cardStore: cardStore,
                 invalidationCenter: cardDataInvalidationCenter
             )
-        case .archiveDetail(let kind):
-            CollectionDetailContainerView(
-                scope: .category(kind),
+        case .archiveDetail(let category):
+            ArchiveDetailContainerView(
+                scope: .category(category),
                 loader: archiveLoader,
                 searchLoader: searchLoader,
                 cardStore: cardStore,

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct RecapChip: View {
     enum Configuration {
-        case category(CollectionKind, size: CategorySize, isSelected: Bool = true)
+        case category(CardCategory, size: CategorySize, isSelected: Bool = true)
         case recentSearch(String)
     }
 
@@ -18,8 +18,8 @@ struct RecapChip: View {
 
     var body: some View {
         switch configuration {
-        case let .category(kind, size, isSelected):
-            categoryChip(kind: kind, size: size, isSelected: isSelected)
+        case let .category(category, size, isSelected):
+            categoryChip(for: category, size: size, isSelected: isSelected)
         case let .recentSearch(keyword):
             recentSearchChip(keyword: keyword)
         }
@@ -27,22 +27,22 @@ struct RecapChip: View {
 
     @ViewBuilder
     private func categoryChip(
-        kind: CollectionKind,
+        for category: CardCategory,
         size: CategorySize,
         isSelected: Bool
     ) -> some View {
         switch size {
         case .small:
-            categoryTitle(kind: kind, color: CategoryPalette.selected(for: kind).text)
+            categoryTitle(for: category, color: CategoryPalette.selected(for: category).text)
         case .medium:
             HStack(spacing: 8) {
-                categoryIcon(kind: kind)
-                categoryTitle(kind: kind, color: Color.recapGray900)
+                categoryIcon(for: category)
+                categoryTitle(for: category, color: Color.recapGray900)
             }
         case .large:
-            let palette = isSelected ? CategoryPalette.selected(for: kind) : .unselected
+            let palette = isSelected ? CategoryPalette.selected(for: category) : .unselected
 
-            Text(RecapPresentation.collectionDisplay(for: kind).title)
+            Text(RecapPresentation.categoryDisplay(for: category).title)
                 .font(RecapFont.pretendard(size: 14, weight: .semibold))
                 .tracking(-0.28)
                 .foregroundStyle(palette.text)
@@ -56,19 +56,19 @@ struct RecapChip: View {
         }
     }
 
-    private func categoryTitle(kind: CollectionKind, color: Color) -> some View {
-        Text(RecapPresentation.collectionDisplay(for: kind).title)
+    private func categoryTitle(for category: CardCategory, color: Color) -> some View {
+        Text(RecapPresentation.categoryDisplay(for: category).title)
             .font(RecapFont.pretendard(size: 10, weight: .semibold))
             .tracking(-0.20)
             .foregroundStyle(color)
             .lineLimit(1)
     }
 
-    private func categoryIcon(kind: CollectionKind) -> some View {
-        let display = RecapPresentation.collectionDisplay(for: kind)
+    private func categoryIcon(for category: CardCategory) -> some View {
+        let display = RecapPresentation.categoryDisplay(for: category)
 
         return RecapIconView(
-            icon: .categoryIcon(for: kind),
+            icon: .categoryIcon(for: category),
             size: 16,
             color: display.dotColor
         )
@@ -120,8 +120,8 @@ private struct CategoryPalette {
         text: Color.recapGray300
     )
 
-    static func selected(for kind: CollectionKind) -> CategoryPalette {
-        switch kind {
+    static func selected(for category: CardCategory) -> CategoryPalette {
+        switch category {
         case .shopping:
             CategoryPalette(background: .categoryBlue300, border: .categoryBlue500, text: .categoryBlue700)
         case .place:
@@ -147,8 +147,8 @@ private struct CategoryPalette {
 #if DEBUG
 #Preview("Chips - 카테고리 S") {
     VStack(alignment: .leading, spacing: 12) {
-        ForEach(CollectionKind.allCases) { kind in
-            RecapChip(configuration: .category(kind, size: .small))
+        ForEach(CardCategory.allCases) { category in
+            RecapChip(configuration: .category(category, size: .small))
         }
     }
     .padding()
@@ -156,8 +156,8 @@ private struct CategoryPalette {
 
 #Preview("Chips - 카테고리 M") {
     VStack(alignment: .leading, spacing: 12) {
-        ForEach(CollectionKind.allCases) { kind in
-            RecapChip(configuration: .category(kind, size: .medium))
+        ForEach(CardCategory.allCases) { category in
+            RecapChip(configuration: .category(category, size: .medium))
         }
     }
     .padding()

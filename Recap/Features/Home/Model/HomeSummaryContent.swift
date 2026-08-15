@@ -3,13 +3,13 @@ import Foundation
 nonisolated struct HomeSummaryContent: Equatable, Sendable {
     let recentCards: [CardSnapshot]
     let favoriteCards: [CardSnapshot]
-    let frequentTypes: [CollectionSummary]
+    let frequentTypes: [CategorySummary]
     let hasAnyCapture: Bool
 
     init(
         recentCards: [CardSnapshot],
         favoriteCards: [CardSnapshot],
-        frequentTypes: [CollectionSummary],
+        frequentTypes: [CategorySummary],
         hasAnyCapture: Bool
     ) {
         self.recentCards = recentCards
@@ -28,7 +28,7 @@ nonisolated struct HomeSummaryContent: Equatable, Sendable {
                     : lhs.element.organizedAt > rhs.element.organizedAt
             }
             .map { CardSnapshot(dto: $0.element) }
-        frequentTypes = dto.topTypes.map(CollectionSummary.init(dto:))
+        frequentTypes = dto.topTypes.map(CategorySummary.init(dto:))
         hasAnyCapture = dto.hasAnyCapture
     }
 
@@ -42,13 +42,13 @@ nonisolated struct HomeSummaryContent: Equatable, Sendable {
 
 extension CardSnapshot {
     nonisolated init(dto: HomeCaptureSummaryDTO) {
-        let kind = dto.typeCode.collectionKind
+        let category = dto.typeCode.category
 
         self.init(
             captureID: dto.captureId,
             title: dto.title,
             summary: dto.summary,
-            collection: kind,
+            category: category,
             organizedAt: dto.organizedAt,
             location: "",
             businessHours: "",
@@ -79,14 +79,14 @@ nonisolated struct RecentCapturesPage: Equatable, Sendable {
     }
 }
 
-private extension CollectionSummary {
+private extension CategorySummary {
     nonisolated init(dto: HomeTopTypeDTO) {
-        let kind = dto.typeCode.collectionKind
+        let category = dto.typeCode.category
 
         self.init(
-            kind: kind,
+            category: category,
             count: dto.count,
-            previewTitle: kind.displayTitle,
+            previewTitle: category.displayTitle,
             representativeThumbnailURL: dto.representativeThumbnailUrl
         )
     }

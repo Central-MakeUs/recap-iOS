@@ -22,7 +22,7 @@ final class ArchiveAPITests: XCTestCase {
         ])
         XCTAssertEqual(content.favoriteCount, 1)
         XCTAssertEqual(content.otherCount, 1)
-        XCTAssertEqual(content.summaries.first?.kind, .shopping)
+        XCTAssertEqual(content.summaries.first?.category, .shopping)
         XCTAssertEqual(content.summaries.first?.previewTitle, "최근 제목 · 이전 제목")
     }
 
@@ -30,7 +30,7 @@ final class ArchiveAPITests: XCTestCase {
         let client = ArchiveNetworkClientStub()
         let service = ArchiveService(networkClient: client)
         let current = ArchiveHomeContent(
-            summaries: [CollectionSummary(kind: .shopping, count: 7, previewTitle: "기존 제목")],
+            summaries: [CategorySummary(category: .shopping, count: 7, previewTitle: "기존 제목")],
             favoriteCount: 99,
             otherCount: 5
         )
@@ -53,7 +53,7 @@ final class ArchiveAPITests: XCTestCase {
             representativeTitles: []
         )
 
-        XCTAssertEqual(CollectionSummary(archiveDTO: dto).previewTitle, "")
+        XCTAssertEqual(CategorySummary(archiveDTO: dto).previewTitle, "")
     }
 
     func testFavoritesDoesNotSendSortQuery() async throws {
@@ -99,7 +99,7 @@ final class ArchiveAPITests: XCTestCase {
         let card = try XCTUnwrap(cards.first)
 
         XCTAssertEqual(card.captureID, 101)
-        XCTAssertEqual(card.collection, .shopping)
+        XCTAssertEqual(card.category, .shopping)
         XCTAssertEqual(card.thumbnailURL?.absoluteString, "https://images.example.com/101.jpg")
     }
 
@@ -339,7 +339,7 @@ final class ArchiveAPITests: XCTestCase {
             captureID: captureID,
             title: "카드 \(captureID)",
             summary: "요약",
-            collection: .shopping,
+            category: .shopping,
             organizedAt: organizedAt,
             location: "",
             businessHours: "",

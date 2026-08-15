@@ -48,7 +48,7 @@ struct CardCreationScreenshotCell: View {
                     .resizable()
                     .scaledToFill()
             } else {
-                RecapScreenshotThumbnail(kind: screenshot.kind, assetName: screenshot.assetName)
+                RecapScreenshotThumbnail(category: screenshot.category, assetName: screenshot.assetName)
             }
         }
             .aspectRatio(1, contentMode: .fit)

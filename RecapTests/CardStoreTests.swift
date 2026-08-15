@@ -24,7 +24,7 @@ final class CardStoreTests: XCTestCase {
 
         let edited = snapshot.with(
             editDraft: CardEditDraft(
-                collection: snapshot.collection,
+                category: snapshot.category,
                 title: "재조회로 바뀐 제목",
                 summary: snapshot.summary,
                 body: snapshot.memo
@@ -97,7 +97,7 @@ final class CardStoreTests: XCTestCase {
         let store = makeStore().store
         let card = store.upsert(SampleData.cards[0])
         let draft = CardEditDraft(
-            collection: .place,
+            category: .place,
             title: "새 제목",
             summary: "새 요약",
             body: "새 본문"
@@ -108,7 +108,7 @@ final class CardStoreTests: XCTestCase {
         XCTAssertEqual(card.title, "새 제목")
         XCTAssertEqual(card.summary, "새 요약")
         XCTAssertEqual(card.memo, "새 본문")
-        XCTAssertEqual(card.collection, .place)
+        XCTAssertEqual(card.category, .place)
     }
 
     // MARK: 신고

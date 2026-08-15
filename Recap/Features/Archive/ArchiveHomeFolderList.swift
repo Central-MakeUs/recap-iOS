@@ -1,21 +1,21 @@
 import SwiftUI
 
-struct CollectionHomeFolderList: View {
-    let summaries: [CollectionSummary]
-    let onOpenArchive: (CollectionKind) -> Void
+struct ArchiveHomeFolderList: View {
+    let summaries: [CategorySummary]
+    let onOpenArchive: (CardCategory) -> Void
 
     var body: some View {
         VStack(spacing: 0) {
             ForEach(summaries) { summary in
                 Button {
-                    onOpenArchive(summary.kind)
+                    onOpenArchive(summary.category)
                 } label: {
-                    let display = RecapPresentation.collectionDisplay(for: summary.kind)
+                    let display = RecapPresentation.categoryDisplay(for: summary.category)
                     RecapFolderListRow(
                         title: display.title,
                         subtitle: summary.previewTitle,
                         count: summary.count,
-                        kind: summary.kind
+                        category: summary.category
                     )
                 }
                 .buttonStyle(.plain)
@@ -27,9 +27,9 @@ struct CollectionHomeFolderList: View {
 #if DEBUG
 #Preview("보관함 폴더 목록") {
     ScrollView {
-        CollectionHomeFolderList(
-            summaries: SampleData.collectionSummaries + [
-                CollectionSummary(kind: .other, count: 0, previewTitle: "")
+        ArchiveHomeFolderList(
+            summaries: SampleData.categorySummaries + [
+                CategorySummary(category: .other, count: 0, previewTitle: "")
             ],
             onOpenArchive: { _ in }
         )

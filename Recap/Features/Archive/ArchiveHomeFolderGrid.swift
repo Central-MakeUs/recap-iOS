@@ -1,8 +1,8 @@
 import SwiftUI
 
-struct CollectionHomeFolderGrid: View {
-    let summaries: [CollectionSummary]
-    let onOpenArchive: (CollectionKind) -> Void
+struct ArchiveHomeFolderGrid: View {
+    let summaries: [CategorySummary]
+    let onOpenArchive: (CardCategory) -> Void
 
     private let columns = [
         GridItem(.flexible(minimum: 99), spacing: 0, alignment: .leading),
@@ -18,13 +18,13 @@ struct CollectionHomeFolderGrid: View {
         ) {
             ForEach(summaries) { summary in
                 Button {
-                    onOpenArchive(summary.kind)
+                    onOpenArchive(summary.category)
                 } label: {
-                    let display = RecapPresentation.collectionDisplay(for: summary.kind)
+                    let display = RecapPresentation.categoryDisplay(for: summary.category)
                     RecapFolderCard(
                         title: display.title,
                         count: summary.count,
-                        kind: summary.kind
+                        category: summary.category
                     )
                 }
                 .buttonStyle(.plain)
@@ -36,9 +36,9 @@ struct CollectionHomeFolderGrid: View {
 
 #if DEBUG
 #Preview("보관함 폴더 격자") {
-    CollectionHomeFolderGrid(
-        summaries: SampleData.collectionSummaries + [
-            CollectionSummary(kind: .other, count: 0, previewTitle: "")
+    ArchiveHomeFolderGrid(
+        summaries: SampleData.categorySummaries + [
+            CategorySummary(category: .other, count: 0, previewTitle: "")
         ],
         onOpenArchive: { _ in }
     )

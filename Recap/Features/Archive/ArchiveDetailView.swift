@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct CollectionDetailContainerView: View {
+struct ArchiveDetailContainerView: View {
     @Environment(AppRouter.self) private var router
 
     let scope: ArchiveDetailScope
@@ -36,7 +36,7 @@ struct CollectionDetailContainerView: View {
     }
 
     var body: some View {
-        CollectionDetailView(
+        ArchiveDetailView(
             scope: scope,
             cards: cards,
             searchModel: searchModel,
@@ -72,8 +72,8 @@ struct CollectionDetailContainerView: View {
         switch scope {
         case .favorites:
             .archiveFavorites
-        case .category(let kind):
-            .archiveDetail(kind)
+        case .category(let category):
+            .archiveDetail(category)
         }
     }
 
@@ -83,8 +83,8 @@ struct CollectionDetailContainerView: View {
             router.navigate(.search)
         case .openFavorites:
             router.navigate(.archiveFavorites)
-        case .openArchive(let kind):
-            router.navigate(.archiveDetail(kind))
+        case .openArchive(let category):
+            router.navigate(.archiveDetail(category))
         case .openCard(let captureID):
             router.navigate(.remoteCardDetail(captureID))
         case .selectSort(let sort):
@@ -103,7 +103,7 @@ struct CollectionDetailContainerView: View {
         return cards
     }
 
-    private var loadState: CollectionDetailView.LoadState {
+    private var loadState: ArchiveDetailView.LoadState {
         switch model.state {
         case .idle, .loading:
             .loaded
@@ -132,7 +132,7 @@ private struct ArchiveDetailReloadTrigger: Hashable {
     let isActive: Bool
 }
 
-struct CollectionDetailView: View {
+struct ArchiveDetailView: View {
     enum LoadState {
         case loaded
         case failed
@@ -220,7 +220,7 @@ struct CollectionDetailView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            CollectionDetailNavigationHeader(
+            ArchiveDetailNavigationHeader(
                 scope: scope,
                 query: $query,
                 showsSearchField: interactionMode.showsSearchField,
@@ -350,7 +350,7 @@ struct CollectionDetailView: View {
         if cards.isEmpty {
             recapCount(cards.count)
 
-            CollectionDetailEmptyState(
+            ArchiveDetailEmptyState(
                 scope: scope,
                 onImportScreenshots: onImportScreenshots
             )
@@ -546,7 +546,7 @@ struct CollectionDetailView: View {
 #if DEBUG
 #Preview("보관함 상세") {
     NavigationStack {
-        CollectionDetailView(
+        ArchiveDetailView(
             scope: .category(.shopping),
             cards: SampleData.cards(in: .shopping),
             searchModel: previewArchiveSearchModel(scope: .category(.shopping)),
@@ -559,7 +559,7 @@ struct CollectionDetailView: View {
 
 #Preview("즐겨찾기 상세") {
     NavigationStack {
-        CollectionDetailView(
+        ArchiveDetailView(
             scope: .favorites,
             cards: SampleData.cards.filter(\.isFavorite),
             searchModel: previewArchiveSearchModel(scope: .favorites),
@@ -572,7 +572,7 @@ struct CollectionDetailView: View {
 
 #Preview("보관함 상세 검색") {
     NavigationStack {
-        CollectionDetailView(
+        ArchiveDetailView(
             scope: .category(.shopping),
             cards: SampleData.cards(in: .shopping),
             searchModel: previewArchiveSearchModel(scope: .category(.shopping)),
@@ -586,7 +586,7 @@ struct CollectionDetailView: View {
 
 #Preview("보관함 상세 선택") {
     NavigationStack {
-        CollectionDetailView(
+        ArchiveDetailView(
             scope: .category(.shopping),
             cards: SampleData.cards(in: .shopping),
             searchModel: previewArchiveSearchModel(scope: .category(.shopping)),
@@ -600,7 +600,7 @@ struct CollectionDetailView: View {
 
 #Preview("보관함 상세 삭제 실패") {
     NavigationStack {
-        CollectionDetailView(
+        ArchiveDetailView(
             scope: .category(.shopping),
             cards: SampleData.cards(in: .shopping),
             searchModel: previewArchiveSearchModel(scope: .category(.shopping)),

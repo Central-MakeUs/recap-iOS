@@ -3,11 +3,11 @@ import SwiftUI
 struct RecapFolderCard: View {
     let title: String
     let count: Int
-    var kind: CollectionKind = .shopping
+    var category: CardCategory = .shopping
 
     var body: some View {
         VStack(spacing: 10) {
-            RecapFolderArtwork(kind: kind)
+            RecapFolderArtwork(category: category)
 
             VStack(spacing: 3) {
                 Text(title)
@@ -28,10 +28,10 @@ struct RecapFolderCard: View {
 }
 
 private struct RecapFolderArtwork: View {
-    let kind: CollectionKind
+    let category: CardCategory
 
     var body: some View {
-        let display = RecapPresentation.collectionDisplay(for: kind)
+        let display = RecapPresentation.categoryDisplay(for: category)
 
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 7.409886837005615, style: .continuous)
@@ -47,13 +47,13 @@ private struct RecapFolderArtwork: View {
                 .frame(width: 94, height: 79)
                 .offset(x: 5, y: 9)
 
-            if kind != .other {
+            if category != .other {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .fill(Color.recapBackground)
                     .frame(width: 30, height: 30)
                     .overlay {
                         RecapIconView(
-                            icon: RecapIcon.categoryIcon(for: kind),
+                            icon: RecapIcon.categoryIcon(for: category),
                             size: 16,
                             color: display.dotColor
                         )
@@ -138,11 +138,11 @@ private struct RecapFolderFrontShape: Shape {
             columns: Array(repeating: GridItem(.fixed(99), spacing: 23), count: 3),
             spacing: 15
         ) {
-            ForEach(CollectionKind.allCases) { kind in
+            ForEach(CardCategory.allCases) { category in
                 RecapFolderCard(
-                    title: kind.displayTitle,
-                    count: SampleData.sampleCount(for: kind),
-                    kind: kind
+                    title: category.displayTitle,
+                    count: SampleData.sampleCount(for: category),
+                    category: category
                 )
             }
         }

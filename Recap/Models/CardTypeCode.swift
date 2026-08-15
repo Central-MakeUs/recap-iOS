@@ -11,7 +11,7 @@ nonisolated enum CardTypeCode: String, Codable, Sendable {
     case record = "RECORD"
     case etc = "ETC"
 
-    var collectionKind: CollectionKind {
+    var category: CardCategory {
         switch self {
         case .job:
             .career
@@ -34,8 +34,8 @@ nonisolated enum CardTypeCode: String, Codable, Sendable {
         }
     }
 
-    init?(collectionKind: CollectionKind) {
-        switch collectionKind {
+    init?(category: CardCategory) {
+        switch category {
         case .career:
             self = .job
         case .shopping:

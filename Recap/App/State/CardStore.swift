@@ -99,7 +99,7 @@ final class CardStore {
 
         card.title = draft.title
         card.summary = draft.summary
-        card.collection = draft.collection
+        card.category = draft.category
         card.memo = draft.body
     }
 

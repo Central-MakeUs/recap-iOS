@@ -10,7 +10,7 @@ struct CardDetailImageSection: View {
     var body: some View {
         Button(action: onOpenOriginal) {
             RecapScreenshotThumbnail(
-                kind: card.collection,
+                category: card.category,
                 assetName: card.detailImageAssetName,
                 remoteURL: card.originalImageURL ?? card.thumbnailURL,
                 cornerRadius: CardDetailStyle.cornerRadius,

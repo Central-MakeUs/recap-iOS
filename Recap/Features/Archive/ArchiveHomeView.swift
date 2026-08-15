@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct CollectionHomeView: View {
+struct ArchiveHomeView: View {
     enum LayoutMode {
         case grid
         case list
@@ -13,7 +13,7 @@ struct CollectionHomeView: View {
 
     @State private var layoutMode: LayoutMode
 
-    let summaries: [CollectionSummary]
+    let summaries: [CategorySummary]
     let favoriteCount: Int
     let otherCount: Int
     let loadState: LoadState
@@ -22,7 +22,7 @@ struct CollectionHomeView: View {
     let onAction: (ArchiveAction) -> Void
 
     init(
-        summaries: [CollectionSummary],
+        summaries: [CategorySummary],
         favoriteCount: Int,
         otherCount: Int = 0,
         layoutMode: LayoutMode = .grid,
@@ -70,7 +70,7 @@ struct CollectionHomeView: View {
             Button {
                 onAction(.openFavorites)
             } label: {
-                CollectionHomeFavoritesLink(count: favoriteCount)
+                ArchiveHomeFavoritesLink(count: favoriteCount)
             }
             .buttonStyle(.plain)
             .padding(.horizontal, 16)
@@ -81,14 +81,14 @@ struct CollectionHomeView: View {
                 // 공통 여백을 두고 목록에서 음수로 상쇄하는 대신 분기마다 직접 준다.
                 VStack(alignment: .leading, spacing: 0) {
                     if layoutMode == .grid {
-                        CollectionHomeFolderGrid(
+                        ArchiveHomeFolderGrid(
                             summaries: folderSummaries,
                             onOpenArchive: openArchive
                         )
                         .padding(.horizontal, 16)
                         .padding(.top, 28)
                     } else {
-                        CollectionHomeFolderList(
+                        ArchiveHomeFolderList(
                             summaries: folderSummaries,
                             onOpenArchive: openArchive
                         )
@@ -111,7 +111,7 @@ struct CollectionHomeView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 20)
 
-            CollectionHomeEmptyState(onImportScreenshots: onImportScreenshots)
+            ArchiveHomeEmptyState(onImportScreenshots: onImportScreenshots)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.bottom, 30)
         }
@@ -130,7 +130,7 @@ struct CollectionHomeView: View {
     }
 
     private var header: some View {
-        CollectionHomeHeader(layoutMode: $layoutMode)
+        ArchiveHomeHeader(layoutMode: $layoutMode)
     }
 
     private var searchButton: some View {
@@ -142,12 +142,12 @@ struct CollectionHomeView: View {
         .buttonStyle(.plain)
     }
 
-    private var folderSummaries: [CollectionSummary] {
-        let byKind = Dictionary(uniqueKeysWithValues: summaries.map { ($0.kind, $0) })
-        return CollectionKind.allCases.map { kind in
-            byKind[kind] ?? CollectionSummary(
-                kind: kind,
-                count: kind == .other ? otherCount : 0,
+    private var folderSummaries: [CategorySummary] {
+        let byKind = Dictionary(uniqueKeysWithValues: summaries.map { ($0.category, $0) })
+        return CardCategory.allCases.map { category in
+            byKind[category] ?? CategorySummary(
+                category: category,
+                count: category == .other ? otherCount : 0,
                 previewTitle: ""
             )
         }
@@ -157,16 +157,16 @@ struct CollectionHomeView: View {
         summaries.reduce(otherCount) { $0 + $1.count }
     }
 
-    private func openArchive(_ kind: CollectionKind) {
-        onAction(.openArchive(kind))
+    private func openArchive(_ category: CardCategory) {
+        onAction(.openArchive(category))
     }
 }
 
 #if DEBUG
 #Preview("보관함 홈 폴더형") {
     NavigationStack {
-        CollectionHomeView(
-            summaries: SampleData.collectionSummaries,
+        ArchiveHomeView(
+            summaries: SampleData.categorySummaries,
             favoriteCount: SampleData.cards.filter(\.isFavorite).count,
             otherCount: SampleData.cards(in: .other).count,
             onAction: PreviewActions.handleArchive
@@ -176,8 +176,8 @@ struct CollectionHomeView: View {
 
 #Preview("보관함 홈 리스트형") {
     NavigationStack {
-        CollectionHomeView(
-            summaries: SampleData.collectionSummaries,
+        ArchiveHomeView(
+            summaries: SampleData.categorySummaries,
             favoriteCount: SampleData.cards.filter(\.isFavorite).count,
             otherCount: SampleData.cards(in: .other).count,
             layoutMode: .list,
@@ -188,7 +188,7 @@ struct CollectionHomeView: View {
 
 #Preview("보관함 항목 없음") {
     NavigationStack {
-        CollectionHomeView(
+        ArchiveHomeView(
             summaries: [],
             favoriteCount: 0,
             onAction: PreviewActions.handleArchive
@@ -198,7 +198,7 @@ struct CollectionHomeView: View {
 
 #Preview("보관함 리스트 로딩 실패") {
     NavigationStack {
-        CollectionHomeView(
+        ArchiveHomeView(
             summaries: [],
             favoriteCount: 0,
             loadState: .failed,

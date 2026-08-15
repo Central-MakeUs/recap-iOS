@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct CollectionHomeHeader: View {
-    @Binding var layoutMode: CollectionHomeView.LayoutMode
+struct ArchiveHomeHeader: View {
+    @Binding var layoutMode: ArchiveHomeView.LayoutMode
     @Namespace private var layoutSelection
 
     var body: some View {
@@ -38,7 +38,7 @@ struct CollectionHomeHeader: View {
     }
 
     private func layoutButton(
-        mode: CollectionHomeView.LayoutMode,
+        mode: ArchiveHomeView.LayoutMode,
         icon: RecapIcon
     ) -> some View {
         Button {
@@ -65,7 +65,7 @@ struct CollectionHomeHeader: View {
     }
 }
 
-struct CollectionHomeFavoritesLink: View {
+struct ArchiveHomeFavoritesLink: View {
     let count: Int
 
     var body: some View {
@@ -104,14 +104,14 @@ struct CollectionHomeFavoritesLink: View {
 
 #if DEBUG
 #Preview("보관함 헤더") {
-    @Previewable @State var layoutMode = CollectionHomeView.LayoutMode.grid
+    @Previewable @State var layoutMode = ArchiveHomeView.LayoutMode.grid
 
-    CollectionHomeHeader(layoutMode: $layoutMode)
+    ArchiveHomeHeader(layoutMode: $layoutMode)
         .padding()
 }
 
 #Preview("즐겨찾기 진입 카드") {
-    CollectionHomeFavoritesLink(count: 3)
+    ArchiveHomeFavoritesLink(count: 3)
         .padding()
 }
 #endif

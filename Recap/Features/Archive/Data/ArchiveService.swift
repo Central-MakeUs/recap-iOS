@@ -36,7 +36,7 @@ final class ArchiveService: ArchiveLoading {
         async let other = fetchOther(sort: .latest)
 
         return try await ArchiveHomeContent(
-            summaries: types.map(CollectionSummary.init(archiveDTO:)),
+            summaries: types.map(CategorySummary.init(archiveDTO:)),
             favoriteCount: favorites.count,
             otherCount: other.count
         )
@@ -58,7 +58,7 @@ final class ArchiveService: ArchiveLoading {
         var otherCount = current.otherCount
 
         if scopes.contains(.types) {
-            summaries = try await fetchTypes().map(CollectionSummary.init(archiveDTO:))
+            summaries = try await fetchTypes().map(CategorySummary.init(archiveDTO:))
         }
         if scopes.contains(.favorites) {
             favoriteCount = try await fetchFavorites().count
@@ -85,8 +85,8 @@ final class ArchiveService: ArchiveLoading {
             captureList = try await fetchFavorites()
         case .category(.other):
             captureList = try await fetchOther(sort: sort)
-        case .category(let kind):
-            captureList = try await fetchType(kind, sort: sort)
+        case .category(let category):
+            captureList = try await fetchType(category, sort: sort)
         }
 
         return captureList.items.map(CardSnapshot.init(archiveDTO:))
@@ -106,10 +106,10 @@ final class ArchiveService: ArchiveLoading {
     }
 
     private func fetchType(
-        _ kind: CollectionKind,
+        _ category: CardCategory,
         sort: ArchiveSort
     ) async throws -> ArchiveCaptureListDTO {
-        guard let typeCode = CardTypeCode(collectionKind: kind), typeCode != .etc else {
+        guard let typeCode = CardTypeCode(category: category), typeCode != .etc else {
             throw APIError.malformedRequest
         }
 

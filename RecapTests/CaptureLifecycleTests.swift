@@ -19,7 +19,7 @@ final class CaptureLifecycleServiceTests: XCTestCase {
         try await service.updateCapture(
             captureID: 11,
             draft: CardEditDraft(
-                collection: .knowledge,
+                category: .knowledge,
                 title: "수정 제목 ",
                 summary: "수정 요약 ",
                 body: "수정 본문 "
@@ -355,7 +355,7 @@ final class CaptureDetailFeatureModelTests: XCTestCase {
         )
         let card = try XCTUnwrap(store.upsert(Self.card(isFavorite: false)))
         let draft = CardEditDraft(
-            collection: .shopping,
+            category: .shopping,
             title: "수정 제목",
             summary: "수정 요약",
             body: "수정 본문"
@@ -366,7 +366,7 @@ final class CaptureDetailFeatureModelTests: XCTestCase {
         XCTAssertEqual(service.updatedCaptureID, 42)
         XCTAssertEqual(service.updatedDraft, draft)
         XCTAssertEqual(card.title, "수정 제목")
-        XCTAssertEqual(card.collection, .shopping)
+        XCTAssertEqual(card.category, .shopping)
         XCTAssertEqual(card.memo, "수정 본문")
         XCTAssertEqual(invalidationCenter.homeRevision, 1)
         XCTAssertEqual(invalidationCenter.archiveDetailRevision, 1)
@@ -424,7 +424,7 @@ final class CaptureDetailFeatureModelTests: XCTestCase {
             captureID: 42,
             title: "카드",
             summary: "요약",
-            collection: .knowledge,
+            category: .knowledge,
             location: "",
             businessHours: "",
             confirmationLabel: nil,

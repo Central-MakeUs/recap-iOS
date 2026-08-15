@@ -201,7 +201,7 @@ final class RecapTests: XCTestCase {
         XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .settings))
     }
 
-    func testCollectionSelectionChromeReplacesMainTabChrome() {
+    func testArchiveSelectionChromeReplacesMainTabChrome() {
         let state = RecapMainTabChromeState()
         state.setVisible(false, for: .archive)
 
@@ -240,19 +240,19 @@ final class RecapTests: XCTestCase {
 
     func testCardEditDraftRequiresTitleSummaryAndBody() {
         let missingTitle = CardEditDraft(
-            collection: .schedule,
+            category: .schedule,
             title: "   ",
             summary: "예약 정보",
             body: "본문"
         )
         let missingSummary = CardEditDraft(
-            collection: .schedule,
+            category: .schedule,
             title: "제주 숙소 예약 정보",
             summary: "\n",
             body: "본문"
         )
         let missingBody = CardEditDraft(
-            collection: .schedule,
+            category: .schedule,
             title: "제주 숙소 예약 정보",
             summary: "예약 정보",
             body: "\n"
@@ -268,7 +268,7 @@ final class RecapTests: XCTestCase {
 
     func testCardEditDraftRejectsTextBeyondFigmaLimits() {
         let draft = CardEditDraft(
-            collection: .schedule,
+            category: .schedule,
             title: String(repeating: "가", count: CardEditDraft.titleLimit + 1),
             summary: "예약 정보",
             body: "본문"
@@ -280,7 +280,7 @@ final class RecapTests: XCTestCase {
 
     func testCardEditDraftNormalizesWhitespaceBeforeSaving() {
         let draft = CardEditDraft(
-            collection: .schedule,
+            category: .schedule,
             title: "  제주 숙소 예약 정보  ",
             summary: "  예약 요약\n",
             body: "\n본문  "
@@ -289,7 +289,7 @@ final class RecapTests: XCTestCase {
         XCTAssertEqual(
             draft.normalized(),
             CardEditDraft(
-                collection: .schedule,
+                category: .schedule,
                 title: "제주 숙소 예약 정보",
                 summary: "예약 요약",
                 body: "본문"
@@ -301,7 +301,7 @@ final class RecapTests: XCTestCase {
         let store = CardStore(captureMutator: PreviewCaptureService())
         let card = try XCTUnwrap(store.upsert(SampleData.cards[1]))
         let draft = CardEditDraft(
-            collection: .knowledge,
+            category: .knowledge,
             title: "수정된 제목",
             summary: "수정된 요약",
             body: "짧은 본문도 그대로 저장되어야 합니다."

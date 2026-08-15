@@ -6,7 +6,7 @@ struct RecapHomeRecentCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
             RecapScreenshotThumbnail(
-                kind: card.collection,
+                category: card.category,
                 assetName: card.thumbnailAssetName,
                 remoteURL: card.thumbnailURL,
                 size: CGSize(width: 134, height: 85),
@@ -14,7 +14,7 @@ struct RecapHomeRecentCard: View {
             )
 
             VStack(alignment: .leading, spacing: 5) {
-                RecapChip(configuration: .category(card.collection, size: .small))
+                RecapChip(configuration: .category(card.category, size: .small))
 
                 Text(card.title)
                     .font(RecapFont.pretendard(size: 13, weight: .medium))
@@ -33,7 +33,7 @@ struct RecapHomeFavoriteCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 13) {
             HStack(alignment: .top) {
-                RecapChip(configuration: .category(card.collection, size: .medium))
+                RecapChip(configuration: .category(card.category, size: .medium))
 
                 Spacer(minLength: 0)
 
@@ -72,7 +72,7 @@ struct RecapHomeFavoriteCard: View {
 
 #Preview("최근 정리 카드 썸네일 폴백") {
     RecapScreenshotThumbnail(
-        kind: .knowledge,
+        category: .knowledge,
         assetName: nil,
         size: CGSize(width: 134, height: 85),
         fallbackStyle: .folderCharacter

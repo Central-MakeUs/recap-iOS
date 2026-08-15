@@ -1,13 +1,13 @@
 import SwiftUI
 
 struct CardEditTypeField: View {
-    @Binding var collection: CollectionKind
+    @Binding var category: CardCategory
     @State private var isTypeSelectionPresented = false
 
     var body: some View {
         RecapActionInput(
             label: "유형",
-            value: RecapPresentation.collectionDisplay(for: collection).title,
+            value: RecapPresentation.categoryDisplay(for: category).title,
             actionTitle: "변경",
             action: { isTypeSelectionPresented = true }
         )
@@ -17,7 +17,7 @@ struct CardEditTypeField: View {
             cornerRadius: 32
         ) {
             CardEditTypeSelectionSheet(
-                selection: $collection,
+                selection: $category,
                 onSelectionConfirmed: closeTypeSelection
             )
         }
@@ -30,8 +30,8 @@ struct CardEditTypeField: View {
 
 #if DEBUG
 #Preview("정보카드 유형 입력") {
-    @Previewable @State var collection = CollectionKind.schedule
-    CardEditTypeField(collection: $collection)
+    @Previewable @State var category = CardCategory.schedule
+    CardEditTypeField(category: $category)
         .padding()
 }
 #endif

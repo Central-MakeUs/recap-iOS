@@ -14,7 +14,7 @@ enum SampleData {
             captureID: 1,
             title: "집에서 만드는 파스타 레시피 저장아아아아아",
             summary: "재료와 조리 순서를 다시 보기 쉽게 보관",
-            collection: .knowledge,
+            category: .knowledge,
             organizedAt: date(2026, 6, 28),
             location: "레시피 페이지",
             businessHours: "조리 25분",
@@ -28,7 +28,7 @@ enum SampleData {
             captureID: 2,
             title: "제주 숙소 예약 정보",
             summary: "체크인 오후 3시, 8월 1박 예약이 확정된 숙소 정보 요약",
-            collection: .schedule,
+            category: .schedule,
             organizedAt: date(2026, 6, 27),
             location: "제주 서귀포",
             businessHours: "체크인 오후 3시",
@@ -43,7 +43,7 @@ enum SampleData {
             captureID: 3,
             title: "택배 반품 절차 정리",
             summary: "반품 접수, 수거 일정, 환불 조건을 한 번에 저장",
-            collection: .shopping,
+            category: .shopping,
             organizedAt: date(2026, 6, 26),
             location: "쇼핑몰 주문내역",
             businessHours: "수거 예정 6월 30일",
@@ -57,7 +57,7 @@ enum SampleData {
             captureID: 4,
             title: "연말정산 서류 목록",
             summary: "연말정산 제출에 필요한 서류 정리",
-            collection: .capture,
+            category: .capture,
             organizedAt: date(2026, 6, 25),
             location: "회사 안내문",
             businessHours: "제출 기한 1월 20일",
@@ -71,7 +71,7 @@ enum SampleData {
             captureID: 5,
             title: "서울 삼겹살 맛집 리스트",
             summary: "서울에서 저장한 삼겹살 맛집 후보",
-            collection: .place,
+            category: .place,
             organizedAt: date(2026, 6, 24),
             location: "서울",
             businessHours: "영업시간 확인 필요",
@@ -85,7 +85,7 @@ enum SampleData {
             captureID: 6,
             title: "러닝 전 준비운동",
             summary: "달리기 전에 확인할 준비운동 순서",
-            collection: .knowledge,
+            category: .knowledge,
             organizedAt: date(2026, 6, 23),
             location: "운동 가이드",
             businessHours: "운동 전 10분",
@@ -99,7 +99,7 @@ enum SampleData {
             captureID: 7,
             title: "숙소 예약 취소 규정",
             summary: "환불 가능 기간 안내 스크린샷",
-            collection: .capture,
+            category: .capture,
             organizedAt: date(2026, 6, 22),
             location: "예약 앱",
             businessHours: "환불 규정",
@@ -112,7 +112,7 @@ enum SampleData {
             captureID: 8,
             title: "병원 예약 안내",
             summary: "진료 예약 확인 문자 스크린샷",
-            collection: .schedule,
+            category: .schedule,
             organizedAt: date(2026, 6, 21),
             location: "문자 메시지",
             businessHours: "오전 10:30",
@@ -125,7 +125,7 @@ enum SampleData {
             captureID: 9,
             title: "좋은 글을 쓰려면 어떻게해야",
             summary: "좋은 글을 쓰기 위한 핵심 원칙",
-            collection: .content,
+            category: .content,
             organizedAt: date(2026, 6, 20),
             location: "아티클",
             businessHours: "읽기 5분",
@@ -138,23 +138,23 @@ enum SampleData {
 
     nonisolated static let recentCards: [CardSnapshot] = Array(cards.prefix(3))
 
-    nonisolated static let collectionSummaries: [CollectionSummary] = CollectionKind.folderCases.map { kind in
+    nonisolated static let categorySummaries: [CategorySummary] = CardCategory.folderCases.map { category in
         let recentTitles = cards
-            .filter { $0.collection == kind }
+            .filter { $0.category == category }
             .sorted { ($0.organizedAt ?? .distantPast) > ($1.organizedAt ?? .distantPast) }
             .prefix(2)
             .map(\.title)
             .joined(separator: " · ")
-        return CollectionSummary(
-            kind: kind,
-            count: sampleCount(for: kind),
+        return CategorySummary(
+            category: category,
+            count: sampleCount(for: category),
             previewTitle: recentTitles
         )
     }
 
     /// 폴더 카드에 보여줄 더미 개수. 표현이 아니라 샘플 데이터라 여기에 둔다.
-    nonisolated static func sampleCount(for kind: CollectionKind) -> Int {
-        switch kind {
+    nonisolated static func sampleCount(for category: CardCategory) -> Int {
+        switch category {
         case .shopping: 20
         case .place: 23
         case .schedule: 10
@@ -167,8 +167,8 @@ enum SampleData {
         }
     }
 
-    nonisolated static func cards(in kind: CollectionKind) -> [CardSnapshot] {
-        cards.filter { $0.collection == kind }
+    nonisolated static func cards(in category: CardCategory) -> [CardSnapshot] {
+        cards.filter { $0.category == category }
     }
 
 
@@ -177,7 +177,7 @@ enum SampleData {
         return cards.filter { card in
             card.title.localizedCaseInsensitiveContains(query)
                 || card.summary.localizedCaseInsensitiveContains(query)
-                || card.collection.displayTitle.localizedCaseInsensitiveContains(query)
+                || card.category.displayTitle.localizedCaseInsensitiveContains(query)
                 || card.tags.contains { $0.localizedCaseInsensitiveContains(query) }
         }
     }

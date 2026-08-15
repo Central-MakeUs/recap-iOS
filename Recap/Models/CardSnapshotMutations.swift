@@ -10,7 +10,7 @@ enum RecapCardCollection {
         return cards.filter { card in
             card.title.localizedCaseInsensitiveContains(query)
                 || card.summary.localizedCaseInsensitiveContains(query)
-                || card.collection.displayTitle.localizedCaseInsensitiveContains(query)
+                || card.category.displayTitle.localizedCaseInsensitiveContains(query)
                 || card.tags.contains { $0.localizedCaseInsensitiveContains(query) }
         }
     }
@@ -24,7 +24,7 @@ nonisolated extension CardSnapshot {
             captureID: captureID,
             title: draft.title,
             summary: draft.summary,
-            collection: draft.collection,
+            category: draft.category,
             organizedAt: organizedAt,
             location: location,
             businessHours: businessHours,
