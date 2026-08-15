@@ -16,32 +16,24 @@ struct RecapCategoryIcon: View {
     let glyphSize: CGFloat
     /// `nil`이면 타일 없이 글리프만 그린다.
     var tile: Tile?
-    /// 기타에는 고유한 모양이 없다. 자리를 비워 둘 화면은 `false`를 준다.
-    var drawsOtherCategory = true
+    /// 이 자리에 글리프를 그릴지. 고유 모양이 없는 분류를 비워 둘지는 화면이 정한다.
+    var showsGlyph = true
 
     var body: some View {
-        glyph
-            .frame(width: tile?.size, height: tile?.size)
-            .background(tile?.color)
-            .clipShape(
-                RoundedRectangle(cornerRadius: tile?.cornerRadius ?? 0, style: .continuous)
-            )
-    }
-
-    /// 이 자리에 실제로 글리프가 그려지는지. 앞뒤 간격을 잡는 화면이 물어본다.
-    var showsGlyph: Bool {
-        category != .other || drawsOtherCategory
-    }
-
-    @ViewBuilder
-    private var glyph: some View {
-        if showsGlyph {
-            RecapIconView(
-                icon: .categoryIcon(for: category),
-                size: glyphSize,
-                color: category.iconColor
-            )
+        Group {
+            if showsGlyph {
+                RecapIconView(
+                    icon: .categoryIcon(for: category),
+                    size: glyphSize,
+                    color: category.iconColor
+                )
+            }
         }
+        .frame(width: tile?.size, height: tile?.size)
+        .background(tile?.color)
+        .clipShape(
+            RoundedRectangle(cornerRadius: tile?.cornerRadius ?? 0, style: .continuous)
+        )
     }
 }
 
@@ -61,7 +53,7 @@ extension RecapCategoryIcon {
             category: category,
             glyphSize: 16,
             tile: Tile(size: 30, cornerRadius: 10, color: Color.recapBackground),
-            drawsOtherCategory: false
+            showsGlyph: category.hasOwnGlyph
         )
     }
 
@@ -89,7 +81,7 @@ extension RecapCategoryIcon {
             category: category,
             glyphSize: 20,
             tile: nil,
-            drawsOtherCategory: false
+            showsGlyph: category.hasOwnGlyph
         )
     }
 }
