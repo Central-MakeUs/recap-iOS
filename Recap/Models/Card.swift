@@ -24,7 +24,6 @@ final class Card: Identifiable {
     var organizedAt: Date?
     var location: String
     var businessHours: String
-    var category: String
     var confirmationLabel: String?
     var memo: String
     var tags: [String]
@@ -45,7 +44,6 @@ final class Card: Identifiable {
         organizedAt = snapshot.organizedAt
         location = snapshot.location
         businessHours = snapshot.businessHours
-        category = snapshot.category
         confirmationLabel = snapshot.confirmationLabel
         memo = snapshot.memo
         tags = snapshot.tags
@@ -64,7 +62,6 @@ final class Card: Identifiable {
         organizedAt = snapshot.organizedAt
         location = snapshot.location
         businessHours = snapshot.businessHours
-        category = snapshot.category
         confirmationLabel = snapshot.confirmationLabel
         memo = snapshot.memo
         tags = snapshot.tags

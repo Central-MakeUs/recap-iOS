@@ -58,21 +58,18 @@ struct CardCreationFlowView: View {
                 CardCreationResultView(
                     state: .complete,
                     selectedCount: viewModel.successCount,
-                    failedCount: 0,
                     onDone: close
                 )
             case .partialFailure:
                 CardCreationResultView(
                     state: .partialFailure,
                     selectedCount: viewModel.successCount,
-                    failedCount: viewModel.failedLoadCount,
                     onDone: close
                 )
             case .failure:
                 CardCreationResultView(
                     state: .failure,
                     selectedCount: 0,
-                    failedCount: viewModel.failedLoadCount,
                     onDone: close
                 )
             }
@@ -96,10 +93,10 @@ struct CardCreationFlowView: View {
         }
         .recapConfirmationDialog(
             isPresented: $isExitConfirmationPresented,
-            title: "정리를 취소할까요?",
-            message: "지금 나가면 공유한 스크린샷이\n정리되지 않아요",
-            cancelTitle: "계속정리하기",
-            confirmTitle: "나가기",
+            title: OrganizeCancellationCopy.title,
+            message: OrganizeCancellationCopy.message,
+            cancelTitle: OrganizeCancellationCopy.continueTitle,
+            confirmTitle: OrganizeCancellationCopy.exitTitle,
             confirmStyle: .primary,
             onConfirm: close
         )

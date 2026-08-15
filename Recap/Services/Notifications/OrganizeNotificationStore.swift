@@ -220,8 +220,8 @@ final class OrganizeNotificationStore {
         try? await delivery.deliver(
             OrganizeNotificationMessage(
                 identifier: "recap.organize.result.\(identifierSuffix)",
-                title: "스크린샷을 정리하지 못했어요",
-                body: "다음에 다시 시도해주세요."
+                title: CardCreationResultState.failure.title(),
+                body: CardCreationResultState.failure.message
             )
         )
     }
@@ -252,8 +252,8 @@ private extension OrganizeNotificationMessage {
         case .failed:
             self.init(
                 identifier: identifier,
-                title: "스크린샷을 정리하지 못했어요",
-                body: "다음에 다시 시도해주세요."
+                title: CardCreationResultState.failure.title(),
+                body: CardCreationResultState.failure.message
             )
         case .processing, .cancelled:
             return nil

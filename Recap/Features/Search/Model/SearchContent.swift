@@ -109,7 +109,6 @@ nonisolated struct SearchResult: Identifiable, Equatable, Sendable {
             organizedAt: dto.organizedAt,
             location: "",
             businessHours: "",
-            category: dto.typeCode.displayTitle,
             confirmationLabel: nil,
             memo: "",
             tags: [],

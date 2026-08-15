@@ -109,7 +109,6 @@ final class CardStoreTests: XCTestCase {
         XCTAssertEqual(card.summary, "새 요약")
         XCTAssertEqual(card.memo, "새 본문")
         XCTAssertEqual(card.collection, .place)
-        XCTAssertEqual(card.category, CollectionKind.place.displayTitle)
     }
 
     // MARK: 신고

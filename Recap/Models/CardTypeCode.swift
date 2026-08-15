@@ -34,29 +34,6 @@ nonisolated enum CardTypeCode: String, Codable, Sendable {
         }
     }
 
-    var displayTitle: String {
-        switch self {
-        case .job:
-            "채용 · 취업"
-        case .shopping:
-            "쇼핑 · 상품"
-        case .place:
-            "장소 · 맛집"
-        case .schedule:
-            "일정 · 예약"
-        case .knowledge:
-            "정보 · 지식"
-        case .content:
-            "책 · 콘텐츠"
-        case .benefit:
-            "혜택 · 이벤트"
-        case .record:
-            "기록 · 캡처"
-        case .etc:
-            "기타"
-        }
-    }
-
     init?(collectionKind: CollectionKind) {
         switch collectionKind {
         case .career:

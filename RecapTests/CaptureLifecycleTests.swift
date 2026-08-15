@@ -427,7 +427,6 @@ final class CaptureDetailFeatureModelTests: XCTestCase {
             collection: .knowledge,
             location: "",
             businessHours: "",
-            category: "정보 · 지식",
             confirmationLabel: nil,
             memo: "",
             tags: [],
