@@ -119,7 +119,7 @@ enum RecapPresentation {
             CategoryDisplay(
                 title: category.displayTitle,
                 subtitle: "분류가 아직 확정되지 않은 카드",
-                dotColor: Color.recapGray100,
+                dotColor: Color.recapGray200,
                 textColor: Color.recapGray500,
                 symbolName: "folder.fill"
             )
