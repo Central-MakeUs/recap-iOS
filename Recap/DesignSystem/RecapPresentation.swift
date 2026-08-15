@@ -18,7 +18,6 @@ enum RecapPresentation {
         let dotColor: Color
         let textColor: Color
         let symbolName: String
-        let sampleCount: Int
     }
 
     struct StatusDisplay {
@@ -28,11 +27,6 @@ enum RecapPresentation {
         let progress: Double?
         let tint: Color
         let background: Color
-    }
-
-    struct SettingsItem {
-        let title: String
-        let systemImage: String
     }
 
     static func tabItem(for tab: MainTab) -> TabItem {
@@ -84,84 +78,75 @@ enum RecapPresentation {
         switch kind {
         case .shopping:
             CollectionDisplay(
-                title: "쇼핑 · 상품",
+                title: kind.displayTitle,
                 subtitle: "택배 반품 절차 · 노트북 가격 비교",
                 dotColor: .categoryBlue500,
                 textColor: .categoryBlue700,
-                symbolName: "cart.fill",
-                sampleCount: 20
+                symbolName: "cart.fill"
             )
         case .place:
             CollectionDisplay(
-                title: "장소 · 맛집",
+                title: kind.displayTitle,
                 subtitle: "성수 카페 리스트 · 제주 맛집 후보",
                 dotColor: .categoryRed500,
                 textColor: .categoryRed700,
-                symbolName: "key.fill",
-                sampleCount: 23
+                symbolName: "key.fill"
             )
         case .schedule:
             CollectionDisplay(
-                title: "일정 · 예약",
+                title: kind.displayTitle,
                 subtitle: "제주 숙소 예약 · 병원 예약 안내",
                 dotColor: .categoryGreen500,
                 textColor: .categoryGreen700,
-                symbolName: "clock.fill",
-                sampleCount: 10
+                symbolName: "clock.fill"
             )
         case .knowledge:
             CollectionDisplay(
-                title: "정보 · 지식",
+                title: kind.displayTitle,
                 subtitle: "연말정산 서류목록 · 파스타레시피",
                 dotColor: .categoryYellow500,
                 textColor: .categoryYellow700,
-                symbolName: "lightbulb.fill",
-                sampleCount: 12
+                symbolName: "lightbulb.fill"
             )
         case .content:
             CollectionDisplay(
-                title: "책 · 콘텐츠",
+                title: kind.displayTitle,
                 subtitle: "쇼코의 미소 독후감",
                 dotColor: .categoryPink500,
                 textColor: .categoryPink700,
-                symbolName: "book.closed.fill",
-                sampleCount: 1
+                symbolName: "book.closed.fill"
             )
         case .benefits:
             CollectionDisplay(
-                title: "혜택 · 이벤트",
+                title: kind.displayTitle,
                 subtitle: "올리브영 팝업스토어 이벤트 · SKT 할인혜택",
                 dotColor: .categoryMint500,
                 textColor: .categoryMint700,
-                symbolName: "star.fill",
-                sampleCount: 5
+                symbolName: "star.fill"
             )
         case .capture:
             CollectionDisplay(
-                title: "기록 · 캡처",
+                title: kind.displayTitle,
                 subtitle: "주간 운동기록 · 헬스장 머신 사용법",
                 dotColor: .categoryPurple500,
                 textColor: .categoryPurple700,
-                symbolName: "pencil",
-                sampleCount: 12
+                symbolName: "pencil"
             )
         case .career:
             CollectionDisplay(
-                title: "채용 · 취업",
+                title: kind.displayTitle,
                 subtitle: "채용 공고, 지원 일정, 취업 정보",
                 dotColor: .categoryOrange500,
                 textColor: .categoryOrange700,
-                symbolName: "person.fill",
-                sampleCount: 12
+                symbolName: "person.fill"
             )
         case .other:
             CollectionDisplay(
-                title: "기타",
+                title: kind.displayTitle,
                 subtitle: "분류가 아직 확정되지 않은 카드",
                 dotColor: Color.recapGray100,
                 textColor: Color.recapGray500,
-                symbolName: "folder.fill",
-                sampleCount: 0
+                symbolName: "folder.fill"
             )
         }
     }
@@ -225,22 +210,4 @@ enum RecapPresentation {
         }
     }
 
-    static func settingsItem(for route: SettingsRoute) -> SettingsItem {
-        switch route {
-        case .accountManagement:
-            SettingsItem(title: "계정 관리", systemImage: "person.crop.circle")
-        case .notificationSettings:
-            SettingsItem(title: "알림 설정", systemImage: "bell")
-        case .dataManagement:
-            SettingsItem(title: "데이터 관리", systemImage: "tray.full")
-        case .usageGuide:
-            SettingsItem(title: "이용 안내", systemImage: "info.circle")
-        case .privacyPolicy:
-            SettingsItem(title: "개인정보 처리 안내", systemImage: "lock.shield")
-        case .support:
-            SettingsItem(title: "문의하기", systemImage: "envelope")
-        case .openSourceLicenses:
-            SettingsItem(title: "오픈소스 라이선스", systemImage: "doc.text")
-        }
-    }
 }

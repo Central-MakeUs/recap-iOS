@@ -13,7 +13,7 @@ struct CollectionHomeFolderList: View {
                     let display = RecapPresentation.collectionDisplay(for: summary.kind)
                     RecapFolderListRow(
                         title: display.title,
-                        subtitle: display.subtitle,
+                        subtitle: summary.previewTitle,
                         count: summary.count,
                         kind: summary.kind
                     )
@@ -28,7 +28,7 @@ struct CollectionHomeFolderList: View {
     ScrollView {
         CollectionHomeFolderList(
             summaries: SampleData.collectionSummaries + [
-                CollectionSummary(kind: .other, count: 0, previewTitle: "카드 없음")
+                CollectionSummary(kind: .other, count: 0, previewTitle: "")
             ],
             onOpenArchive: { _ in }
         )

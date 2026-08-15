@@ -19,15 +19,9 @@ struct AIDataTransferConsentSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Capsule()
-                .fill(Color.recapGray200)
-                .frame(width: 43, height: 5)
-                .frame(maxWidth: .infinity)
-                .padding(.top, 13)
-
             transferIcon
                 .padding(.horizontal, 22)
-                .padding(.top, 18)
+                .padding(.top, 36)
 
             Text("AI 분석을 위해 이미지를 전송해요")
                 .font(RecapFont.pretendard(size: 18, weight: .semibold))
@@ -49,8 +43,11 @@ struct AIDataTransferConsentSheet: View {
             .padding(.horizontal, 22)
             .padding(.top, 13)
 
-            Button("개인정보 처리방침") {
+            Button {
                 showsPrivacyPolicy = true
+            } label: {
+                Text("개인정보 처리방침")
+                    .underline()
             }
             .buttonStyle(.plain)
             .font(RecapFont.pretendard(size: 14, weight: .regular))
@@ -99,7 +96,7 @@ struct AIDataTransferConsentSheet: View {
                 .padding(.top, 12)
         }
         .padding(.bottom, 21)
-        .background(Color.white)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .fullScreenCover(isPresented: $showsPrivacyPolicy) {
             NavigationStack {
                 PrivacyInformationView()
@@ -137,18 +134,22 @@ private struct AIDataTransferConsentPresentation: ViewModifier {
     let onConsent: () -> Void
 
     func body(content: Content) -> some View {
-        content
-            .sheet(isPresented: $isPresented) {
-                AIDataTransferConsentSheet(
-                    primaryButtonTitle: primaryButtonTitle,
-                    onConsent: onConsent,
-                    onCancel: dismiss
-                )
-                .presentationDetents([.height(532)])
-                .presentationDragIndicator(.hidden)
-                .presentationCornerRadius(32)
-                .presentationBackground(Color.white)
-            }
+        content.recapBottomSheet(
+            isPresented: $isPresented,
+            height: 532,
+            cornerRadius: 32,
+            dragIndicator: RecapBottomSheetDragIndicator(
+                width: 43,
+                height: 5,
+                topPadding: 13
+            )
+        ) {
+            AIDataTransferConsentSheet(
+                primaryButtonTitle: primaryButtonTitle,
+                onConsent: onConsent,
+                onCancel: dismiss
+            )
+        }
     }
 
     private func dismiss() {

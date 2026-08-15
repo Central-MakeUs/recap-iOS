@@ -7,11 +7,13 @@ protocol KeychainDataStoring {
     func delete(service: String, account: String) throws
 }
 
-enum SecureStorageKeychainConstants {
+nonisolated enum SecureStorageKeychainConstants {
     static let service = "com.centralmakeus.recap.secure-storage"
     static let deviceIDAccount = "installation-device-id"
     static let serverTokenAccount = "server-token-record"
-    static let accessible = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+    /// CFString은 Sendable이 아니라 String으로 브리징해 보관한다.
+    /// 어차피 `[String: Any]` 쿼리에 값으로 들어간다.
+    static let accessible = kSecAttrAccessibleWhenUnlockedThisDeviceOnly as String
 }
 
 final class KeychainSessionStore: SecureSessionStoring {

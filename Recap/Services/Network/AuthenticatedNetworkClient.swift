@@ -1,6 +1,6 @@
 import Foundation
 
-final class AuthenticatedNetworkClient: NetworkClient, @unchecked Sendable {
+final class AuthenticatedNetworkClient: NetworkClient {
     typealias AccessTokenProvider = @MainActor @Sendable () throws -> String
     typealias SessionRefresher = @MainActor @Sendable () async throws -> ServerTokenRecord
     typealias SessionInvalidationHandler = @MainActor @Sendable () -> Void

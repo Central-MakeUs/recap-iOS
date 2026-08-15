@@ -13,6 +13,8 @@ struct CardDetailView: View {
     @State private var isActionPanelPresented = false
     @State private var isEditing = false
     @State private var isOriginalPresented = false
+    @State private var isReportReasonPresented = false
+    @State private var selectedReportReason: CaptureReportReason?
     @State private var pendingPanelAction: CardDetailPanelAction?
     @State private var isFavoriteMutationRunning = false
 
@@ -22,6 +24,10 @@ struct CardDetailView: View {
 
     private var displayedCard: InformationCard {
         model.card
+    }
+
+    private var reportSheetHeight: CGFloat {
+        selectedReportReason == .other ? 453 : 375
     }
 
     @MainActor
@@ -45,6 +51,7 @@ struct CardDetailView: View {
         )
         _isDeleteConfirmationPresented = State(initialValue: initiallyShowsDeleteConfirmation)
         _toast = State(initialValue: initialToast)
+        _selectedReportReason = State(initialValue: nil)
         _pendingPanelAction = State(initialValue: nil)
     }
 
@@ -99,21 +106,37 @@ struct CardDetailView: View {
         .background(Color.recapBackground)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
-        .sheet(
+        .interactivePopGestureEnabled()
+        .recapBottomSheet(
             isPresented: $isActionPanelPresented,
+            height: 288,
+            cornerRadius: 20,
             onDismiss: handleActionPanelDismissal
         ) {
             CardDetailActionPanel(
                 onEdit: requestEdit,
                 onDelete: requestDelete,
+                onReport: requestReport,
                 onClose: closeActionPanel
             )
-            .presentationDetents([.height(236)])
-            .presentationDragIndicator(.visible)
-            .presentationCornerRadius(20)
+        }
+        .recapBottomSheet(
+            isPresented: $isReportReasonPresented,
+            height: reportSheetHeight,
+            cornerRadius: 20,
+            onDismiss: resetReportSheet
+        ) {
+            CardDetailReportSheet(
+                selectedReason: $selectedReportReason,
+                onSubmit: report,
+                onClose: closeReportSheet
+            )
         }
         .navigationDestination(isPresented: $isEditing) {
-            CardEditView(card: displayedCard)
+            CardEditView(
+                card: displayedCard,
+                onSave: saveCardEdit
+            )
         }
         .fullScreenCover(isPresented: $isOriginalPresented) {
             CardOriginalPreviewSheet(
@@ -174,6 +197,11 @@ struct CardDetailView: View {
         }
     }
 
+    private func saveCardEdit(_ draft: CardEditDraft) async throws {
+        try await model.update(with: draft)
+        cardStore.cacheRemoteCards([model.card])
+    }
+
     private func requestEdit() {
         pendingPanelAction = .edit
         isActionPanelPresented = false
@@ -181,6 +209,11 @@ struct CardDetailView: View {
 
     private func requestDelete() {
         pendingPanelAction = .delete
+        isActionPanelPresented = false
+    }
+
+    private func requestReport() {
+        pendingPanelAction = .report
         isActionPanelPresented = false
     }
 
@@ -197,9 +230,37 @@ struct CardDetailView: View {
             isEditing = true
         case .delete:
             isDeleteConfirmationPresented = true
+        case .report:
+            isReportReasonPresented = true
         case nil:
             break
         }
+    }
+
+    private func report(_ reason: CaptureReportReason, detail: String?) {
+        isReportReasonPresented = false
+        Task {
+            do {
+                try await model.report(reason: reason, detail: detail)
+                toast = RecapToastContent(
+                    style: .success,
+                    message: "신고가 접수됐어요. 검토 후 개선에 반영할게요."
+                )
+            } catch {
+                toast = RecapToastContent(
+                    style: .error,
+                    message: "신고를 접수하지 못했어요. 다시 시도해주세요."
+                )
+            }
+        }
+    }
+
+    private func closeReportSheet() {
+        isReportReasonPresented = false
+    }
+
+    private func resetReportSheet() {
+        selectedReportReason = nil
     }
 
     private func deleteCard() {
@@ -229,6 +290,7 @@ struct CardDetailView: View {
 private enum CardDetailPanelAction {
     case edit
     case delete
+    case report
 }
 
 #Preview("정보카드 상세") {

@@ -159,7 +159,6 @@ final class RecapTests: XCTestCase {
         XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .archiveDetail(.shopping)))
         XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .search))
         XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .allRecentCards))
-        XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .cardDetail(UUID())))
         XCTAssertFalse(
             RecapMainTabChromePolicy.routeAllowsChrome(
                 for: .remoteCardDetail(SampleData.cards[0])

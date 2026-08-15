@@ -3,13 +3,38 @@ import SwiftUI
 struct CardDetailActionPanel: View {
     let onEdit: () -> Void
     let onDelete: () -> Void
+    let onReport: () -> Void
     let onClose: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
-            actionButton(title: "스크린샷 정보 수정", color: Color.recapGray700, action: onEdit)
-            actionButton(title: "스크린샷 삭제", color: Color.recapDestructiveText, action: onDelete)
-                .padding(.top, 10)
+            filledActionButton(
+                title: "스크린샷 정보 수정",
+                foregroundColor: Color.recapGray700,
+                backgroundColor: Color.recapGray50,
+                action: onEdit
+            )
+
+            filledActionButton(
+                title: "스크린샷 삭제",
+                foregroundColor: Color.recapDestructiveText,
+                backgroundColor: Color.recapDestructiveSoft,
+                action: onDelete
+            )
+            .padding(.top, 8)
+
+            Button(action: onReport) {
+                Text("정리 결과 신고")
+                    .font(RecapFont.pretendard(size: 14, weight: .regular))
+                    .tracking(-0.28)
+                    .underline()
+                    .foregroundStyle(Color.recapGray500)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 20)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 27)
 
             Button(action: onClose) {
                 Text("닫기")
@@ -25,23 +50,27 @@ struct CardDetailActionPanel: View {
                     }
             }
             .buttonStyle(.plain)
-                .padding(.top, 24)
+            .padding(.top, 27)
         }
-        .padding(.top, 35)
+        .padding(.top, 39)
         .padding(.horizontal, CardDetailStyle.horizontalPadding)
-        .frame(height: 236, alignment: .top)
-        .background(Color.white)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
-    private func actionButton(title: String, color: Color, action: @escaping () -> Void) -> some View {
+    private func filledActionButton(
+        title: String,
+        foregroundColor: Color,
+        backgroundColor: Color,
+        action: @escaping () -> Void
+    ) -> some View {
         Button(action: action) {
             Text(title)
                 .font(RecapFont.pretendard(size: 16, weight: .semibold))
                 .tracking(-0.32)
-                .foregroundStyle(color)
+                .foregroundStyle(foregroundColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
-                .background(Color.recapGray50)
+                .background(backgroundColor)
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .buttonStyle(.plain)
@@ -49,5 +78,5 @@ struct CardDetailActionPanel: View {
 }
 
 #Preview("정보카드 작업 메뉴") {
-    CardDetailActionPanel(onEdit: {}, onDelete: {}, onClose: {})
+    CardDetailActionPanel(onEdit: {}, onDelete: {}, onReport: {}, onClose: {})
 }

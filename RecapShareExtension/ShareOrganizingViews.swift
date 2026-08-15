@@ -36,10 +36,9 @@ struct ShareOrganizingView: View {
 
             Spacer(minLength: 20)
 
-            ShareExtensionActionButton(
+            RecapButton(
                 title: "정리 취소",
-                foregroundColor: Color("RecapBlue300"),
-                backgroundColor: Color("RecapBlue50"),
+                style: .secondary,
                 action: onCancel
             )
             .padding(.horizontal, 16)
@@ -131,10 +130,8 @@ struct ShareOrganizeCompleteView: View {
 
             Spacer(minLength: 20)
 
-            ShareExtensionActionButton(
+            RecapButton(
                 title: "완료",
-                foregroundColor: .white,
-                backgroundColor: Color("RecapBlue300"),
                 action: onDone
             )
             .padding(.horizontal, 16)
@@ -178,10 +175,8 @@ struct ShareOrganizeFailureView: View {
 
             Spacer(minLength: 20)
 
-            ShareExtensionActionButton(
+            RecapButton(
                 title: "닫기",
-                foregroundColor: .white,
-                backgroundColor: Color("RecapBlue300"),
                 action: onClose
             )
             .padding(.horizontal, 16)
@@ -189,27 +184,6 @@ struct ShareOrganizeFailureView: View {
         }
         .background(Color("RecapBackground"))
         .ignoresSafeArea(.container, edges: .bottom)
-    }
-}
-
-private struct ShareExtensionActionButton: View {
-    let title: String
-    let foregroundColor: Color
-    let backgroundColor: Color
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.custom("Pretendard-SemiBold", size: 14))
-                .tracking(-0.28)
-                .foregroundStyle(foregroundColor)
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .background(backgroundColor)
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-        }
-        .buttonStyle(.plain)
     }
 }
 

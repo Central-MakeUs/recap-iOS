@@ -1,65 +1,176 @@
+import Foundation
+import Synchronization
 import XCTest
 @testable import Recap
 
 @MainActor
 final class AIDataTransferConsentStoreTests: XCTestCase {
-    func testConsentPersistsAcrossStoreInstances() throws {
-        let suiteName = "AIDataTransferConsentStoreTests.\(UUID().uuidString)"
-        let userDefaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
-        userDefaults.removePersistentDomain(forName: suiteName)
+    func testConsentServiceUsesProtectedUserConsentEndpoints() async throws {
+        let consentedAt = Date(timeIntervalSince1970: 1_785_000_000)
+        let networkClient = AIDataTransferConsentNetworkClientStub(
+            status: AIDataTransferConsentStatusDTO(
+                consented: true,
+                consentedAt: consentedAt
+            )
+        )
+        let service = AIDataTransferConsentService(networkClient: networkClient)
 
-        let store = AIDataTransferConsentStore(userDefaults: userDefaults)
-        XCTAssertFalse(store.hasConsented)
+        let status = try await service.fetchConsentStatus()
+        try await service.grantConsent()
+        try await service.revokeConsent()
 
-        store.grantConsent()
-
-        let restoredStore = AIDataTransferConsentStore(userDefaults: userDefaults)
-        XCTAssertTrue(restoredStore.hasConsented)
+        XCTAssertEqual(status, .init(hasConsented: true, consentedAt: consentedAt))
+        XCTAssertEqual(networkClient.endpoints.map(\.method), [.get, .post, .delete])
+        XCTAssertTrue(networkClient.endpoints.allSatisfy {
+            $0.path == "/api/v1/users/me/consent" && $0.authorization == .bearer
+        })
     }
 
-    func testGrantConsentRecordsConsentedDate() throws {
-        let store = try makeStore()
+    /// 생성 직후에는 서버에 묻기 전이므로 동의하지 않은 상태로 시작한다.
+    func testStoreStartsUnconsentedUntilServerAnswers() async throws {
         let consentedAt = Date(timeIntervalSince1970: 1_785_000_000)
+        let service = AIDataTransferConsentServiceStub(
+            status: AIDataTransferConsentStatus(hasConsented: true, consentedAt: consentedAt)
+        )
+        let store = AIDataTransferConsentStore(service: service)
 
-        store.grantConsent(at: consentedAt)
+        XCTAssertFalse(store.hasConsented)
+        XCTAssertNil(store.consentedAt)
+        XCTAssertEqual(service.fetchCallCount, 0)
 
+        try await store.refresh()
+
+        XCTAssertTrue(store.hasConsented)
         XCTAssertEqual(store.consentedAt, consentedAt)
     }
 
-    func testRevokeConsentClearsConsentAndDate() throws {
-        let userDefaults = try makeUserDefaults()
-        let store = AIDataTransferConsentStore(userDefaults: userDefaults)
-        store.grantConsent()
+    func testRefreshReplacesStatusWithServerStatus() async throws {
+        let service = AIDataTransferConsentServiceStub(
+            status: AIDataTransferConsentStatus(hasConsented: true, consentedAt: .now)
+        )
+        let store = AIDataTransferConsentStore(service: service)
+        try await store.refresh()
+        XCTAssertTrue(store.hasConsented)
 
-        store.revokeConsent()
+        service.status = AIDataTransferConsentStatus(hasConsented: false, consentedAt: nil)
+        try await store.refresh()
 
         XCTAssertFalse(store.hasConsented)
         XCTAssertNil(store.consentedAt)
-
-        let restoredStore = AIDataTransferConsentStore(userDefaults: userDefaults)
-        XCTAssertFalse(restoredStore.hasConsented)
-        XCTAssertNil(restoredStore.consentedAt)
     }
 
-    /// 날짜 저장 이전에 동의한 사용자는 날짜 없이 동의 상태만 유지한다.
-    func testConsentWithoutStoredDateRemainsConsented() throws {
-        let userDefaults = try makeUserDefaults()
-        userDefaults.set(true, forKey: "aiDataTransferConsent.hasConsented")
+    func testGrantConsentUsesServerTimestamp() async throws {
+        let consentedAt = Date(timeIntervalSince1970: 1_785_000_000)
+        let service = AIDataTransferConsentServiceStub(
+            status: AIDataTransferConsentStatus(
+                hasConsented: true,
+                consentedAt: consentedAt
+            )
+        )
+        let store = AIDataTransferConsentStore(service: service)
 
-        let store = AIDataTransferConsentStore(userDefaults: userDefaults)
+        try await store.grantConsent()
 
+        XCTAssertEqual(service.grantCallCount, 1)
+        XCTAssertEqual(service.fetchCallCount, 1)
         XCTAssertTrue(store.hasConsented)
+        XCTAssertEqual(store.consentedAt, consentedAt)
+    }
+
+    func testRevokeConsentClearsStatusOnlyAfterServerSuccess() async throws {
+        let service = AIDataTransferConsentServiceStub(
+            status: AIDataTransferConsentStatus(hasConsented: true, consentedAt: .now)
+        )
+        let store = AIDataTransferConsentStore(service: service)
+        try await store.refresh()
+        XCTAssertTrue(store.hasConsented)
+
+        try await store.revokeConsent()
+
+        XCTAssertEqual(service.revokeCallCount, 1)
+        XCTAssertFalse(store.hasConsented)
         XCTAssertNil(store.consentedAt)
     }
 
-    private func makeStore() throws -> AIDataTransferConsentStore {
-        AIDataTransferConsentStore(userDefaults: try makeUserDefaults())
+    func testGrantFailureKeepsExistingStatus() async throws {
+        let service = AIDataTransferConsentServiceStub(
+            status: AIDataTransferConsentStatus(hasConsented: false, consentedAt: nil),
+            mutationError: APIError.offline
+        )
+        let store = AIDataTransferConsentStore(service: service)
+
+        do {
+            try await store.grantConsent()
+            XCTFail("동의 API 실패가 전달되어야 한다")
+        } catch {
+            XCTAssertEqual(error as? APIError, .offline)
+        }
+
+        XCTAssertFalse(store.hasConsented)
+        XCTAssertNil(store.consentedAt)
+    }
+}
+
+private final class AIDataTransferConsentNetworkClientStub: NetworkClient {
+    private let status: AIDataTransferConsentStatusDTO
+    private let recordedEndpoints = Mutex<[APIEndpoint]>([])
+
+    init(status: AIDataTransferConsentStatusDTO) {
+        self.status = status
     }
 
-    private func makeUserDefaults() throws -> UserDefaults {
-        let suiteName = "AIDataTransferConsentStoreTests.\(UUID().uuidString)"
-        let userDefaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
-        userDefaults.removePersistentDomain(forName: suiteName)
-        return userDefaults
+    var endpoints: [APIEndpoint] {
+        recordedEndpoints.withLock { $0 }
+    }
+
+    func send<Response: Decodable>(
+        _ endpoint: APIEndpoint,
+        as responseType: Response.Type
+    ) async throws -> Response {
+        recordedEndpoints.withLock { $0.append(endpoint) }
+
+        if Response.self == EmptyResponse.self,
+           let response = EmptyResponse() as? Response {
+            return response
+        }
+
+        let envelope = APIResponse(success: true, data: status)
+        guard let response = envelope as? Response else {
+            throw APIError.decoding
+        }
+        return response
+    }
+}
+
+@MainActor
+private final class AIDataTransferConsentServiceStub: AIDataTransferConsentServing {
+    var status: AIDataTransferConsentStatus
+    let mutationError: Error?
+    private(set) var fetchCallCount = 0
+    private(set) var grantCallCount = 0
+    private(set) var revokeCallCount = 0
+
+    init(
+        status: AIDataTransferConsentStatus,
+        mutationError: Error? = nil
+    ) {
+        self.status = status
+        self.mutationError = mutationError
+    }
+
+    func fetchConsentStatus() async throws -> AIDataTransferConsentStatus {
+        fetchCallCount += 1
+        return status
+    }
+
+    func grantConsent() async throws {
+        grantCallCount += 1
+        if let mutationError { throw mutationError }
+    }
+
+    func revokeConsent() async throws {
+        revokeCallCount += 1
+        if let mutationError { throw mutationError }
+        status = AIDataTransferConsentStatus(hasConsented: false, consentedAt: nil)
     }
 }

@@ -160,25 +160,11 @@ struct SelectedScreenshotsConfirmationView: View {
     }
 
     private var confirmButton: some View {
-        Button(action: onConfirm) {
-            Group {
-                if isSubmitting {
-                    ProgressView()
-                        .tint(.white)
-                } else {
-                    Text("\(screenshots.count)장 정리하기")
-                        .font(.custom("Pretendard-SemiBold", size: 14))
-                        .tracking(-0.28)
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 50)
-            .contentShape(Rectangle())
-        }
-        .foregroundStyle(.white)
-        .background(screenshots.isEmpty ? Color("RecapGray300") : Color("RecapBlue300"))
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .buttonStyle(.plain)
+        RecapButton(
+            title: "\(screenshots.count)장 정리하기",
+            isLoading: isSubmitting,
+            action: onConfirm
+        )
         .disabled(screenshots.isEmpty || isSubmitting)
     }
 

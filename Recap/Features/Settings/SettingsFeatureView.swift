@@ -90,6 +90,7 @@ struct SettingsView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
     }
 
 }
@@ -135,7 +136,7 @@ private struct SettingsGuideSection: View {
 
     var body: some View {
         SettingsListSection(title: "안내") {
-            VStack(spacing: 0) {
+            VStack(spacing: SettingsLayout.rowSpacing) {
                 SettingsNavigationRow(title: "이용 안내") {
                     onNavigate(.usageGuide)
                 }
@@ -153,7 +154,7 @@ private struct SettingsSupportSection: View {
 
     var body: some View {
         SettingsListSection(title: "지원") {
-            VStack(spacing: 0) {
+            VStack(spacing: SettingsLayout.rowSpacing) {
                 SettingsNavigationRow(title: RecapExternalLink.support.title) {
                     openURL(RecapExternalLink.support.url)
                 }

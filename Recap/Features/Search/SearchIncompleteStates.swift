@@ -1,17 +1,5 @@
 import SwiftUI
 
-struct SearchIncompleteState: View {
-    let title: String
-
-    var body: some View {
-        Text(title)
-            .font(RecapFont.pretendard(size: 20, weight: .bold))
-            .tracking(-0.4)
-            .foregroundStyle(Color.recapUnimplemented)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}
-
 struct SearchTargetCardEmptyState: View {
     var body: some View {
         VStack(spacing: 18) {

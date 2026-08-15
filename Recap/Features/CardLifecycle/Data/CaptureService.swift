@@ -2,13 +2,26 @@ import Foundation
 
 protocol CaptureDeleting: Sendable {
     func deleteCapture(captureID: Int64) async throws
+    func deleteCaptures(captureIDs: [Int64]) async throws
 }
 
 protocol CaptureFavoriteUpdating: Sendable {
     func updateFavorite(captureID: Int64, isFavorite: Bool) async throws
 }
 
-protocol CaptureMutating: CaptureDeleting, CaptureFavoriteUpdating {}
+protocol CaptureUpdating: Sendable {
+    func updateCapture(captureID: Int64, draft: CardEditDraft) async throws
+}
+
+protocol CaptureReporting: Sendable {
+    func reportCapture(
+        captureID: Int64,
+        reason: CaptureReportReason,
+        detail: String?
+    ) async throws
+}
+
+protocol CaptureMutating: CaptureDeleting, CaptureFavoriteUpdating, CaptureUpdating, CaptureReporting {}
 
 protocol CaptureServing: CaptureMutating, Sendable {
     func issueUploadURLs(count: Int) async throws -> [UploadItemDTO]
@@ -20,7 +33,7 @@ protocol CaptureServing: CaptureMutating, Sendable {
     func captureDetail(captureID: Int64) async throws -> InformationCard
 }
 
-final class CaptureService: CaptureServing, @unchecked Sendable {
+final class CaptureService: CaptureServing {
     private let networkClient: any NetworkClient
     private let encoder: JSONEncoder
 
@@ -120,11 +133,52 @@ final class CaptureService: CaptureServing, @unchecked Sendable {
         let _: EmptyResponse = try await networkClient.send(endpoint)
     }
 
+    func updateCapture(captureID: Int64, draft: CardEditDraft) async throws {
+        guard let cardType = CardTypeCode(collectionKind: draft.collection) else {
+            throw APIError.malformedRequest
+        }
+        let normalizedDraft = draft.normalized()
+        let endpoint = try jsonEndpoint(
+            method: .patch,
+            path: "/api/v1/captures/\(captureID)",
+            payload: CaptureUpdateRequestDTO(
+                title: normalizedDraft.title,
+                summary: normalizedDraft.summary,
+                body: normalizedDraft.body,
+                cardType: cardType
+            )
+        )
+        let _: EmptyResponse = try await networkClient.send(endpoint)
+    }
+
     func deleteCapture(captureID: Int64) async throws {
         let endpoint = APIEndpoint(
             method: .delete,
             path: "/api/v1/captures/\(captureID)",
             authorization: .bearer
+        )
+        let _: EmptyResponse = try await networkClient.send(endpoint)
+    }
+
+    func deleteCaptures(captureIDs: [Int64]) async throws {
+        guard !captureIDs.isEmpty else { return }
+        let endpoint = try jsonEndpoint(
+            method: .post,
+            path: "/api/v1/captures/bulk-delete",
+            payload: BulkDeleteRequestDTO(captureIds: captureIDs)
+        )
+        let _: EmptyResponse = try await networkClient.send(endpoint)
+    }
+
+    func reportCapture(
+        captureID: Int64,
+        reason: CaptureReportReason,
+        detail: String? = nil
+    ) async throws {
+        let endpoint = try jsonEndpoint(
+            method: .post,
+            path: "/api/v1/captures/\(captureID)/report",
+            payload: CaptureReportRequestDTO(reason: reason, detail: detail)
         )
         let _: EmptyResponse = try await networkClient.send(endpoint)
     }

@@ -1,3 +1,4 @@
+import Synchronization
 import XCTest
 @testable import Recap
 
@@ -22,7 +23,7 @@ final class ArchiveAPITests: XCTestCase {
         XCTAssertEqual(content.favoriteCount, 1)
         XCTAssertEqual(content.otherCount, 1)
         XCTAssertEqual(content.summaries.first?.kind, .shopping)
-        XCTAssertEqual(content.summaries.first?.previewTitle, "대표 제목")
+        XCTAssertEqual(content.summaries.first?.previewTitle, "최근 제목 · 이전 제목")
     }
 
     func testArchiveHomeFavoriteRefreshRequestsOnlyFavorites() async throws {
@@ -43,6 +44,16 @@ final class ArchiveAPITests: XCTestCase {
         XCTAssertEqual(refreshed.summaries, current.summaries)
         XCTAssertEqual(refreshed.favoriteCount, 1)
         XCTAssertEqual(refreshed.otherCount, current.otherCount)
+    }
+
+    func testArchiveStorageTypeWithoutRepresentativeTitlesUsesEmptyPreviewTitle() {
+        let dto = ArchiveStorageTypeDTO(
+            typeCode: .shopping,
+            count: 0,
+            representativeTitles: []
+        )
+
+        XCTAssertEqual(CollectionSummary(archiveDTO: dto).previewTitle, "")
     }
 
     func testFavoritesDoesNotSendSortQuery() async throws {
@@ -395,21 +406,18 @@ final class ArchiveAPITests: XCTestCase {
     }
 }
 
-private final class ArchiveNetworkClientStub: NetworkClient, @unchecked Sendable {
-    private let lock = NSLock()
-    private var storedEndpoints: [APIEndpoint] = []
+private final class ArchiveNetworkClientStub: NetworkClient {
+    private let storedEndpoints = Mutex<[APIEndpoint]>([])
 
     var endpoints: [APIEndpoint] {
-        lock.withLock { storedEndpoints }
+        storedEndpoints.withLock { $0 }
     }
 
     func send<Response: Decodable>(
         _ endpoint: APIEndpoint,
         as responseType: Response.Type
     ) async throws -> Response {
-        lock.withLock {
-            storedEndpoints.append(endpoint)
-        }
+        storedEndpoints.withLock { $0.append(endpoint) }
 
         let data: Data
         switch endpoint.path {
@@ -429,7 +437,7 @@ private final class ArchiveNetworkClientStub: NetworkClient, @unchecked Sendable
         {
           "typeCode": "SHOPPING",
           "count": 1,
-          "representativeTitles": ["대표 제목"]
+          "representativeTitles": ["최근 제목", "이전 제목", "제외할 제목"]
         }
       ],
       "error": null
@@ -469,37 +477,46 @@ private final class SequencedArchiveLoader: ArchiveLoading {
     }
 }
 
-private final class CaptureMutatorStub: CaptureMutating, @unchecked Sendable {
-    struct FavoriteUpdate: Equatable {
+private final class CaptureMutatorStub: CaptureMutating {
+    struct FavoriteUpdate: Equatable, Sendable {
         let captureID: Int64
         let isFavorite: Bool
     }
 
-    private let lock = NSLock()
-    private var storedDeletedCaptureIDs: [Int64] = []
-    private var storedFavoriteUpdates: [FavoriteUpdate] = []
+    private struct State {
+        var deletedCaptureIDs: [Int64] = []
+        var favoriteUpdates: [FavoriteUpdate] = []
+    }
+
+    private let state = Mutex(State())
 
     var deletedCaptureIDs: [Int64] {
-        lock.withLock { storedDeletedCaptureIDs }
+        state.withLock(\.deletedCaptureIDs)
     }
 
     var favoriteUpdates: [FavoriteUpdate] {
-        lock.withLock { storedFavoriteUpdates }
+        state.withLock(\.favoriteUpdates)
     }
 
     func deleteCapture(captureID: Int64) async throws {
-        lock.withLock {
-            storedDeletedCaptureIDs.append(captureID)
-        }
+        state.withLock { $0.deletedCaptureIDs.append(captureID) }
+    }
+
+    func deleteCaptures(captureIDs: [Int64]) async throws {
+        state.withLock { $0.deletedCaptureIDs.append(contentsOf: captureIDs) }
     }
 
     func updateFavorite(captureID: Int64, isFavorite: Bool) async throws {
-        lock.withLock {
-            storedFavoriteUpdates.append(
+        state.withLock {
+            $0.favoriteUpdates.append(
                 FavoriteUpdate(captureID: captureID, isFavorite: isFavorite)
             )
         }
     }
+
+
+    func updateCapture(captureID: Int64, draft: CardEditDraft) async throws {}
+    func reportCapture(captureID: Int64, reason: CaptureReportReason, detail: String?) async throws {}
 }
 
 @MainActor
@@ -534,25 +551,26 @@ private final class CancellationThenSuccessArchiveLoader: ArchiveLoading {
     }
 }
 
-private final class ArchiveURLProtocol: URLProtocol, @unchecked Sendable {
-    private static let lock = NSLock()
-    private static var storedHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
-    private static var storedRequestCount = 0
+private final class ArchiveURLProtocol: URLProtocol {
+    /// URL 로딩 스레드에서 병렬로 호출되므로 상태를 통째로 잠금 뒤에 둔다.
+    private struct State {
+        var handler: (@Sendable (URLRequest) throws -> (HTTPURLResponse, Data))?
+        var requestCount = 0
+    }
 
-    static var handler: ((URLRequest) throws -> (HTTPURLResponse, Data))? {
-        get { lock.withLock { storedHandler } }
-        set { lock.withLock { storedHandler = newValue } }
+    private static let state = Mutex(State())
+
+    static var handler: (@Sendable (URLRequest) throws -> (HTTPURLResponse, Data))? {
+        get { state.withLock(\.handler) }
+        set { state.withLock { $0.handler = newValue } }
     }
 
     static var requestCount: Int {
-        lock.withLock { storedRequestCount }
+        state.withLock(\.requestCount)
     }
 
     static func reset() {
-        lock.withLock {
-            storedHandler = nil
-            storedRequestCount = 0
-        }
+        state.withLock { $0 = State() }
     }
 
     override class func canInit(with request: URLRequest) -> Bool {
@@ -565,9 +583,9 @@ private final class ArchiveURLProtocol: URLProtocol, @unchecked Sendable {
 
     override func startLoading() {
         do {
-            let handler = try Self.lock.withLock {
-                Self.storedRequestCount += 1
-                return try XCTUnwrap(Self.storedHandler)
+            let handler = try Self.state.withLock { state in
+                state.requestCount += 1
+                return try XCTUnwrap(state.handler)
             }
             let (response, data) = try handler(request)
             client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)

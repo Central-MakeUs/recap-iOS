@@ -253,6 +253,7 @@ struct CollectionDetailView: View {
         }
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
         .recapConfirmationDialog(
             isPresented: $isDeleteConfirmationPresented,
             title: "\(selectedIDs.count)개의 스크린샷을 삭제할까요?",

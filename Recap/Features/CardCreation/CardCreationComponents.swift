@@ -1,46 +1,5 @@
 import SwiftUI
 
-struct CardCreationFlowHeader: View {
-    enum Leading {
-        case back
-        case close
-    }
-
-    let title: String
-    let countText: String
-    let leading: Leading
-    let action: () -> Void
-
-    var body: some View {
-        HStack(spacing: 14) {
-            Button(action: action) {
-                Image(systemName: leading == .back ? "chevron.left" : "xmark")
-                    .font(.system(size: 17, weight: .medium))
-                    .foregroundStyle(Color.recapGray500)
-                    .frame(width: 24, height: 24)
-            }
-            .buttonStyle(.plain)
-
-            HStack(spacing: 8) {
-                Text(title)
-                    .font(RecapFont.pretendard(size: 16, weight: .semibold))
-                    .tracking(-0.32)
-                    .foregroundStyle(Color.recapGray900)
-
-                Text(countText)
-                    .font(RecapFont.pretendard(size: 15, weight: .semibold))
-                    .tracking(-0.3)
-                    .foregroundStyle(Color.recapBlue300)
-            }
-
-            Spacer()
-        }
-        .padding(.horizontal, 16)
-        .padding(.top, 48)
-        .frame(height: 104, alignment: .top)
-    }
-}
-
 struct CardCreationScreenshotGrid: View {
     enum Mode {
         case select
@@ -229,52 +188,5 @@ struct CardCreationFolderIllustration: View {
                     .offset(x: CGFloat((index % 4) * 24 - 36), y: CGFloat((index / 4) * 22))
             }
         }
-    }
-}
-
-struct CardCreationDashedIcon: View {
-    let systemName: String
-    let tint: Color
-    var isError = false
-
-    var body: some View {
-        RoundedRectangle(cornerRadius: 17, style: .continuous)
-            .fill(isError ? Color.recapErrorSurface : Color.recapPrimarySoft)
-            .frame(width: 82, height: 82)
-            .overlay {
-                Image(systemName: systemName)
-                    .font(.system(size: 30, weight: .medium))
-                    .foregroundStyle(tint)
-            }
-            .overlay {
-                if systemName == "plus" || systemName == "camera" {
-                    RoundedRectangle(cornerRadius: 17, style: .continuous)
-                        .stroke(
-                            Color.recapGray100,
-                            style: StrokeStyle(lineWidth: 1, dash: [3, 2])
-                        )
-                }
-            }
-    }
-}
-
-struct CardCreationSpeechBubble: View {
-    let text: String
-
-    var body: some View {
-        Text(text)
-            .font(RecapFont.pretendard(size: 12, weight: .medium))
-            .tracking(-0.24)
-            .lineSpacing(3)
-            .multilineTextAlignment(.center)
-            .foregroundStyle(Color.recapBlue300)
-            .padding(.horizontal, 18)
-            .padding(.vertical, 11)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .stroke(Color.recapBlue300, lineWidth: 1)
-            }
     }
 }

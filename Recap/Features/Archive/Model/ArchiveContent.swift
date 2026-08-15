@@ -68,7 +68,9 @@ extension CollectionSummary {
         self.init(
             kind: dto.typeCode.collectionKind,
             count: dto.count,
-            previewTitle: dto.representativeTitles.first ?? "카드 없음"
+            previewTitle: dto.representativeTitles
+                .prefix(2)
+                .joined(separator: " · ")
         )
     }
 }

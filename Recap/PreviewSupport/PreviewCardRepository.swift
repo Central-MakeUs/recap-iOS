@@ -25,10 +25,24 @@ actor PreviewCardRepository {
         cards[index].isFavorite = isFavorite
     }
 
+    func updateCard(captureID: Int64, draft: CardEditDraft) throws {
+        guard let index = cards.firstIndex(where: { $0.captureID == captureID }) else {
+            throw CaptureLifecycleError.missingCaptureID
+        }
+        cards[index] = cards[index].with(editDraft: draft.normalized())
+    }
+
     func deleteCard(captureID: Int64) throws {
         guard cards.contains(where: { $0.captureID == captureID }) else {
             throw CaptureLifecycleError.missingCaptureID
         }
         cards.removeAll { $0.captureID == captureID }
+    }
+
+    func deleteCards(captureIDs: [Int64]) {
+        let ids = Set(captureIDs)
+        cards.removeAll { card in
+            card.captureID.map(ids.contains) ?? false
+        }
     }
 }

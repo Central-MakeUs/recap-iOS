@@ -37,8 +37,6 @@ struct SettingsDetailView: View {
             UsageGuideView()
         case .privacyPolicy:
             PrivacyInformationView()
-        case .support:
-            SettingsUnavailableView(title: "문의하기")
         case .openSourceLicenses:
             OpenSourceLicensesView()
         }
@@ -98,6 +96,7 @@ struct AccountManagementView: View {
         }
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
         .task {
             await model.loadAccountInfo()
         }
@@ -233,8 +232,17 @@ struct DataManagementView: View {
         }
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
         .task {
             await model.loadDataSummary()
+            do {
+                try await consentStore.refresh()
+            } catch {
+                model.toast = RecapToastContent(
+                    style: .error,
+                    message: "AI 데이터 전송 동의 상태를 불러오지 못했어요."
+                )
+            }
         }
         .recapToast(model.toast)
         .task(id: model.toast) {
@@ -271,7 +279,7 @@ struct DataManagementView: View {
     }
 
     private var dataSummary: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 11) {
             HStack(alignment: .top, spacing: 0) {
                 VStack(alignment: .leading, spacing: 7) {
                     Text("정리된 스크린샷")
@@ -290,15 +298,15 @@ struct DataManagementView: View {
                     .scaledToFit()
                     .frame(width: 61, height: 53)
             }
+            .frame(height: 60, alignment: .top)
 
             Text("제목, 요약, 본문 등 정리된 정보와 원본 이미지가 서버에 보관돼요.")
                 .font(SettingsTypography.body)
                 .foregroundStyle(Color.recapGray500)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 11)
+                .frame(maxWidth: .infinity, minHeight: 40, alignment: .topLeading)
         }
+        .frame(height: 111)
         .padding(20)
-        .frame(height: 151, alignment: .top)
         .background(
             Color.recapGray50,
             in: RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -371,12 +379,31 @@ struct DataManagementView: View {
     }
 
     private func grantAIDataTransferConsent() {
-        consentStore.grantConsent()
-        showsAIConsentSheet = false
+        Task {
+            do {
+                try await consentStore.grantConsent()
+                showsAIConsentSheet = false
+            } catch {
+                showsAIConsentSheet = false
+                model.toast = RecapToastContent(
+                    style: .error,
+                    message: "AI 데이터 전송 동의를 저장하지 못했어요."
+                )
+            }
+        }
     }
 
     private func revokeAIDataTransferConsent() {
-        consentStore.revokeConsent()
+        Task {
+            do {
+                try await consentStore.revokeConsent()
+            } catch {
+                model.toast = RecapToastContent(
+                    style: .error,
+                    message: "AI 데이터 전송 동의를 철회하지 못했어요."
+                )
+            }
+        }
     }
 
     private func clearToastIfNeeded() async {
@@ -416,6 +443,7 @@ struct NotificationSettingsView: View {
         }
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
         .task {
             await refreshSystemNotificationPermission()
         }
@@ -486,7 +514,7 @@ struct NotificationSettingsView: View {
     )
     .environment(
         AIDataTransferConsentStore(
-            userDefaults: UserDefaults(suiteName: UUID().uuidString)!
+            service: PreviewAIDataTransferConsentService()
         )
     )
 }

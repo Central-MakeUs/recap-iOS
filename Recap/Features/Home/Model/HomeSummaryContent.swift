@@ -65,7 +65,7 @@ nonisolated struct HomeSummaryContent: Equatable, Sendable {
     )
 }
 
-private extension InformationCard {
+extension InformationCard {
     nonisolated init(dto: HomeCaptureSummaryDTO) {
         let kind = dto.typeCode.collectionKind
 
@@ -88,6 +88,24 @@ private extension InformationCard {
             thumbnailURL: dto.thumbnailUrl,
             isFavorite: dto.isFavorite
         )
+    }
+}
+
+nonisolated struct RecentCapturesPage: Equatable, Sendable {
+    let totalCount: Int
+    let hasNext: Bool
+    let cards: [InformationCard]
+
+    init(totalCount: Int, hasNext: Bool, cards: [InformationCard]) {
+        self.totalCount = totalCount
+        self.hasNext = hasNext
+        self.cards = cards
+    }
+
+    init(dto: RecentCapturesPageDTO) {
+        totalCount = dto.count
+        hasNext = dto.hasNext
+        cards = dto.items.map(InformationCard.init(dto:))
     }
 }
 

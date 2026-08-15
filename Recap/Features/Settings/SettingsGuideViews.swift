@@ -51,6 +51,7 @@ struct UsageGuideView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
         .navigationDestination(isPresented: $showsShareSetupGuide) {
             ShareSetupDetailView {
                 showsShareSetupGuide = false
@@ -167,51 +168,53 @@ struct PrivacyInformationView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
                     VStack(alignment: .leading, spacing: 22) {
-                    PrivacyInformationSection(
-                        title: "이미지 처리 방식",
-                        content: """
-                        직접 선택하거나 공유한 이미지만 서버로 전송됩니다.
-                        전송된 이미지는 AI 분석을 거쳐 제목, 한 줄 요약, 본문이 담긴 정보로 정리됩니다.
-                        """
-                    )
+                        PrivacyInformationSection(
+                            title: "이미지 처리 방식",
+                            bulletPoints: [
+                                "직접 선택하거나 공유한 이미지만 서버로 전송됩니다.",
+                                "전송된 이미지는 AI 분석을 거쳐 제목, 한 줄 요약, 본문이 담긴 정보로 정리됩니다."
+                            ]
+                        )
 
-                    PrivacyInformationSection(
-                        title: "AI 처리 안내",
-                        content: """
-                        선택한 이미지와 이미지에서 추출한 텍스트는 Google LLC의 Gemini API로 전송되어 분석됩니다.
-                        전송된 정보는 Google의 AI 모델 학습에 사용되지 않습니다.
-                        AI가 생성한 결과는 일부 부정확할 수 있으며, 정보카드에서 직접 수정할 수 있습니다.
-                        """
-                    )
+                        PrivacyInformationSection(
+                            title: "AI 처리 안내",
+                            bulletPoints: [
+                                "선택한 이미지와 이미지에서 추출한 텍스트는 Google LLC의 Gemini API로 전송되어 분석됩니다.",
+                                "전송된 정보는 Google의 AI 모델 학습에 사용되지 않습니다.",
+                                "AI가 생성한 결과는 일부 부정확할 수 있으며, 정보카드에서 직접 수정 할 수 있습니다."
+                            ]
+                        )
 
-                    PrivacyInformationSection(
-                        title: "원본 이미지 보관",
-                        content: """
-                        원본 이미지는 미리보기 제공을 위해 서버에 저장됩니다.
-                        스크린샷을 삭제하거나 데이터 삭제, 회원탈퇴 시 서버에 저장된 원본 이미지도 함께 삭제됩니다.
-                        """
-                    )
+                        PrivacyInformationSection(
+                            title: "원본 이미지 보관",
+                            bulletPoints: [
+                                "원본 이미지는 미리보기 제공을 위해 서버에 저장됩니다.",
+                                "스크린샷을 삭제하거나 데이터 삭제, 회원탈퇴 시 서버에 저장된 원본 이미지도 함께 삭제됩니다."
+                            ]
+                        )
 
-                    PrivacyInformationSection(
-                        title: "민감정보 확인",
-                        content: """
-                        스크린샷에는 개인 정보 및 금융 정보가 포함될 수 있습니다. 정리 전 민감 정보가 담긴 이미지인지 확인해주세요.
-                        정리된 스크린샷과 원본 이미지는 본인 계정에서만 확인 가능합니다.
-                        """
-                    )
+                        PrivacyInformationSection(
+                            title: "민감정보 확인",
+                            bulletPoints: [
+                                "스크린샷에는 개인 정보 및 금융 정보가 포함될 수 있습니다. 정리 전 민감 정보가 담긴 이미지인지 확인해주세요.",
+                                "정리된 스크린샷과 원본 이미지는 본인 계정에서만 확인 가능합니다."
+                            ]
+                        )
 
-                    PrivacyInformationSection(
-                        title: "AI 동의 철회",
-                        content: "AI 전송 동의는 설정 > 데이터 관리에서 언제든지 철회할 수 있으며, 철회 시 스크린샷 정리 기능을 사용할 수 없습니다."
-                    )
-                }
+                        PrivacyInformationSection(
+                            title: "AI 동의 철회",
+                            bulletPoints: [
+                                "AI 전송 동의는 설정 > 데이터 관리에서 언제든지 철회할 수 있으며, 철회 시 스크린샷 정리 기능을 사용할 수 없습니다."
+                            ]
+                        )
+                    }
                     .padding(.horizontal, 16)
-                    .padding(.top, 27)
-                    .padding(.bottom, 40)
+                    .padding(.top, 20)
+                    .padding(.bottom, 32)
 
                     SettingsSectionDivider()
 
-                    VStack(spacing: 0) {
+                    VStack(spacing: SettingsLayout.rowSpacing) {
                         SettingsNavigationRow(title: RecapExternalLink.privacyPolicy.title) {
                             openURL(RecapExternalLink.privacyPolicy.url)
                         }
@@ -220,8 +223,8 @@ struct PrivacyInformationView: View {
                         }
                     }
                     .padding(.horizontal, SettingsLayout.horizontalPadding)
-                    .padding(.top, 15)
-                    .padding(.bottom, 40)
+                    .padding(.top, 32)
+                    .padding(.bottom, 32)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -229,24 +232,47 @@ struct PrivacyInformationView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
     }
 }
 
 private struct PrivacyInformationSection: View {
     let title: String
-    let content: String
+    let bulletPoints: [String]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 13) {
             Text(title)
                 .font(RecapFont.pretendard(size: 16, weight: .semibold))
+                .tracking(-0.32)
                 .foregroundStyle(Color.recapGray900)
+                .frame(height: 22.4, alignment: .leading)
 
-            Text(content)
-                .font(RecapFont.pretendard(size: 14, weight: .regular))
-                .foregroundStyle(Color.recapGray500)
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(bulletPoints, id: \.self) { point in
+                    PrivacyInformationBullet(text: point)
+                }
+            }
+        }
+    }
+}
+
+private struct PrivacyInformationBullet: View {
+    let text: String
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 2) {
+            Text("•")
+                .frame(width: 20, alignment: .center)
+
+            Text(text)
                 .fixedSize(horizontal: false, vertical: true)
         }
+        .font(RecapFont.pretendard(size: 14, weight: .regular))
+        .tracking(-0.28)
+        .lineSpacing(2.9)
+        .foregroundStyle(Color.recapGray500)
+        .padding(.vertical, 1.45)
     }
 }
 

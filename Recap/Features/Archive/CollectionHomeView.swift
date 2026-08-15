@@ -53,6 +53,7 @@ struct CollectionHomeView: View {
         }
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
     }
 
     private var loadedContent: some View {
@@ -76,24 +77,25 @@ struct CollectionHomeView: View {
             .padding(.top, 21)
 
             ScrollView(showsIndicators: false) {
+                // 그리드는 좌우 여백을 두고, 목록은 행이 화면 끝까지 닿아야 한다.
+                // 공통 여백을 두고 목록에서 음수로 상쇄하는 대신 분기마다 직접 준다.
                 VStack(alignment: .leading, spacing: 0) {
                     if layoutMode == .grid {
                         CollectionHomeFolderGrid(
                             summaries: folderSummaries,
                             onOpenArchive: openArchive
                         )
-                        .padding(.top, 21)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 28)
                     } else {
                         CollectionHomeFolderList(
                             summaries: folderSummaries,
                             onOpenArchive: openArchive
                         )
-                        .padding(.horizontal, -16)
                         .padding(.top, 14)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
                 .padding(.bottom, 24)
             }
         }
@@ -146,7 +148,7 @@ struct CollectionHomeView: View {
             byKind[kind] ?? CollectionSummary(
                 kind: kind,
                 count: kind == .other ? otherCount : 0,
-                previewTitle: "카드 없음"
+                previewTitle: ""
             )
         }
     }

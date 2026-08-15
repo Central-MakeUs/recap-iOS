@@ -1,6 +1,6 @@
 import Foundation
 
-struct CardEditDraft: Equatable {
+nonisolated struct CardEditDraft: Equatable, Sendable {
     static let titleLimit = 30
     static let summaryLimit = 80
     static let bodyLimit = 1000

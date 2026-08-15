@@ -1,6 +1,7 @@
 import XCTest
 @testable import Recap
 
+@MainActor
 final class AppConfigurationTests: XCTestCase {
     func testBundledRuntimeProfileMatchesInfoPlist() throws {
         let bundledProfile = try XCTUnwrap(
@@ -92,11 +93,15 @@ final class AppConfigurationTests: XCTestCase {
 
 @MainActor
 final class RuntimeProfileTests: XCTestCase {
-    func testLiveDependenciesOpenMainWithoutReplacingLiveServices() {
+    func testLiveDependenciesPersistCompletedOnboardingWithoutReplacingLiveServices() {
+        let defaults = UserDefaults.standard
+        defaults.removeObject(forKey: "onboarding.progress")
+        defer { defaults.removeObject(forKey: "onboarding.progress") }
+
         let configuration = AppConfiguration.live()
         let firstLaunch = RecapDependencies.live(configuration: configuration)
 
-        XCTAssertEqual(firstLaunch.onboardingProgressStore.progress, .completed)
+        XCTAssertEqual(firstLaunch.onboardingProgressStore.progress, .notStarted)
         firstLaunch.onboardingProgressStore.move(to: .completed)
 
         let nextLaunch = RecapDependencies.live(configuration: configuration)
@@ -120,9 +125,22 @@ final class RuntimeProfileTests: XCTestCase {
         XCTAssertTrue(nextLaunch.captureService is CaptureService)
     }
 
-    func testSimulatorMockDependenciesAlwaysStartOnboarding() {
+    func testSimulatorMockDependenciesShowOnboardingAfterFirstLogin() async {
         let dependencies = RecapDependencies.simulatorMock()
 
+        XCTAssertEqual(
+            AppLaunchDestinationResolver.resolve(
+                sessionState: dependencies.sessionStore.state,
+                onboardingProgress: dependencies.onboardingProgressStore.progress
+            ),
+            .login(nil)
+        )
+
+        let outcome = await dependencies.sessionStore.login(
+            using: dependencies.loginProvider(for: .kakao)
+        )
+
+        XCTAssertEqual(outcome, .success)
         XCTAssertEqual(
             AppLaunchDestinationResolver.resolve(
                 sessionState: dependencies.sessionStore.state,

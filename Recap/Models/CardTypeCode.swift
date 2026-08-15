@@ -1,6 +1,6 @@
 import Foundation
 
-nonisolated enum CardTypeCode: String, Decodable, Sendable {
+nonisolated enum CardTypeCode: String, Codable, Sendable {
     case job = "JOB"
     case shopping = "SHOPPING"
     case place = "PLACE"
