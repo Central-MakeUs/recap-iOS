@@ -78,30 +78,29 @@ private struct CardCreationProcessingBubble: View {
     @State private var isFloating = false
 
     var body: some View {
-        ZStack(alignment: .top) {
-            shape
-                .fill(.white)
-                .overlay {
-                    shape.stroke(Color.recapBlue300, lineWidth: 1)
-                }
-
-            Text("앱을 종료해도 백그라운드에서\n정리가 계속 진행돼요!")
-                .font(RecapFont.pretendard(size: 13, weight: .medium))
-                .tracking(-0.26)
-                .lineSpacing(0)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(Color.recapBlue300)
-                .frame(
-                    width: Layout.bodySize.width,
-                    height: Layout.bodySize.height,
-                    alignment: .center
-                )
-                .padding(.top, Layout.tailSize.height)
-        }
-        .frame(
-            width: Layout.bodySize.width,
-            height: Layout.bodySize.height + Layout.tailSize.height
-        )
+        shape
+            .fill(.white)
+            .overlay {
+                shape.stroke(Color.recapBlue300, lineWidth: 1)
+            }
+            // 위쪽 꼬리를 뺀 몸통 안에서 가운데 정렬한다.
+            .overlay(alignment: .bottom) {
+                Text("앱을 종료해도 백그라운드에서\n정리가 계속 진행돼요!")
+                    .font(RecapFont.pretendard(size: 13, weight: .medium))
+                    .tracking(-0.26)
+                    .lineSpacing(0)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(Color.recapBlue300)
+                    .frame(
+                        width: Layout.bodySize.width,
+                        height: Layout.bodySize.height,
+                        alignment: .center
+                    )
+            }
+            .frame(
+                width: Layout.bodySize.width,
+                height: Layout.bodySize.height + Layout.tailSize.height
+            )
         .offset(y: isFloating ? -4 : 0)
         // `onAppear`에서 `withAnimation`으로 걸면 뷰가 트랜잭션보다 먼저 나타나는
         // 경우에 반복 애니메이션이 붙지 않는다. 값 변화에 직접 거는 편이 견고하다.

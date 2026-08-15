@@ -19,27 +19,26 @@ struct RecapSpeechBubble: View {
     var width: CGFloat = FigmaMetric.width
 
     var body: some View {
-        ZStack(alignment: .top) {
-            shape
-                .fill(Color.recapBackground)
-                .overlay {
-                    shape.stroke(Color.recapBlue300, lineWidth: 1)
-                }
-                .shadow(
-                    color: Color.black.opacity(0.15),
-                    radius: 2.77,
-                    x: 0,
-                    y: 0.92
-                )
-                .frame(width: width, height: Self.renderedHeight)
-
-            Text(text)
-                .font(RecapFont.pretendard(size: 13, weight: .medium))
-                .tracking(-0.26)
-                .foregroundStyle(Color.recapBlue300)
-                .frame(width: width, height: 41)
-        }
-        .frame(width: width, height: Self.renderedHeight)
+        shape
+            .fill(Color.recapBackground)
+            .overlay {
+                shape.stroke(Color.recapBlue300, lineWidth: 1)
+            }
+            .shadow(
+                color: Color.black.opacity(0.15),
+                radius: 2.77,
+                x: 0,
+                y: 0.92
+            )
+            // 꼬리를 뺀 몸통 높이 안에서 가운데 정렬한다.
+            .overlay(alignment: .top) {
+                Text(text)
+                    .font(RecapFont.pretendard(size: 13, weight: .medium))
+                    .tracking(-0.26)
+                    .foregroundStyle(Color.recapBlue300)
+                    .frame(width: width, height: 41)
+            }
+            .frame(width: width, height: Self.renderedHeight)
     }
 
     private var shape: SpeechBubbleShape {
