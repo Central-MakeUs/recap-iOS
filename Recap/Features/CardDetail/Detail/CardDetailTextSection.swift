@@ -6,10 +6,10 @@ struct CardDetailTextSection: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Text(categoryDisplay.title)
+            Text(card.category.displayTitle)
                 .font(RecapFont.pretendard(size: 14, weight: .semibold))
                 .tracking(-0.28)
-                .foregroundStyle(categoryDisplay.textColor)
+                .foregroundStyle(card.category.textColor)
 
             Text(card.title)
                 .font(RecapFont.pretendard(size: 22, weight: .semibold))
@@ -83,9 +83,6 @@ struct CardDetailTextSection: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var categoryDisplay: RecapPresentation.CategoryDisplay {
-        RecapPresentation.categoryDisplay(for: card.category)
-    }
 }
 
 #if DEBUG

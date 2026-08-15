@@ -8,7 +8,7 @@ struct RecapFolderListRow: View {
 
     var body: some View {
         HStack(spacing: 27) {
-            RecapCategoryIcon(category: category, size: .medium)
+            RecapCategoryIcon.folderRow(category)
 
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 8) {

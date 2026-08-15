@@ -33,16 +33,16 @@ struct RecapChip: View {
     ) -> some View {
         switch size {
         case .small:
-            categoryTitle(for: category, color: CategoryPalette.selected(for: category).text)
+            categoryTitle(for: category, color: category.chipPalette.text)
         case .medium:
             HStack(spacing: 8) {
-                categoryIcon(for: category)
+                RecapCategoryIcon.chip(category)
                 categoryTitle(for: category, color: Color.recapGray900)
             }
         case .large:
-            let palette = isSelected ? CategoryPalette.selected(for: category) : .unselected
+            let palette = isSelected ? category.chipPalette : .unselected
 
-            Text(RecapPresentation.categoryDisplay(for: category).title)
+            Text(category.displayTitle)
                 .font(RecapFont.pretendard(size: 14, weight: .semibold))
                 .tracking(-0.28)
                 .foregroundStyle(palette.text)
@@ -57,25 +57,13 @@ struct RecapChip: View {
     }
 
     private func categoryTitle(for category: CardCategory, color: Color) -> some View {
-        Text(RecapPresentation.categoryDisplay(for: category).title)
+        Text(category.displayTitle)
             .font(RecapFont.pretendard(size: 10, weight: .semibold))
             .tracking(-0.20)
             .foregroundStyle(color)
             .lineLimit(1)
     }
 
-    private func categoryIcon(for category: CardCategory) -> some View {
-        let display = RecapPresentation.categoryDisplay(for: category)
-
-        return RecapIconView(
-            icon: .categoryIcon(for: category),
-            size: 16,
-            color: display.dotColor
-        )
-            .frame(width: 24, height: 24)
-            .background(Color.recapBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-    }
 
     private func recentSearchChip(keyword: String) -> some View {
         HStack(spacing: 0) {
@@ -106,41 +94,6 @@ struct RecapChip: View {
         .frame(height: 30)
         .background(Color.recapGray50)
         .clipShape(Capsule())
-    }
-}
-
-private struct CategoryPalette {
-    let background: Color
-    let border: Color
-    let text: Color
-
-    static let unselected = CategoryPalette(
-        background: .white,
-        border: Color.recapGray100,
-        text: Color.recapGray300
-    )
-
-    static func selected(for category: CardCategory) -> CategoryPalette {
-        switch category {
-        case .shopping:
-            CategoryPalette(background: .categoryBlue300, border: .categoryBlue500, text: .categoryBlue700)
-        case .place:
-            CategoryPalette(background: .categoryRed300, border: .categoryRed500, text: .categoryRed700)
-        case .schedule:
-            CategoryPalette(background: .categoryGreen300, border: .categoryGreen500, text: .categoryGreen700)
-        case .knowledge:
-            CategoryPalette(background: .categoryYellow300, border: .categoryYellow500, text: .categoryYellow700)
-        case .content:
-            CategoryPalette(background: .categoryPink300, border: .categoryPink500, text: .categoryPink700)
-        case .benefits:
-            CategoryPalette(background: .categoryMint300, border: .categoryMint500, text: .categoryMint700)
-        case .capture:
-            CategoryPalette(background: .categoryPurple300, border: .categoryPurple500, text: .categoryPurple700)
-        case .career:
-            CategoryPalette(background: .categoryOrange300, border: .categoryOrange500, text: .categoryOrange700)
-        case .other:
-            CategoryPalette(background: .categoryGray300, border: .categoryGray500, text: .categoryGray700)
-        }
     }
 }
 

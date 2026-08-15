@@ -10,9 +10,8 @@ struct ArchiveHomeFolderList: View {
                 Button {
                     onOpenArchive(summary.category)
                 } label: {
-                    let display = RecapPresentation.categoryDisplay(for: summary.category)
                     RecapFolderListRow(
-                        title: display.title,
+                        title: summary.category.displayTitle,
                         subtitle: summary.previewTitle,
                         count: summary.count,
                         category: summary.category
