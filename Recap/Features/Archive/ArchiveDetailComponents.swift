@@ -9,7 +9,7 @@ enum ArchiveDetailScope: Hashable {
         case .favorites:
             "즐겨찾기"
         case .category(let category):
-            RecapPresentation.categoryDisplay(for: category).title
+            category.displayTitle
         }
     }
 

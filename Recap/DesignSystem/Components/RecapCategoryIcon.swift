@@ -39,7 +39,7 @@ struct RecapCategoryIcon: View {
             RecapIconView(
                 icon: .categoryIcon(for: category),
                 size: glyphSize,
-                color: RecapPresentation.categoryDisplay(for: category).dotColor
+                color: category.iconColor
             )
         }
     }

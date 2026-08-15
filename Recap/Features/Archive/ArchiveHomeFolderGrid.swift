@@ -20,9 +20,8 @@ struct ArchiveHomeFolderGrid: View {
                 Button {
                     onOpenArchive(summary.category)
                 } label: {
-                    let display = RecapPresentation.categoryDisplay(for: summary.category)
                     RecapFolderCard(
-                        title: display.title,
+                        title: summary.category.displayTitle,
                         count: summary.count,
                         category: summary.category
                     )
