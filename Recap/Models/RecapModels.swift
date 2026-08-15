@@ -37,22 +37,6 @@ nonisolated enum CollectionKind: String, CaseIterable, Identifiable, Hashable, S
 
     var id: String { rawValue }
 
-    /// 분류 표시 이름. 색상·아이콘이 붙는 `RecapPresentation.collectionDisplay`와 달리
-    /// 순수 문자열이라 격리 없이 어디서든 쓸 수 있다.
-    var displayTitle: String {
-        switch self {
-        case .shopping: "쇼핑 · 상품"
-        case .place: "장소 · 맛집"
-        case .schedule: "일정 · 예약"
-        case .knowledge: "정보 · 지식"
-        case .content: "책 · 콘텐츠"
-        case .benefits: "혜택 · 이벤트"
-        case .capture: "기록 · 캡처"
-        case .career: "채용 · 취업"
-        case .other: "기타"
-        }
-    }
-
     static let folderCases: [CollectionKind] = [
         .shopping,
         .place,
@@ -85,7 +69,6 @@ nonisolated struct CardSnapshot: Identifiable, Equatable, Sendable {
     let organizedAt: Date?
     let location: String
     let businessHours: String
-    let category: String
     let confirmationLabel: String?
     let memo: String
     let tags: [String]
@@ -105,7 +88,6 @@ nonisolated struct CardSnapshot: Identifiable, Equatable, Sendable {
         organizedAt: Date? = nil,
         location: String,
         businessHours: String,
-        category: String,
         confirmationLabel: String?,
         memo: String,
         tags: [String],
@@ -122,7 +104,6 @@ nonisolated struct CardSnapshot: Identifiable, Equatable, Sendable {
         self.organizedAt = organizedAt
         self.location = location
         self.businessHours = businessHours
-        self.category = category
         self.confirmationLabel = confirmationLabel
         self.memo = memo
         self.tags = tags

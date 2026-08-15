@@ -52,7 +52,6 @@ extension CardSnapshot {
             organizedAt: dto.organizedAt,
             location: "",
             businessHours: "",
-            category: kind.displayTitle,
             confirmationLabel: nil,
             memo: "",
             tags: [],

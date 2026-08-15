@@ -100,7 +100,6 @@ final class ArchiveAPITests: XCTestCase {
 
         XCTAssertEqual(card.captureID, 101)
         XCTAssertEqual(card.collection, .shopping)
-        XCTAssertEqual(card.category, "쇼핑 · 상품")
         XCTAssertEqual(card.thumbnailURL?.absoluteString, "https://images.example.com/101.jpg")
     }
 
@@ -344,7 +343,6 @@ final class ArchiveAPITests: XCTestCase {
             organizedAt: organizedAt,
             location: "",
             businessHours: "",
-            category: "쇼핑 · 상품",
             confirmationLabel: nil,
             memo: "",
             tags: [],
