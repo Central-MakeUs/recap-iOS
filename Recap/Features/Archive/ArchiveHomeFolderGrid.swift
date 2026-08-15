@@ -18,13 +18,13 @@ struct ArchiveHomeFolderGrid: View {
         ) {
             ForEach(summaries) { summary in
                 Button {
-                    onOpenArchive(summary.kind)
+                    onOpenArchive(summary.category)
                 } label: {
-                    let display = RecapPresentation.categoryDisplay(for: summary.kind)
+                    let display = RecapPresentation.categoryDisplay(for: summary.category)
                     RecapFolderCard(
                         title: display.title,
                         count: summary.count,
-                        kind: summary.kind
+                        category: summary.category
                     )
                 }
                 .buttonStyle(.plain)
@@ -38,7 +38,7 @@ struct ArchiveHomeFolderGrid: View {
 #Preview("보관함 폴더 격자") {
     ArchiveHomeFolderGrid(
         summaries: SampleData.categorySummaries + [
-            CategorySummary(kind: .other, count: 0, previewTitle: "")
+            CategorySummary(category: .other, count: 0, previewTitle: "")
         ],
         onOpenArchive: { _ in }
     )

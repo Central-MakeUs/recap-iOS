@@ -4,18 +4,18 @@ import SwiftUI
 
 struct CardCreationScreenshot: Identifiable, Hashable {
     let id: UUID
-    let kind: CardCategory
+    let category: CardCategory
     let assetName: String?
     let imageData: Data?
 
     init(
         id: UUID = UUID(),
-        kind: CardCategory,
+        category: CardCategory,
         assetName: String? = nil,
         imageData: Data? = nil
     ) {
         self.id = id
-        self.kind = kind
+        self.category = category
         self.assetName = assetName
         self.imageData = imageData
     }
@@ -102,7 +102,7 @@ final class CardCreationFlowViewModel {
         }
 
         screenshots = selectedScreenshots.map {
-            CardCreationScreenshot(kind: .capture, imageData: $0.imageData)
+            CardCreationScreenshot(category: .capture, imageData: $0.imageData)
         }
         progress = .initial
         step = .confirmation
@@ -111,7 +111,7 @@ final class CardCreationFlowViewModel {
     func removeScreenshot(id: SelectedScreenshot.ID) {
         selectedScreenshots.removeAll { $0.id == id }
         screenshots = selectedScreenshots.map {
-            CardCreationScreenshot(kind: .capture, imageData: $0.imageData)
+            CardCreationScreenshot(category: .capture, imageData: $0.imageData)
         }
     }
 

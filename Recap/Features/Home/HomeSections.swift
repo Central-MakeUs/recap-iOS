@@ -91,14 +91,14 @@ struct HomeFrequentTypesSection: View {
 
             if !frequentTypes.isEmpty {
                 HStack(spacing: usesDistributedSpacing ? 0 : 16) {
-                    ForEach(Array(frequentTypes.enumerated()), id: \.element) { index, kind in
+                    ForEach(Array(frequentTypes.enumerated()), id: \.element) { index, category in
                         Button {
-                            openArchive(kind)
+                            openArchive(category)
                         } label: {
                             VStack(spacing: 9) {
-                                RecapCategoryIcon(kind: kind, size: .large)
+                                RecapCategoryIcon(category: category, size: .large)
 
-                                Text(RecapPresentation.categoryDisplay(for: kind).title)
+                                Text(RecapPresentation.categoryDisplay(for: category).title)
                                     .font(RecapFont.pretendard(size: 13, weight: .medium))
                                     .tracking(-0.26)
                                     .foregroundStyle(Color.recapGray700)
@@ -119,7 +119,7 @@ struct HomeFrequentTypesSection: View {
     }
 
     private var frequentTypes: [CardCategory] {
-        Array(summaries.prefix(4).map(\.kind))
+        Array(summaries.prefix(4).map(\.category))
     }
 
     private var usesDistributedSpacing: Bool {

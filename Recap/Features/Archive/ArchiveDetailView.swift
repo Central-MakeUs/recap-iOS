@@ -72,8 +72,8 @@ struct ArchiveDetailContainerView: View {
         switch scope {
         case .favorites:
             .archiveFavorites
-        case .category(let kind):
-            .archiveDetail(kind)
+        case .category(let category):
+            .archiveDetail(category)
         }
     }
 
@@ -83,8 +83,8 @@ struct ArchiveDetailContainerView: View {
             router.navigate(.search)
         case .openFavorites:
             router.navigate(.archiveFavorites)
-        case .openArchive(let kind):
-            router.navigate(.archiveDetail(kind))
+        case .openArchive(let category):
+            router.navigate(.archiveDetail(category))
         case .openCard(let captureID):
             router.navigate(.remoteCardDetail(captureID))
         case .selectSort(let sort):

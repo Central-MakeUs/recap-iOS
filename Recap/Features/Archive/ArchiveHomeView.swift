@@ -143,11 +143,11 @@ struct ArchiveHomeView: View {
     }
 
     private var folderSummaries: [CategorySummary] {
-        let byKind = Dictionary(uniqueKeysWithValues: summaries.map { ($0.kind, $0) })
-        return CardCategory.allCases.map { kind in
-            byKind[kind] ?? CategorySummary(
-                kind: kind,
-                count: kind == .other ? otherCount : 0,
+        let byKind = Dictionary(uniqueKeysWithValues: summaries.map { ($0.category, $0) })
+        return CardCategory.allCases.map { category in
+            byKind[category] ?? CategorySummary(
+                category: category,
+                count: category == .other ? otherCount : 0,
                 previewTitle: ""
             )
         }
@@ -157,8 +157,8 @@ struct ArchiveHomeView: View {
         summaries.reduce(otherCount) { $0 + $1.count }
     }
 
-    private func openArchive(_ kind: CardCategory) {
-        onAction(.openArchive(kind))
+    private func openArchive(_ category: CardCategory) {
+        onAction(.openArchive(category))
     }
 }
 

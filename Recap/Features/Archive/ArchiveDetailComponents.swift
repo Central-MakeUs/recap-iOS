@@ -8,8 +8,8 @@ enum ArchiveDetailScope: Hashable {
         switch self {
         case .favorites:
             "즐겨찾기"
-        case .category(let kind):
-            RecapPresentation.categoryDisplay(for: kind).title
+        case .category(let category):
+            RecapPresentation.categoryDisplay(for: category).title
         }
     }
 
@@ -32,8 +32,8 @@ enum ArchiveDetailScope: Hashable {
             .favorites
         case .category(.other):
             .other
-        case .category(let kind):
-            .type(kind)
+        case .category(let category):
+            .type(category)
         }
     }
 }
@@ -90,11 +90,11 @@ struct ArchiveDetailNavigationHeader: View {
         case .favorites:
             RecapIconView(icon: .star, size: 20, color: Color.recapBlue300)
                 .padding(.leading, 13)
-        case .category(let kind) where kind != .other:
+        case .category(let category) where category != .other:
             RecapIconView(
-                icon: RecapIcon.categoryIcon(for: kind),
+                icon: RecapIcon.categoryIcon(for: category),
                 size: 20,
-                color: RecapPresentation.categoryDisplay(for: kind).dotColor
+                color: RecapPresentation.categoryDisplay(for: category).dotColor
             )
             .padding(.leading, 13)
         case .category:

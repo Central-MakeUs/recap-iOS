@@ -15,7 +15,7 @@ struct CardEditOriginalPreview: View {
 
             CardDetailImageCard(onExpand: onOpenOriginal) {
                 RecapScreenshotThumbnail(
-                    kind: card.category,
+                    category: card.category,
                     assetName: card.detailImageAssetName,
                     remoteURL: card.originalImageURL ?? card.thumbnailURL
                 )

@@ -26,8 +26,8 @@ struct CardEditTypeSelectionSheet: View {
             Grid(horizontalSpacing: 8, verticalSpacing: 20) {
                 ForEach(categoryRows.indices, id: \.self) { rowIndex in
                     GridRow {
-                        ForEach(categoryRows[rowIndex]) { kind in
-                            categoryButton(for: kind)
+                        ForEach(categoryRows[rowIndex]) { category in
+                            categoryButton(for: category)
                         }
                     }
                 }
@@ -58,20 +58,20 @@ struct CardEditTypeSelectionSheet: View {
         }
     }
 
-    private func categoryButton(for kind: CardCategory) -> some View {
+    private func categoryButton(for category: CardCategory) -> some View {
         Button {
-            pendingSelection = kind
+            pendingSelection = category
         } label: {
             RecapChip(
                 configuration: .category(
-                    kind,
+                    category,
                     size: .large,
-                    isSelected: pendingSelection == kind
+                    isSelected: pendingSelection == category
                 )
             )
         }
         .buttonStyle(.plain)
-        .accessibilityAddTraits(pendingSelection == kind ? .isSelected : [])
+        .accessibilityAddTraits(pendingSelection == category ? .isSelected : [])
     }
 }
 

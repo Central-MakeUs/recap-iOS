@@ -20,8 +20,8 @@ nonisolated enum SearchScope: Equatable, Sendable {
     }
 
     var typeCode: CardTypeCode? {
-        guard case .type(let kind) = self else { return nil }
-        return CardTypeCode(category: kind)
+        guard case .type(let category) = self else { return nil }
+        return CardTypeCode(category: category)
     }
 }
 

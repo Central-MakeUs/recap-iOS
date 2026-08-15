@@ -42,13 +42,13 @@ nonisolated struct HomeSummaryContent: Equatable, Sendable {
 
 extension CardSnapshot {
     nonisolated init(dto: HomeCaptureSummaryDTO) {
-        let kind = dto.typeCode.category
+        let category = dto.typeCode.category
 
         self.init(
             captureID: dto.captureId,
             title: dto.title,
             summary: dto.summary,
-            category: kind,
+            category: category,
             organizedAt: dto.organizedAt,
             location: "",
             businessHours: "",
@@ -81,12 +81,12 @@ nonisolated struct RecentCapturesPage: Equatable, Sendable {
 
 private extension CategorySummary {
     nonisolated init(dto: HomeTopTypeDTO) {
-        let kind = dto.typeCode.category
+        let category = dto.typeCode.category
 
         self.init(
-            kind: kind,
+            category: category,
             count: dto.count,
-            previewTitle: kind.displayTitle,
+            previewTitle: category.displayTitle,
             representativeThumbnailURL: dto.representativeThumbnailUrl
         )
     }

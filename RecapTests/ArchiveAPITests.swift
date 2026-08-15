@@ -22,7 +22,7 @@ final class ArchiveAPITests: XCTestCase {
         ])
         XCTAssertEqual(content.favoriteCount, 1)
         XCTAssertEqual(content.otherCount, 1)
-        XCTAssertEqual(content.summaries.first?.kind, .shopping)
+        XCTAssertEqual(content.summaries.first?.category, .shopping)
         XCTAssertEqual(content.summaries.first?.previewTitle, "최근 제목 · 이전 제목")
     }
 
@@ -30,7 +30,7 @@ final class ArchiveAPITests: XCTestCase {
         let client = ArchiveNetworkClientStub()
         let service = ArchiveService(networkClient: client)
         let current = ArchiveHomeContent(
-            summaries: [CategorySummary(kind: .shopping, count: 7, previewTitle: "기존 제목")],
+            summaries: [CategorySummary(category: .shopping, count: 7, previewTitle: "기존 제목")],
             favoriteCount: 99,
             otherCount: 5
         )

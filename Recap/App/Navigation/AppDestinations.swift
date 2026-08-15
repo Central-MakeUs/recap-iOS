@@ -73,9 +73,9 @@ extension View {
                 cardStore: cardStore,
                 invalidationCenter: cardDataInvalidationCenter
             )
-        case .archiveDetail(let kind):
+        case .archiveDetail(let category):
             ArchiveDetailContainerView(
-                scope: .category(kind),
+                scope: .category(category),
                 loader: archiveLoader,
                 searchLoader: searchLoader,
                 cardStore: cardStore,

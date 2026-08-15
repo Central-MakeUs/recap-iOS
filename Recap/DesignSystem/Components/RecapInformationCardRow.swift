@@ -63,7 +63,7 @@ struct RecapInformationCardRow: View {
     private var thumbnailAndFavorite: some View {
         ZStack(alignment: .topTrailing) {
             RecapScreenshotThumbnail(
-                kind: card.category,
+                category: card.category,
                 assetName: card.thumbnailAssetName,
                 remoteURL: card.thumbnailURL,
                 hasFavoriteFold: true,
@@ -93,7 +93,7 @@ struct RecapInformationCardRow: View {
 
     private var selectedThumbnail: some View {
         RecapScreenshotThumbnail(
-            kind: card.category,
+            category: card.category,
             assetName: card.thumbnailAssetName,
             remoteURL: card.thumbnailURL,
             cornerRadius: 0,

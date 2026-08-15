@@ -61,7 +61,7 @@ extension CardSnapshot {
 extension CategorySummary {
     nonisolated init(archiveDTO dto: ArchiveStorageTypeDTO) {
         self.init(
-            kind: dto.typeCode.category,
+            category: dto.typeCode.category,
             count: dto.count,
             previewTitle: dto.representativeTitles
                 .prefix(2)

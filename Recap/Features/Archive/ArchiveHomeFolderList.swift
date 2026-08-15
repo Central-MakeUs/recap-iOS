@@ -8,14 +8,14 @@ struct ArchiveHomeFolderList: View {
         VStack(spacing: 0) {
             ForEach(summaries) { summary in
                 Button {
-                    onOpenArchive(summary.kind)
+                    onOpenArchive(summary.category)
                 } label: {
-                    let display = RecapPresentation.categoryDisplay(for: summary.kind)
+                    let display = RecapPresentation.categoryDisplay(for: summary.category)
                     RecapFolderListRow(
                         title: display.title,
                         subtitle: summary.previewTitle,
                         count: summary.count,
-                        kind: summary.kind
+                        category: summary.category
                     )
                 }
                 .buttonStyle(.plain)
@@ -29,7 +29,7 @@ struct ArchiveHomeFolderList: View {
     ScrollView {
         ArchiveHomeFolderList(
             summaries: SampleData.categorySummaries + [
-                CategorySummary(kind: .other, count: 0, previewTitle: "")
+                CategorySummary(category: .other, count: 0, previewTitle: "")
             ],
             onOpenArchive: { _ in }
         )

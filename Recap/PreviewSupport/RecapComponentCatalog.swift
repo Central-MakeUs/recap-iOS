@@ -42,10 +42,10 @@ struct RecapComponentCatalog: View {
         VStack(alignment: .leading, spacing: 12) {
             catalogTitle("category")
             HStack {
-                RecapCategoryIcon(kind: .shopping)
-                RecapCategoryIcon(kind: .place, size: .large)
-                RecapCategoryIcon(kind: .schedule)
-                RecapCategoryIcon(kind: .knowledge, size: .large)
+                RecapCategoryIcon(category: .shopping)
+                RecapCategoryIcon(category: .place, size: .large)
+                RecapCategoryIcon(category: .schedule)
+                RecapCategoryIcon(category: .knowledge, size: .large)
             }
         }
     }
@@ -74,11 +74,11 @@ struct RecapComponentCatalog: View {
             catalogTitle("imagecard · card/home")
             HStack(alignment: .top) {
                 RecapImageCard(
-                    kind: .capture,
+                    category: .capture,
                     assetName: SampleData.cards[3].thumbnailAssetName
                 )
                 RecapImageCard(
-                    kind: .shopping,
+                    category: .shopping,
                     assetName: SampleData.cards[0].thumbnailAssetName,
                     isFavorite: true
                 )
@@ -149,12 +149,12 @@ struct RecapComponentCatalog: View {
     private var folders: some View {
         VStack(alignment: .leading, spacing: 12) {
             catalogTitle("folder · folder/list")
-            RecapFolderCard(title: "쇼핑 · 상품", count: 12, kind: .shopping)
+            RecapFolderCard(title: "쇼핑 · 상품", count: 12, category: .shopping)
             RecapFolderListRow(
                 title: "쇼핑 · 상품",
                 subtitle: "택배 반품 절차 · 노트북 가격 비교",
                 count: 12,
-                kind: .shopping
+                category: .shopping
             )
         }
     }

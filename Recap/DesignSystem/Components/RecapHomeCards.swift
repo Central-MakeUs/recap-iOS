@@ -6,7 +6,7 @@ struct RecapHomeRecentCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
             RecapScreenshotThumbnail(
-                kind: card.category,
+                category: card.category,
                 assetName: card.thumbnailAssetName,
                 remoteURL: card.thumbnailURL,
                 size: CGSize(width: 134, height: 85),
@@ -72,7 +72,7 @@ struct RecapHomeFavoriteCard: View {
 
 #Preview("최근 정리 카드 썸네일 폴백") {
     RecapScreenshotThumbnail(
-        kind: .knowledge,
+        category: .knowledge,
         assetName: nil,
         size: CGSize(width: 134, height: 85),
         fallbackStyle: .folderCharacter

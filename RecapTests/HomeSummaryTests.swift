@@ -29,7 +29,7 @@ final class HomeSummaryTests: XCTestCase {
         )
         XCTAssertEqual(favoriteCard.captureID, 102)
         XCTAssertTrue(favoriteCard.isFavorite)
-        XCTAssertEqual(topType.kind, .career)
+        XCTAssertEqual(topType.category, .career)
         XCTAssertEqual(topType.count, 4)
         XCTAssertEqual(
             topType.representativeThumbnailURL?.absoluteString,

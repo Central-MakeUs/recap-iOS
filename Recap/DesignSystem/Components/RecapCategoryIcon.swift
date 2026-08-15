@@ -15,20 +15,20 @@ struct RecapCategoryIcon: View {
         var symbol: CGFloat { 30 }
     }
 
-    let kind: CardCategory
+    let category: CardCategory
     var size: Size = .medium
 
     var body: some View {
-        let display = RecapPresentation.categoryDisplay(for: kind)
+        let display = RecapPresentation.categoryDisplay(for: category)
 
         Group {
-            if kind == .other {
+            if category == .other {
                 RoundedRectangle(cornerRadius: 2.5, style: .continuous)
                     .fill(Color.recapGray200)
                     .frame(width: otherSymbolWidth, height: 4)
             } else {
                 RecapIconView(
-                    icon: .categoryIcon(for: kind),
+                    icon: .categoryIcon(for: category),
                     size: size.symbol,
                     color: display.dotColor
                 )
@@ -50,8 +50,8 @@ struct RecapCategoryIcon: View {
 #if DEBUG
 #Preview("카테고리 아이콘") {
     HStack {
-        RecapCategoryIcon(kind: .shopping)
-        RecapCategoryIcon(kind: .schedule, size: .large)
+        RecapCategoryIcon(category: .shopping)
+        RecapCategoryIcon(category: .schedule, size: .large)
     }
     .padding()
 }

@@ -116,22 +116,22 @@ nonisolated struct CardSnapshot: Identifiable, Equatable, Sendable {
 }
 
 nonisolated struct CategorySummary: Identifiable, Hashable, Sendable {
-    let kind: CardCategory
+    let category: CardCategory
     let count: Int
     let previewTitle: String
     let representativeThumbnailURL: URL?
 
     init(
-        kind: CardCategory,
+        category: CardCategory,
         count: Int,
         previewTitle: String,
         representativeThumbnailURL: URL? = nil
     ) {
-        self.kind = kind
+        self.category = category
         self.count = count
         self.previewTitle = previewTitle
         self.representativeThumbnailURL = representativeThumbnailURL
     }
 
-    var id: CardCategory { kind }
+    var id: CardCategory { category }
 }

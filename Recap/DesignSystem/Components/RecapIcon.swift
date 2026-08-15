@@ -119,8 +119,8 @@ enum RecapIcon: String, CaseIterable, Identifiable {
         }
     }
 
-    static func categoryIcon(for kind: CardCategory) -> RecapIcon {
-        switch kind {
+    static func categoryIcon(for category: CardCategory) -> RecapIcon {
+        switch category {
         case .shopping:
             .shopping
         case .place:
