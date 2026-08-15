@@ -67,29 +67,23 @@ struct CardCreationProcessingView: View {
 
 /// 위쪽 꼬리가 달린 말풍선. 2초 주기로 4pt 위아래로 움직인다.
 private struct CardCreationProcessingBubble: View {
+    /// Figma 03-03_정리 시작 기준 치수. `bodySize`에 꼬리 높이는 포함되지 않는다.
     private enum Layout {
         static let bodySize = CGSize(width: 189, height: 54)
-        static let tailSize = CGSize(width: 16, height: 6)
-        static let cornerRadius: CGFloat = 27.68
+        /// 말풍선 전체 60.0009 - 몸통 54.
+        static let tailSize = SpeechBubbleShape.FigmaTail.size(visibleHeight: 6.0008659362793)
+        static let cornerRadius: CGFloat = 27.677419662475586
     }
 
     @State private var isFloating = false
 
     var body: some View {
         ZStack(alignment: .top) {
-            RoundedRectangle(cornerRadius: Layout.cornerRadius, style: .continuous)
-                .fill(.white)
-                .strokeBorder(Color.recapBlue300, lineWidth: 1)
-                .frame(width: Layout.bodySize.width, height: Layout.bodySize.height)
-                .padding(.top, Layout.tailSize.height)
-
-            BubbleTailShape()
+            shape
                 .fill(.white)
                 .overlay {
-                    BubbleTailEdgesShape()
-                        .stroke(Color.recapBlue300, lineWidth: 1)
+                    shape.stroke(Color.recapBlue300, lineWidth: 1)
                 }
-                .frame(width: Layout.tailSize.width, height: Layout.tailSize.height + 1)
 
             Text("앱을 종료해도 백그라운드에서\n정리가 계속 진행돼요!")
                 .font(RecapFont.pretendard(size: 13, weight: .medium))
@@ -117,28 +111,13 @@ private struct CardCreationProcessingBubble: View {
         )
         .onAppear { isFloating = true }
     }
-}
 
-/// 꼬리 삼각형 채움. 말풍선 몸통 테두리를 덮도록 1pt 겹친다.
-private struct BubbleTailShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
-        path.closeSubpath()
-        return path
-    }
-}
-
-/// 꼬리 삼각형의 빗변 두 개만 그린다. 밑변은 몸통과 이어져야 하므로 긋지 않는다.
-private struct BubbleTailEdgesShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
-        path.addLine(to: CGPoint(x: rect.midX, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        return path
+    private var shape: SpeechBubbleShape {
+        SpeechBubbleShape(
+            tailEdge: .top,
+            tailSize: Layout.tailSize,
+            cornerRadius: Layout.cornerRadius
+        )
     }
 }
 
