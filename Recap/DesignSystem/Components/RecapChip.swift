@@ -36,7 +36,7 @@ struct RecapChip: View {
             categoryTitle(for: category, color: CategoryPalette.selected(for: category).text)
         case .medium:
             HStack(spacing: 8) {
-                categoryIcon(for: category)
+                RecapCategoryIcon.chip(category)
                 categoryTitle(for: category, color: Color.recapGray900)
             }
         case .large:
@@ -64,18 +64,6 @@ struct RecapChip: View {
             .lineLimit(1)
     }
 
-    private func categoryIcon(for category: CardCategory) -> some View {
-        let display = RecapPresentation.categoryDisplay(for: category)
-
-        return RecapIconView(
-            icon: .categoryIcon(for: category),
-            size: 16,
-            color: display.dotColor
-        )
-            .frame(width: 24, height: 24)
-            .background(Color.recapBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-    }
 
     private func recentSearchChip(keyword: String) -> some View {
         HStack(spacing: 0) {

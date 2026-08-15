@@ -31,8 +31,6 @@ private struct RecapFolderArtwork: View {
     let category: CardCategory
 
     var body: some View {
-        let display = RecapPresentation.categoryDisplay(for: category)
-
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 7.409886837005615, style: .continuous)
                 .fill(Color.recapFolderBack)
@@ -47,19 +45,8 @@ private struct RecapFolderArtwork: View {
                 .frame(width: 94, height: 79)
                 .offset(x: 5, y: 9)
 
-            if category != .other {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Color.recapBackground)
-                    .frame(width: 30, height: 30)
-                    .overlay {
-                        RecapIconView(
-                            icon: RecapIcon.categoryIcon(for: category),
-                            size: 16,
-                            color: display.dotColor
-                        )
-                    }
-                    .offset(x: 13, y: 17)
-            }
+            RecapCategoryIcon.folderCard(category)
+                .offset(x: 13, y: 17)
         }
         .frame(width: 99, height: 88, alignment: .topLeading)
     }

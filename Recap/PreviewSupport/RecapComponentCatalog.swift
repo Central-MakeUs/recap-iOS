@@ -42,10 +42,10 @@ struct RecapComponentCatalog: View {
         VStack(alignment: .leading, spacing: 12) {
             catalogTitle("category")
             HStack {
-                RecapCategoryIcon(category: .shopping)
-                RecapCategoryIcon(category: .place, size: .large)
-                RecapCategoryIcon(category: .schedule)
-                RecapCategoryIcon(category: .knowledge, size: .large)
+                RecapCategoryIcon.folderRow(.shopping)
+                RecapCategoryIcon.frequentType(.place)
+                RecapCategoryIcon.chip(.schedule)
+                RecapCategoryIcon.folderCard(.knowledge)
             }
         }
     }

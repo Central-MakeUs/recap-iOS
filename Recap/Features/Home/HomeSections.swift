@@ -96,7 +96,7 @@ struct HomeFrequentTypesSection: View {
                             openArchive(category)
                         } label: {
                             VStack(spacing: 9) {
-                                RecapCategoryIcon(category: category, size: .large)
+                                RecapCategoryIcon.frequentType(category)
 
                                 Text(RecapPresentation.categoryDisplay(for: category).title)
                                     .font(RecapFont.pretendard(size: 13, weight: .medium))

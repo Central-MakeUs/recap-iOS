@@ -90,24 +90,20 @@ struct ArchiveDetailNavigationHeader: View {
         case .favorites:
             RecapIconView(icon: .star, size: 20, color: Color.recapBlue300)
                 .padding(.leading, 13)
-        case .category(let category) where category != .other:
-            RecapIconView(
-                icon: RecapIcon.categoryIcon(for: category),
-                size: 20,
-                color: RecapPresentation.categoryDisplay(for: category).dotColor
-            )
-            .padding(.leading, 13)
-        case .category:
-            EmptyView()
+        case .category(let category):
+            RecapCategoryIcon.detailHeader(category)
+                .padding(.leading, 13)
         }
     }
 
+    /// 글리프가 없으면 아이콘 자리가 통째로 사라지므로(빈 뷰에는 패딩도 붙지 않는다)
+    /// 제목이 그 앞 여백까지 맡는다.
     private var titleLeadingPadding: CGFloat {
         switch scope {
-        case .category(.other):
-            13
-        case .favorites, .category:
+        case .favorites:
             10
+        case .category(let category):
+            RecapCategoryIcon.detailHeader(category).showsGlyph ? 10 : 13
         }
     }
 
