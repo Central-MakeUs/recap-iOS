@@ -16,7 +16,7 @@ struct RecapCategoryIcon: View {
     let glyphSize: CGFloat
     /// `nil`이면 타일 없이 글리프만 그린다.
     var tile: Tile?
-    /// 이 자리에 글리프를 그릴지. 고유 모양이 없는 분류를 비워 둘지는 화면이 정한다.
+    /// 이 자리에 글리프를 그릴지. 어떤 분류를 감출지는 화면이 정한다.
     var showsGlyph = true
 
     var body: some View {
@@ -47,13 +47,15 @@ extension RecapCategoryIcon {
         )
     }
 
-    /// 보관함 폴더형 카드의 폴더 그림 위. 기타는 자리를 비운다.
+    /// 보관함 폴더형 카드의 폴더 그림 위.
+    ///
+    /// 폴더 그림 위에서는 기타의 기본 표시가 군더더기라 감춘다.
     static func folderCard(_ category: CardCategory) -> Self {
         Self(
             category: category,
             glyphSize: 16,
             tile: Tile(size: 30, cornerRadius: 10, color: Color.recapBackground),
-            showsGlyph: category.hasOwnGlyph
+            showsGlyph: category != .other
         )
     }
 
@@ -75,13 +77,15 @@ extension RecapCategoryIcon {
         )
     }
 
-    /// 보관함 상세 헤더. 타일 없이 글리프만 그리고, 기타는 자리를 비운다.
+    /// 보관함 상세 헤더. 타일 없이 글리프만 그린다.
+    ///
+    /// 제목 옆에서는 기타의 기본 표시가 군더더기라 감추고, 제목이 그 자리를 쓴다.
     static func detailHeader(_ category: CardCategory) -> Self {
         Self(
             category: category,
             glyphSize: 20,
             tile: nil,
-            showsGlyph: category.hasOwnGlyph
+            showsGlyph: category != .other
         )
     }
 }

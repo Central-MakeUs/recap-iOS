@@ -8,11 +8,6 @@ import SwiftUI
 ///
 /// 이름은 순수 문자열이라 격리 없이 어디서든 부를 수 있다.
 nonisolated extension CardCategory {
-    /// 기타에는 고유한 모양이 없다. 그 자리를 비울지 대신 표시할지는 화면이 정한다.
-    var hasOwnGlyph: Bool {
-        self != .other
-    }
-
     var displayTitle: String {
         switch self {
         case .shopping: "쇼핑 · 상품"
