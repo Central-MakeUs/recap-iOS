@@ -2,8 +2,8 @@ import SwiftUI
 
 /// 아래쪽 꼬리가 달린 온보딩 말풍선.
 struct RecapSpeechBubble: View {
-    /// Figma 01-01_로그인 기준 치수. 폭이 달라지면 비율로 함께 늘어난다.
-    private enum FigmaMetric {
+    /// Figma 01-01_로그인 기준 치수.
+    private enum Layout {
         static let width: CGFloat = 143
         static let height: CGFloat = 45.8837890625
         static let bodyHeight: CGFloat = 40.59354782104492
@@ -13,47 +13,33 @@ struct RecapSpeechBubble: View {
         static let tailVisibleHeight = height - bodyHeight
     }
 
-    private static let renderedHeight: CGFloat = 46
-
     let text: String
-    var width: CGFloat = FigmaMetric.width
 
     var body: some View {
-        shape
-            .fill(Color.recapBackground)
-            .overlay {
-                shape.stroke(Color.recapBlue300, lineWidth: 1)
-            }
-            .shadow(
-                color: Color.black.opacity(0.15),
-                radius: 2.77,
-                x: 0,
-                y: 0.92
-            )
-            // 꼬리를 뺀 몸통 높이 안에서 가운데 정렬한다.
-            .overlay(alignment: .top) {
-                Text(text)
-                    .font(RecapFont.pretendard(size: 13, weight: .medium))
-                    .tracking(-0.26)
-                    .foregroundStyle(Color.recapBlue300)
-                    .frame(width: width, height: 41)
-            }
-            .frame(width: width, height: Self.renderedHeight)
-    }
-
-    private var shape: SpeechBubbleShape {
-        let scaleX = width / FigmaMetric.width
-        let scaleY = Self.renderedHeight / FigmaMetric.height
-
-        let tail = SpeechBubbleShape.FigmaTail.size(
-            visibleHeight: FigmaMetric.tailVisibleHeight
-        )
-
-        return SpeechBubbleShape(
+        SpeechBubbleShape(
             tailEdge: .bottom,
-            tailSize: CGSize(width: tail.width * scaleX, height: tail.height * scaleY),
-            cornerRadius: FigmaMetric.cornerRadius * min(scaleX, scaleY)
+            tailSize: SpeechBubbleShape.FigmaTail.size(
+                visibleHeight: Layout.tailVisibleHeight
+            ),
+            cornerRadius: Layout.cornerRadius
         )
+        .fill(Color.recapBackground)
+        .stroke(Color.recapBlue300, lineWidth: 1)
+        .shadow(
+            color: Color.black.opacity(0.15),
+            radius: 2.77,
+            x: 0,
+            y: 0.92
+        )
+        // 꼬리 높이만큼 아래를 비워 몸통 안에서 가운데 정렬한다.
+        .overlay {
+            Text(text)
+                .font(RecapFont.pretendard(size: 13, weight: .medium))
+                .tracking(-0.26)
+                .foregroundStyle(Color.recapBlue300)
+                .padding(.bottom, Layout.tailVisibleHeight)
+        }
+        .frame(width: Layout.width, height: Layout.height)
     }
 }
 
