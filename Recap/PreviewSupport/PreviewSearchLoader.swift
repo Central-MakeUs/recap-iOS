@@ -24,9 +24,9 @@ final class PreviewSearchLoader: SearchLoading {
             case .favorites:
                 card.isFavorite
             case .other:
-                card.collection == .other
+                card.category == .other
             case .type(let kind):
-                card.collection == kind
+                card.category == kind
             }
         }
         let start = min(page * size, cards.count)

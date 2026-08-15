@@ -99,7 +99,7 @@ final class ArchiveAPITests: XCTestCase {
         let card = try XCTUnwrap(cards.first)
 
         XCTAssertEqual(card.captureID, 101)
-        XCTAssertEqual(card.collection, .shopping)
+        XCTAssertEqual(card.category, .shopping)
         XCTAssertEqual(card.thumbnailURL?.absoluteString, "https://images.example.com/101.jpg")
     }
 
@@ -339,7 +339,7 @@ final class ArchiveAPITests: XCTestCase {
             captureID: captureID,
             title: "카드 \(captureID)",
             summary: "요약",
-            collection: .shopping,
+            category: .shopping,
             organizedAt: organizedAt,
             location: "",
             businessHours: "",

@@ -12,8 +12,8 @@ final class PreviewArchiveLoader: ArchiveLoading {
     func fetchHome() async throws -> ArchiveHomeContent {
         let cards = await cardRepository.allCards()
         return ArchiveHomeContent(
-            summaries: CollectionKind.folderCases.map { kind in
-                let cardsForKind = cards.filter { $0.collection == kind }
+            summaries: CardCategory.folderCases.map { kind in
+                let cardsForKind = cards.filter { $0.category == kind }
                 let recentTitles = cardsForKind
                     .sorted { ($0.organizedAt ?? .distantPast) > ($1.organizedAt ?? .distantPast) }
                     .prefix(2)
@@ -26,7 +26,7 @@ final class PreviewArchiveLoader: ArchiveLoading {
                 )
             },
             favoriteCount: cards.filter(\.isFavorite).count,
-            otherCount: cards.filter { $0.collection == .other }.count
+            otherCount: cards.filter { $0.category == .other }.count
         )
     }
 
@@ -40,7 +40,7 @@ final class PreviewArchiveLoader: ArchiveLoading {
         case .favorites:
             return cards.filter(\.isFavorite)
         case .category(let kind):
-            return cards.filter { $0.collection == kind }
+            return cards.filter { $0.category == kind }
         }
     }
 }

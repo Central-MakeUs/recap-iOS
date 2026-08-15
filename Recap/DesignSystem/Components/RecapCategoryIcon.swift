@@ -15,7 +15,7 @@ struct RecapCategoryIcon: View {
         var symbol: CGFloat { 30 }
     }
 
-    let kind: CollectionKind
+    let kind: CardCategory
     var size: Size = .medium
 
     var body: some View {

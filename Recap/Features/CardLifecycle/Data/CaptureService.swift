@@ -134,7 +134,7 @@ final class CaptureService: CaptureServing {
     }
 
     func updateCapture(captureID: Int64, draft: CardEditDraft) async throws {
-        guard let cardType = CardTypeCode(collectionKind: draft.collection) else {
+        guard let cardType = CardTypeCode(category: draft.category) else {
             throw APIError.malformedRequest
         }
         let normalizedDraft = draft.normalized()
@@ -219,7 +219,7 @@ extension CardSnapshot {
             captureID: dto.captureId,
             title: dto.title,
             summary: dto.summary,
-            collection: dto.typeCode.collectionKind,
+            category: dto.typeCode.category,
             organizedAt: dto.organizedAt,
             location: "",
             businessHours: "",

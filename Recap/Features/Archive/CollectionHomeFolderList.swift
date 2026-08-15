@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CollectionHomeFolderList: View {
     let summaries: [CollectionSummary]
-    let onOpenArchive: (CollectionKind) -> Void
+    let onOpenArchive: (CardCategory) -> Void
 
     var body: some View {
         VStack(spacing: 0) {

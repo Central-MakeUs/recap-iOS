@@ -49,7 +49,7 @@ enum RecapPresentation {
         }
     }
 
-    static func collectionDisplay(for kind: CollectionKind) -> CollectionDisplay {
+    static func collectionDisplay(for kind: CardCategory) -> CollectionDisplay {
         switch kind {
         case .shopping:
             CollectionDisplay(

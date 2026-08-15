@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct RecapImageCard: View {
-    let kind: CollectionKind
+    let kind: CardCategory
     var assetName: String?
     var isFavorite = false
 

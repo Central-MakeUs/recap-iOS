@@ -8,7 +8,7 @@ struct RecapScreenshotThumbnail: View {
         case folderCharacter
     }
 
-    let kind: CollectionKind
+    let kind: CardCategory
     var assetName: String?
     var remoteURL: URL? = nil
     var cornerRadius: CGFloat = 5

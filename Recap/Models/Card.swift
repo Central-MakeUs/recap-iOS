@@ -20,7 +20,7 @@ final class Card: Identifiable {
 
     var title: String
     var summary: String
-    var collection: CollectionKind
+    var category: CardCategory
     var organizedAt: Date?
     var location: String
     var businessHours: String
@@ -40,7 +40,7 @@ final class Card: Identifiable {
         captureID = snapshot.captureID
         title = snapshot.title
         summary = snapshot.summary
-        collection = snapshot.collection
+        category = snapshot.category
         organizedAt = snapshot.organizedAt
         location = snapshot.location
         businessHours = snapshot.businessHours
@@ -58,7 +58,7 @@ final class Card: Identifiable {
     func update(from snapshot: CardSnapshot) {
         title = snapshot.title
         summary = snapshot.summary
-        collection = snapshot.collection
+        category = snapshot.category
         organizedAt = snapshot.organizedAt
         location = snapshot.location
         businessHours = snapshot.businessHours

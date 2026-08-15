@@ -63,7 +63,7 @@ struct RecapInformationCardRow: View {
     private var thumbnailAndFavorite: some View {
         ZStack(alignment: .topTrailing) {
             RecapScreenshotThumbnail(
-                kind: card.collection,
+                kind: card.category,
                 assetName: card.thumbnailAssetName,
                 remoteURL: card.thumbnailURL,
                 hasFavoriteFold: true,
@@ -93,7 +93,7 @@ struct RecapInformationCardRow: View {
 
     private var selectedThumbnail: some View {
         RecapScreenshotThumbnail(
-            kind: card.collection,
+            kind: card.category,
             assetName: card.thumbnailAssetName,
             remoteURL: card.thumbnailURL,
             cornerRadius: 0,
@@ -108,7 +108,7 @@ struct RecapInformationCardRow: View {
         switch metadata {
         case .category:
             VStack(alignment: .leading, spacing: 8) {
-                RecapChip(configuration: .category(card.collection, size: .small))
+                RecapChip(configuration: .category(card.category, size: .small))
                 titleAndSummary
             }
         case .organizedDate:

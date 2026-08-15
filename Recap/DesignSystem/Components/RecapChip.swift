@@ -2,7 +2,7 @@ import SwiftUI
 
 struct RecapChip: View {
     enum Configuration {
-        case category(CollectionKind, size: CategorySize, isSelected: Bool = true)
+        case category(CardCategory, size: CategorySize, isSelected: Bool = true)
         case recentSearch(String)
     }
 
@@ -27,7 +27,7 @@ struct RecapChip: View {
 
     @ViewBuilder
     private func categoryChip(
-        kind: CollectionKind,
+        kind: CardCategory,
         size: CategorySize,
         isSelected: Bool
     ) -> some View {
@@ -56,7 +56,7 @@ struct RecapChip: View {
         }
     }
 
-    private func categoryTitle(kind: CollectionKind, color: Color) -> some View {
+    private func categoryTitle(kind: CardCategory, color: Color) -> some View {
         Text(RecapPresentation.collectionDisplay(for: kind).title)
             .font(RecapFont.pretendard(size: 10, weight: .semibold))
             .tracking(-0.20)
@@ -64,7 +64,7 @@ struct RecapChip: View {
             .lineLimit(1)
     }
 
-    private func categoryIcon(kind: CollectionKind) -> some View {
+    private func categoryIcon(kind: CardCategory) -> some View {
         let display = RecapPresentation.collectionDisplay(for: kind)
 
         return RecapIconView(
@@ -120,7 +120,7 @@ private struct CategoryPalette {
         text: Color.recapGray300
     )
 
-    static func selected(for kind: CollectionKind) -> CategoryPalette {
+    static func selected(for kind: CardCategory) -> CategoryPalette {
         switch kind {
         case .shopping:
             CategoryPalette(background: .categoryBlue300, border: .categoryBlue500, text: .categoryBlue700)
@@ -147,7 +147,7 @@ private struct CategoryPalette {
 #if DEBUG
 #Preview("Chips - 카테고리 S") {
     VStack(alignment: .leading, spacing: 12) {
-        ForEach(CollectionKind.allCases) { kind in
+        ForEach(CardCategory.allCases) { kind in
             RecapChip(configuration: .category(kind, size: .small))
         }
     }
@@ -156,7 +156,7 @@ private struct CategoryPalette {
 
 #Preview("Chips - 카테고리 M") {
     VStack(alignment: .leading, spacing: 12) {
-        ForEach(CollectionKind.allCases) { kind in
+        ForEach(CardCategory.allCases) { kind in
             RecapChip(configuration: .category(kind, size: .medium))
         }
     }

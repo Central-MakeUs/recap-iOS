@@ -2,7 +2,7 @@ import SwiftUI
 
 enum ArchiveDetailScope: Hashable {
     case favorites
-    case category(CollectionKind)
+    case category(CardCategory)
 
     var title: String {
         switch self {

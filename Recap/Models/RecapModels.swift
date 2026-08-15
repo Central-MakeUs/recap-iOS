@@ -24,7 +24,7 @@ enum InitialRange: String, CaseIterable, Identifiable, Hashable {
     var id: String { rawValue }
 }
 
-nonisolated enum CollectionKind: String, CaseIterable, Identifiable, Hashable, Sendable {
+nonisolated enum CardCategory: String, CaseIterable, Identifiable, Hashable, Sendable {
     case shopping
     case place
     case schedule
@@ -37,7 +37,7 @@ nonisolated enum CollectionKind: String, CaseIterable, Identifiable, Hashable, S
 
     var id: String { rawValue }
 
-    static let folderCases: [CollectionKind] = [
+    static let folderCases: [CardCategory] = [
         .shopping,
         .place,
         .schedule,
@@ -65,7 +65,7 @@ nonisolated struct CardSnapshot: Identifiable, Equatable, Sendable {
     let captureID: Int64
     let title: String
     let summary: String
-    let collection: CollectionKind
+    let category: CardCategory
     let organizedAt: Date?
     let location: String
     let businessHours: String
@@ -84,7 +84,7 @@ nonisolated struct CardSnapshot: Identifiable, Equatable, Sendable {
         captureID: Int64,
         title: String,
         summary: String,
-        collection: CollectionKind,
+        category: CardCategory,
         organizedAt: Date? = nil,
         location: String,
         businessHours: String,
@@ -100,7 +100,7 @@ nonisolated struct CardSnapshot: Identifiable, Equatable, Sendable {
         self.captureID = captureID
         self.title = title
         self.summary = summary
-        self.collection = collection
+        self.category = category
         self.organizedAt = organizedAt
         self.location = location
         self.businessHours = businessHours
@@ -116,13 +116,13 @@ nonisolated struct CardSnapshot: Identifiable, Equatable, Sendable {
 }
 
 nonisolated struct CollectionSummary: Identifiable, Hashable, Sendable {
-    let kind: CollectionKind
+    let kind: CardCategory
     let count: Int
     let previewTitle: String
     let representativeThumbnailURL: URL?
 
     init(
-        kind: CollectionKind,
+        kind: CardCategory,
         count: Int,
         previewTitle: String,
         representativeThumbnailURL: URL? = nil
@@ -133,5 +133,5 @@ nonisolated struct CollectionSummary: Identifiable, Hashable, Sendable {
         self.representativeThumbnailURL = representativeThumbnailURL
     }
 
-    var id: CollectionKind { kind }
+    var id: CardCategory { kind }
 }

@@ -4,13 +4,13 @@ import SwiftUI
 
 struct CardCreationScreenshot: Identifiable, Hashable {
     let id: UUID
-    let kind: CollectionKind
+    let kind: CardCategory
     let assetName: String?
     let imageData: Data?
 
     init(
         id: UUID = UUID(),
-        kind: CollectionKind,
+        kind: CardCategory,
         assetName: String? = nil,
         imageData: Data? = nil
     ) {

@@ -1,13 +1,13 @@
 import SwiftUI
 
 struct CardEditTypeSelectionSheet: View {
-    @Binding private var selection: CollectionKind
-    @State private var pendingSelection: CollectionKind
+    @Binding private var selection: CardCategory
+    @State private var pendingSelection: CardCategory
 
     private let onSelectionConfirmed: () -> Void
 
     init(
-        selection: Binding<CollectionKind>,
+        selection: Binding<CardCategory>,
         onSelectionConfirmed: @escaping () -> Void
     ) {
         _selection = selection
@@ -50,15 +50,15 @@ struct CardEditTypeSelectionSheet: View {
         onSelectionConfirmed()
     }
 
-    private var categoryRows: [[CollectionKind]] {
-        let categories = CollectionKind.allCases
+    private var categoryRows: [[CardCategory]] {
+        let categories = CardCategory.allCases
 
         return stride(from: 0, to: categories.count, by: 3).map { startIndex in
             Array(categories[startIndex..<min(startIndex + 3, categories.count)])
         }
     }
 
-    private func categoryButton(for kind: CollectionKind) -> some View {
+    private func categoryButton(for kind: CardCategory) -> some View {
         Button {
             pendingSelection = kind
         } label: {
@@ -77,7 +77,7 @@ struct CardEditTypeSelectionSheet: View {
 
 #if DEBUG
 #Preview("정보카드 유형 선택") {
-    @Previewable @State var selection = CollectionKind.schedule
+    @Previewable @State var selection = CardCategory.schedule
 
     CardEditTypeSelectionSheet(
         selection: $selection,

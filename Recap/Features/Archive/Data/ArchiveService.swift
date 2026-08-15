@@ -106,10 +106,10 @@ final class ArchiveService: ArchiveLoading {
     }
 
     private func fetchType(
-        _ kind: CollectionKind,
+        _ kind: CardCategory,
         sort: ArchiveSort
     ) async throws -> ArchiveCaptureListDTO {
-        guard let typeCode = CardTypeCode(collectionKind: kind), typeCode != .etc else {
+        guard let typeCode = CardTypeCode(category: kind), typeCode != .etc else {
             throw APIError.malformedRequest
         }
 

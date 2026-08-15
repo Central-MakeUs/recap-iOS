@@ -4,7 +4,7 @@ nonisolated enum SearchScope: Equatable, Sendable {
     case all
     case favorites
     case other
-    case type(CollectionKind)
+    case type(CardCategory)
 
     var queryValue: String {
         switch self {
@@ -21,7 +21,7 @@ nonisolated enum SearchScope: Equatable, Sendable {
 
     var typeCode: CardTypeCode? {
         guard case .type(let kind) = self else { return nil }
-        return CardTypeCode(collectionKind: kind)
+        return CardTypeCode(category: kind)
     }
 }
 
@@ -105,7 +105,7 @@ nonisolated struct SearchResult: Identifiable, Equatable, Sendable {
             captureID: dto.captureId,
             title: title.plainText,
             summary: summary.plainText,
-            collection: dto.typeCode.collectionKind,
+            category: dto.typeCode.category,
             organizedAt: dto.organizedAt,
             location: "",
             businessHours: "",

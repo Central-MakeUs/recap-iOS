@@ -4,7 +4,7 @@ struct RecapFolderListRow: View {
     let title: String
     let subtitle: String
     let count: Int
-    let kind: CollectionKind
+    let kind: CardCategory
 
     var body: some View {
         HStack(spacing: 27) {

@@ -21,7 +21,7 @@ final class HomeSummaryTests: XCTestCase {
         let topType = try XCTUnwrap(content.frequentTypes.first)
 
         XCTAssertEqual(recentCard.captureID, 101)
-        XCTAssertEqual(recentCard.collection, .shopping)
+        XCTAssertEqual(recentCard.category, .shopping)
         XCTAssertEqual(recentCard.thumbnailURL?.absoluteString, "https://images.example.com/101.jpg")
         XCTAssertEqual(
             recentCard.organizedAt,

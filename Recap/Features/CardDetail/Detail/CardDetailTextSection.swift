@@ -84,7 +84,7 @@ struct CardDetailTextSection: View {
     }
 
     private var collectionDisplay: RecapPresentation.CollectionDisplay {
-        RecapPresentation.collectionDisplay(for: card.collection)
+        RecapPresentation.collectionDisplay(for: card.category)
     }
 }
 

@@ -3,7 +3,7 @@ import SwiftUI
 struct RecapFolderCard: View {
     let title: String
     let count: Int
-    var kind: CollectionKind = .shopping
+    var kind: CardCategory = .shopping
 
     var body: some View {
         VStack(spacing: 10) {
@@ -28,7 +28,7 @@ struct RecapFolderCard: View {
 }
 
 private struct RecapFolderArtwork: View {
-    let kind: CollectionKind
+    let kind: CardCategory
 
     var body: some View {
         let display = RecapPresentation.collectionDisplay(for: kind)
@@ -138,7 +138,7 @@ private struct RecapFolderFrontShape: Shape {
             columns: Array(repeating: GridItem(.fixed(99), spacing: 23), count: 3),
             spacing: 15
         ) {
-            ForEach(CollectionKind.allCases) { kind in
+            ForEach(CardCategory.allCases) { kind in
                 RecapFolderCard(
                     title: kind.displayTitle,
                     count: SampleData.sampleCount(for: kind),

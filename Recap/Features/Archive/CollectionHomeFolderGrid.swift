@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CollectionHomeFolderGrid: View {
     let summaries: [CollectionSummary]
-    let onOpenArchive: (CollectionKind) -> Void
+    let onOpenArchive: (CardCategory) -> Void
 
     private let columns = [
         GridItem(.flexible(minimum: 99), spacing: 0, alignment: .leading),

@@ -45,7 +45,7 @@ extension CardSnapshot {
             captureID: dto.captureId,
             title: dto.title,
             summary: dto.summary,
-            collection: dto.typeCode.collectionKind,
+            category: dto.typeCode.category,
             organizedAt: dto.organizedAt,
             location: "",
             businessHours: "",
@@ -61,7 +61,7 @@ extension CardSnapshot {
 extension CollectionSummary {
     nonisolated init(archiveDTO dto: ArchiveStorageTypeDTO) {
         self.init(
-            kind: dto.typeCode.collectionKind,
+            kind: dto.typeCode.category,
             count: dto.count,
             previewTitle: dto.representativeTitles
                 .prefix(2)

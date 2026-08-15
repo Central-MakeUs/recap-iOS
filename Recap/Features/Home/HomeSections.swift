@@ -83,7 +83,7 @@ struct HomeRecentSection: View {
 
 struct HomeFrequentTypesSection: View {
     let summaries: [CollectionSummary]
-    let openArchive: (CollectionKind) -> Void
+    let openArchive: (CardCategory) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -118,7 +118,7 @@ struct HomeFrequentTypesSection: View {
         }
     }
 
-    private var frequentTypes: [CollectionKind] {
+    private var frequentTypes: [CardCategory] {
         Array(summaries.prefix(4).map(\.kind))
     }
 
