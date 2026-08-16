@@ -25,7 +25,9 @@ struct RecapInformationCardRow: View {
         .padding(.vertical, 14)
         .frame(maxWidth: .infinity)
         .frame(height: 108, alignment: .top)
-        .background(Color.white)
+        // 행을 화면과 같은 색으로 둔다. 행을 나누는 것은 아래 구분선이다.
+        // 투명하게 두지 않는 것은 행이 무엇 위에 놓이든 같아 보여야 하기 때문이다.
+        .background(Color.recapBackground)
         .overlay(alignment: .bottom) {
             Rectangle()
                 .fill(Color.recapGray100)
