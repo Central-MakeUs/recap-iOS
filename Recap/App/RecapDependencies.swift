@@ -14,6 +14,7 @@ final class RecapDependencies {
     let cardDataInvalidationCenter: CardDataInvalidationCenter
     let organizeNotificationStore: OrganizeNotificationStore
     let aiDataTransferConsentStore: AIDataTransferConsentStore
+    let appVersionService: any AppVersionChecking
 
     private let kakaoLoginProvider: any SocialLoginProviding
     private let appleLoginProvider: any SocialLoginProviding
@@ -31,6 +32,7 @@ final class RecapDependencies {
         cardDataInvalidationCenter: CardDataInvalidationCenter,
         organizeNotificationStore: OrganizeNotificationStore,
         aiDataTransferConsentStore: AIDataTransferConsentStore,
+        appVersionService: any AppVersionChecking,
         kakaoLoginProvider: any SocialLoginProviding,
         appleLoginProvider: any SocialLoginProviding
     ) {
@@ -46,6 +48,7 @@ final class RecapDependencies {
         self.cardDataInvalidationCenter = cardDataInvalidationCenter
         self.organizeNotificationStore = organizeNotificationStore
         self.aiDataTransferConsentStore = aiDataTransferConsentStore
+        self.appVersionService = appVersionService
         self.kakaoLoginProvider = kakaoLoginProvider
         self.appleLoginProvider = appleLoginProvider
     }
@@ -111,6 +114,7 @@ final class RecapDependencies {
             aiDataTransferConsentStore: AIDataTransferConsentStore(
                 service: AIDataTransferConsentService(networkClient: authenticatedNetworkClient)
             ),
+            appVersionService: AppVersionService(networkClient: rawNetworkClient),
             kakaoLoginProvider: KakaoLoginProvider(),
             appleLoginProvider: AppleLoginProvider()
         )
@@ -154,6 +158,7 @@ final class RecapDependencies {
             aiDataTransferConsentStore: AIDataTransferConsentStore(
                 service: PreviewAIDataTransferConsentService()
             ),
+            appVersionService: PreviewAppVersionService(),
             kakaoLoginProvider: PreviewSocialLoginProvider(provider: .kakao),
             appleLoginProvider: PreviewSocialLoginProvider(provider: .apple)
         )
@@ -198,6 +203,7 @@ final class RecapDependencies {
             aiDataTransferConsentStore: AIDataTransferConsentStore(
                 service: PreviewAIDataTransferConsentService()
             ),
+            appVersionService: PreviewAppVersionService(),
             kakaoLoginProvider: MockSocialLoginProvider(provider: .kakao),
             appleLoginProvider: MockSocialLoginProvider(provider: .apple)
         )

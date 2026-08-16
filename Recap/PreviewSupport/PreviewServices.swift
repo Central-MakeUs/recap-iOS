@@ -61,6 +61,21 @@ final class PreviewAIDataTransferConsentService: AIDataTransferConsentServing {
     }
 }
 
+@MainActor
+final class PreviewAppVersionService: AppVersionChecking {
+    private let status: AppVersionStatus
+
+    init(status: AppVersionStatus = .init(
+        requiresUpdate: false,
+        minimumVersion: nil,
+        updateURL: nil
+    )) {
+        self.status = status
+    }
+
+    func checkCurrentVersion() async throws -> AppVersionStatus { status }
+}
+
 actor PreviewOrganizeNotificationDelivery: OrganizeNotificationDelivering {
     func authorizationStatus() async -> OrganizeNotificationAuthorizationStatus {
         .authorized
