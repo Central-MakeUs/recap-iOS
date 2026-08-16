@@ -16,14 +16,6 @@ enum SettingsRoute: Hashable {
     case openSourceLicenses
 }
 
-enum InitialRange: String, CaseIterable, Identifiable, Hashable {
-    case sevenDays
-    case thirtyDays
-    case threeMonths
-
-    var id: String { rawValue }
-}
-
 nonisolated enum CardCategory: String, CaseIterable, Identifiable, Hashable, Sendable {
     case shopping
     case place
