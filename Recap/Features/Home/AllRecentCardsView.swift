@@ -31,6 +31,7 @@ struct AllRecentCardsContainerView: View {
             onBack: dismiss.callAsFunction,
             onSearch: { router.navigate(.search) },
             onSelectCard: { router.navigate(.remoteCardDetail($0.captureID)) },
+            onEditCard: { router.navigate(.cardEdit($0.captureID)) },
             onLoadMore: model.loadNextPage
         )
         .task(id: reloadTrigger) {
@@ -60,9 +61,12 @@ struct AllRecentCardsView: View {
     let onBack: () -> Void
     let onSearch: () -> Void
     let onSelectCard: (Card) -> Void
+    let onEditCard: (Card) -> Void
     var onLoadMore: () async -> Void = {}
 
     @State private var toast: RecapToastContent?
+    @State private var openSwipeRowID: AnyHashable?
+    @State private var cardPendingDeletion: Card?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -90,15 +94,24 @@ struct AllRecentCardsView: View {
                         .padding(.bottom, 7)
 
                     ForEach(rows) { card in
-                        AllRecentCardRow(
-                            card: card,
-                            onToggleFavorite: cardStore.updatingFavoriteIDs.contains(card.captureID)
-                                ? nil
-                                : { toggleFavorite(card) }
-                        )
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            onSelectCard(card)
+                        RecapSwipeActionRow(
+                            rowID: card.captureID,
+                            actions: RecapSwipeActionRow.cardActions(
+                                onEdit: { onEditCard(card) },
+                                onDelete: { requestDeletion(of: card) }
+                            ),
+                            openRowID: $openSwipeRowID
+                        ) {
+                            AllRecentCardRow(
+                                card: card,
+                                onToggleFavorite: cardStore.updatingFavoriteIDs.contains(card.captureID)
+                                    ? nil
+                                    : { toggleFavorite(card) }
+                            )
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                onSelectCard(card)
+                            }
                         }
                         .task {
                             guard card.captureID == cards.last?.captureID else { return }
@@ -120,6 +133,22 @@ struct AllRecentCardsView: View {
         .toolbar(.hidden, for: .navigationBar)
         .interactivePopGestureEnabled()
         .recapToast(toast)
+        .recapConfirmationDialog(
+            isPresented: Binding(
+                get: { cardPendingDeletion != nil },
+                set: { if !$0 { cardPendingDeletion = nil } }
+            ),
+            title: "스크린샷을 삭제할까요?",
+            message: "삭제한 스크린샷 정보는\n되돌릴 수 없어요.",
+            cancelTitle: "취소",
+            confirmTitle: "삭제",
+            // 다이얼로그가 확인 직전에 isPresented를 내리면서 카드가 비워지므로,
+            // 그리는 시점의 카드를 클로저에 담아둔다.
+            onConfirm: { [card = cardPendingDeletion] in
+                guard let card else { return }
+                delete(card)
+            }
+        )
         .task(id: toast) {
             guard toast != nil else { return }
             try? await Task.sleep(for: .seconds(2))
@@ -138,6 +167,21 @@ struct AllRecentCardsView: View {
         Task {
             guard let content = await cardStore.toggleFavoriteReturningToast(card) else { return }
             toast = content
+        }
+    }
+
+    private func requestDeletion(of card: Card) {
+        cardPendingDeletion = card
+    }
+
+    /// 삭제는 상세 화면과 같은 길로 보낸다. 스토어가 내리면 홈·검색도 함께 갱신된다.
+    private func delete(_ card: Card) {
+        Task {
+            do {
+                try await cardStore.delete(card)
+            } catch {
+                toast = RecapToastMessage.screenshotDeleteFailed.content
+            }
         }
     }
 }
@@ -186,7 +230,8 @@ private struct AllRecentCardsNavigationBar: View {
             isLoadingNextPage: false,
             onBack: {},
             onSearch: {},
-            onSelectCard: { _ in }
+            onSelectCard: { _ in },
+            onEditCard: { _ in }
         )
     }
     .environment(PreviewStores.cardStore())

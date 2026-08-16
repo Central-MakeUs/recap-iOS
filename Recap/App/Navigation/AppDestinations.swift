@@ -96,12 +96,32 @@ extension View {
                     backgroundExecution: SystemOrganizeBackgroundExecution()
                 )
             )
+        case .cardEdit(let captureID):
+            CardEditDestination(captureID: captureID)
         case .settings:
             SettingsContainerView(
                 userAccountService: userAccountService,
                 accountWithdrawalCompleted: onAccountWithdrawalCompleted,
                 accountDataDeleted: onAccountDataDeleted
             )
+        }
+    }
+}
+
+/// 목록에서 스와이프로 곧장 여는 편집 화면.
+///
+/// 상세 화면 안에서 열 때와 달리 저장 동작을 넘기지 않는다. `CardEditView`가
+/// 그때는 스토어로 직접 저장하므로, 목록에서 고친 내용도 같은 길로 반영된다.
+private struct CardEditDestination: View {
+    @Environment(CardStore.self) private var cardStore
+
+    let captureID: Int64
+
+    var body: some View {
+        if let card = cardStore.card(withCaptureID: captureID) {
+            CardEditView(card: card)
+        } else {
+            Color.recapBackground
         }
     }
 }

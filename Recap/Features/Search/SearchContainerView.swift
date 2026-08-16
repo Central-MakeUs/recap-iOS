@@ -57,6 +57,8 @@ struct SearchContainerView: View {
         switch action {
         case .openCard(let captureID):
             router.navigate(.remoteCardDetail(captureID))
+        case .editCard(let captureID):
+            router.navigate(.cardEdit(captureID))
         }
     }
 }
