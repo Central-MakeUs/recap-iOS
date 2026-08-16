@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct AppSplashView: View {
-    let onFinished: () -> Void
+    let onFinished: @MainActor @Sendable () -> Void
 
     var body: some View {
         GeometryReader { proxy in

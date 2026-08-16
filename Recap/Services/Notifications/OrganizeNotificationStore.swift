@@ -24,16 +24,14 @@ protocol OrganizeNotificationDelivering: Sendable {
     func deliver(_ message: OrganizeNotificationMessage) async throws
 }
 
-@MainActor
+/// 알림 센터는 어느 스레드에서 불러도 되고 이 타입은 상태를 갖지 않는다.
+/// 그래서 격리를 두지 않는다 — 다른 구현들이 `actor`인 것과 같은 이유다.
+///
+/// 센터를 저장하지 않고 그때그때 가져오는 것도 격리 때문이다. `UNUserNotificationCenter`는
+/// `Sendable`이 아니라서 저장해두면 격리 경계를 넘길 수 없다.
 final class SystemOrganizeNotificationDelivery: OrganizeNotificationDelivering {
-    private let center: UNUserNotificationCenter
-
-    init(center: UNUserNotificationCenter = .current()) {
-        self.center = center
-    }
-
     func authorizationStatus() async -> OrganizeNotificationAuthorizationStatus {
-        let settings = await center.notificationSettings()
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
         switch settings.authorizationStatus {
         case .authorized, .provisional, .ephemeral:
             return .authorized
@@ -47,7 +45,8 @@ final class SystemOrganizeNotificationDelivery: OrganizeNotificationDelivering {
     }
 
     func requestAuthorization() async throws -> Bool {
-        try await center.requestAuthorization(options: [.alert, .sound])
+        try await UNUserNotificationCenter.current()
+            .requestAuthorization(options: [.alert, .sound])
     }
 
     func deliver(_ message: OrganizeNotificationMessage) async throws {
@@ -61,7 +60,7 @@ final class SystemOrganizeNotificationDelivery: OrganizeNotificationDelivering {
             content: content,
             trigger: nil
         )
-        try await center.add(request)
+        try await UNUserNotificationCenter.current().add(request)
     }
 }
 

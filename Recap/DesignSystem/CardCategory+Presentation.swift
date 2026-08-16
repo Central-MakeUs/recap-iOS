@@ -5,9 +5,7 @@ import SwiftUI
 /// 프레젠테이션 계층의 확장이다 — `CardCategory` 선언(Models)은 자기 이름도 색도
 /// 모른다. 서버 왕복도 이름이 아니라 코드(`CardTypeCode`)로 하므로, 표기가 바뀌어도
 /// 달라지는 것은 눈에 보이는 것뿐이다.
-///
-/// 이름은 순수 문자열이라 격리 없이 어디서든 부를 수 있다.
-nonisolated extension CardCategory {
+extension CardCategory {
     var displayTitle: String {
         switch self {
         case .shopping: "쇼핑 · 상품"
@@ -21,10 +19,7 @@ nonisolated extension CardCategory {
         case .other: "기타"
         }
     }
-}
 
-/// 색은 색 토큰(`Color` 확장)이 MainActor에 묶여 있어 격리를 따른다.
-extension CardCategory {
     /// 분류 아이콘 색.
     var iconColor: Color {
         switch self {

@@ -2,7 +2,8 @@ import Lottie
 import SwiftUI
 
 struct AppSplashAnimationView: UIViewRepresentable {
-    let onFinished: () -> Void
+    /// Lottie의 완료 콜백은 격리가 없어서, 거기 실어 보내려면 콜백도 격리를 밝혀야 한다.
+    let onFinished: @MainActor @Sendable () -> Void
 
     func makeCoordinator() -> Coordinator {
         Coordinator(onFinished: onFinished)
@@ -39,11 +40,12 @@ struct AppSplashAnimationView: UIViewRepresentable {
         context.coordinator.playIfNeeded(animationView)
     }
 
+    @MainActor
     final class Coordinator {
-        private let onFinished: () -> Void
+        private let onFinished: @MainActor @Sendable () -> Void
         private var hasStarted = false
 
-        init(onFinished: @escaping () -> Void) {
+        init(onFinished: @escaping @MainActor @Sendable () -> Void) {
             self.onFinished = onFinished
         }
 
