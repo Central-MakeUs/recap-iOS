@@ -11,6 +11,7 @@ struct SearchResultsView: View {
     @Environment(CardStore.self) private var cardStore
     @State private var query: String
     @State private var toast: RecapToastContent?
+    @State private var cardPendingDeletion: Card?
 
     let mode: ScreenMode
     let model: SearchFeatureModel
@@ -56,6 +57,22 @@ struct SearchResultsView: View {
             guard mode == .normal else { return }
             await model.search(query: query)
         }
+        .recapConfirmationDialog(
+            isPresented: Binding(
+                get: { cardPendingDeletion != nil },
+                set: { if !$0 { cardPendingDeletion = nil } }
+            ),
+            title: "스크린샷을 삭제할까요?",
+            message: "삭제한 스크린샷 정보는\n되돌릴 수 없어요.",
+            cancelTitle: "취소",
+            confirmTitle: "삭제",
+            // 다이얼로그가 확인 직전에 isPresented를 내리면서 카드가 비워지므로,
+            // 그리는 시점의 카드를 클로저에 담아둔다.
+            onConfirm: { [card = cardPendingDeletion] in
+                guard let card else { return }
+                delete(card)
+            }
+        )
         .recapToast(toast)
         .task(id: toast) {
             guard toast != nil else { return }
@@ -69,6 +86,18 @@ struct SearchResultsView: View {
         Task {
             guard let content = await cardStore.toggleFavoriteReturningToast(card) else { return }
             toast = content
+        }
+    }
+
+    /// 삭제는 상세 화면과 같은 길로 보낸다. 스토어가 내리면 홈·보관함도 함께 갱신된다.
+    private func delete(_ card: Card) {
+        Task {
+            do {
+                try await cardStore.delete(card)
+                await model.refreshCurrentQuery()
+            } catch {
+                toast = RecapToastMessage.screenshotDeleteFailed.content
+            }
         }
     }
 
@@ -119,7 +148,9 @@ struct SearchResultsView: View {
                     results: content.results,
                     openCard: openCard,
                     loadNextPageIfNeeded: loadNextPageIfNeeded,
-                    onToggleFavorite: toggleFavorite
+                    onToggleFavorite: toggleFavorite,
+                    onEditCard: { onAction(.editCard($0.captureID)) },
+                    onRequestDeletion: { cardPendingDeletion = $0 }
                 )
             }
         }

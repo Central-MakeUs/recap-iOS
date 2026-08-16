@@ -23,10 +23,12 @@ enum ArchiveAction: Hashable {
     case openFavorites
     case openArchive(CardCategory)
     case openCard(Int64)
+    case editCard(Int64)
     case selectSort(ArchiveSort)
     case openSettings
 }
 
 enum SearchAction: Hashable {
     case openCard(Int64)
+    case editCard(Int64)
 }

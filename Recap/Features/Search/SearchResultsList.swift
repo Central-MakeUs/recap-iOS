@@ -8,6 +8,10 @@ struct SearchResultsList: View {
     let openCard: (Int64) -> Void
     let loadNextPageIfNeeded: (SearchResult.ID) -> Void
     var onToggleFavorite: ((Card) -> Void)?
+    var onEditCard: ((Card) -> Void)?
+    var onRequestDeletion: ((Card) -> Void)?
+
+    @State private var openSwipeRowID: AnyHashable?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -20,19 +24,29 @@ struct SearchResultsList: View {
                 ForEach(results) { result in
                     // 모델이 적재 시점에 upsert하므로 스토어 조회는 실패하지 않는다.
                     if let card = cardStore.card(withCaptureID: result.captureID) {
-                        RecapInformationCardRow(
-                            card: card,
-                            titleText: result.title.styledText(
-                                defaultColor: Color.recapGray900
+                        RecapSwipeActionRow(
+                            rowID: card.captureID,
+                            actions: RecapSwipeActionRow.cardActions(
+                                onEdit: { onEditCard?(card) },
+                                onDelete: { onRequestDeletion?(card) }
                             ),
-                            summaryText: result.summary.styledText(
-                                defaultColor: Color.recapGray500
-                            ),
-                            onToggleFavorite: favoriteAction(for: card)
-                        )
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            openCard(card.captureID)
+                            openRowID: $openSwipeRowID,
+                            isEnabled: onEditCard != nil || onRequestDeletion != nil
+                        ) {
+                            RecapInformationCardRow(
+                                card: card,
+                                titleText: result.title.styledText(
+                                    defaultColor: Color.recapGray900
+                                ),
+                                summaryText: result.summary.styledText(
+                                    defaultColor: Color.recapGray500
+                                ),
+                                onToggleFavorite: favoriteAction(for: card)
+                            )
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                openCard(card.captureID)
+                            }
                         }
                         .onAppear {
                             loadNextPageIfNeeded(result.id)

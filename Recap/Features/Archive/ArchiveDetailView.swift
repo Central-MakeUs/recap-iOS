@@ -87,6 +87,8 @@ struct ArchiveDetailContainerView: View {
             router.navigate(.archiveDetail(category))
         case .openCard(let captureID):
             router.navigate(.remoteCardDetail(captureID))
+        case .editCard(let captureID):
+            router.navigate(.cardEdit(captureID))
         case .selectSort(let sort):
             Task {
                 await model.selectSort(sort)
@@ -181,6 +183,8 @@ struct ArchiveDetailView: View {
     @State private var isDeleteConfirmationPresented = false
     @State private var isDeleting = false
     @State private var toast: RecapToastContent?
+    @State private var openSwipeRowID: AnyHashable?
+    @State private var cardPendingDeletion: Card?
 
     let scope: ArchiveDetailScope
     let cards: [CardSnapshot]
@@ -252,6 +256,24 @@ struct ArchiveDetailView: View {
             cancelTitle: "취소",
             confirmTitle: "삭제",
             onConfirm: confirmDeletion
+        )
+        // 스와이프 한 장 삭제. 선택 모드에서는 스와이프가 꺼지므로 위 다이얼로그와
+        // 동시에 뜰 일은 없다.
+        .recapConfirmationDialog(
+            isPresented: Binding(
+                get: { cardPendingDeletion != nil },
+                set: { if !$0 { cardPendingDeletion = nil } }
+            ),
+            title: "스크린샷을 삭제할까요?",
+            message: "삭제한 스크린샷 정보는\n되돌릴 수 없어요.",
+            cancelTitle: "취소",
+            confirmTitle: "삭제",
+            // 다이얼로그가 확인 직전에 isPresented를 내리면서 카드가 비워지므로,
+            // 그리는 시점의 카드를 클로저에 담아둔다.
+            onConfirm: { [card = cardPendingDeletion] in
+                guard let card else { return }
+                deleteSingleCard(card)
+            }
         )
         .recapToast(toast)
         .task(id: toast) {
@@ -387,6 +409,16 @@ struct ArchiveDetailView: View {
                     let card = row.snapshot
                     let searchResult = highlightedResults[card.id]
 
+                    RecapSwipeActionRow(
+                        rowID: card.id,
+                        actions: RecapSwipeActionRow.cardActions(
+                            onEdit: { onAction(.editCard(row.card.captureID)) },
+                            onDelete: { cardPendingDeletion = row.card }
+                        ),
+                        openRowID: $openSwipeRowID,
+                        // 선택 모드에서는 즐겨찾기와 마찬가지로 스와이프도 끈다.
+                        isEnabled: !isSelecting
+                    ) {
                     RecapInformationCardRow(
                         card: row.card,
                         metadata: scope.rowMetadata,
@@ -415,6 +447,7 @@ struct ArchiveDetailView: View {
                         } else {
                             onAction(.openCard(row.card.captureID))
                         }
+                    }
                     }
                 }
             }
@@ -529,6 +562,24 @@ struct ArchiveDetailView: View {
                 interactionMode = .browsing
                 query = ""
                 toast = RecapToastMessage.screenshotsDeleted(count: ids.count).content
+            } catch {
+                toast = RecapToastMessage.screenshotDeleteFailed.content
+            }
+        }
+    }
+
+    /// 스와이프로 지운 한 장. 선택 삭제와 같은 길로 보내야 이 화면의 목록과
+    /// 검색 결과가 함께 갱신된다.
+    private func deleteSingleCard(_ card: Card) {
+        guard !isDeleting else { return }
+        isDeleting = true
+
+        Task {
+            defer { isDeleting = false }
+
+            do {
+                try await onDeleteCards([card.captureID])
+                toast = RecapToastMessage.screenshotsDeleted(count: 1).content
             } catch {
                 toast = RecapToastMessage.screenshotDeleteFailed.content
             }

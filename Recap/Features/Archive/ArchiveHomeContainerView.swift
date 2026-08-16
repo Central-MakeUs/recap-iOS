@@ -76,6 +76,8 @@ struct ArchiveHomeContainerView: View {
             router.navigate(.archiveDetail(category))
         case .openCard(let captureID):
             router.navigate(.remoteCardDetail(captureID))
+        case .editCard(let captureID):
+            router.navigate(.cardEdit(captureID))
         case .selectSort:
             break
         case .openSettings:
