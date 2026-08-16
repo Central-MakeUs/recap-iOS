@@ -1,17 +1,5 @@
 import SwiftUI
 
-struct CardExpandButton: View {
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            CardExpandIcon()
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("원본 이미지 전체 보기")
-    }
-}
-
 struct CardExpandIcon: View {
     var body: some View {
         SystemUIconsExpandShape()
@@ -60,8 +48,8 @@ private struct SystemUIconsExpandShape: Shape {
 }
 
 #if DEBUG
-#Preview("원본 이미지 확장 버튼") {
-    CardExpandButton(action: {})
+#Preview("원본 이미지 확장 아이콘") {
+    CardExpandIcon()
         .padding(20)
         .background(Color.gray)
 }

@@ -6,12 +6,6 @@ enum RecapPresentation {
         let systemImage: String
     }
 
-    struct InitialRangeOption {
-        let title: String
-        let countText: String
-        let isRecommended: Bool
-    }
-
 
     struct StatusDisplay {
         let title: String
@@ -28,17 +22,6 @@ enum RecapPresentation {
             TabItem(title: "홈", systemImage: "house.fill")
         case .archive:
             TabItem(title: "보관함", systemImage: "archivebox.fill")
-        }
-    }
-
-    static func initialRangeOption(for range: InitialRange) -> InitialRangeOption {
-        switch range {
-        case .sevenDays:
-            InitialRangeOption(title: "최근 7일", countText: "26개", isRecommended: false)
-        case .thirtyDays:
-            InitialRangeOption(title: "최근 30일", countText: "124개", isRecommended: true)
-        case .threeMonths:
-            InitialRangeOption(title: "최근 3개월", countText: "386개", isRecommended: false)
         }
     }
 

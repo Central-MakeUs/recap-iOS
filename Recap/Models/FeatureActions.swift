@@ -10,11 +10,6 @@ enum HomeAction: Hashable {
     case openSettings
 }
 
-enum CardCreationAction: Hashable {
-    case start
-    case openSettings
-}
-
 enum ArchiveSection: String, CaseIterable, Identifiable {
     case favorites = "즐겨찾기"
     case type = "유형별 보기"

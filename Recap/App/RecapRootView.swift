@@ -6,7 +6,6 @@ struct RecapRootView: View {
     @State private var router: AppRouter
     @State private var cardStore: CardStore
     @State private var isSplashPresented: Bool
-    @State private var requiredUpdateStatus: AppVersionStatus?
 
     private let dependencies: RecapDependencies
 
@@ -37,7 +36,6 @@ struct RecapRootView: View {
         _router = State(initialValue: router)
         _cardStore = State(initialValue: cardStore)
         _isSplashPresented = State(initialValue: initiallyShowsSplash)
-        _requiredUpdateStatus = State(initialValue: nil)
     }
 
     private var destination: AppLaunchDestination {
@@ -61,19 +59,8 @@ struct RecapRootView: View {
                 await sessionStore.restore()
             }
         }
-        .task {
-            guard let status = try? await dependencies.appVersionService.checkCurrentVersion(),
-                  status.requiresUpdate
-            else {
-                return
-            }
-            requiredUpdateStatus = status
-        }
         .task(id: sessionStore.state) {
             await sessionStore.refreshAccessTokenWhenNeeded()
-        }
-        .fullScreenCover(item: $requiredUpdateStatus) { status in
-            ForceUpdateView(status: status)
         }
     }
 
