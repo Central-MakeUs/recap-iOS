@@ -2,6 +2,9 @@ import ConfettiSwiftUI
 import SwiftUI
 
 struct CardCreationResultView: View {
+    /// 아래 「완료」 버튼이 차지하는 높이(50)와 그 아래 여백(31).
+    fileprivate static let buttonZone: CGFloat = 81
+
     let state: CardCreationResultState
     var selectedCount = 5
     let onDone: () -> Void
@@ -22,10 +25,11 @@ struct CardCreationResultView: View {
     /// Figma 03-04_정리 완료. 체크·캐릭터 애니메이션과 하단 그라디언트 배경을 쓴다.
     private var completeContent: some View {
         CardCreationCompleteResultContent(organizedCount: selectedCount)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            // 세로 여백을 화면 높이 비율로 맞춘다. 190 고정이면 SE에서 화면의
-            // 28%까지 내려가고 Pro Max에서는 20%로 떠서 기기마다 달라 보인다.
-            .measuringDesignHeightScale()
+            // 버튼 위 공간의 한가운데에 둔다. 위에서 190만큼 떨어뜨리면 SE에서는
+            // 화면의 28%까지 내려가고, Pro Max에서는 20%로 뜨는 데다 아래가
+            // 크게 비어 위로 몰려 보인다. 812 기준으로도 거의 같은 자리다.
+            .padding(.bottom, CardCreationResultView.buttonZone)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             .overlay(alignment: .bottom) {
                 doneButton
             }
@@ -130,7 +134,7 @@ private struct CardCreationCompleteResultContent: View {
                 .lineSpacing(0)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Color.recapGray900)
-                .designScaledTopPadding(Layout.titleSpacing)
+                .padding(.top, Layout.titleSpacing)
 
             // 움직임은 컨페티가 담당한다. 캐릭터는 정지 이미지다.
             Image("CardCreationCompleteCharacter")
@@ -141,18 +145,16 @@ private struct CardCreationCompleteResultContent: View {
                     height: Layout.characterSize.height
                 )
                 .offset(x: Layout.characterCenterOffset)
-                .designScaledTopPadding(Layout.characterSpacing)
+                .padding(.top, Layout.characterSpacing)
 
             Text(CardCreationResultState.complete.message)
                 .font(RecapFont.pretendard(size: 15, weight: .medium))
                 .tracking(-0.3)
                 .foregroundStyle(Color.recapGray500)
-                .designScaledTopPadding(Layout.subtitleSpacing)
+                .padding(.top, Layout.subtitleSpacing)
 
-            Spacer(minLength: 0)
         }
-        .designScaledTopPadding(Layout.topInset)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .frame(maxWidth: .infinity)
         // 체크 아이콘 중심에서 터져 화면 전체로 퍼진 뒤 아래로 떨어진다.
         .confettiCannon(
             trigger: $confettiTrigger,
