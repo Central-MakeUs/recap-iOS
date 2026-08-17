@@ -172,20 +172,25 @@ private struct OnboardingBackgroundDecorations: View {
                 width: 62,
                 height: 97
             )
-            decoration(
-                "OnboardingLoginSearchDecoration",
-                x: 305,
-                y: 475,
-                width: 70,
-                height: 95
-            )
-            decoration(
-                "OnboardingLoginCameraDecoration",
-                x: 20,
-                y: 645,
-                width: 58,
-                height: 55
-            )
+            // 아래 둘은 본문 아래 묶음과 짝을 이룬다. 본문만 끌어올리면 장식은
+            // 제자리에 남아 SE에서 카메라(645~700)가 화면 밖(667)으로 잘린다.
+            Group {
+                decoration(
+                    "OnboardingLoginSearchDecoration",
+                    x: 305,
+                    y: 475,
+                    width: 70,
+                    height: 95
+                )
+                decoration(
+                    "OnboardingLoginCameraDecoration",
+                    x: 20,
+                    y: 645,
+                    width: 58,
+                    height: 55
+                )
+            }
+            .onboardingLiftedOnShortScreen()
         }
         .frame(width: 375, height: 812)
     }
