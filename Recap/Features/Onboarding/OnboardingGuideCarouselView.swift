@@ -63,7 +63,10 @@ struct OnboardingGuideCarouselView: View {
             pageContent
                 .onboardingFrame(x: 0, y: 138, width: 375, height: 512)
 
+            // 버튼 묶음은 아래에 붙는다. 화면이 짧으면 통째로 끌어올려
+            // 페이지와 버튼 사이 빈 공간에서 뺀다.
             footer
+                .onboardingLiftedOnShortScreen()
         }
         .onChange(of: page) { _, newPage in
             guard let newPage else { return }

@@ -23,23 +23,28 @@ struct OnboardingLoginView: View {
             title
                 .onboardingFrame(x: 105, y: 263, width: 165, height: 50)
 
-            RecapSpeechBubble(text: "5초만에 시작하기")
-                .onboardingFrame(x: 117, y: 475, width: 143, height: 46)
+            // 제목(313)과 말풍선(475) 사이 162pt가 이 화면의 빈 공간이다.
+            // 세로가 짧은 기기에서는 아래 묶음을 통째로 끌어올려 여기서 뺀다.
+            Group {
+                RecapSpeechBubble(text: "5초만에 시작하기")
+                    .onboardingFrame(x: 117, y: 475, width: 143, height: 46)
 
-            loginDivider
+                loginDivider
 
-            providerButtons
+                providerButtons
 
-            terms
+                terms
 
-            if showsLoginFailure {
-                RecapToast(
-                        style: RecapToastMessage.loginFailed.content.style,
-                        message: RecapToastMessage.loginFailed.content.message
-                    )
-                    .onboardingFrame(x: 29, y: 717, width: 317, height: 45)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                if showsLoginFailure {
+                    RecapToast(
+                            style: RecapToastMessage.loginFailed.content.style,
+                            message: RecapToastMessage.loginFailed.content.message
+                        )
+                        .onboardingFrame(x: 29, y: 717, width: 317, height: 45)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
             }
+            .onboardingLiftedOnShortScreen()
         }
         .disabled(isLoggingIn)
         .animation(.easeInOut(duration: 0.2), value: showsLoginFailure)

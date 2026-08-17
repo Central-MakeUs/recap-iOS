@@ -20,23 +20,30 @@ struct ShareSetupGuideView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .onboardingFrame(x: 22, y: 58, width: 331, height: 42, alignment: .leading)
 
-            ShareSetupMockup()
-                .onboardingFrame(x: 67, y: 179, width: 239, height: 238)
+            // 소제목(100)과 목업(179) 사이 79pt가 이 페이지의 빈 공간이다.
+            // 화면이 짧으면 아래 묶음을 끌어올려 여기서 뺀다.
+            Group {
+                ShareSetupMockup()
+                    .onboardingFrame(x: 67, y: 179, width: 239, height: 238)
 
-            RecapSpeechBubble(text: "초간단 30초면 끝나요!")
-                .onboardingFrame(x: 117, y: 393, width: 143, height: 46)
+                RecapSpeechBubble(text: "초간단 30초면 끝나요!")
+                    .onboardingFrame(x: 117, y: 393, width: 143, height: 46)
 
-            Button(action: onShowTutorial) {
-                Text("어떻게 등록하나요?")
-                    .font(RecapFont.pretendard(size: 15, weight: .medium))
-                    .tracking(-0.3)
-                    .foregroundStyle(Color.recapGray700)
-                    .underline()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .contentShape(Rectangle())
+                Button(action: onShowTutorial) {
+                    Text("어떻게 등록하나요?")
+                        .font(RecapFont.pretendard(size: 15, weight: .medium))
+                        .tracking(-0.3)
+                        .foregroundStyle(Color.recapGray700)
+                        .underline()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .contentShape(Rectangle())
+                }
+                    .buttonStyle(.plain)
+                    .onboardingFrame(x: 111, y: 446, width: 153, height: 43)
+                    // 목업보다 조금 더 당겨야 아래 버튼에 닿지 않는다.
+                    .onboardingLiftedOnShortScreen(portion: 0.12)
             }
-                .buttonStyle(.plain)
-                .onboardingFrame(x: 111, y: 446, width: 153, height: 43)
+            .onboardingLiftedOnShortScreen(portion: 0.55)
         }
     }
 }
@@ -135,17 +142,22 @@ struct FirstCleanupStartView: View {
                 .tracking(-0.3)
                 .foregroundStyle(Color.recapGray500)
                 .onboardingFrame(x: 22, y: 58, width: 300, height: 21, alignment: .leading)
+                .onboardingLiftedOnShortScreen(portion: 0.10)
 
             // 정적 일러스트는 상단 폴더 캐릭터만 남기고, 카드 줄은 애니메이션으로 대체한다.
-            Image("OnboardingFirstCleanupIllustration")
-                .resizable()
-                .frame(width: 375, height: 333)
-                .frame(width: 375, height: 170, alignment: .top)
-                .clipped()
-                .onboardingFrame(x: 0, y: 105, width: 375, height: 170)
+            // 화면이 짧으면 두 그림을 끌어올려 소제목 아래 빈 공간에서 뺀다.
+            Group {
+                Image("OnboardingFirstCleanupIllustration")
+                    .resizable()
+                    .frame(width: 375, height: 333)
+                    .frame(width: 375, height: 170, alignment: .top)
+                    .clipped()
+                    .onboardingFrame(x: 0, y: 105, width: 375, height: 170)
 
-            RecapLottieView(name: "onboarding_final", playback: .loop)
-                .onboardingFrame(x: 0, y: 258, width: 375, height: 200)
+                RecapLottieView(name: "onboarding_final", playback: .loop)
+                    .onboardingFrame(x: 0, y: 258, width: 375, height: 200)
+            }
+            .onboardingLiftedOnShortScreen(portion: 0.28)
         }
     }
 }

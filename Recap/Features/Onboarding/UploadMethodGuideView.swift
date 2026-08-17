@@ -15,15 +15,20 @@ struct UploadMethodGuideView: View {
                 .foregroundStyle(Color.recapGray500)
                 .onboardingFrame(x: 22, y: 94, width: 260, height: 42, alignment: .leading)
 
-            Image("OnboardingAlbumSelectionPanel")
-                .resizable()
-                .scaledToFit()
-                .onboardingFrame(x: 22, y: 198, width: 331, height: 129)
+            // 소제목(136)과 첫 그림(198) 사이 62pt가 이 페이지의 빈 공간이다.
+            // 화면이 짧으면 그림 두 장을 끌어올려 여기서 뺀다.
+            Group {
+                Image("OnboardingAlbumSelectionPanel")
+                    .resizable()
+                    .scaledToFit()
+                    .onboardingFrame(x: 22, y: 198, width: 331, height: 129)
 
-            Image("OnboardingSharePanel")
-                .resizable()
-                .scaledToFit()
-                .onboardingFrame(x: 22, y: 363, width: 331, height: 129)
+                Image("OnboardingSharePanel")
+                    .resizable()
+                    .scaledToFit()
+                    .onboardingFrame(x: 22, y: 363, width: 331, height: 129)
+            }
+            .onboardingLiftedOnShortScreen(portion: 0.38)
         }
     }
 }
