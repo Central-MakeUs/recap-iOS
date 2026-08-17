@@ -23,6 +23,9 @@ struct CardCreationResultView: View {
     private var completeContent: some View {
         CardCreationCompleteResultContent(organizedCount: selectedCount)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            // 세로 여백을 화면 높이 비율로 맞춘다. 190 고정이면 SE에서 화면의
+            // 28%까지 내려가고 Pro Max에서는 20%로 떠서 기기마다 달라 보인다.
+            .measuringDesignHeightScale()
             .overlay(alignment: .bottom) {
                 doneButton
             }
@@ -127,7 +130,7 @@ private struct CardCreationCompleteResultContent: View {
                 .lineSpacing(0)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Color.recapGray900)
-                .padding(.top, Layout.titleSpacing)
+                .designScaledTopPadding(Layout.titleSpacing)
 
             // 움직임은 컨페티가 담당한다. 캐릭터는 정지 이미지다.
             Image("CardCreationCompleteCharacter")
@@ -138,17 +141,17 @@ private struct CardCreationCompleteResultContent: View {
                     height: Layout.characterSize.height
                 )
                 .offset(x: Layout.characterCenterOffset)
-                .padding(.top, Layout.characterSpacing)
+                .designScaledTopPadding(Layout.characterSpacing)
 
             Text(CardCreationResultState.complete.message)
                 .font(RecapFont.pretendard(size: 15, weight: .medium))
                 .tracking(-0.3)
                 .foregroundStyle(Color.recapGray500)
-                .padding(.top, Layout.subtitleSpacing)
+                .designScaledTopPadding(Layout.subtitleSpacing)
 
             Spacer(minLength: 0)
         }
-        .padding(.top, Layout.topInset)
+        .designScaledTopPadding(Layout.topInset)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         // 체크 아이콘 중심에서 터져 화면 전체로 퍼진 뒤 아래로 떨어진다.
         .confettiCannon(
