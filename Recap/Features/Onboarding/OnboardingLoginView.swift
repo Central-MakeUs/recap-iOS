@@ -16,7 +16,7 @@ struct OnboardingLoginView: View {
     var body: some View {
         OnboardingDesignCanvas {
             loginDecorations
-
+        } content: {
             RecapLogoText(size: 48)
                 .onboardingFrame(x: 111, y: 194, width: 153, height: 47)
 
