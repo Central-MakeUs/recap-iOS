@@ -1,16 +1,15 @@
 import SwiftUI
 
 struct CardCreationProcessingView: View {
-    /// Figma 03-03_정리 시작(375x812) 기준 절대 y 좌표.
+    /// 제목부터 안내 말풍선까지의 Figma 기준 상대 위치.
     private enum Layout {
-        /// 아래 좌표들이 전제하는 화면 높이.
-        static let designHeight: CGFloat = 812
-        static let titleTop: CGFloat = 240
-        static let subtitleTop: CGFloat = 276
-        static let animationTop: CGFloat = 280
+        static let contentHeight: CGFloat = 360
+        static let titleTop: CGFloat = 0
+        static let subtitleTop: CGFloat = 36
+        static let animationTop: CGFloat = 40
         static let animationSize: CGFloat = 240
-        static let progressBarTop: CGFloat = 509
-        static let bubbleTop: CGFloat = 540
+        static let progressBarTop: CGFloat = 269
+        static let bubbleTop: CGFloat = 300
     }
 
     let progress: Double
@@ -18,40 +17,10 @@ struct CardCreationProcessingView: View {
     let onCancel: () -> Void
 
     var body: some View {
-        // 좌표를 화면 높이에 맞춰 늘리고 줄인다. 812를 그대로 쓰면 SE(667)에서는
-        // 말풍선이 취소 버튼에 14pt 깔리고, Pro Max(932)에서는 말풍선 아래가
-        // 크게 빈다. 요소 크기는 그대로 두고 자리만 비율로 옮긴다.
-        GeometryReader { proxy in
-            let scale = proxy.size.height / Layout.designHeight
+        VStack(spacing: 0) {
+            processingContent
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
 
-            ZStack(alignment: .top) {
-                Text("스크린샷을 분석 · 정리 하고있어요")
-                    .font(RecapFont.pretendard(size: 18, weight: .semibold))
-                    .tracking(-0.36)
-                    .foregroundStyle(Color.recapGray900)
-                    .padding(.top, Layout.titleTop * scale)
-
-                Text(subtitle)
-                    .font(RecapFont.pretendard(size: 15, weight: .medium))
-                    .tracking(-0.3)
-                    .foregroundStyle(Color.recapGray500)
-                    .padding(.top, Layout.subtitleTop * scale)
-
-                RecapLottieView(name: "analyzing", playback: .loop)
-                    .frame(width: Layout.animationSize, height: Layout.animationSize)
-                    .padding(.top, Layout.animationTop * scale)
-
-                CardCreationProgressBar(progress: progress)
-                    .frame(height: 4)
-                    .padding(.horizontal, 30)
-                    .padding(.top, Layout.progressBarTop * scale)
-
-                CardCreationProcessingBubble()
-                    .padding(.top, Layout.bubbleTop * scale)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        }
-        .overlay(alignment: .bottom) {
             RecapButton(
                 title: "정리 취소",
                 style: .secondary,
@@ -63,6 +32,36 @@ struct CardCreationProcessingView: View {
         .background(Color.recapBackground)
         // Figma 좌표는 상태 바를 포함한 화면 최상단 기준이다.
         .ignoresSafeArea(.container, edges: [.top, .bottom])
+    }
+
+    private var processingContent: some View {
+        ZStack(alignment: .top) {
+            Text("스크린샷을 분석 · 정리 하고있어요")
+                .font(RecapFont.pretendard(size: 18, weight: .semibold))
+                .tracking(-0.36)
+                .foregroundStyle(Color.recapGray900)
+                .padding(.top, Layout.titleTop)
+
+            Text(subtitle)
+                .font(RecapFont.pretendard(size: 15, weight: .medium))
+                .tracking(-0.3)
+                .foregroundStyle(Color.recapGray500)
+                .padding(.top, Layout.subtitleTop)
+
+            RecapLottieView(name: "analyzing", playback: .loop)
+                .frame(width: Layout.animationSize, height: Layout.animationSize)
+                .padding(.top, Layout.animationTop)
+
+            CardCreationProgressBar(progress: progress)
+                .frame(height: 4)
+                .padding(.horizontal, 30)
+                .padding(.top, Layout.progressBarTop)
+
+            CardCreationProcessingBubble()
+                .padding(.top, Layout.bubbleTop)
+        }
+        .frame(maxWidth: .infinity, alignment: .top)
+        .frame(height: Layout.contentHeight, alignment: .top)
     }
 
     private var subtitle: String {

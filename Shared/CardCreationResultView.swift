@@ -2,9 +2,6 @@ import ConfettiSwiftUI
 import SwiftUI
 
 struct CardCreationResultView: View {
-    /// 아래 「완료」 버튼이 차지하는 높이(50)와 그 아래 여백(31).
-    fileprivate static let buttonZone: CGFloat = 81
-
     let state: CardCreationResultState
     var selectedCount = 5
     let onDone: () -> Void
@@ -24,15 +21,13 @@ struct CardCreationResultView: View {
 
     /// Figma 03-04_정리 완료. 체크·캐릭터 애니메이션과 하단 그라디언트 배경을 쓴다.
     private var completeContent: some View {
-        CardCreationCompleteResultContent(organizedCount: selectedCount)
-            // 버튼 위 공간의 한가운데에 둔다. 위에서 190만큼 떨어뜨리면 SE에서는
-            // 화면의 28%까지 내려가고, Pro Max에서는 20%로 뜨는 데다 아래가
-            // 크게 비어 위로 몰려 보인다. 812 기준으로도 거의 같은 자리다.
-            .padding(.bottom, CardCreationResultView.buttonZone)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            .overlay(alignment: .bottom) {
-                doneButton
-            }
+        VStack(spacing: 0) {
+            // 완료 버튼을 제외한 남은 영역의 중앙에 둔다.
+            CardCreationCompleteResultContent(organizedCount: selectedCount)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+
+            doneButton
+        }
             .background {
                 ZStack(alignment: .bottom) {
                     Color.recapBackground

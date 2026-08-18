@@ -23,9 +23,11 @@ struct OrganizeNotificationPermissionModal: View {
                 .padding(.top, 13)
 
             Image(systemName: "bell.fill")
-                .font(.system(size: 40, weight: .regular))
+                .font(.system(size: 18, weight: .medium))
                 .foregroundStyle(Color.recapBlue300)
-                .frame(width: 42, height: 41)
+                .frame(width: 34, height: 33)
+                .background(Color.recapBlue50)
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 .padding(.top, 25)
 
             Text("정리가 끝나면 알려드릴까요?")
