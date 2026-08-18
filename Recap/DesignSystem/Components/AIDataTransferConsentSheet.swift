@@ -129,10 +129,10 @@ extension View {
 }
 
 private struct AIDataTransferConsentPresentation: ViewModifier {
-    /// Figma 기준 높이. SE(667)에서는 이대로면 화면의 80%를 덮는다.
+    /// Figma 기준 높이. SE(667)에서도 취소 버튼까지 모두 표시할 수 있는 높이다.
     private static let designHeight: CGFloat = 532
     /// 작은 화면에서 시트가 차지해도 되는 최대 비율.
-    private static let maximumScreenRatio: CGFloat = 0.7
+    private static let maximumScreenRatio: CGFloat = 0.8
 
     @Binding var isPresented: Bool
     let primaryButtonTitle: String
