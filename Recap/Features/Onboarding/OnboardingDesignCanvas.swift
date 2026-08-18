@@ -10,6 +10,14 @@ private struct OnboardingVerticalSlackKey: EnvironmentKey {
     static let defaultValue: CGFloat = 0
 }
 
+private struct OnboardingCanvasHeightKey: EnvironmentKey {
+    static let defaultValue: CGFloat = Design.height
+}
+
+private struct OnboardingBottomSafeAreaKey: EnvironmentKey {
+    static let defaultValue: CGFloat = 0
+}
+
 extension EnvironmentValues {
     /// 디자인 높이(812)에서 화면이 모자란 만큼. 디자인 단위다.
     ///
@@ -18,6 +26,18 @@ extension EnvironmentValues {
     var onboardingVerticalSlack: CGFloat {
         get { self[OnboardingVerticalSlackKey.self] }
         set { self[OnboardingVerticalSlackKey.self] = newValue }
+    }
+
+    /// 가로 기준으로 환산한 실제 캔버스 높이다.
+    var onboardingCanvasHeight: CGFloat {
+        get { self[OnboardingCanvasHeightKey.self] }
+        set { self[OnboardingCanvasHeightKey.self] = newValue }
+    }
+
+    /// 가로 기준으로 환산한 하단 safe area다.
+    var onboardingBottomSafeArea: CGFloat {
+        get { self[OnboardingBottomSafeAreaKey.self] }
+        set { self[OnboardingBottomSafeAreaKey.self] = newValue }
     }
 }
 
@@ -40,13 +60,17 @@ struct OnboardingDesignCanvas<Content: View>: View {
     var body: some View {
         GeometryReader { proxy in
             let scale = proxy.size.width / Design.width
-            let slack = max(0, Design.height - proxy.size.height / scale)
+            let canvasHeight = proxy.size.height / scale
+            let slack = max(0, Design.height - canvasHeight)
+            let bottomSafeArea = proxy.safeAreaInsets.bottom / scale
 
             ZStack(alignment: .topLeading) {
                 Color.recapBackground
                 content
             }
             .environment(\.onboardingVerticalSlack, slack)
+            .environment(\.onboardingCanvasHeight, canvasHeight)
+            .environment(\.onboardingBottomSafeArea, bottomSafeArea)
             .frame(width: Design.width, height: Design.height, alignment: .top)
             .scaleEffect(scale, anchor: .topLeading)
             .frame(width: proxy.size.width, height: proxy.size.height, alignment: .topLeading)

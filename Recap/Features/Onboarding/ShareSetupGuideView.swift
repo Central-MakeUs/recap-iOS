@@ -1,7 +1,62 @@
 import SwiftUI
 
 struct ShareSetupGuideView: View {
+    private enum CompactLayout {
+        static let speechBubbleY: CGFloat = 214
+        static let speechBubbleToHelperSpacing: CGFloat = 53
+        static let helperHeight: CGFloat = 43
+
+        static var helperGroupHeight: CGFloat {
+            speechBubbleToHelperSpacing + helperHeight
+        }
+    }
+
+    @Environment(\.onboardingVerticalSlack) private var verticalSlack
+    @Environment(\.onboardingCanvasHeight) private var canvasHeight
+    @Environment(\.onboardingBottomSafeArea) private var bottomSafeArea
+
     let onShowTutorial: () -> Void
+
+    private var isSEHeight: Bool {
+        verticalSlack >= 100
+    }
+
+    private var mockupScale: CGFloat {
+        isSEHeight ? 0.9 : 1
+    }
+
+    private var mockupHeight: CGFloat {
+        238 * mockupScale
+    }
+
+    /// SE에서는 말풍선과 안내 링크를 목업 하단의 페이드 영역에 얹는다.
+    /// 링크의 하단을 목업 하단과 맞추면, 목업 위·아래 여백을 같은 값으로 유지할 수 있다.
+    private var speechBubbleY: CGFloat {
+        guard isSEHeight else { return CompactLayout.speechBubbleY }
+
+        // 말풍선·도움말 묶음(96pt)의 절반만 목업 위에 겹친다.
+        // 나머지는 목업 아래로 내려 보내면 겹침이 과하지 않으면서
+        // 위·아래 여백도 동일한 기준으로 계산할 수 있다.
+        return mockupHeight - (CompactLayout.helperGroupHeight / 2)
+    }
+
+    private var mockupGroupHeight: CGFloat {
+        max(mockupHeight, speechBubbleY + CompactLayout.helperGroupHeight)
+    }
+
+    /// 고정된 상단 문구와 하단 버튼 사이의 남은 공간을 목업 위·아래 여백으로
+    /// 똑같이 나눈다. 버튼은 carousel의 별도 overlay이므로 여기서 이동하지 않는다.
+    private var mockupTopY: CGFloat {
+        let pageOriginY: CGFloat = 138
+        let subtitleBottomY: CGFloat = 100
+        let footerHeight: CGFloat = 112
+        let footerBottomPadding: CGFloat = 16
+        let primaryActionTopY = canvasHeight - bottomSafeArea - footerBottomPadding - footerHeight
+        let contentBottomY = primaryActionTopY - pageOriginY
+        let padding = max(20, (contentBottomY - subtitleBottomY - mockupGroupHeight) / 2)
+
+        return subtitleBottomY + padding
+    }
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -20,31 +75,41 @@ struct ShareSetupGuideView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .onboardingFrame(x: 22, y: 58, width: 331, height: 42, alignment: .leading)
 
-            // 소제목(100)과 목업(179) 사이 79pt가 이 페이지의 빈 공간이다.
-            // 화면이 짧으면 아래 묶음을 끌어올려 여기서 뺀다.
-            Group {
-                ShareSetupMockup()
-                    .onboardingFrame(x: 67, y: 179, width: 239, height: 238)
-
-                RecapSpeechBubble(text: "초간단 30초면 끝나요!")
-                    .onboardingFrame(x: 117, y: 393, width: 143, height: 46)
-
-                Button(action: onShowTutorial) {
-                    Text("어떻게 등록하나요?")
-                        .font(RecapFont.pretendard(size: 15, weight: .medium))
-                        .tracking(-0.3)
-                        .foregroundStyle(Color.recapGray700)
-                        .underline()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .contentShape(Rectangle())
-                }
-                    .buttonStyle(.plain)
-                    .onboardingFrame(x: 111, y: 446, width: 153, height: 43)
-                    // 목업보다 조금 더 당겨야 아래 버튼에 닿지 않는다.
-                    .onboardingLiftedOnShortScreen(portion: 0.12)
-            }
-            .onboardingLiftedOnShortScreen(portion: 0.55)
+            // 짧은 화면에서는 목업만 0.9배로 줄이고, 그래도 부족한 높이는
+            // 소제목과 목업 사이 여백을 79pt에서 최소 40pt까지 줄인다.
+            // 말풍선과 도움말은 목업과 같은 묶음으로 함께 이동한다.
+            mockupGroup
+                .onboardingFrame(x: 0, y: mockupTopY, width: 375, height: 310, alignment: .top)
         }
+    }
+
+    private var mockupGroup: some View {
+        ZStack(alignment: .topLeading) {
+            ShareSetupMockup()
+                .scaleEffect(mockupScale, anchor: .top)
+                .onboardingFrame(x: 67, y: 0, width: 239, height: 238)
+
+            RecapSpeechBubble(text: "초간단 30초면 끝나요!")
+                .onboardingFrame(x: 117, y: speechBubbleY, width: 143, height: 46)
+
+            Button(action: onShowTutorial) {
+                Text("어떻게 등록하나요?")
+                    .font(RecapFont.pretendard(size: 15, weight: .medium))
+                    .tracking(-0.3)
+                    .foregroundStyle(Color.recapGray700)
+                    .underline()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .onboardingFrame(
+                x: 111,
+                y: speechBubbleY + CompactLayout.speechBubbleToHelperSpacing,
+                width: 153,
+                height: CompactLayout.helperHeight
+            )
+        }
+        .frame(width: 375, height: 310, alignment: .topLeading)
     }
 }
 
@@ -142,22 +207,21 @@ struct FirstCleanupStartView: View {
                 .tracking(-0.3)
                 .foregroundStyle(Color.recapGray500)
                 .onboardingFrame(x: 22, y: 58, width: 300, height: 21, alignment: .leading)
-                .onboardingLiftedOnShortScreen(portion: 0.10)
 
-            // 정적 일러스트는 상단 폴더 캐릭터만 남기고, 카드 줄은 애니메이션으로 대체한다.
-            // 화면이 짧으면 두 그림을 끌어올려 소제목 아래 빈 공간에서 뺀다.
-            Group {
-                Image("OnboardingFirstCleanupIllustration")
-                    .resizable()
-                    .frame(width: 375, height: 333)
-                    .frame(width: 375, height: 170, alignment: .top)
-                    .clipped()
-                    .onboardingFrame(x: 0, y: 105, width: 375, height: 170)
+            // 폴더 캐릭터는 제자리에 두고 카드 애니메이션만 부족한 높이만큼 올린다.
+            // 짧은 화면에서는 카드가 캐릭터 아래로 겹쳐도 CTA를 가리지 않는다.
+            Image("OnboardingFirstCleanupIllustration")
+                .resizable()
+                .frame(width: 375, height: 333)
+                .frame(width: 375, height: 170, alignment: .top)
+                .clipped()
+                .onboardingFrame(x: 0, y: 105, width: 375, height: 170)
+                .zIndex(1)
 
-                RecapLottieView(name: "onboarding_final", playback: .loop)
-                    .onboardingFrame(x: 0, y: 258, width: 375, height: 200)
-            }
-            .onboardingLiftedOnShortScreen(portion: 0.28)
+            RecapLottieView(name: "onboarding_final", playback: .loop)
+                .onboardingFrame(x: 0, y: 258, width: 375, height: 200)
+                .onboardingLiftedOnShortScreen()
+                .zIndex(0)
         }
     }
 }

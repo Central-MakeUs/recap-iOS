@@ -19,12 +19,14 @@ struct OnboardingLoginView: View {
 
             RecapLogoText(size: 48)
                 .onboardingFrame(x: 111, y: 194, width: 153, height: 47)
+                .onboardingLiftedOnShortScreen(portion: 0.5)
 
             title
                 .onboardingFrame(x: 105, y: 263, width: 165, height: 50)
+                .onboardingLiftedOnShortScreen(portion: 0.5)
 
-            // 제목(313)과 말풍선(475) 사이 162pt가 이 화면의 빈 공간이다.
-            // 세로가 짧은 기기에서는 아래 묶음을 통째로 끌어올려 여기서 뺀다.
+            // 짧은 화면에서는 부족한 높이의 절반을 로고 위 빈 공간에서,
+            // 나머지 절반을 제목과 말풍선 사이 빈 공간에서 줄인다.
             Group {
                 RecapSpeechBubble(text: "5초만에 시작하기")
                     .onboardingFrame(x: 117, y: 475, width: 143, height: 46)
