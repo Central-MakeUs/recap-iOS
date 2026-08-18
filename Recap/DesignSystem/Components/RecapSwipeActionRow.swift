@@ -21,12 +21,19 @@ struct RecapSwipeActionRow<Content: View>: View {
     struct Action: Identifiable {
         let id = UUID()
         let title: String
-        let tint: Color
+        let foregroundColor: Color
+        let backgroundColor: Color
         let handler: () -> Void
 
-        init(title: String, tint: Color, handler: @escaping () -> Void) {
+        init(
+            title: String,
+            foregroundColor: Color,
+            backgroundColor: Color,
+            handler: @escaping () -> Void
+        ) {
             self.title = title
-            self.tint = tint
+            self.foregroundColor = foregroundColor
+            self.backgroundColor = backgroundColor
             self.handler = handler
         }
     }
@@ -37,8 +44,18 @@ struct RecapSwipeActionRow<Content: View>: View {
         onDelete: @escaping () -> Void
     ) -> [Action] {
         [
-            Action(title: "수정", tint: Color.recapGray500, handler: onEdit),
-            Action(title: "삭제", tint: Color("RecapDestructive"), handler: onDelete)
+            Action(
+                title: "수정",
+                foregroundColor: Color.recapGray700,
+                backgroundColor: Color.recapGray50,
+                handler: onEdit
+            ),
+            Action(
+                title: "삭제",
+                foregroundColor: Color.recapDestructiveText,
+                backgroundColor: Color.recapDestructiveSoft,
+                handler: onDelete
+            )
         ]
     }
 
@@ -101,10 +118,10 @@ struct RecapSwipeActionRow<Content: View>: View {
                     Text(action.title)
                         .font(RecapFont.pretendard(size: 14, weight: .semibold))
                         .tracking(-0.28)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(action.foregroundColor)
                         .frame(width: Layout.actionWidth)
                         .frame(maxHeight: .infinity)
-                        .background(action.tint)
+                        .background(action.backgroundColor)
                 }
                 .buttonStyle(.plain)
             }
@@ -168,5 +185,19 @@ private struct RecapSwipeActionRowPreview: View {
 
 #Preview("스와이프 액션 행") {
     RecapSwipeActionRowPreview()
+}
+
+#Preview("스와이프 액션 - 열림") {
+    let card = Card(snapshot: SampleData.recentCards[0])
+
+    RecapSwipeActionRow(
+        rowID: card.captureID,
+        actions: RecapSwipeActionRow.cardActions(onEdit: {}, onDelete: {}),
+        openRowID: .constant(card.captureID)
+    ) {
+        RecapInformationCardRow(card: card)
+    }
+    .frame(height: 118)
+    .background(Color.recapBackground)
 }
 #endif
