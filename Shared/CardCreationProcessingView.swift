@@ -1,14 +1,15 @@
 import SwiftUI
 
 struct CardCreationProcessingView: View {
-    /// Figma 03-03_정리 시작(375x812) 기준 절대 y 좌표.
+    /// 제목부터 안내 말풍선까지의 Figma 기준 상대 위치.
     private enum Layout {
-        static let titleTop: CGFloat = 240
-        static let subtitleTop: CGFloat = 276
-        static let animationTop: CGFloat = 280
+        static let contentHeight: CGFloat = 360
+        static let titleTop: CGFloat = 0
+        static let subtitleTop: CGFloat = 36
+        static let animationTop: CGFloat = 40
         static let animationSize: CGFloat = 240
-        static let progressBarTop: CGFloat = 509
-        static let bubbleTop: CGFloat = 540
+        static let progressBarTop: CGFloat = 269
+        static let bubbleTop: CGFloat = 300
     }
 
     let progress: Double
@@ -16,6 +17,24 @@ struct CardCreationProcessingView: View {
     let onCancel: () -> Void
 
     var body: some View {
+        VStack(spacing: 0) {
+            processingContent
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+
+            RecapButton(
+                title: "정리 취소",
+                style: .secondary,
+                action: onCancel
+            )
+            .padding(.horizontal, 16)
+            .padding(.bottom, 31)
+        }
+        .background(Color.recapBackground)
+        // Figma 좌표는 상태 바를 포함한 화면 최상단 기준이다.
+        .ignoresSafeArea(.container, edges: [.top, .bottom])
+    }
+
+    private var processingContent: some View {
         ZStack(alignment: .top) {
             Text("스크린샷을 분석 · 정리 하고있어요")
                 .font(RecapFont.pretendard(size: 18, weight: .semibold))
@@ -41,19 +60,8 @@ struct CardCreationProcessingView: View {
             CardCreationProcessingBubble()
                 .padding(.top, Layout.bubbleTop)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .overlay(alignment: .bottom) {
-            RecapButton(
-                title: "정리 취소",
-                style: .secondary,
-                action: onCancel
-            )
-            .padding(.horizontal, 16)
-            .padding(.bottom, 31)
-        }
-        .background(Color.recapBackground)
-        // Figma 좌표는 상태 바를 포함한 화면 최상단 기준이다.
-        .ignoresSafeArea(.container, edges: [.top, .bottom])
+        .frame(maxWidth: .infinity, alignment: .top)
+        .frame(height: Layout.contentHeight, alignment: .top)
     }
 
     private var subtitle: String {

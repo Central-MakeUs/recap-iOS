@@ -6,6 +6,8 @@ struct CardDetailContentView: View {
     var onRemoteImageFailure: (URL) -> Void = { _ in }
 
     var body: some View {
+        // 세로 여백이 고정이면 SE에서 제목이 화면 한가운데 아래로 내려간다.
+        // 여백만 화면 높이 비율로 맞춰 기기마다 같은 자리에 오게 한다.
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
                 CardDetailImageSection(
@@ -13,13 +15,14 @@ struct CardDetailContentView: View {
                     onOpenOriginal: onOpenOriginal,
                     onRemoteImageFailure: onRemoteImageFailure
                 )
-                .padding(.top, 33)
+                .designScaledTopPadding(33)
 
                 CardDetailTextSection(card: card)
-                    .padding(.top, 18)
+                    .designScaledTopPadding(18)
             }
             .frame(maxWidth: .infinity)
         }
+        .measuringDesignHeightScale()
     }
 }
 
