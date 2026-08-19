@@ -96,7 +96,9 @@ struct ArchiveHomeView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.bottom, 24)
+                // 탭바는 콘텐츠 위에 표시되므로, 작은 화면에서도 마지막 항목을 탭바 위까지
+                // 스크롤할 수 있도록 종단 여백을 탭바 높이만큼 확보한다.
+                .padding(.bottom, RecapMainTabBarMetrics.height)
             }
         }
     }
