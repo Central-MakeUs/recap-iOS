@@ -23,9 +23,10 @@ struct OrganizeNotificationPermissionModal: View {
                 .padding(.top, 13)
 
             Image(systemName: "bell.fill")
-                .font(.system(size: 18, weight: .medium))
+                .resizable()
                 .foregroundStyle(Color.recapBlue300)
-                .frame(width: 34, height: 33)
+                .frame(width: 16, height: 19)
+                .frame(width: 40, height: 40)
                 .background(Color.recapBlue50)
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 .padding(.top, 25)

@@ -174,6 +174,7 @@ struct HomeView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 16)
+                .padding(.bottom, RecapMainTabBarMetrics.height)
             }
         }
         .background(Color.recapBackground)
