@@ -119,30 +119,55 @@ struct ShareSetupDetailView: View {
     let onBack: () -> Void
 
     var body: some View {
-        OnboardingDesignCanvas {
+        VStack(spacing: 0) {
+            header
+                .padding(.horizontal, 16)
+                .padding(.top, 19)
+
+            TabView(selection: $page) {
+                ForEach(Array(ShareSetupTutorialPage.allCases.enumerated()), id: \.offset) { index, tutorial in
+                    ShareSetupTutorialPageView(
+                        page: tutorial,
+                        onPrevious: index > 0 ? { movePage(to: index - 1) } : nil,
+                        onNext: index < ShareSetupTutorialPage.allCases.count - 1
+                            ? { movePage(to: index + 1) }
+                            : nil
+                    )
+                        .tag(index)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            RecapOnboardingDots(activeIndex: page, count: 4)
+                .padding(.top, 17)
+                .padding(.bottom, 24)
+        }
+        .background(Color.recapBackground.ignoresSafeArea())
+        .toolbar(.hidden, for: .navigationBar)
+        .interactivePopGestureEnabled()
+    }
+
+    private var header: some View {
+        HStack(spacing: 18) {
             Button(action: onBack) {
                 RecapIconView(icon: .back, size: 24, color: Color.recapGray500)
             }
             .buttonStyle(.plain)
-            .onboardingFrame(x: 16, y: 78, width: 24, height: 24)
 
             Text("공유 즐겨찾기 등록하기")
                 .font(RecapFont.pretendard(size: 18, weight: .semibold))
                 .tracking(-0.36)
                 .foregroundStyle(Color.recapGray900)
-                .onboardingFrame(x: 58, y: 77, width: 190, height: 25, alignment: .leading)
 
-            TabView(selection: $page) {
-                ForEach(Array(ShareSetupTutorialPage.allCases.enumerated()), id: \.offset) { index, tutorial in
-                    ShareSetupTutorialPageView(page: tutorial)
-                        .tag(index)
-                }
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .onboardingFrame(x: 0, y: 174, width: 375, height: 526)
+            Spacer(minLength: 0)
+        }
+        .frame(height: 25)
+    }
 
-            RecapOnboardingDots(activeIndex: page, count: 4)
-                .onboardingFrame(x: 153.5, y: 717, width: 68, height: 8)
+    private func movePage(to page: Int) {
+        withAnimation(.smooth(duration: 0.25)) {
+            self.page = page
         }
     }
 }
@@ -178,18 +203,55 @@ private enum ShareSetupTutorialPage: String, CaseIterable {
 
 private struct ShareSetupTutorialPageView: View {
     let page: ShareSetupTutorialPage
+    let onPrevious: (() -> Void)?
+    let onNext: (() -> Void)?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 29) {
+        GeometryReader { proxy in
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 29) {
+                    tutorialImageNavigation
+
+                    ShareSetupTutorialCaption(page: page)
+                        .padding(.leading, 38)
+                }
+                .padding(.vertical, 23)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: proxy.size.height, alignment: .center)
+            }
+        }
+    }
+
+    private var tutorialImageNavigation: some View {
+        HStack(spacing: 14) {
+            tutorialNavigationButton(icon: .back, action: onPrevious)
+
             Image(page.rawValue)
                 .resizable()
                 .interpolation(.high)
                 .frame(width: page.imageSize.width, height: page.imageSize.height)
 
-            ShareSetupTutorialCaption(page: page)
+            tutorialNavigationButton(icon: .forward, action: onNext)
         }
-        .padding(.top, 23)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+
+    @ViewBuilder
+    private func tutorialNavigationButton(
+        icon: RecapIcon,
+        action: (() -> Void)?
+    ) -> some View {
+        if let action {
+            Button(action: action) {
+                RecapIconView(icon: icon, size: 24, color: Color.recapGray300)
+                    .frame(width: 24, height: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        } else {
+            Color.clear
+                .frame(width: 24, height: 44)
+                .accessibilityHidden(true)
+        }
     }
 }
 
