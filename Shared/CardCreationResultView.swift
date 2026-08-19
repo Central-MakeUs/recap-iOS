@@ -21,11 +21,13 @@ struct CardCreationResultView: View {
 
     /// Figma 03-04_정리 완료. 체크·캐릭터 애니메이션과 하단 그라디언트 배경을 쓴다.
     private var completeContent: some View {
-        CardCreationCompleteResultContent(organizedCount: selectedCount)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .overlay(alignment: .bottom) {
-                doneButton
-            }
+        VStack(spacing: 0) {
+            // 완료 버튼을 제외한 남은 영역의 중앙에 둔다.
+            CardCreationCompleteResultContent(organizedCount: selectedCount)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+
+            doneButton
+        }
             .background {
                 ZStack(alignment: .bottom) {
                     Color.recapBackground
@@ -146,10 +148,8 @@ private struct CardCreationCompleteResultContent: View {
                 .foregroundStyle(Color.recapGray500)
                 .padding(.top, Layout.subtitleSpacing)
 
-            Spacer(minLength: 0)
         }
-        .padding(.top, Layout.topInset)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .frame(maxWidth: .infinity)
         // 체크 아이콘 중심에서 터져 화면 전체로 퍼진 뒤 아래로 떨어진다.
         .confettiCannon(
             trigger: $confettiTrigger,

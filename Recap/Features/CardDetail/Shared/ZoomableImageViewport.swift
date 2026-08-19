@@ -48,10 +48,12 @@ struct ZoomableImageViewport: View {
                 .onTapGesture(count: 2) {
                     toggleDoubleTapZoom(imageSize: imageSize, viewportSize: viewportSize)
                 }
+                // 세로로 긴 화면에서 짧은 이미지가 위로 붙어 아래가 크게 비지
+                // 않도록 가운데에 둔다.
                 .frame(
                     width: viewportSize.width,
                     height: viewportSize.height,
-                    alignment: .top
+                    alignment: .center
                 )
                 .padding(.top, Metric.topInset)
                 .padding(.bottom, Metric.bottomInset)
