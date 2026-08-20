@@ -19,6 +19,7 @@ struct RecapRootView: View {
             router: AppRouter(),
             cardStore: CardStore(
                 captureMutator: dependencies.captureService,
+                captureDetailLoader: dependencies.captureService,
                 invalidationCenter: dependencies.cardDataInvalidationCenter
             ),
             initiallyShowsSplash: initiallyShowsSplash
