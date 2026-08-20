@@ -12,6 +12,7 @@ struct RecapInformationCardRow: View {
     var titleText: Text?
     var summaryText: Text?
     var onToggleFavorite: (() -> Void)?
+    var onRemoteImageFailure: (URL) -> Void = { _ in }
 
     var body: some View {
         Group {
@@ -70,7 +71,8 @@ struct RecapInformationCardRow: View {
                 remoteURL: card.thumbnailURL,
                 hasFavoriteFold: true,
                 size: CGSize(width: 62, height: 80),
-                fallbackStyle: .character
+                fallbackStyle: .character,
+                onRemoteLoadFailure: onRemoteImageFailure
             )
 
             RecapIconView(
@@ -99,7 +101,8 @@ struct RecapInformationCardRow: View {
             assetName: card.thumbnailAssetName,
             remoteURL: card.thumbnailURL,
             cornerRadius: 0,
-            fallbackStyle: .character
+            fallbackStyle: .character,
+            onRemoteLoadFailure: onRemoteImageFailure
         )
         .frame(width: 62, height: 80)
         .clipped()

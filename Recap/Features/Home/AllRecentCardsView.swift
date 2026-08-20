@@ -65,7 +65,6 @@ struct AllRecentCardsView: View {
     var onLoadMore: () async -> Void = {}
 
     @State private var toast: RecapToastContent?
-    @State private var openSwipeRowID: AnyHashable?
     @State private var cardPendingDeletion: Card?
 
     var body: some View {
@@ -80,53 +79,36 @@ struct AllRecentCardsView: View {
             .padding(.top, 19)
             .padding(.bottom, 16)
 
-            ScrollView(showsIndicators: false) {
-                LazyVStack(spacing: 0) {
-                    Text(
-                        "\(Text("\(totalCount)").font(RecapFont.pretendard(size: 14, weight: .semibold)).foregroundStyle(Color.recapGray700)) recaps"
-                    )
-                        .font(RecapFont.pretendard(size: 14, weight: .regular))
-                        .tracking(-0.28)
-                        .foregroundStyle(Color.recapGray500)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 16)
-                        .padding(.top, 9)
-                        .padding(.bottom, 7)
-
-                    ForEach(rows) { card in
-                        RecapSwipeActionRow(
-                            rowID: card.captureID,
-                            actions: RecapSwipeActionRow.cardActions(
-                                onEdit: { onEditCard(card) },
-                                onDelete: { requestDeletion(of: card) }
-                            ),
-                            openRowID: $openSwipeRowID
-                        ) {
-                            AllRecentCardRow(
-                                card: card,
-                                onToggleFavorite: cardStore.updatingFavoriteIDs.contains(card.captureID)
-                                    ? nil
-                                    : { toggleFavorite(card) }
-                            )
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                onSelectCard(card)
+            RecapSwipeCardCollection(
+                items: rows,
+                header: AnyView(recapCount),
+                headerHeight: 36,
+                isLoading: isLoadingNextPage,
+                rowContent: { card in
+                    AnyView(
+                        AllRecentCardRow(
+                            card: card,
+                            onToggleFavorite: cardStore.updatingFavoriteIDs.contains(card.captureID)
+                                ? nil
+                                : { toggleFavorite(card) },
+                            onRemoteImageFailure: { failedURL in
+                                refreshImageURL(for: card, failedURL: failedURL)
                             }
-                        }
-                        .task {
-                            guard card.captureID == cards.last?.captureID else { return }
-                            await onLoadMore()
-                        }
-                    }
-
-                    if isLoadingNextPage {
-                        ProgressView()
-                            .tint(Color.recapBlue300)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 20)
-                    }
+                        )
+                    )
+                },
+                actions: { card in
+                    RecapSwipeAction.cardActions(
+                        onEdit: { onEditCard(card) },
+                        onDelete: { requestDeletion(of: card) }
+                    )
+                },
+                onSelect: onSelectCard,
+                onWillDisplay: { card in
+                    guard shouldPrefetchNextPage(after: card) else { return }
+                    Task { await onLoadMore() }
                 }
-            }
+            )
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.recapBackground)
@@ -163,6 +145,26 @@ struct AllRecentCardsView: View {
         cards.compactMap { cardStore.card(withCaptureID: $0.captureID) }
     }
 
+    private var recapCount: some View {
+        Text(
+            "\(Text("\(totalCount)").font(RecapFont.pretendard(size: 14, weight: .semibold)).foregroundStyle(Color.recapGray700)) recaps"
+        )
+        .font(RecapFont.pretendard(size: 14, weight: .regular))
+        .tracking(-0.28)
+        .foregroundStyle(Color.recapGray500)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .padding(.horizontal, 16)
+        .padding(.top, 9)
+        .padding(.bottom, 7)
+    }
+
+    private func shouldPrefetchNextPage(after card: Card) -> Bool {
+        guard let index = cards.firstIndex(where: { $0.captureID == card.captureID }) else {
+            return false
+        }
+        return index >= max(cards.count - 5, 0)
+    }
+
     private func toggleFavorite(_ card: Card) {
         Task {
             guard let content = await cardStore.toggleFavoriteReturningToast(card) else { return }
@@ -172,6 +174,12 @@ struct AllRecentCardsView: View {
 
     private func requestDeletion(of card: Card) {
         cardPendingDeletion = card
+    }
+
+    private func refreshImageURL(for card: Card, failedURL: URL) {
+        Task {
+            await cardStore.refreshImageURL(for: card, failedURL: failedURL)
+        }
     }
 
     /// 삭제는 상세 화면과 같은 길로 보낸다. 스토어가 내리면 홈·검색도 함께 갱신된다.
