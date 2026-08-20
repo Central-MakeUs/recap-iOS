@@ -9,6 +9,13 @@ import SwiftUI
 
 @main
 struct RecapApp: App {
+#if DEMO_SHOWCASE
+    var body: some Scene {
+        WindowGroup {
+            DemoRootView()
+        }
+    }
+#else
     private let configuration: AppConfiguration
     private let dependencies: RecapDependencies
 
@@ -40,4 +47,5 @@ struct RecapApp: App {
                 }
         }
     }
+#endif
 }

@@ -14,6 +14,7 @@ struct AppShellView: View {
     let cardDataInvalidationCenter: CardDataInvalidationCenter
     let organizeNotificationStore: OrganizeNotificationStore
     let aiDataTransferConsentStore: AIDataTransferConsentStore
+    var onUploadRequested: (() -> Void)?
     var onLogout: () -> Void = {}
     var onAccountWithdrawalCompleted: () -> Void = {}
 
@@ -31,6 +32,7 @@ struct AppShellView: View {
         cardDataInvalidationCenter: CardDataInvalidationCenter,
         organizeNotificationStore: OrganizeNotificationStore,
         aiDataTransferConsentStore: AIDataTransferConsentStore,
+        onUploadRequested: (() -> Void)? = nil,
         onLogout: @escaping () -> Void = {},
         onAccountWithdrawalCompleted: @escaping () -> Void = {}
     ) {
@@ -45,6 +47,7 @@ struct AppShellView: View {
         self.cardDataInvalidationCenter = cardDataInvalidationCenter
         self.organizeNotificationStore = organizeNotificationStore
         self.aiDataTransferConsentStore = aiDataTransferConsentStore
+        self.onUploadRequested = onUploadRequested
         self.onLogout = onLogout
         self.onAccountWithdrawalCompleted = onAccountWithdrawalCompleted
         _toast = State(initialValue: nil)
@@ -66,7 +69,7 @@ struct AppShellView: View {
                 cardCreationProcessor: cardCreationProcessor,
                 cardDataInvalidationCenter: cardDataInvalidationCenter,
                 organizeNotificationStore: organizeNotificationStore,
-                onUpload: openCardCreationFlow,
+                onUpload: onUploadRequested ?? openCardCreationFlow,
                 onCardDeleted: showCardDeletedToast,
                 onAccountWithdrawalCompleted: onAccountWithdrawalCompleted,
                 onAccountDataDeleted: handleAccountDataDeleted

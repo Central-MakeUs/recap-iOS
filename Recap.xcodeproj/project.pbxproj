@@ -15,6 +15,10 @@
 		C2000001000000000000000F /* ConfettiSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = C2000001000000000000000D /* ConfettiSwiftUI */; };
 		D50000010000000000000001 /* RecapShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D50000010000000000000003 /* RecapShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E10000010000000000000002 /* ShareExtensionUploadPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000010000000000000001 /* ShareExtensionUploadPipeline.swift */; };
+		E8000001000000000000000C /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000005 /* Alamofire */; };
+		E8000001000000000000000D /* KakaoSDKUser in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000006 /* KakaoSDKUser */; };
+		E8000001000000000000000E /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = C20000010000000000000009 /* Lottie */; };
+		E8000001000000000000000F /* ConfettiSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = C2000001000000000000000B /* ConfettiSwiftUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +60,7 @@
 		C40000010000000000000004 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		D50000010000000000000003 /* RecapShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RecapShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		E10000010000000000000001 /* ShareExtensionUploadPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ShareExtensionUploadPipeline.swift; path = RecapShareExtension/ShareExtensionUploadPipeline.swift; sourceTree = SOURCE_ROOT; };
+		E80000010000000000000001 /* Recap Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Recap Demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -73,6 +78,20 @@
 			);
 			target = D50000010000000000000008 /* RecapShareExtension */;
 		};
+		E80000010000000000000003 /* Exceptions for "Recap" folder in "RecapDemo" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = E80000010000000000000005 /* RecapDemo */;
+		};
+		E80000010000000000000004 /* Exceptions for "RecapDemo" folder in "RecapDemo" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = E80000010000000000000005 /* RecapDemo */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -80,6 +99,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				C30000010000000000000001 /* Exceptions for "Recap" folder in "Recap" target */,
+				E80000010000000000000003 /* Exceptions for "Recap" folder in "RecapDemo" target */,
 			);
 			path = Recap;
 			sourceTree = "<group>";
@@ -100,6 +120,14 @@
 				D50000010000000000000006 /* Exceptions for "RecapShareExtension" folder in "RecapShareExtension" target */,
 			);
 			path = RecapShareExtension;
+			sourceTree = "<group>";
+		};
+		E80000010000000000000002 /* RecapDemo */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E80000010000000000000004 /* Exceptions for "RecapDemo" folder in "RecapDemo" target */,
+			);
+			path = RecapDemo;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -132,6 +160,17 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E80000010000000000000008 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E8000001000000000000000C /* Alamofire in Frameworks */,
+				E8000001000000000000000D /* KakaoSDKUser in Frameworks */,
+				E8000001000000000000000E /* Lottie in Frameworks */,
+				E8000001000000000000000F /* ConfettiSwiftUI in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -142,6 +181,7 @@
 				A7BB44162FF2A90B00752373 /* Recap */,
 				D50000010000000000000004 /* Shared */,
 				D50000010000000000000005 /* RecapShareExtension */,
+				E80000010000000000000002 /* RecapDemo */,
 				B10000010000000000000003 /* RecapTests */,
 				A7BB44152FF2A90B00752373 /* Products */,
 				A7D29AC1302A04A300D2AD79 /* Recovered References */,
@@ -153,6 +193,7 @@
 			children = (
 				A7BB44142FF2A90B00752373 /* Recap.app */,
 				D50000010000000000000003 /* RecapShareExtension.appex */,
+				E80000010000000000000001 /* Recap Demo.app */,
 				B10000010000000000000001 /* RecapTests.xctest */,
 			);
 			name = Products;
@@ -256,6 +297,34 @@
 			productReference = D50000010000000000000003 /* RecapShareExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		E80000010000000000000005 /* RecapDemo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E80000010000000000000009 /* Build configuration list for PBXNativeTarget "RecapDemo" */;
+			buildPhases = (
+				E80000010000000000000007 /* Sources */,
+				E80000010000000000000008 /* Frameworks */,
+				E80000010000000000000006 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A7BB44162FF2A90B00752373 /* Recap */,
+				D50000010000000000000004 /* Shared */,
+				E80000010000000000000002 /* RecapDemo */,
+			);
+			name = RecapDemo;
+			packageProductDependencies = (
+				C20000010000000000000005 /* Alamofire */,
+				C20000010000000000000006 /* KakaoSDKUser */,
+				C20000010000000000000009 /* Lottie */,
+				C2000001000000000000000B /* ConfettiSwiftUI */,
+			);
+			productName = "Recap Demo";
+			productReference = E80000010000000000000001 /* Recap Demo.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -279,6 +348,9 @@
 						TestTargetID = A7BB44132FF2A90B00752373;
 					};
 					D50000010000000000000008 = {
+						CreatedOnToolsVersion = 26.5;
+					};
+					E80000010000000000000005 = {
 						CreatedOnToolsVersion = 26.5;
 					};
 				};
@@ -306,6 +378,7 @@
 				A7BB44132FF2A90B00752373 /* Recap */,
 				B10000010000000000000005 /* RecapTests */,
 				D50000010000000000000008 /* RecapShareExtension */,
+				E80000010000000000000005 /* RecapDemo */,
 			);
 		};
 /* End PBXProject section */
@@ -332,6 +405,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E80000010000000000000006 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -351,6 +431,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		D5000001000000000000000A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E80000010000000000000007 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -686,6 +773,70 @@
 			};
 			name = Release;
 		};
+		E8000001000000000000000A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = JMAUFK6U82;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = RecapDemo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cmc.recap.demo;
+				PRODUCT_NAME = "Recap Demo";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG DEMO_SHOWCASE $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		E8000001000000000000000B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = JMAUFK6U82;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = RecapDemo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cmc.recap.demo;
+				PRODUCT_NAME = "Recap Demo";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEMO_SHOWCASE $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -721,6 +872,15 @@
 			buildConfigurations = (
 				D5000001000000000000000D /* Debug */,
 				D5000001000000000000000E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E80000010000000000000009 /* Build configuration list for PBXNativeTarget "RecapDemo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E8000001000000000000000A /* Debug */,
+				E8000001000000000000000B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
