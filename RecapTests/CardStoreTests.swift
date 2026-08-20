@@ -46,6 +46,41 @@ final class CardStoreTests: XCTestCase {
         XCTAssertFalse(first === second)
     }
 
+    func testRefreshImageURLReplacesExpiredListURLWithDetailURL() async {
+        let oldURL = URL(string: "https://images.example.com/expired.jpg")!
+        let freshURL = URL(string: "https://images.example.com/fresh.jpg")!
+        let initial = snapshot(from: SampleData.cards[0], imageURL: oldURL)
+        let refreshed = snapshot(from: initial, imageURL: freshURL)
+        let loader = CaptureDetailLoaderStub(result: refreshed)
+        let store = CardStore(
+            captureMutator: CaptureMutatingSpy(favoriteError: nil, favoriteDelay: nil),
+            captureDetailLoader: loader
+        )
+        let card = store.upsert(initial)
+
+        await store.refreshImageURL(for: card, failedURL: oldURL)
+
+        XCTAssertEqual(card.thumbnailURL, freshURL)
+        XCTAssertEqual(card.originalImageURL, freshURL)
+        XCTAssertEqual(loader.captureIDs, [card.captureID])
+    }
+
+    func testRefreshImageURLIgnoresFailureFromStaleURL() async {
+        let currentURL = URL(string: "https://images.example.com/current.jpg")!
+        let staleURL = URL(string: "https://images.example.com/stale.jpg")!
+        let snapshot = snapshot(from: SampleData.cards[0], imageURL: currentURL)
+        let loader = CaptureDetailLoaderStub(result: snapshot)
+        let store = CardStore(
+            captureMutator: CaptureMutatingSpy(favoriteError: nil, favoriteDelay: nil),
+            captureDetailLoader: loader
+        )
+        let card = store.upsert(snapshot)
+
+        await store.refreshImageURL(for: card, failedURL: staleURL)
+
+        XCTAssertTrue(loader.captureIDs.isEmpty)
+    }
+
     // MARK: 즐겨찾기
 
     func testToggleFavoriteSendsTargetValueAndMutatesCard() async throws {
@@ -163,6 +198,26 @@ final class CardStoreTests: XCTestCase {
         )
         return (CardStore(captureMutator: mutator), mutator)
     }
+
+    private func snapshot(from source: CardSnapshot, imageURL: URL) -> CardSnapshot {
+        CardSnapshot(
+            captureID: source.captureID,
+            title: source.title,
+            summary: source.summary,
+            category: source.category,
+            organizedAt: source.organizedAt,
+            location: source.location,
+            businessHours: source.businessHours,
+            confirmationLabel: source.confirmationLabel,
+            memo: source.memo,
+            tags: source.tags,
+            originalImageAssetName: source.originalImageAssetName,
+            thumbnailAssetName: source.thumbnailAssetName,
+            originalImageURL: imageURL,
+            thumbnailURL: imageURL,
+            isFavorite: source.isFavorite
+        )
+    }
 }
 
 private enum TestError: Error {
@@ -222,5 +277,23 @@ private final class CaptureMutatingSpy: CaptureMutating {
         storedReports.withLock {
             $0.append(CaptureReport(captureID: captureID, reason: reason, detail: detail))
         }
+    }
+}
+
+private final class CaptureDetailLoaderStub: CaptureDetailLoading {
+    private let storedCaptureIDs = Mutex<[Int64]>([])
+    private let result: CardSnapshot
+
+    init(result: CardSnapshot) {
+        self.result = result
+    }
+
+    var captureIDs: [Int64] {
+        storedCaptureIDs.withLock { $0 }
+    }
+
+    func captureDetail(captureID: Int64) async throws -> CardSnapshot {
+        storedCaptureIDs.withLock { $0.append(captureID) }
+        return result
     }
 }

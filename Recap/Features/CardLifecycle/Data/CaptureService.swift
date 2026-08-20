@@ -21,16 +21,19 @@ protocol CaptureReporting: Sendable {
     ) async throws
 }
 
+protocol CaptureDetailLoading: Sendable {
+    func captureDetail(captureID: Int64) async throws -> CardSnapshot
+}
+
 protocol CaptureMutating: CaptureDeleting, CaptureFavoriteUpdating, CaptureUpdating, CaptureReporting {}
 
-protocol CaptureServing: CaptureMutating, Sendable {
+protocol CaptureServing: CaptureMutating, CaptureDetailLoading, Sendable {
     func issueUploadURLs(count: Int) async throws -> [UploadItemDTO]
     func organize(imageKeys: [String]) async throws -> OrganizeResponseDTO
     func organizeStatus(batchID: Int64) async throws -> OrganizeStatusResponseDTO
     func cancelOrganize(batchID: Int64) async throws
     func pendingOrganizeResult() async throws -> PendingOrganizeResultDTO?
     func acknowledgeOrganizeResult(batchID: Int64) async throws
-    func captureDetail(captureID: Int64) async throws -> CardSnapshot
 }
 
 final class CaptureService: CaptureServing {

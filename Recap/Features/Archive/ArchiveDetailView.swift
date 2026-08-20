@@ -134,6 +134,13 @@ private struct ArchiveDetailReloadTrigger: Hashable {
     let isActive: Bool
 }
 
+private struct ArchiveCardRowModel: Identifiable {
+    let snapshot: CardSnapshot
+    let card: Card
+
+    var id: CardSnapshot.ID { snapshot.id }
+}
+
 struct ArchiveDetailView: View {
     enum LoadState {
         case loaded
@@ -183,7 +190,6 @@ struct ArchiveDetailView: View {
     @State private var isDeleteConfirmationPresented = false
     @State private var isDeleting = false
     @State private var toast: RecapToastContent?
-    @State private var openSwipeRowID: AnyHashable?
     @State private var cardPendingDeletion: Card?
 
     let scope: ArchiveDetailScope
@@ -400,25 +406,18 @@ struct ArchiveDetailView: View {
         cards: [CardSnapshot],
         highlightedResults: [CardSnapshot.ID: SearchResult]
     ) -> some View {
-        ScrollView(showsIndicators: false) {
-            LazyVStack(spacing: 0) {
+        RecapSwipeCardCollection(
+            items: rows(for: cards),
+            header: AnyView(
                 recapCount(cards.count)
                     .padding(.bottom, 7)
-
-                ForEach(rows(for: cards), id: \.snapshot.id) { row in
-                    let card = row.snapshot
-                    let searchResult = highlightedResults[card.id]
-
-                    RecapSwipeActionRow(
-                        rowID: card.id,
-                        actions: RecapSwipeActionRow.cardActions(
-                            onEdit: { onAction(.editCard(row.card.captureID)) },
-                            onDelete: { cardPendingDeletion = row.card }
-                        ),
-                        openRowID: $openSwipeRowID,
-                        // 선택 모드에서는 즐겨찾기와 마찬가지로 스와이프도 끈다.
-                        isEnabled: !isSelecting
-                    ) {
+            ),
+            headerHeight: 39,
+            isLoading: false,
+            rowContent: { row in
+                let card = row.snapshot
+                let searchResult = highlightedResults[card.id]
+                return AnyView(
                     RecapInformationCardRow(
                         card: row.card,
                         metadata: scope.rowMetadata,
@@ -434,24 +433,32 @@ struct ArchiveDetailView: View {
                         onToggleFavorite: isSelecting
                             || cardStore.updatingFavoriteIDs.contains(row.card.captureID)
                             ? nil
-                            : { toggleFavorite(row.card) }
-                    )
-                    .onAppear {
-                        guard let searchResult else { return }
-                        loadNextSearchPage(after: searchResult.id)
-                    }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        if isSelecting {
-                            toggleSelection(card.id)
-                        } else {
-                            onAction(.openCard(row.card.captureID))
+                            : { toggleFavorite(row.card) },
+                        onRemoteImageFailure: { failedURL in
+                            refreshImageURL(for: row.card, failedURL: failedURL)
                         }
-                    }
-                    }
+                    )
+                )
+            },
+            actions: { row in
+                guard !isSelecting else { return [] }
+                return RecapSwipeAction.cardActions(
+                    onEdit: { onAction(.editCard(row.card.captureID)) },
+                    onDelete: { cardPendingDeletion = row.card }
+                )
+            },
+            onSelect: { row in
+                if isSelecting {
+                    toggleSelection(row.snapshot.id)
+                } else {
+                    onAction(.openCard(row.card.captureID))
                 }
+            },
+            onWillDisplay: { row in
+                guard let searchResult = highlightedResults[row.snapshot.id] else { return }
+                loadNextSearchPage(after: searchResult.id)
             }
-        }
+        )
     }
 
     private var visibleCards: [CardSnapshot] {
@@ -534,10 +541,10 @@ struct ArchiveDetailView: View {
     /// 모델이 적재 시점에 upsert하므로 스토어 조회는 실패하지 않는다.
     private func rows(
         for snapshots: [CardSnapshot]
-    ) -> [(snapshot: CardSnapshot, card: Card)] {
+    ) -> [ArchiveCardRowModel] {
         snapshots.compactMap { snapshot in
             guard let card = cardStore.card(withCaptureID: snapshot.captureID) else { return nil }
-            return (snapshot, card)
+            return ArchiveCardRowModel(snapshot: snapshot, card: card)
         }
     }
 
@@ -545,6 +552,12 @@ struct ArchiveDetailView: View {
         Task {
             guard let content = await cardStore.toggleFavoriteReturningToast(card) else { return }
             toast = content
+        }
+    }
+
+    private func refreshImageURL(for card: Card, failedURL: URL) {
+        Task {
+            await cardStore.refreshImageURL(for: card, failedURL: failedURL)
         }
     }
 

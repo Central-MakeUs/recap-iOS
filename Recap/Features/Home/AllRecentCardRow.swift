@@ -3,11 +3,13 @@ import SwiftUI
 struct AllRecentCardRow: View {
     let card: Card
     var onToggleFavorite: (() -> Void)?
+    var onRemoteImageFailure: (URL) -> Void = { _ in }
 
     var body: some View {
         RecapInformationCardRow(
             card: card,
-            onToggleFavorite: onToggleFavorite
+            onToggleFavorite: onToggleFavorite,
+            onRemoteImageFailure: onRemoteImageFailure
         )
     }
 }

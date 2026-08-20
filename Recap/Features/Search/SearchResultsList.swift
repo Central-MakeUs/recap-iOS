@@ -11,51 +11,62 @@ struct SearchResultsList: View {
     var onEditCard: ((Card) -> Void)?
     var onRequestDeletion: ((Card) -> Void)?
 
-    @State private var openSwipeRowID: AnyHashable?
-
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("\(totalCount) recaps")
-                .font(RecapFont.pretendard(size: 13, weight: .medium))
-                .tracking(-0.26)
-                .foregroundStyle(Color.recapGray500)
-
-            VStack(spacing: 0) {
-                ForEach(results) { result in
-                    // 모델이 적재 시점에 upsert하므로 스토어 조회는 실패하지 않는다.
-                    if let card = cardStore.card(withCaptureID: result.captureID) {
-                        RecapSwipeActionRow(
-                            rowID: card.captureID,
-                            actions: RecapSwipeActionRow.cardActions(
-                                onEdit: { onEditCard?(card) },
-                                onDelete: { onRequestDeletion?(card) }
-                            ),
-                            openRowID: $openSwipeRowID,
-                            isEnabled: onEditCard != nil || onRequestDeletion != nil
-                        ) {
-                            RecapInformationCardRow(
-                                card: card,
-                                titleText: result.title.styledText(
-                                    defaultColor: Color.recapGray900
-                                ),
-                                summaryText: result.summary.styledText(
-                                    defaultColor: Color.recapGray500
-                                ),
-                                onToggleFavorite: favoriteAction(for: card)
-                            )
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                openCard(card.captureID)
-                            }
-                        }
-                        .onAppear {
-                            loadNextPageIfNeeded(result.id)
-                        }
-                    }
+        RecapSwipeCardCollection(
+            items: results,
+            header: AnyView(resultCount),
+            headerHeight: 25,
+            isLoading: false,
+            horizontalInset: 16,
+            topInset: 18,
+            bottomInset: 40,
+            rowContent: { result in
+                guard let card = cardStore.card(withCaptureID: result.captureID) else {
+                    return AnyView(EmptyView())
                 }
+                return AnyView(
+                    RecapInformationCardRow(
+                        card: card,
+                        titleText: result.title.styledText(
+                            defaultColor: Color.recapGray900
+                        ),
+                        summaryText: result.summary.styledText(
+                            defaultColor: Color.recapGray500
+                        ),
+                        onToggleFavorite: favoriteAction(for: card),
+                        onRemoteImageFailure: { failedURL in
+                            refreshImageURL(for: card, failedURL: failedURL)
+                        }
+                    )
+                )
+            },
+            actions: { result in
+                guard
+                    let card = cardStore.card(withCaptureID: result.captureID),
+                    onEditCard != nil || onRequestDeletion != nil
+                else { return [] }
+                return RecapSwipeAction.cardActions(
+                    onEdit: { onEditCard?(card) },
+                    onDelete: { onRequestDeletion?(card) }
+                )
+            },
+            onSelect: { result in
+                openCard(result.captureID)
+            },
+            onWillDisplay: { result in
+                loadNextPageIfNeeded(result.id)
             }
-        }
-        .padding(.top, 1)
+        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var resultCount: some View {
+        Text("\(totalCount) recaps")
+            .font(RecapFont.pretendard(size: 13, weight: .medium))
+            .tracking(-0.26)
+            .foregroundStyle(Color.recapGray500)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.top, 1)
     }
 
     private func favoriteAction(for card: Card) -> (() -> Void)? {
@@ -66,6 +77,12 @@ struct SearchResultsList: View {
             return nil
         }
         return { onToggleFavorite(card) }
+    }
+
+    private func refreshImageURL(for card: Card, failedURL: URL) {
+        Task {
+            await cardStore.refreshImageURL(for: card, failedURL: failedURL)
+        }
     }
 }
 
