@@ -142,17 +142,15 @@ struct SearchResultsView: View {
         case .loaded(let content) where content.results.isEmpty:
             SearchNoResultsView()
         case .loaded(let content):
-            scrollContent {
-                SearchResultsList(
-                    totalCount: content.totalCount,
-                    results: content.results,
-                    openCard: openCard,
-                    loadNextPageIfNeeded: loadNextPageIfNeeded,
-                    onToggleFavorite: toggleFavorite,
-                    onEditCard: { onAction(.editCard($0.captureID)) },
-                    onRequestDeletion: { cardPendingDeletion = $0 }
-                )
-            }
+            SearchResultsList(
+                totalCount: content.totalCount,
+                results: content.results,
+                openCard: openCard,
+                loadNextPageIfNeeded: loadNextPageIfNeeded,
+                onToggleFavorite: toggleFavorite,
+                onEditCard: { onAction(.editCard($0.captureID)) },
+                onRequestDeletion: { cardPendingDeletion = $0 }
+            )
         }
     }
 

@@ -121,7 +121,8 @@ final class SearchFeatureModel {
     func loadNextPageIfNeeded(after resultID: SearchResult.ID) async {
         guard
             case .loaded(let content) = state,
-            content.results.last?.id == resultID,
+            let resultIndex = content.results.firstIndex(where: { $0.id == resultID }),
+            resultIndex >= max(content.results.count - 5, 0),
             content.hasNext,
             !isLoadingNextPage
         else {

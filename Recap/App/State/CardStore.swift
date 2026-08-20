@@ -16,18 +16,22 @@ final class CardStore {
     private(set) var updatingFavoriteIDs: Set<Int64> = []
 
     private var cardsByID: [Int64: Card] = [:]
+    private var refreshingImageURLIDs: Set<Int64> = []
     /// 변경 4종(즐겨찾기·편집·삭제·신고)만 묶은 면. 조회·업로드까지 가진
     /// `CaptureServing` 전체를 받을 이유가 없다.
     private let captureMutator: any CaptureMutating
+    private let captureDetailLoader: (any CaptureDetailLoading)?
     /// 목록 멤버십이 바뀌는 사건(편집·삭제·즐겨찾기 개수)을 화면들에 알린다.
     /// 별 상태 자체는 공유 `Card`로 실시간이라 신호가 필요 없다.
     private let invalidationCenter: CardDataInvalidationCenter?
 
     init(
         captureMutator: any CaptureMutating,
+        captureDetailLoader: (any CaptureDetailLoading)? = nil,
         invalidationCenter: CardDataInvalidationCenter? = nil
     ) {
         self.captureMutator = captureMutator
+        self.captureDetailLoader = captureDetailLoader
         self.invalidationCenter = invalidationCenter
     }
 
@@ -56,6 +60,24 @@ final class CardStore {
     @discardableResult
     func upsert(_ snapshots: [CardSnapshot]) -> [Card] {
         snapshots.map { upsert($0) }
+    }
+
+    /// 목록 응답의 서명 URL이 만료되면 상세 API에서 새 URL을 받아 공유 카드에 반영한다.
+    /// 같은 카드의 여러 행이 동시에 실패해도 상세 요청은 한 번만 보낸다.
+    func refreshImageURL(for card: Card, failedURL: URL) async {
+        guard
+            failedURL == card.thumbnailURL || failedURL == card.originalImageURL,
+            let captureDetailLoader,
+            refreshingImageURLIDs.insert(card.captureID).inserted
+        else {
+            return
+        }
+        defer { refreshingImageURLIDs.remove(card.captureID) }
+
+        guard let detail = try? await captureDetailLoader.captureDetail(captureID: card.captureID) else {
+            return
+        }
+        upsert(detail)
     }
 
     // MARK: 변경
