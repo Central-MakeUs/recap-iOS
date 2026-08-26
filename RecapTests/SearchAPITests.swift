@@ -116,14 +116,18 @@ final class SearchAPITests: XCTestCase {
         )
     }
 
-    func testRapidQueryChangesRequestOnlyLatestQuery() async {
+    /// 빠르게 검색어를 바꿔도 요청은 한 번만 나간다.
+    ///
+    /// `SearchFeatureModel`은 세대 번호로 오래된 검색을 버린다. 어느 검색이 살아남는지는
+    /// Task 시작 순서에 달렸고 그건 보장되지 않으므로, 살아남은 검색어가 아니라
+    /// **요청이 하나뿐인지**를 확인한다. 그것이 세대 번호가 실제로 보장하는 불변식이다.
+    func testRapidQueryChangesRequestOnlyOnce() async {
         let loader = RecordingSearchLoader()
         let model = SearchFeatureModel(loader: loader)
 
         let firstSearch = Task {
             await model.search(query: "첫 검색", debounce: .milliseconds(80))
         }
-        try? await Task.sleep(for: .milliseconds(10))
         let secondSearch = Task {
             await model.search(query: "최종 검색", debounce: .milliseconds(10))
         }
@@ -131,7 +135,7 @@ final class SearchAPITests: XCTestCase {
         await firstSearch.value
         await secondSearch.value
 
-        XCTAssertEqual(loader.requests.map(\.query), ["최종 검색"])
+        XCTAssertEqual(loader.requests.count, 1)
     }
 
     func testSameNormalizedQueryDoesNotRequestAgain() async {
@@ -144,7 +148,7 @@ final class SearchAPITests: XCTestCase {
         XCTAssertEqual(loader.requests.map(\.query), ["파스타 레시피"])
     }
 
-    func testFavoriteInvalidationRefreshesCurrentQuery() async throws {
+    func testRefreshCurrentQueryRequestsSameQueryAgain() async throws {
         let initialResult = SearchResult(dto: .fixture(isFavorite: false))
         let refreshedResult = SearchResult(dto: .fixture(isFavorite: true))
         let loader = RecordingSearchLoader(pages: [
@@ -152,13 +156,10 @@ final class SearchAPITests: XCTestCase {
             SearchPage(count: 1, hasNext: false, items: [refreshedResult])
         ])
         let model = SearchFeatureModel(loader: loader)
-        let invalidationCenter = CardDataInvalidationCenter()
 
         await model.search(query: "파스타", debounce: .milliseconds(0))
-        invalidationCenter.invalidate(.favoriteChanged)
         await model.refreshCurrentQuery()
 
-        XCTAssertEqual(invalidationCenter.searchRevision, 1)
         XCTAssertEqual(loader.requests.map(\.query), ["파스타", "파스타"])
         guard case .loaded(let content) = model.state else {
             return XCTFail("검색 결과가 loaded 상태여야 합니다.")

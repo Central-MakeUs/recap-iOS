@@ -11,15 +11,14 @@ struct AllRecentCardsContainerView: View {
 
     init(
         summaryLoader: any HomeSummaryLoading,
-        captureMutator: any CaptureMutating,
+        cardStore: CardStore,
         invalidationCenter: CardDataInvalidationCenter
     ) {
         self.invalidationCenter = invalidationCenter
         _model = State(
             initialValue: AllRecentCardsModel(
                 loader: summaryLoader,
-                captureMutator: captureMutator,
-                invalidationCenter: invalidationCenter
+                cardStore: cardStore
             )
         )
     }
@@ -31,8 +30,8 @@ struct AllRecentCardsContainerView: View {
             isLoadingNextPage: model.isLoadingNextPage,
             onBack: dismiss.callAsFunction,
             onSearch: { router.navigate(.search) },
-            onSelectCard: { router.navigate(.remoteCardDetail($0)) },
-            onToggleFavorite: { try await model.toggleFavorite(cardID: $0) },
+            onSelectCard: { router.navigate(.remoteCardDetail($0.captureID)) },
+            onEditCard: { router.navigate(.cardEdit($0.captureID)) },
             onLoadMore: model.loadNextPage
         )
         .task(id: reloadTrigger) {
@@ -44,7 +43,7 @@ struct AllRecentCardsContainerView: View {
         }
     }
 
-    private var cards: [InformationCard] {
+    private var cards: [CardSnapshot] {
         model.cards
     }
 
@@ -54,17 +53,19 @@ struct AllRecentCardsContainerView: View {
 }
 
 struct AllRecentCardsView: View {
-    let cards: [InformationCard]
+    @Environment(CardStore.self) private var cardStore
+
+    let cards: [CardSnapshot]
     let totalCount: Int
     let isLoadingNextPage: Bool
     let onBack: () -> Void
     let onSearch: () -> Void
-    let onSelectCard: (InformationCard) -> Void
-    var onToggleFavorite: (InformationCard.ID) async throws -> Bool = { _ in false }
+    let onSelectCard: (Card) -> Void
+    let onEditCard: (Card) -> Void
     var onLoadMore: () async -> Void = {}
 
-    @State private var favoriteUpdatingIDs: Set<InformationCard.ID> = []
     @State private var toast: RecapToastContent?
+    @State private var cardPendingDeletion: Card?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -78,50 +79,58 @@ struct AllRecentCardsView: View {
             .padding(.top, 19)
             .padding(.bottom, 16)
 
-            ScrollView(showsIndicators: false) {
-                LazyVStack(spacing: 0) {
-                    Text(
-                        "\(Text("\(totalCount)").font(RecapFont.pretendard(size: 14, weight: .semibold)).foregroundStyle(Color.recapGray700)) recaps"
-                    )
-                        .font(RecapFont.pretendard(size: 14, weight: .regular))
-                        .tracking(-0.28)
-                        .foregroundStyle(Color.recapGray500)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 16)
-                        .padding(.top, 9)
-                        .padding(.bottom, 7)
-
-                    ForEach(cards) { card in
+            RecapSwipeCardCollection(
+                items: rows,
+                header: AnyView(recapCount),
+                headerHeight: 36,
+                isLoading: isLoadingNextPage,
+                rowContent: { card in
+                    AnyView(
                         AllRecentCardRow(
                             card: card,
-                            onToggleFavorite: favoriteUpdatingIDs.contains(card.id)
+                            onToggleFavorite: cardStore.updatingFavoriteIDs.contains(card.captureID)
                                 ? nil
-                                : { toggleFavorite(card.id) }
+                                : { toggleFavorite(card) },
+                            onRemoteImageFailure: { failedURL in
+                                refreshImageURL(for: card, failedURL: failedURL)
+                            }
                         )
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            onSelectCard(card)
-                        }
-                        .task {
-                            guard card.id == cards.last?.id else { return }
-                            await onLoadMore()
-                        }
-                    }
-
-                    if isLoadingNextPage {
-                        ProgressView()
-                            .tint(Color.recapBlue300)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 20)
-                    }
+                    )
+                },
+                actions: { card in
+                    RecapSwipeAction.cardActions(
+                        onEdit: { onEditCard(card) },
+                        onDelete: { requestDeletion(of: card) }
+                    )
+                },
+                onSelect: onSelectCard,
+                onWillDisplay: { card in
+                    guard shouldPrefetchNextPage(after: card) else { return }
+                    Task { await onLoadMore() }
                 }
-            }
+            )
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.recapBackground)
         .toolbar(.hidden, for: .navigationBar)
         .interactivePopGestureEnabled()
         .recapToast(toast)
+        .recapConfirmationDialog(
+            isPresented: Binding(
+                get: { cardPendingDeletion != nil },
+                set: { if !$0 { cardPendingDeletion = nil } }
+            ),
+            title: "스크린샷을 삭제할까요?",
+            message: "삭제한 스크린샷 정보는\n되돌릴 수 없어요.",
+            cancelTitle: "취소",
+            confirmTitle: "삭제",
+            // 다이얼로그가 확인 직전에 isPresented를 내리면서 카드가 비워지므로,
+            // 그리는 시점의 카드를 클로저에 담아둔다.
+            onConfirm: { [card = cardPendingDeletion] in
+                guard let card else { return }
+                delete(card)
+            }
+        )
         .task(id: toast) {
             guard toast != nil else { return }
             try? await Task.sleep(for: .seconds(2))
@@ -130,25 +139,56 @@ struct AllRecentCardsView: View {
         }
     }
 
-    private func toggleFavorite(_ id: InformationCard.ID) {
-        guard favoriteUpdatingIDs.insert(id).inserted else { return }
+    /// 응답은 순서·소속만 정하고, 그리기는 스토어의 공유 인스턴스로 한다.
+    /// 모델이 적재 시점에 upsert하므로 스토어 조회는 실패하지 않는다.
+    private var rows: [Card] {
+        cards.compactMap { cardStore.card(withCaptureID: $0.captureID) }
+    }
 
+    private var recapCount: some View {
+        Text(
+            "\(Text("\(totalCount)").font(RecapFont.pretendard(size: 14, weight: .semibold)).foregroundStyle(Color.recapGray700)) recaps"
+        )
+        .font(RecapFont.pretendard(size: 14, weight: .regular))
+        .tracking(-0.28)
+        .foregroundStyle(Color.recapGray500)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .padding(.horizontal, 16)
+        .padding(.top, 9)
+        .padding(.bottom, 7)
+    }
+
+    private func shouldPrefetchNextPage(after card: Card) -> Bool {
+        guard let index = cards.firstIndex(where: { $0.captureID == card.captureID }) else {
+            return false
+        }
+        return index >= max(cards.count - 5, 0)
+    }
+
+    private func toggleFavorite(_ card: Card) {
         Task {
-            defer { favoriteUpdatingIDs.remove(id) }
+            guard let content = await cardStore.toggleFavoriteReturningToast(card) else { return }
+            toast = content
+        }
+    }
 
+    private func requestDeletion(of card: Card) {
+        cardPendingDeletion = card
+    }
+
+    private func refreshImageURL(for card: Card, failedURL: URL) {
+        Task {
+            await cardStore.refreshImageURL(for: card, failedURL: failedURL)
+        }
+    }
+
+    /// 삭제는 상세 화면과 같은 길로 보낸다. 스토어가 내리면 홈·검색도 함께 갱신된다.
+    private func delete(_ card: Card) {
+        Task {
             do {
-                let isFavorite = try await onToggleFavorite(id)
-                toast = RecapToastContent(
-                    style: .success,
-                    message: isFavorite
-                        ? "즐겨찾기에 추가했어요."
-                        : "즐겨찾기에서 해제했어요."
-                )
+                try await cardStore.delete(card)
             } catch {
-                toast = RecapToastContent(
-                    style: .error,
-                    message: "즐겨찾기를 변경하지 못했어요. 다시 시도해주세요."
-                )
+                toast = RecapToastMessage.screenshotDeleteFailed.content
             }
         }
     }
@@ -189,6 +229,7 @@ private struct AllRecentCardsNavigationBar: View {
     }
 }
 
+#if DEBUG
 #Preview {
     NavigationStack {
         AllRecentCardsView(
@@ -197,10 +238,13 @@ private struct AllRecentCardsNavigationBar: View {
             isLoadingNextPage: false,
             onBack: {},
             onSearch: {},
-            onSelectCard: { _ in }
+            onSelectCard: { _ in },
+            onEditCard: { _ in }
         )
     }
+    .environment(PreviewStores.cardStore())
 }
+#endif
 
 @MainActor
 @Observable
@@ -208,10 +252,11 @@ private final class AllRecentCardsModel {
     private static let pageSize = 20
 
     private let loader: any HomeSummaryLoading
-    private let captureMutator: any CaptureMutating
-    private let invalidationCenter: CardDataInvalidationCenter
+    private let cardStore: CardStore?
 
-    private(set) var cards: [InformationCard] = []
+    private(set) var cards: [CardSnapshot] = [] {
+        didSet { cardStore?.upsert(cards) }
+    }
     private(set) var totalCount = 0
     private(set) var hasNext = false
     private(set) var isLoadingNextPage = false
@@ -219,12 +264,10 @@ private final class AllRecentCardsModel {
 
     init(
         loader: any HomeSummaryLoading,
-        captureMutator: any CaptureMutating,
-        invalidationCenter: CardDataInvalidationCenter
+        cardStore: CardStore? = nil
     ) {
         self.loader = loader
-        self.captureMutator = captureMutator
-        self.invalidationCenter = invalidationCenter
+        self.cardStore = cardStore
     }
 
     func load() async {
@@ -240,28 +283,6 @@ private final class AllRecentCardsModel {
     func loadNextPage() async {
         guard hasNext, !isLoadingNextPage else { return }
         await requestPage(reset: false)
-    }
-
-    func toggleFavorite(cardID: InformationCard.ID) async throws -> Bool {
-        guard
-            let index = cards.firstIndex(where: { $0.id == cardID }),
-            let captureID = cards[index].captureID
-        else {
-            throw CaptureLifecycleError.missingCaptureID
-        }
-
-        let previous = cards[index].isFavorite
-        let target = !previous
-        cards[index] = cards[index].with(isFavorite: target)
-
-        do {
-            try await captureMutator.updateFavorite(captureID: captureID, isFavorite: target)
-            invalidationCenter.invalidate(.favoriteChanged)
-            return target
-        } catch {
-            cards[index] = cards[index].with(isFavorite: previous)
-            throw error
-        }
     }
 
     private func requestPage(reset: Bool) async {

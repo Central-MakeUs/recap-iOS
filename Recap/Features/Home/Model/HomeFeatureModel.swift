@@ -11,46 +11,25 @@ final class HomeFeatureModel {
     }
 
     private let summaryLoader: any HomeSummaryLoading
-    private let captureMutator: (any CaptureMutating)?
-    private let invalidationCenter: CardDataInvalidationCenter?
+    /// 요약이 실릴 때마다 스냅샷을 정식 `Card`로 승격한다. 섹션이 스토어에서 읽는다.
+    private let cardStore: CardStore?
 
-    private(set) var state: State = .idle
-
-    /// 즐겨찾기를 변경하지 않는 화면은 `captureMutator` 없이 요약만 사용한다.
-    init(
-        summaryLoader: any HomeSummaryLoading,
-        captureMutator: (any CaptureMutating)? = nil,
-        invalidationCenter: CardDataInvalidationCenter? = nil
-    ) {
-        self.summaryLoader = summaryLoader
-        self.captureMutator = captureMutator
-        self.invalidationCenter = invalidationCenter
+    private(set) var state: State = .idle {
+        didSet { upsertLoadedCards() }
     }
 
-    func toggleFavorite(cardID: InformationCard.ID) async throws -> Bool {
-        guard
-            case .loaded(let content) = state,
-            let captureMutator,
-            let card = content.recentCards.first(where: { $0.id == cardID }),
-            let captureID = card.captureID
-        else {
-            throw CaptureLifecycleError.missingCaptureID
-        }
+    init(
+        summaryLoader: any HomeSummaryLoading,
+        cardStore: CardStore? = nil
+    ) {
+        self.summaryLoader = summaryLoader
+        self.cardStore = cardStore
+    }
 
-        let targetValue = !card.isFavorite
-        state = .loaded(content.applyingFavorite(targetValue, captureID: captureID))
-
-        do {
-            try await captureMutator.updateFavorite(
-                captureID: captureID,
-                isFavorite: targetValue
-            )
-            invalidationCenter?.invalidate(.favoriteChanged)
-            return targetValue
-        } catch {
-            state = .loaded(content)
-            throw error
-        }
+    private func upsertLoadedCards() {
+        guard case .loaded(let content) = state else { return }
+        cardStore?.upsert(content.recentCards)
+        cardStore?.upsert(content.favoriteCards)
     }
 
     func loadIfNeeded() async {

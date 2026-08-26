@@ -93,6 +93,7 @@ private struct RecapTabButton: View {
     }
 }
 
+#if DEBUG
 #Preview("홈 선택") {
     @Previewable @State var selection = MainTab.home
     RecapTabSelector(
@@ -112,3 +113,4 @@ private struct RecapTabButton: View {
         .padding()
         .background(Color.recapBackground)
 }
+#endif

@@ -62,6 +62,7 @@ struct SearchRecentContent: View {
     }
 }
 
+#if DEBUG
 #Preview("최근 검색어") {
     SearchRecentContent(
         recentKeywords: ["검색어", "검색어 01234", "검색검색검색"],
@@ -83,3 +84,4 @@ struct SearchRecentContent: View {
     .padding(16)
     .background(Color.recapBackground)
 }
+#endif

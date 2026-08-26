@@ -14,7 +14,9 @@ struct ArchiveScreenshotImportButton: View {
     }
 }
 
+#if DEBUG
 #Preview("스크린샷 불러오기 버튼") {
     ArchiveScreenshotImportButton(action: {})
         .padding()
 }
+#endif

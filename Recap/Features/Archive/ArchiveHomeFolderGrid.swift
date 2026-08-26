@@ -1,0 +1,46 @@
+import SwiftUI
+
+struct ArchiveHomeFolderGrid: View {
+    let summaries: [CategorySummary]
+    let onOpenArchive: (CardCategory) -> Void
+
+    private let columns = [
+        GridItem(.flexible(minimum: 99), spacing: 0, alignment: .leading),
+        GridItem(.flexible(minimum: 99), spacing: 0, alignment: .center),
+        GridItem(.flexible(minimum: 99), spacing: 0, alignment: .trailing)
+    ]
+
+    var body: some View {
+        LazyVGrid(
+            columns: columns,
+            alignment: .leading,
+            spacing: 15
+        ) {
+            ForEach(summaries) { summary in
+                Button {
+                    onOpenArchive(summary.category)
+                } label: {
+                    RecapFolderCard(
+                        title: summary.category.displayTitle,
+                        count: summary.count,
+                        category: summary.category
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+#if DEBUG
+#Preview("보관함 폴더 격자") {
+    ArchiveHomeFolderGrid(
+        summaries: SampleData.categorySummaries + [
+            CategorySummary(category: .other, count: 0, previewTitle: "")
+        ],
+        onOpenArchive: { _ in }
+    )
+    .padding()
+}
+#endif

@@ -18,8 +18,10 @@ struct RecapApp: App {
 
 
         switch configuration.runtimeProfile {
+        #if DEBUG
         case .mock:
             dependencies = RecapDependencies.simulatorMock()
+        #endif
         case .live:
             // 키가 없으면 SDK가 초기화되지 않고, 로그인 시 SDK 내부 `try!`가 크래시를 낸다.
             // Debug 빌드에서 즉시 드러나게 하고 릴리스에서는 로그인 실패로 처리된다.

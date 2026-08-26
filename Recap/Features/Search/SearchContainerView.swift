@@ -3,7 +3,7 @@ import SwiftUI
 @MainActor
 struct SearchContainerView: View {
     @Environment(AppRouter.self) private var router
-    @Environment(RecapCardStore.self) private var cardStore
+    @Environment(CardStore.self) private var cardStore
 
     @State private var model: SearchFeatureModel
     @State private var recentSearchStore: RecentSearchStore
@@ -12,14 +12,13 @@ struct SearchContainerView: View {
 
     init(
         loader: any SearchLoading,
-        captureMutator: any CaptureMutating,
+        cardStore: CardStore,
         invalidationCenter: CardDataInvalidationCenter
     ) {
         _model = State(
             initialValue: SearchFeatureModel(
                 loader: loader,
-                captureMutator: captureMutator,
-                invalidationCenter: invalidationCenter
+                cardStore: cardStore
             )
         )
         _recentSearchStore = State(initialValue: RecentSearchStore())
@@ -29,14 +28,13 @@ struct SearchContainerView: View {
     init(
         loader: any SearchLoading,
         recentSearchStore: RecentSearchStore,
-        captureMutator: any CaptureMutating,
+        cardStore: CardStore,
         invalidationCenter: CardDataInvalidationCenter
     ) {
         _model = State(
             initialValue: SearchFeatureModel(
                 loader: loader,
-                captureMutator: captureMutator,
-                invalidationCenter: invalidationCenter
+                cardStore: cardStore
             )
         )
         _recentSearchStore = State(initialValue: recentSearchStore)
@@ -57,9 +55,10 @@ struct SearchContainerView: View {
 
     private func handleAction(_ action: SearchAction) {
         switch action {
-        case .openCard(let card):
-            cardStore.cacheRemoteCards([card])
-            router.navigate(.remoteCardDetail(card))
+        case .openCard(let captureID):
+            router.navigate(.remoteCardDetail(captureID))
+        case .editCard(let captureID):
+            router.navigate(.cardEdit(captureID))
         }
     }
 }

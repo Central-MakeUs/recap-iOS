@@ -39,6 +39,7 @@ struct ForceUpdateView: View {
     }
 }
 
+#if DEBUG
 #Preview("강제 업데이트") {
     ForceUpdateView(
         status: AppVersionStatus(
@@ -48,3 +49,4 @@ struct ForceUpdateView: View {
         )
     )
 }
+#endif

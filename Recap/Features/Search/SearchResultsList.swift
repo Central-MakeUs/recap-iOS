@@ -1,53 +1,92 @@
 import SwiftUI
 
 struct SearchResultsList: View {
+    @Environment(CardStore.self) private var cardStore
+
     let totalCount: Int
     let results: [SearchResult]
-    let openCard: (InformationCard.ID) -> Void
+    let openCard: (Int64) -> Void
     let loadNextPageIfNeeded: (SearchResult.ID) -> Void
-    var onToggleFavorite: ((InformationCard.ID) -> Void)?
-    var favoriteUpdatingIDs: Set<InformationCard.ID> = []
+    var onToggleFavorite: ((Card) -> Void)?
+    var onEditCard: ((Card) -> Void)?
+    var onRequestDeletion: ((Card) -> Void)?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("\(totalCount) recaps")
-                .font(RecapFont.pretendard(size: 13, weight: .medium))
-                .tracking(-0.26)
-                .foregroundStyle(Color.recapGray500)
-
-            VStack(spacing: 0) {
-                ForEach(results) { result in
+        RecapSwipeCardCollection(
+            items: results,
+            header: AnyView(resultCount),
+            headerHeight: 25,
+            isLoading: false,
+            horizontalInset: 16,
+            topInset: 18,
+            bottomInset: 40,
+            rowContent: { result in
+                guard let card = cardStore.card(withCaptureID: result.captureID) else {
+                    return AnyView(EmptyView())
+                }
+                return AnyView(
                     RecapInformationCardRow(
-                        card: result.card,
+                        card: card,
                         titleText: result.title.styledText(
                             defaultColor: Color.recapGray900
                         ),
                         summaryText: result.summary.styledText(
                             defaultColor: Color.recapGray500
                         ),
-                        onToggleFavorite: favoriteAction(for: result.card.id)
+                        onToggleFavorite: favoriteAction(for: card),
+                        onRemoteImageFailure: { failedURL in
+                            refreshImageURL(for: card, failedURL: failedURL)
+                        }
                     )
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        openCard(result.card.id)
-                    }
-                    .onAppear {
-                        loadNextPageIfNeeded(result.id)
-                    }
-                }
+                )
+            },
+            actions: { result in
+                guard
+                    let card = cardStore.card(withCaptureID: result.captureID),
+                    onEditCard != nil || onRequestDeletion != nil
+                else { return [] }
+                return RecapSwipeAction.cardActions(
+                    onEdit: { onEditCard?(card) },
+                    onDelete: { onRequestDeletion?(card) }
+                )
+            },
+            onSelect: { result in
+                openCard(result.captureID)
+            },
+            onWillDisplay: { result in
+                loadNextPageIfNeeded(result.id)
             }
-        }
-        .padding(.top, 1)
+        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private func favoriteAction(for cardID: InformationCard.ID) -> (() -> Void)? {
-        guard let onToggleFavorite, !favoriteUpdatingIDs.contains(cardID) else {
+    private var resultCount: some View {
+        Text("\(totalCount) recaps")
+            .font(RecapFont.pretendard(size: 13, weight: .medium))
+            .tracking(-0.26)
+            .foregroundStyle(Color.recapGray500)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.top, 1)
+    }
+
+    private func favoriteAction(for card: Card) -> (() -> Void)? {
+        guard
+            let onToggleFavorite,
+            !cardStore.updatingFavoriteIDs.contains(card.captureID)
+        else {
             return nil
         }
-        return { onToggleFavorite(cardID) }
+        return { onToggleFavorite(card) }
+    }
+
+    private func refreshImageURL(for card: Card, failedURL: URL) {
+        Task {
+            await cardStore.refreshImageURL(for: card, failedURL: failedURL)
+        }
     }
 }
 
+#if DEBUG
 #Preview("검색 결과 목록") {
     let results = SampleData.search("파스타").map(SearchResult.init(card:))
 
@@ -58,4 +97,6 @@ struct SearchResultsList: View {
         loadNextPageIfNeeded: { _ in }
     )
     .background(Color.recapBackground)
+    .environment(PreviewStores.cardStore())
 }
+#endif

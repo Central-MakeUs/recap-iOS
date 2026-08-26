@@ -5,13 +5,8 @@ enum HomeAction: Hashable {
     case startOrganizing
     case openFavorites
     case openAllRecent
-    case openCard(InformationCard)
-    case openArchive(CollectionKind)
-    case openSettings
-}
-
-enum CardCreationAction: Hashable {
-    case start
+    case openCard(Int64)
+    case openArchive(CardCategory)
     case openSettings
 }
 
@@ -26,12 +21,14 @@ enum ArchiveSection: String, CaseIterable, Identifiable {
 enum ArchiveAction: Hashable {
     case search
     case openFavorites
-    case openArchive(CollectionKind)
-    case openCard(InformationCard)
+    case openArchive(CardCategory)
+    case openCard(Int64)
+    case editCard(Int64)
     case selectSort(ArchiveSort)
     case openSettings
 }
 
 enum SearchAction: Hashable {
-    case openCard(InformationCard)
+    case openCard(Int64)
+    case editCard(Int64)
 }

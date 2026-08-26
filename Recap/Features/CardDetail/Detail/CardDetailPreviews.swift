@@ -1,5 +1,6 @@
 import SwiftUI
 
+#if DEBUG
 #Preview("즐겨찾기 완료") {
     NavigationStack {
         CardDetailView(
@@ -11,7 +12,7 @@ import SwiftUI
         )
     }
     .environment(AppRouter())
-    .environment(PreviewStores.recapCardStore())
+    .environment(PreviewStores.cardStore())
 }
 
 #Preview("즐겨찾기 취소") {
@@ -25,29 +26,15 @@ import SwiftUI
         )
     }
     .environment(AppRouter())
-    .environment(PreviewStores.recapCardStore())
+    .environment(PreviewStores.cardStore())
 }
 
-#Preview("원본 이미지 로딩 실패 - 전체") {
+#Preview("원본 이미지 폴백") {
     NavigationStack {
-        CardDetailView(
-            card: SampleData.cards[1],
-            imageState: .failedFullWidth
-        )
+        CardDetailView(card: SampleData.cards[8])
     }
     .environment(AppRouter())
-    .environment(PreviewStores.recapCardStore())
-}
-
-#Preview("원본 이미지 로딩 실패 - 카드") {
-    NavigationStack {
-        CardDetailView(
-            card: SampleData.cards[1],
-            imageState: .failedCard
-        )
-    }
-    .environment(AppRouter())
-    .environment(PreviewStores.recapCardStore())
+    .environment(PreviewStores.cardStore())
 }
 
 #Preview("삭제 확인") {
@@ -58,7 +45,7 @@ import SwiftUI
         )
     }
     .environment(AppRouter())
-    .environment(PreviewStores.recapCardStore())
+    .environment(PreviewStores.cardStore())
 }
 
 #Preview("삭제 실패") {
@@ -72,5 +59,6 @@ import SwiftUI
         )
     }
     .environment(AppRouter())
-    .environment(PreviewStores.recapCardStore())
+    .environment(PreviewStores.cardStore())
 }
+#endif

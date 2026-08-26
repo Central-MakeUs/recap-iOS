@@ -1,0 +1,261 @@
+import Foundation
+import Observation
+import UserNotifications
+
+nonisolated enum OrganizeNotificationAuthorizationStatus: Equatable, Sendable {
+    case notDetermined
+    case denied
+    case authorized
+
+    var allowsNotifications: Bool {
+        self == .authorized
+    }
+}
+
+nonisolated struct OrganizeNotificationMessage: Equatable, Sendable {
+    let identifier: String
+    let title: String
+    let body: String
+}
+
+protocol OrganizeNotificationDelivering: Sendable {
+    func authorizationStatus() async -> OrganizeNotificationAuthorizationStatus
+    func requestAuthorization() async throws -> Bool
+    func deliver(_ message: OrganizeNotificationMessage) async throws
+}
+
+/// 알림 센터는 어느 스레드에서 불러도 되고 이 타입은 상태를 갖지 않는다.
+/// 그래서 격리를 두지 않는다 — 다른 구현들이 `actor`인 것과 같은 이유다.
+///
+/// 센터를 저장하지 않고 그때그때 가져오는 것도 격리 때문이다. `UNUserNotificationCenter`는
+/// `Sendable`이 아니라서 저장해두면 격리 경계를 넘길 수 없다.
+final class SystemOrganizeNotificationDelivery: OrganizeNotificationDelivering {
+    func authorizationStatus() async -> OrganizeNotificationAuthorizationStatus {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        switch settings.authorizationStatus {
+        case .authorized, .provisional, .ephemeral:
+            return .authorized
+        case .denied:
+            return .denied
+        case .notDetermined:
+            return .notDetermined
+        @unknown default:
+            return .denied
+        }
+    }
+
+    func requestAuthorization() async throws -> Bool {
+        try await UNUserNotificationCenter.current()
+            .requestAuthorization(options: [.alert, .sound])
+    }
+
+    func deliver(_ message: OrganizeNotificationMessage) async throws {
+        let content = UNMutableNotificationContent()
+        content.title = message.title
+        content.body = message.body
+        content.sound = .default
+
+        let request = UNNotificationRequest(
+            identifier: message.identifier,
+            content: content,
+            trigger: nil
+        )
+        try await UNUserNotificationCenter.current().add(request)
+    }
+}
+
+@MainActor
+@Observable
+final class OrganizeNotificationStore {
+    enum SystemPermissionAction: Equatable {
+        case none
+        case openSettings
+    }
+
+    private static let preferenceKey = "settings.organizeNotificationEnabled"
+
+    private(set) var authorizationStatus: OrganizeNotificationAuthorizationStatus = .notDetermined
+    private(set) var isPreferenceEnabled: Bool
+
+    private let delivery: any OrganizeNotificationDelivering
+    private let userDefaults: UserDefaults
+    private let preferenceKey: String
+    private var enableAfterSystemPermission = false
+    private var isApplicationInBackground = false
+
+    init(
+        delivery: (any OrganizeNotificationDelivering)? = nil,
+        userDefaults: UserDefaults = .standard,
+        preferenceKey: String? = nil
+    ) {
+        let resolvedPreferenceKey = preferenceKey ?? Self.preferenceKey
+
+        self.delivery = delivery ?? SystemOrganizeNotificationDelivery()
+        self.userDefaults = userDefaults
+        self.preferenceKey = resolvedPreferenceKey
+        self.isPreferenceEnabled = userDefaults.bool(forKey: resolvedPreferenceKey)
+    }
+
+    var isEnabled: Bool {
+        isPreferenceEnabled && authorizationStatus.allowsNotifications
+    }
+
+    /// 알림 켬/끔 값은 세 상태를 갖는다. 저장 안 됨(안내를 아직 안 봄), `true`(켬),
+    /// `false`(끔). 권한이 미설정이고 아직 안내를 안 본 경우에만 노출한다.
+    func shouldPresentPermissionGuide() async -> Bool {
+        await refreshAuthorization()
+        return userDefaults.object(forKey: preferenceKey) == nil
+            && authorizationStatus == .notDetermined
+    }
+
+    /// "나중에 하기". 끔으로 저장해 안내가 다시 뜨지 않게 한다. 이후 알림 유도는
+    /// 설정 화면이 담당하며, 거기서 다시 켤 수 있다.
+    func declinePermissionGuide() {
+        savePreference(false)
+    }
+
+    func prepareForOrganize() async {
+        await refreshAuthorization()
+
+        guard userDefaults.object(forKey: preferenceKey) == nil else {
+            return
+        }
+
+        switch authorizationStatus {
+        case .authorized:
+            savePreference(true)
+        case .notDetermined, .denied:
+            break
+        }
+    }
+
+    func requestPermissionForOrganize() async {
+        await refreshAuthorization()
+
+        guard authorizationStatus == .notDetermined else {
+            if authorizationStatus.allowsNotifications {
+                savePreference(true)
+            }
+            return
+        }
+
+        _ = try? await delivery.requestAuthorization()
+        await refreshAuthorization()
+        if authorizationStatus.allowsNotifications {
+            savePreference(true)
+        }
+    }
+
+    func refreshAuthorization() async {
+        authorizationStatus = await delivery.authorizationStatus()
+
+        if authorizationStatus.allowsNotifications, enableAfterSystemPermission {
+            enableAfterSystemPermission = false
+            savePreference(true)
+        }
+    }
+
+    func toggleOrganizeNotifications() async -> SystemPermissionAction {
+        await refreshAuthorization()
+
+        if isEnabled {
+            savePreference(false)
+            return .none
+        }
+
+        switch authorizationStatus {
+        case .authorized:
+            savePreference(true)
+            return .none
+        case .notDetermined:
+            _ = try? await delivery.requestAuthorization()
+            await refreshAuthorization()
+            if authorizationStatus.allowsNotifications {
+                savePreference(true)
+            }
+            return .none
+        case .denied:
+            enableAfterSystemPermission = true
+            return .openSettings
+        }
+    }
+
+    func enableSystemNotifications() async -> SystemPermissionAction {
+        await refreshAuthorization()
+
+        switch authorizationStatus {
+        case .authorized:
+            return .none
+        case .notDetermined:
+            _ = try? await delivery.requestAuthorization()
+            await refreshAuthorization()
+            return .none
+        case .denied:
+            return .openSettings
+        }
+    }
+
+    func setApplicationInBackground(_ isInBackground: Bool) {
+        isApplicationInBackground = isInBackground
+    }
+
+    func notifyOrganizeResult(_ result: OrganizeStatusResponseDTO) async {
+        guard isApplicationInBackground, isPreferenceEnabled else { return }
+
+        await refreshAuthorization()
+        guard authorizationStatus.allowsNotifications else { return }
+        guard let message = OrganizeNotificationMessage(result: result) else { return }
+
+        try? await delivery.deliver(message)
+    }
+
+    func notifyOrganizeFailure(batchID: Int64? = nil) async {
+        guard isApplicationInBackground, isPreferenceEnabled else { return }
+
+        await refreshAuthorization()
+        guard authorizationStatus.allowsNotifications else { return }
+
+        let identifierSuffix = batchID.map(String.init) ?? UUID().uuidString
+        try? await delivery.deliver(
+            OrganizeNotificationMessage(
+                identifier: "recap.organize.result.\(identifierSuffix)",
+                title: CardCreationResultState.failure.title(),
+                body: CardCreationResultState.failure.message
+            )
+        )
+    }
+
+    private func savePreference(_ isEnabled: Bool) {
+        isPreferenceEnabled = isEnabled
+        userDefaults.set(isEnabled, forKey: preferenceKey)
+    }
+}
+
+private extension OrganizeNotificationMessage {
+    init?(result: OrganizeStatusResponseDTO) {
+        let identifier = "recap.organize.result.\(result.batchId)"
+
+        switch result.status {
+        case .completed:
+            self.init(
+                identifier: identifier,
+                title: "스크린샷 정리가 완료됐어요",
+                body: "\(result.successCount)개의 스크린샷을 정리했어요."
+            )
+        case .partialFailed:
+            self.init(
+                identifier: identifier,
+                title: "스크린샷 정리가 끝났어요",
+                body: "\(result.successCount)개를 정리하고 \(result.failCount)개를 정리하지 못했어요."
+            )
+        case .failed:
+            self.init(
+                identifier: identifier,
+                title: CardCreationResultState.failure.title(),
+                body: CardCreationResultState.failure.message
+            )
+        case .processing, .cancelled:
+            return nil
+        }
+    }
+}

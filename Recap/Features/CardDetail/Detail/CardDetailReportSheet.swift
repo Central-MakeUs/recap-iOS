@@ -87,9 +87,7 @@ struct CardDetailReportSheet: View {
 
     private func reasonButton(_ reason: CaptureReportReason) -> some View {
         Button {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                selectedReason = reason
-            }
+            selectedReason = reason
             if reason != .other {
                 detail = ""
                 isDetailFocused = false
@@ -133,6 +131,7 @@ struct CardDetailReportSheet: View {
     }
 }
 
+#if DEBUG
 #Preview("정보카드 신고 메뉴 - 선택 전") {
     @Previewable @State var selectedReason: CaptureReportReason?
 
@@ -152,3 +151,4 @@ struct CardDetailReportSheet: View {
         onClose: PreviewActions.noop
     )
 }
+#endif

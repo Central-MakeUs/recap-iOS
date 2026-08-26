@@ -22,7 +22,7 @@ final class ArchiveAPITests: XCTestCase {
         ])
         XCTAssertEqual(content.favoriteCount, 1)
         XCTAssertEqual(content.otherCount, 1)
-        XCTAssertEqual(content.summaries.first?.kind, .shopping)
+        XCTAssertEqual(content.summaries.first?.category, .shopping)
         XCTAssertEqual(content.summaries.first?.previewTitle, "최근 제목 · 이전 제목")
     }
 
@@ -30,7 +30,7 @@ final class ArchiveAPITests: XCTestCase {
         let client = ArchiveNetworkClientStub()
         let service = ArchiveService(networkClient: client)
         let current = ArchiveHomeContent(
-            summaries: [CollectionSummary(kind: .shopping, count: 7, previewTitle: "기존 제목")],
+            summaries: [CategorySummary(category: .shopping, count: 7, previewTitle: "기존 제목")],
             favoriteCount: 99,
             otherCount: 5
         )
@@ -53,7 +53,7 @@ final class ArchiveAPITests: XCTestCase {
             representativeTitles: []
         )
 
-        XCTAssertEqual(CollectionSummary(archiveDTO: dto).previewTitle, "")
+        XCTAssertEqual(CategorySummary(archiveDTO: dto).previewTitle, "")
     }
 
     func testFavoritesDoesNotSendSortQuery() async throws {
@@ -88,7 +88,7 @@ final class ArchiveAPITests: XCTestCase {
         ])
     }
 
-    func testArchiveCaptureResponseMapsToInformationCard() async throws {
+    func testArchiveCaptureResponseMapsToCardSnapshot() async throws {
         let client = ArchiveNetworkClientStub()
         let service = ArchiveService(networkClient: client)
 
@@ -99,8 +99,7 @@ final class ArchiveAPITests: XCTestCase {
         let card = try XCTUnwrap(cards.first)
 
         XCTAssertEqual(card.captureID, 101)
-        XCTAssertEqual(card.collection, .shopping)
-        XCTAssertEqual(card.category, "쇼핑 · 상품")
+        XCTAssertEqual(card.category, .shopping)
         XCTAssertEqual(card.thumbnailURL?.absoluteString, "https://images.example.com/101.jpg")
     }
 
@@ -141,12 +140,10 @@ final class ArchiveAPITests: XCTestCase {
 
     func testCategoryDetailSortReloadsFromServer() async {
         let loader = SequencedArchiveLoader(homeResults: [])
-        let mutator = CaptureMutatorStub()
         let otherModel = ArchiveDetailFeatureModel(
             scope: .category(.other),
             loader: loader,
-            captureMutator: mutator,
-            invalidationCenter: CardDataInvalidationCenter()
+            cardStore: CardStore(captureMutator: CaptureMutatorStub())
         )
 
         await otherModel.loadIfNeeded()
@@ -160,14 +157,10 @@ final class ArchiveAPITests: XCTestCase {
     }
 
     func testFavoritesSortsLocallyByOrganizedDate() async {
-        let older = Self.card(
-            id: UUID(),
-            captureID: 101,
+        let older = Self.card(captureID: 101,
             organizedAt: Date(timeIntervalSince1970: 100)
         )
-        let newer = Self.card(
-            id: UUID(),
-            captureID: 102,
+        let newer = Self.card(captureID: 102,
             organizedAt: Date(timeIntervalSince1970: 200)
         )
         let loader = SequencedArchiveLoader(
@@ -177,8 +170,7 @@ final class ArchiveAPITests: XCTestCase {
         let model = ArchiveDetailFeatureModel(
             scope: .favorites,
             loader: loader,
-            captureMutator: CaptureMutatorStub(),
-            invalidationCenter: CardDataInvalidationCenter()
+            cardStore: CardStore(captureMutator: CaptureMutatorStub())
         )
 
         await model.loadIfNeeded()
@@ -193,9 +185,9 @@ final class ArchiveAPITests: XCTestCase {
 
     func testDetailSelectionDeletionCallsAPIAndRemovesDeletedCards() async throws {
         let cards = [
-            Self.card(id: UUID(), captureID: 101),
-            Self.card(id: UUID(), captureID: 102),
-            Self.card(id: UUID(), captureID: 103)
+            Self.card(captureID: 101),
+            Self.card(captureID: 102),
+            Self.card(captureID: 103)
         ]
         let loader = SequencedArchiveLoader(
             homeResults: [],
@@ -203,11 +195,14 @@ final class ArchiveAPITests: XCTestCase {
         )
         let mutator = CaptureMutatorStub()
         let invalidationCenter = CardDataInvalidationCenter()
+        let store = CardStore(
+            captureMutator: mutator,
+            invalidationCenter: invalidationCenter
+        )
         let model = ArchiveDetailFeatureModel(
             scope: .category(.shopping),
             loader: loader,
-            captureMutator: mutator,
-            invalidationCenter: invalidationCenter
+            cardStore: store
         )
 
         await model.loadIfNeeded()
@@ -215,57 +210,11 @@ final class ArchiveAPITests: XCTestCase {
 
         XCTAssertEqual(mutator.deletedCaptureIDs, [101, 102])
         XCTAssertEqual(model.state, .loaded([cards[2]]))
+        XCTAssertNil(store.card(withCaptureID: 101), "지운 카드는 스토어에서도 내려야 한다")
+        XCTAssertNil(store.card(withCaptureID: 102))
+        XCTAssertNotNil(store.card(withCaptureID: 103))
         XCTAssertEqual(invalidationCenter.homeRevision, 1)
         XCTAssertEqual(invalidationCenter.archiveDetailRevision, 1)
-    }
-
-    func testDetailFavoriteToggleCallsAPIAndUpdatesCard() async throws {
-        let card = Self.card(id: UUID(), captureID: 101)
-        let loader = SequencedArchiveLoader(
-            homeResults: [],
-            detailCards: [card]
-        )
-        let mutator = CaptureMutatorStub()
-        let model = ArchiveDetailFeatureModel(
-            scope: .category(.shopping),
-            loader: loader,
-            captureMutator: mutator,
-            invalidationCenter: CardDataInvalidationCenter()
-        )
-
-        await model.loadIfNeeded()
-        let isFavorite = try await model.toggleFavorite(cardID: card.id)
-
-        XCTAssertTrue(isFavorite)
-        XCTAssertEqual(mutator.favoriteUpdates, [.init(captureID: 101, isFavorite: true)])
-        guard case .loaded(let cards) = model.state else {
-            return XCTFail("Expected loaded archive cards")
-        }
-        XCTAssertTrue(try XCTUnwrap(cards.first).isFavorite)
-    }
-
-    func testFavoritesToggleRemovesUnfavoritedCard() async throws {
-        let card = Self.card(id: UUID(), captureID: 101).with(isFavorite: true)
-        let loader = SequencedArchiveLoader(
-            homeResults: [],
-            detailCards: [card]
-        )
-        let mutator = CaptureMutatorStub()
-        let model = ArchiveDetailFeatureModel(
-            scope: .favorites,
-            loader: loader,
-            captureMutator: mutator,
-            invalidationCenter: CardDataInvalidationCenter()
-        )
-
-        await model.loadIfNeeded()
-        let isFavorite = try await model.toggleFavorite(cardID: card.id)
-
-        XCTAssertFalse(isFavorite)
-        guard case .loaded(let cards) = model.state else {
-            return XCTFail("Expected loaded archive cards")
-        }
-        XCTAssertTrue(cards.isEmpty)
     }
 
     func testURLProtocolIntegrationAddsBearerAndDecodesArchiveList() async throws {
@@ -383,21 +332,17 @@ final class ArchiveAPITests: XCTestCase {
     """
 
     nonisolated private static func card(
-        id: UUID,
         captureID: Int64,
         organizedAt: Date? = nil
-    ) -> InformationCard {
-        InformationCard(
-            id: id,
+    ) -> CardSnapshot {
+        CardSnapshot(
             captureID: captureID,
             title: "카드 \(captureID)",
             summary: "요약",
-            collection: .shopping,
+            category: .shopping,
             organizedAt: organizedAt,
-            dateText: "",
             location: "",
             businessHours: "",
-            category: "쇼핑 · 상품",
             confirmationLabel: nil,
             memo: "",
             tags: [],
@@ -448,13 +393,13 @@ private final class ArchiveNetworkClientStub: NetworkClient {
 @MainActor
 private final class SequencedArchiveLoader: ArchiveLoading {
     private var homeResults: [Result<ArchiveHomeContent, Error>]
-    private let detailCards: [InformationCard]
+    private let detailCards: [CardSnapshot]
     private(set) var homeRequestCount = 0
     private(set) var detailRequests: [(scope: ArchiveDetailScope, sort: ArchiveSort)] = []
 
     init(
         homeResults: [Result<ArchiveHomeContent, Error>],
-        detailCards: [InformationCard] = []
+        detailCards: [CardSnapshot] = []
     ) {
         self.homeResults = homeResults
         self.detailCards = detailCards
@@ -471,7 +416,7 @@ private final class SequencedArchiveLoader: ArchiveLoading {
     func fetchCards(
         scope: ArchiveDetailScope,
         sort: ArchiveSort
-    ) async throws -> [InformationCard] {
+    ) async throws -> [CardSnapshot] {
         detailRequests.append((scope, sort))
         return detailCards
     }
@@ -539,7 +484,7 @@ private final class CancellationThenSuccessArchiveLoader: ArchiveLoading {
     func fetchCards(
         scope: ArchiveDetailScope,
         sort: ArchiveSort
-    ) async throws -> [InformationCard] {
+    ) async throws -> [CardSnapshot] {
         []
     }
 

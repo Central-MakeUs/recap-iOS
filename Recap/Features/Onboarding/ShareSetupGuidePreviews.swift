@@ -1,5 +1,6 @@
 import SwiftUI
 
+#if DEBUG
 #Preview("Share setup guide") {
     OnboardingGuideCarouselView(
         initialProgress: .shareSetup,
@@ -23,3 +24,4 @@ import SwiftUI
         onSkip: {}
     )
 }
+#endif

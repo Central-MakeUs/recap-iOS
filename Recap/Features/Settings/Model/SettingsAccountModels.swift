@@ -25,10 +25,7 @@ final class AccountManagementModel {
         } catch is CancellationError {
             return
         } catch {
-            toast = RecapToastContent(
-                style: .error,
-                message: "로그인 정보를 불러오지 못했어요."
-            )
+            toast = RecapToastMessage.accountLoadFailed.content
         }
     }
 
@@ -41,10 +38,7 @@ final class AccountManagementModel {
             try await service.withdrawAccount()
             accountWithdrawalCompleted()
         } catch {
-            toast = RecapToastContent(
-                style: .error,
-                message: "회원 탈퇴에 실패했어요. 다시 시도해주세요."
-            )
+            toast = RecapToastMessage.accountWithdrawalFailed.content
         }
     }
 }
@@ -77,10 +71,7 @@ final class DataManagementModel {
         } catch is CancellationError {
             return
         } catch {
-            toast = RecapToastContent(
-                style: .error,
-                message: "데이터 정보를 불러오지 못했어요."
-            )
+            toast = RecapToastMessage.dataSummaryLoadFailed.content
         }
     }
 
@@ -93,15 +84,9 @@ final class DataManagementModel {
             try await service.deleteAllData()
             capturedCount = 0
             accountDataDeleted()
-            toast = RecapToastContent(
-                style: .success,
-                message: "모든 데이터를 삭제했어요."
-            )
+            toast = RecapToastMessage.allDataDeleted.content
         } catch {
-            toast = RecapToastContent(
-                style: .error,
-                message: "데이터를 삭제하지 못했어요. 다시 시도해주세요."
-            )
+            toast = RecapToastMessage.allDataDeleteFailed.content
         }
     }
 }

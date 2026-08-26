@@ -4,7 +4,7 @@ nonisolated enum SearchScope: Equatable, Sendable {
     case all
     case favorites
     case other
-    case type(CollectionKind)
+    case type(CardCategory)
 
     var queryValue: String {
         switch self {
@@ -20,8 +20,8 @@ nonisolated enum SearchScope: Equatable, Sendable {
     }
 
     var typeCode: CardTypeCode? {
-        guard case .type(let kind) = self else { return nil }
-        return CardTypeCode(collectionKind: kind)
+        guard case .type(let category) = self else { return nil }
+        return CardTypeCode(category: category)
     }
 }
 
@@ -86,11 +86,11 @@ nonisolated struct SearchHighlightedString: Equatable, Sendable {
 
 nonisolated struct SearchResult: Identifiable, Equatable, Sendable {
     let captureID: Int64
-    let card: InformationCard
+    let card: CardSnapshot
     let title: SearchHighlightedString
     let summary: SearchHighlightedString
 
-    var id: InformationCard.ID { card.id }
+    var id: Int64 { captureID }
 
     init(dto: SearchResultDTO) {
         let title = SearchHighlightedString(serverValue: dto.titleHighlighted)
@@ -101,19 +101,14 @@ nonisolated struct SearchResult: Identifiable, Equatable, Sendable {
         self.captureID = dto.captureId
         self.title = title
         self.summary = summary
-        self.card = InformationCard(
-            id: UUID(),
+        self.card = CardSnapshot(
             captureID: dto.captureId,
             title: title.plainText,
             summary: summary.plainText,
-            collection: dto.typeCode.collectionKind,
+            category: dto.typeCode.category,
             organizedAt: dto.organizedAt,
-            dateText: dto.organizedAt.formatted(
-                .dateTime.year().month(.twoDigits).day(.twoDigits)
-            ),
             location: "",
             businessHours: "",
-            category: dto.typeCode.displayTitle,
             confirmationLabel: nil,
             memo: "",
             tags: [],
@@ -122,8 +117,8 @@ nonisolated struct SearchResult: Identifiable, Equatable, Sendable {
         )
     }
 
-    init(card: InformationCard) {
-        captureID = card.captureID ?? 0
+    init(card: CardSnapshot) {
+        captureID = card.captureID
         self.card = card
         title = SearchHighlightedString(serverValue: card.title)
         summary = SearchHighlightedString(serverValue: card.summary)
@@ -131,7 +126,7 @@ nonisolated struct SearchResult: Identifiable, Equatable, Sendable {
 
     private init(
         captureID: Int64,
-        card: InformationCard,
+        card: CardSnapshot,
         title: SearchHighlightedString,
         summary: SearchHighlightedString
     ) {
@@ -141,15 +136,6 @@ nonisolated struct SearchResult: Identifiable, Equatable, Sendable {
         self.summary = summary
     }
 
-    /// 하이라이트를 유지한 채 카드만 교체한다.
-    func with(card: InformationCard) -> SearchResult {
-        SearchResult(
-            captureID: captureID,
-            card: card,
-            title: title,
-            summary: summary
-        )
-    }
 }
 
 nonisolated struct SearchPage: Equatable, Sendable {
@@ -177,17 +163,4 @@ nonisolated struct SearchContent: Equatable, Sendable {
     let nextPage: Int
     let results: [SearchResult]
 
-    func applyingFavorite(_ isFavorite: Bool, captureID: Int64) -> SearchContent {
-        SearchContent(
-            query: query,
-            totalCount: totalCount,
-            hasNext: hasNext,
-            nextPage: nextPage,
-            results: results.map { result in
-                result.captureID == captureID
-                    ? result.with(card: result.card.with(isFavorite: isFavorite))
-                    : result
-            }
-        )
-    }
 }

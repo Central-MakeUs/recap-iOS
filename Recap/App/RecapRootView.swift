@@ -4,7 +4,7 @@ struct RecapRootView: View {
     @State private var sessionStore: RecapSessionStore
     @State private var onboardingStore: OnboardingProgressStore
     @State private var router: AppRouter
-    @State private var cardStore: RecapCardStore
+    @State private var cardStore: CardStore
     @State private var isSplashPresented: Bool
     @State private var requiredUpdateStatus: AppVersionStatus?
 
@@ -17,7 +17,11 @@ struct RecapRootView: View {
         self.init(
             dependencies: dependencies,
             router: AppRouter(),
-            cardStore: RecapCardStore(cards: []),
+            cardStore: CardStore(
+                captureMutator: dependencies.captureService,
+                captureDetailLoader: dependencies.captureService,
+                invalidationCenter: dependencies.cardDataInvalidationCenter
+            ),
             initiallyShowsSplash: initiallyShowsSplash
         )
     }
@@ -25,7 +29,7 @@ struct RecapRootView: View {
     init(
         dependencies: RecapDependencies,
         router: AppRouter,
-        cardStore: RecapCardStore,
+        cardStore: CardStore,
         initiallyShowsSplash: Bool = true
     ) {
         self.dependencies = dependencies
@@ -106,7 +110,7 @@ struct RecapRootView: View {
                 userAccountService: dependencies.userAccountService,
                 cardCreationProcessor: dependencies.cardCreationProcessor,
                 cardDataInvalidationCenter: dependencies.cardDataInvalidationCenter,
-                organizeNotificationController: dependencies.organizeNotificationController,
+                organizeNotificationStore: dependencies.organizeNotificationStore,
                 aiDataTransferConsentStore: dependencies.aiDataTransferConsentStore,
                 onLogout: logout,
                 onAccountWithdrawalCompleted: completeAccountWithdrawal
@@ -157,6 +161,7 @@ struct RecapRootView: View {
     }
 }
 
+#if DEBUG
 #Preview("Onboarding start") {
     RecapRootView(
         dependencies: .preview(
@@ -179,7 +184,7 @@ struct RecapRootView: View {
             onboardingProgress: .completed
         ),
         router: AppRouter(),
-        cardStore: PreviewStores.recapCardStore(),
+        cardStore: PreviewStores.cardStore(),
         initiallyShowsSplash: false
     )
 }
@@ -203,3 +208,4 @@ struct RecapRootView: View {
         initiallyShowsSplash: false
     )
 }
+#endif

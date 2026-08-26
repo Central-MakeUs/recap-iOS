@@ -94,6 +94,7 @@ private struct RecapBottomSheetContainer<Content: View>: View {
         ZStack(alignment: .bottom) {
             Color.black.opacity(0.30)
                 .ignoresSafeArea()
+                .onTapGesture(perform: dismiss)
 
             content()
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -120,7 +121,7 @@ private struct RecapBottomSheetContainer<Content: View>: View {
                 .offset(y: isSheetVisible ? dragOffset : height)
                 .simultaneousGesture(dismissGesture)
         }
-        .ignoresSafeArea()
+        .ignoresSafeArea(.container)
         .accessibilityAction(.escape, dismiss)
         .onAppear(perform: presentSheet)
         .onChange(of: isPresented) { _, shouldPresent in
@@ -190,6 +191,7 @@ private struct RecapBottomSheetContainer<Content: View>: View {
     }
 }
 
+#if DEBUG
 #Preview("공통 바텀 시트") {
     @Previewable @State var isPresented = true
 
@@ -205,3 +207,4 @@ private struct RecapBottomSheetContainer<Content: View>: View {
                 .padding(.top, 40)
         }
 }
+#endif

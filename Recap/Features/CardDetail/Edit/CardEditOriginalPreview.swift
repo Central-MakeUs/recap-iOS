@@ -1,12 +1,12 @@
 import SwiftUI
 
 struct CardEditOriginalPreview: View {
-    let card: InformationCard
+    let card: Card
     let onOpenOriginal: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(card.dateText)
+            Text(card.organizedFullDateText)
                 .font(RecapFont.pretendard(size: 12, weight: .medium))
                 .tracking(-0.24)
                 .foregroundStyle(Color.recapGray300)
@@ -15,7 +15,7 @@ struct CardEditOriginalPreview: View {
 
             CardDetailImageCard(onExpand: onOpenOriginal) {
                 RecapScreenshotThumbnail(
-                    kind: card.collection,
+                    category: card.category,
                     assetName: card.detailImageAssetName,
                     remoteURL: card.originalImageURL ?? card.thumbnailURL
                 )
@@ -30,7 +30,9 @@ struct CardEditOriginalPreview: View {
     }
 }
 
+#if DEBUG
 #Preview("정보카드 수정 원본") {
-    CardEditOriginalPreview(card: SampleData.cards[1], onOpenOriginal: {})
+    CardEditOriginalPreview(card: Card(snapshot: SampleData.cards[1]), onOpenOriginal: {})
         .padding(.horizontal, 16)
 }
+#endif

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct RecapChip: View {
     enum Configuration {
-        case category(CollectionKind, size: CategorySize, isSelected: Bool = true)
+        case category(CardCategory, size: CategorySize, isSelected: Bool = true)
         case recentSearch(String)
     }
 
@@ -18,8 +18,8 @@ struct RecapChip: View {
 
     var body: some View {
         switch configuration {
-        case let .category(kind, size, isSelected):
-            categoryChip(kind: kind, size: size, isSelected: isSelected)
+        case let .category(category, size, isSelected):
+            categoryChip(for: category, size: size, isSelected: isSelected)
         case let .recentSearch(keyword):
             recentSearchChip(keyword: keyword)
         }
@@ -27,22 +27,22 @@ struct RecapChip: View {
 
     @ViewBuilder
     private func categoryChip(
-        kind: CollectionKind,
+        for category: CardCategory,
         size: CategorySize,
         isSelected: Bool
     ) -> some View {
         switch size {
         case .small:
-            categoryTitle(kind: kind, color: CategoryPalette.selected(for: kind).text)
+            categoryTitle(for: category, color: category.chipPalette.text)
         case .medium:
             HStack(spacing: 8) {
-                categoryIcon(kind: kind)
-                categoryTitle(kind: kind, color: Color.recapGray900)
+                RecapCategoryIcon.chip(category)
+                categoryTitle(for: category, color: Color.recapGray900)
             }
         case .large:
-            let palette = isSelected ? CategoryPalette.selected(for: kind) : .unselected
+            let palette = isSelected ? category.chipPalette : .unselected
 
-            Text(RecapPresentation.collectionDisplay(for: kind).title)
+            Text(category.displayTitle)
                 .font(RecapFont.pretendard(size: 14, weight: .semibold))
                 .tracking(-0.28)
                 .foregroundStyle(palette.text)
@@ -56,26 +56,14 @@ struct RecapChip: View {
         }
     }
 
-    private func categoryTitle(kind: CollectionKind, color: Color) -> some View {
-        Text(RecapPresentation.collectionDisplay(for: kind).title)
+    private func categoryTitle(for category: CardCategory, color: Color) -> some View {
+        Text(category.displayTitle)
             .font(RecapFont.pretendard(size: 10, weight: .semibold))
             .tracking(-0.20)
             .foregroundStyle(color)
             .lineLimit(1)
     }
 
-    private func categoryIcon(kind: CollectionKind) -> some View {
-        let display = RecapPresentation.collectionDisplay(for: kind)
-
-        return RecapIconView(
-            icon: .categoryIcon(for: kind),
-            size: 16,
-            color: display.dotColor
-        )
-            .frame(width: 24, height: 24)
-            .background(Color.recapBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-    }
 
     private func recentSearchChip(keyword: String) -> some View {
         HStack(spacing: 0) {
@@ -109,45 +97,11 @@ struct RecapChip: View {
     }
 }
 
-private struct CategoryPalette {
-    let background: Color
-    let border: Color
-    let text: Color
-
-    static let unselected = CategoryPalette(
-        background: .white,
-        border: Color.recapGray100,
-        text: Color.recapGray300
-    )
-
-    static func selected(for kind: CollectionKind) -> CategoryPalette {
-        switch kind {
-        case .shopping:
-            CategoryPalette(background: .categoryBlue300, border: .categoryBlue500, text: .categoryBlue700)
-        case .place:
-            CategoryPalette(background: .categoryRed300, border: .categoryRed500, text: .categoryRed700)
-        case .schedule:
-            CategoryPalette(background: .categoryGreen300, border: .categoryGreen500, text: .categoryGreen700)
-        case .knowledge:
-            CategoryPalette(background: .categoryYellow300, border: .categoryYellow500, text: .categoryYellow700)
-        case .content:
-            CategoryPalette(background: .categoryPink300, border: .categoryPink500, text: .categoryPink700)
-        case .benefits:
-            CategoryPalette(background: .categoryMint300, border: .categoryMint500, text: .categoryMint700)
-        case .capture:
-            CategoryPalette(background: .categoryPurple300, border: .categoryPurple500, text: .categoryPurple700)
-        case .career:
-            CategoryPalette(background: .categoryOrange300, border: .categoryOrange500, text: .categoryOrange700)
-        case .other:
-            CategoryPalette(background: .categoryGray300, border: .categoryGray500, text: .categoryGray700)
-        }
-    }
-}
-
+#if DEBUG
 #Preview("Chips - 카테고리 S") {
     VStack(alignment: .leading, spacing: 12) {
-        ForEach(CollectionKind.allCases) { kind in
-            RecapChip(configuration: .category(kind, size: .small))
+        ForEach(CardCategory.allCases) { category in
+            RecapChip(configuration: .category(category, size: .small))
         }
     }
     .padding()
@@ -155,8 +109,8 @@ private struct CategoryPalette {
 
 #Preview("Chips - 카테고리 M") {
     VStack(alignment: .leading, spacing: 12) {
-        ForEach(CollectionKind.allCases) { kind in
-            RecapChip(configuration: .category(kind, size: .medium))
+        ForEach(CardCategory.allCases) { category in
+            RecapChip(configuration: .category(category, size: .medium))
         }
     }
     .padding()
@@ -175,3 +129,4 @@ private struct CategoryPalette {
     RecapChip(configuration: .recentSearch("검색어 01234"))
         .padding()
 }
+#endif

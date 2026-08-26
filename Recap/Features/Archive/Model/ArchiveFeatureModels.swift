@@ -67,28 +67,33 @@ final class ArchiveDetailFeatureModel {
     enum State: Equatable {
         case idle
         case loading
-        case loaded([InformationCard])
+        case loaded([CardSnapshot])
         case failed
     }
 
     let scope: ArchiveDetailScope
 
     private let loader: any ArchiveLoading
-    private let captureMutator: any CaptureMutating
-    private let invalidationCenter: CardDataInvalidationCenter
-    private(set) var state: State = .idle
+    /// 목록이 실릴 때마다 스냅샷을 정식 `Card`로 승격하고, 선택 삭제를 맡긴다.
+    private let cardStore: CardStore
+    private(set) var state: State = .idle {
+        didSet { upsertLoadedCards() }
+    }
     private(set) var sort: ArchiveSort = .latest
 
     init(
         scope: ArchiveDetailScope,
         loader: any ArchiveLoading,
-        captureMutator: any CaptureMutating,
-        invalidationCenter: CardDataInvalidationCenter
+        cardStore: CardStore
     ) {
         self.scope = scope
         self.loader = loader
-        self.captureMutator = captureMutator
-        self.invalidationCenter = invalidationCenter
+        self.cardStore = cardStore
+    }
+
+    private func upsertLoadedCards() {
+        guard case .loaded(let cards) = state else { return }
+        cardStore.upsert(cards)
     }
 
     func loadIfNeeded() async {
@@ -116,56 +121,14 @@ final class ArchiveDetailFeatureModel {
         await load()
     }
 
-    func deleteCards(ids: Set<InformationCard.ID>) async throws {
+    func deleteCards(ids: Set<CardSnapshot.ID>) async throws {
         guard case .loaded(let cards) = state else { return }
 
-        let selectedCards = cards.filter { ids.contains($0.id) }
-        let captureIDs = try selectedCards.map { card in
-            guard let captureID = card.captureID else {
-                throw CaptureLifecycleError.missingCaptureID
-            }
-            return captureID
-        }
+        let captureIDs = cards.filter { ids.contains($0.id) }.map(\.captureID)
 
-        try await captureMutator.deleteCaptures(captureIDs: captureIDs)
+        try await cardStore.delete(captureIDs: captureIDs)
 
         state = .loaded(cards.filter { !ids.contains($0.id) })
-        invalidationCenter.invalidate(.captureDeleted)
-    }
-
-    func toggleFavorite(cardID: InformationCard.ID) async throws -> Bool {
-        guard
-            case .loaded(let cards) = state,
-            let card = cards.first(where: { $0.id == cardID }),
-            let captureID = card.captureID
-        else {
-            throw CaptureLifecycleError.missingCaptureID
-        }
-
-        let targetValue = !card.isFavorite
-        state = .loaded(
-            cards.map { currentCard in
-                currentCard.id == cardID
-                    ? currentCard.with(isFavorite: targetValue)
-                    : currentCard
-            }
-        )
-
-        do {
-            try await captureMutator.updateFavorite(
-                captureID: captureID,
-                isFavorite: targetValue
-            )
-
-            if scope == .favorites, !targetValue {
-                state = .loaded(cards.filter { $0.id != cardID })
-            }
-            invalidationCenter.invalidate(.favoriteChanged)
-            return targetValue
-        } catch {
-            state = .loaded(cards)
-            throw error
-        }
     }
 
     private func load() async {
@@ -183,7 +146,7 @@ final class ArchiveDetailFeatureModel {
         }
     }
 
-    private func sortedFavorites(_ cards: [InformationCard]) -> [InformationCard] {
+    private func sortedFavorites(_ cards: [CardSnapshot]) -> [CardSnapshot] {
         cards.enumerated()
             .sorted { lhs, rhs in
                 switch (lhs.element.organizedAt, rhs.element.organizedAt) {

@@ -19,24 +19,34 @@ struct OnboardingLoginView: View {
 
             RecapLogoText(size: 48)
                 .onboardingFrame(x: 111, y: 194, width: 153, height: 47)
+                .onboardingLiftedOnShortScreen(portion: 0.5)
 
             title
                 .onboardingFrame(x: 105, y: 263, width: 165, height: 50)
+                .onboardingLiftedOnShortScreen(portion: 0.5)
 
-            RecapSpeechBubble(text: "5초만에 시작하기")
-                .onboardingFrame(x: 117, y: 475, width: 143, height: 46)
+            // 짧은 화면에서는 부족한 높이의 절반을 로고 위 빈 공간에서,
+            // 나머지 절반을 제목과 말풍선 사이 빈 공간에서 줄인다.
+            Group {
+                RecapSpeechBubble(text: "5초만에 시작하기")
+                    .onboardingFrame(x: 117, y: 475, width: 143, height: 46)
 
-            loginDivider
+                loginDivider
 
-            providerButtons
+                providerButtons
 
-            terms
+                terms
 
-            if showsLoginFailure {
-                RecapToast(style: .error, message: "로그인에 실패했어요. 잠시 후 다시 시도해주세요.")
-                    .onboardingFrame(x: 29, y: 717, width: 317, height: 45)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                if showsLoginFailure {
+                    RecapToast(
+                            style: RecapToastMessage.loginFailed.content.style,
+                            message: RecapToastMessage.loginFailed.content.message
+                        )
+                        .onboardingFrame(x: 29, y: 717, width: 317, height: 45)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
             }
+            .onboardingLiftedOnShortScreen()
         }
         .disabled(isLoggingIn)
         .animation(.easeInOut(duration: 0.2), value: showsLoginFailure)
@@ -164,20 +174,25 @@ private struct OnboardingBackgroundDecorations: View {
                 width: 62,
                 height: 97
             )
-            decoration(
-                "OnboardingLoginSearchDecoration",
-                x: 305,
-                y: 475,
-                width: 70,
-                height: 95
-            )
-            decoration(
-                "OnboardingLoginCameraDecoration",
-                x: 20,
-                y: 645,
-                width: 58,
-                height: 55
-            )
+            // 아래 둘은 본문 아래 묶음과 짝을 이룬다. 본문만 끌어올리면 장식은
+            // 제자리에 남아 SE에서 카메라(645~700)가 화면 밖(667)으로 잘린다.
+            Group {
+                decoration(
+                    "OnboardingLoginSearchDecoration",
+                    x: 305,
+                    y: 475,
+                    width: 70,
+                    height: 95
+                )
+                decoration(
+                    "OnboardingLoginCameraDecoration",
+                    x: 20,
+                    y: 645,
+                    width: 58,
+                    height: 55
+                )
+            }
+            .onboardingLiftedOnShortScreen()
         }
         .frame(width: 375, height: 812)
     }
@@ -196,6 +211,7 @@ private struct OnboardingBackgroundDecorations: View {
     }
 }
 
+#if DEBUG
 #Preview("Onboarding login") {
     OnboardingLoginView(onStart: {})
 }
@@ -203,3 +219,4 @@ private struct OnboardingBackgroundDecorations: View {
 #Preview("Onboarding login failure") {
     OnboardingLoginView(onStart: {}, login: { _ in .failure })
 }
+#endif

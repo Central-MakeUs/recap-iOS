@@ -36,8 +36,10 @@ struct RecapUploadButton: View {
     }
 }
 
+#if DEBUG
 #Preview("업로드 버튼") {
     RecapUploadButton(action: {})
         .padding()
         .background(Color.recapBackground)
 }
+#endif

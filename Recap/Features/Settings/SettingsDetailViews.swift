@@ -144,7 +144,7 @@ struct AccountManagementView: View {
             return ""
         }
 
-        let components = Calendar.current.dateComponents(
+        let components = Calendar(identifier: .gregorian).dateComponents(
             [.year, .month, .day],
             from: createdAt
         )
@@ -238,10 +238,7 @@ struct DataManagementView: View {
             do {
                 try await consentStore.refresh()
             } catch {
-                model.toast = RecapToastContent(
-                    style: .error,
-                    message: "AI 데이터 전송 동의 상태를 불러오지 못했어요."
-                )
+                model.toast = RecapToastMessage.aiConsentLoadFailed.content
             }
         }
         .recapToast(model.toast)
@@ -385,10 +382,7 @@ struct DataManagementView: View {
                 showsAIConsentSheet = false
             } catch {
                 showsAIConsentSheet = false
-                model.toast = RecapToastContent(
-                    style: .error,
-                    message: "AI 데이터 전송 동의를 저장하지 못했어요."
-                )
+                model.toast = RecapToastMessage.aiConsentSaveFailed.content
             }
         }
     }
@@ -397,11 +391,9 @@ struct DataManagementView: View {
         Task {
             do {
                 try await consentStore.revokeConsent()
+                model.toast = RecapToastMessage.aiConsentRevoked.content
             } catch {
-                model.toast = RecapToastContent(
-                    style: .error,
-                    message: "AI 데이터 전송 동의를 철회하지 못했어요."
-                )
+                model.toast = RecapToastMessage.aiConsentRevokeFailed.content
             }
         }
     }
@@ -418,7 +410,7 @@ struct NotificationSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
     @Environment(\.scenePhase) private var scenePhase
-    @Environment(OrganizeNotificationController.self) private var notifications
+    @Environment(OrganizeNotificationStore.self) private var notifications
 
     var body: some View {
         VStack(spacing: 0) {
@@ -490,10 +482,11 @@ struct NotificationSettingsView: View {
     }
 }
 
+#if DEBUG
 #Preview("알림 설정") {
     NotificationSettingsView()
         .environment(
-            OrganizeNotificationController(
+            OrganizeNotificationStore(
                 delivery: PreviewOrganizeNotificationDelivery(),
                 userDefaults: UserDefaults(suiteName: UUID().uuidString)!
             )
@@ -518,3 +511,4 @@ struct NotificationSettingsView: View {
         )
     )
 }
+#endif

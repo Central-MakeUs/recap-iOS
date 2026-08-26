@@ -20,6 +20,21 @@ nonisolated enum RecapRemoteImageResponsePolicy {
     }
 }
 
+/// UIKit 이미지를 동시성 경계 밖에서 생성한 뒤 MainActor의 화면 상태로 전달한다.
+/// UIImage는 불변으로 취급하며 생성 이후 이 래퍼를 통해서만 전달한다.
+private nonisolated struct RecapDecodedImage: @unchecked Sendable {
+    let image: UIImage
+}
+
+private nonisolated enum RecapRemoteImageDecoder {
+    static func decode(_ data: Data) async -> RecapDecodedImage? {
+        await Task.detached(priority: .userInitiated) {
+            guard let image = UIImage(data: data) else { return nil }
+            return RecapDecodedImage(image: image.preparingForDisplay() ?? image)
+        }.value
+    }
+}
+
 @MainActor
 @Observable
 private final class RecapRemoteImageLoader {
@@ -49,12 +64,13 @@ private final class RecapRemoteImageLoader {
                 state = .failed
                 return failure
             }
-            guard let image = UIImage(data: data) else {
+            guard let decodedImage = await RecapRemoteImageDecoder.decode(data) else {
                 state = .failed
                 return .unavailable
             }
+            try Task.checkCancellation()
 
-            state = .loaded(image)
+            state = .loaded(decodedImage.image)
             return nil
         } catch is CancellationError {
             state = .idle
@@ -73,7 +89,7 @@ struct RecapRemoteImage<
 >: View {
     let url: URL
     let onExpiredURL: (URL) -> Void
-    @ViewBuilder let imageContent: (Image) -> ImageContent
+    @ViewBuilder let imageContent: (UIImage) -> ImageContent
     @ViewBuilder let loadingContent: () -> LoadingContent
     @ViewBuilder let failureContent: () -> FailureContent
 
@@ -85,7 +101,7 @@ struct RecapRemoteImage<
             case .idle, .loading:
                 loadingContent()
             case .loaded(let image):
-                imageContent(Image(uiImage: image))
+                imageContent(image)
             case .failed:
                 failureContent()
             }

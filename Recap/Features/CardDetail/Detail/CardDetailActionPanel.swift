@@ -77,6 +77,8 @@ struct CardDetailActionPanel: View {
     }
 }
 
+#if DEBUG
 #Preview("정보카드 작업 메뉴") {
     CardDetailActionPanel(onEdit: {}, onDelete: {}, onReport: {}, onClose: {})
 }
+#endif

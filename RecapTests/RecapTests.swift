@@ -1,14 +1,49 @@
+import SwiftUI
 import XCTest
 @testable import Recap
 
 @MainActor
 final class RecapTests: XCTestCase {
+    func testOriginalPreviewFitsTallImageToTheFixedHeight() {
+        let size = ZoomableImageLayout.renderedSize(
+            imageSize: CGSize(width: 1_080, height: 2_400),
+            viewportSize: CGSize(width: 307, height: 713)
+        )
+
+        XCTAssertEqual(size.width, 307, accuracy: 0.001)
+        XCTAssertEqual(size.height, 682.222, accuracy: 0.001)
+    }
+
+    func testOriginalPreviewLimitsWideImageToHorizontalInsets() {
+        let size = ZoomableImageLayout.renderedSize(
+            imageSize: CGSize(width: 2_400, height: 1_080),
+            viewportSize: CGSize(width: 307, height: 713)
+        )
+
+        XCTAssertEqual(size.width, 307, accuracy: 0.001)
+        XCTAssertEqual(size.height, 138.15, accuracy: 0.001)
+    }
+
+    func testOriginalPreviewMagnifiesAroundPinchLocation() {
+        let offset = ZoomableImageLayout.offsetPreservingMagnificationAnchor(
+            initialOffset: .zero,
+            imageSize: CGSize(width: 300, height: 600),
+            magnificationAnchor: UnitPoint(x: 0.75, y: 0.75),
+            transformAnchor: UnitPoint(x: 0.5, y: 0),
+            initialScale: 1,
+            nextScale: 2
+        )
+
+        XCTAssertEqual(offset.width, -75, accuracy: 0.001)
+        XCTAssertEqual(offset.height, -450, accuracy: 0.001)
+    }
+
     func testApplicationModuleLoads() {
         XCTAssertTrue(true)
     }
 
     func testCardCreationFlowShowsConfirmationAfterPhotosPickerSelection() {
-        let viewModel = CardCreationFlowViewModel()
+        let viewModel = CardCreationFlowViewModel(processor: PreviewCardCreationPipeline())
 
         viewModel.receivePickerSelection(
             imageData: [Data([0x01])],
@@ -24,7 +59,7 @@ final class RecapTests: XCTestCase {
     }
 
     func testCardCreationFlowReportsFailureWhenPickerCannotLoadASelection() {
-        let viewModel = CardCreationFlowViewModel()
+        let viewModel = CardCreationFlowViewModel(processor: PreviewCardCreationPipeline())
 
         viewModel.receivePickerSelection(
             imageData: [],
@@ -36,7 +71,7 @@ final class RecapTests: XCTestCase {
     }
 
     func testCardCreationFlowAppendsAndRemovesScreenshotsBeforeProcessing() throws {
-        let viewModel = CardCreationFlowViewModel()
+        let viewModel = CardCreationFlowViewModel(processor: PreviewCardCreationPipeline())
 
         viewModel.receivePickerSelection(
             imageData: [Data([0x01]), Data([0x02])],
@@ -160,15 +195,13 @@ final class RecapTests: XCTestCase {
         XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .search))
         XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .allRecentCards))
         XCTAssertFalse(
-            RecapMainTabChromePolicy.routeAllowsChrome(
-                for: .remoteCardDetail(SampleData.cards[0])
-            )
+            RecapMainTabChromePolicy.routeAllowsChrome(for: .remoteCardDetail(42))
         )
         XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .cardCreationStart))
         XCTAssertFalse(RecapMainTabChromePolicy.routeAllowsChrome(for: .settings))
     }
 
-    func testCollectionSelectionChromeReplacesMainTabChrome() {
+    func testArchiveSelectionChromeReplacesMainTabChrome() {
         let state = RecapMainTabChromeState()
         state.setVisible(false, for: .archive)
 
@@ -197,35 +230,29 @@ final class RecapTests: XCTestCase {
         )
     }
 
-    func testCardStoreSearchesAndUpdatesCards() {
+    func testCardCollectionSearchMatchesTitle() {
         let card = SampleData.cards[0]
         XCTAssertEqual(
             RecapCardCollection.search([card], query: card.title).map(\.id),
             [card.id]
         )
-
-        let favoriteCards = RecapCardCollection.togglingFavorite(
-            cardID: card.id,
-            in: [card]
-        )
-        XCTAssertTrue(favoriteCards[0].isFavorite)
     }
 
     func testCardEditDraftRequiresTitleSummaryAndBody() {
         let missingTitle = CardEditDraft(
-            collection: .schedule,
+            category: .schedule,
             title: "   ",
             summary: "예약 정보",
             body: "본문"
         )
         let missingSummary = CardEditDraft(
-            collection: .schedule,
+            category: .schedule,
             title: "제주 숙소 예약 정보",
             summary: "\n",
             body: "본문"
         )
         let missingBody = CardEditDraft(
-            collection: .schedule,
+            category: .schedule,
             title: "제주 숙소 예약 정보",
             summary: "예약 정보",
             body: "\n"
@@ -241,7 +268,7 @@ final class RecapTests: XCTestCase {
 
     func testCardEditDraftRejectsTextBeyondFigmaLimits() {
         let draft = CardEditDraft(
-            collection: .schedule,
+            category: .schedule,
             title: String(repeating: "가", count: CardEditDraft.titleLimit + 1),
             summary: "예약 정보",
             body: "본문"
@@ -253,7 +280,7 @@ final class RecapTests: XCTestCase {
 
     func testCardEditDraftNormalizesWhitespaceBeforeSaving() {
         let draft = CardEditDraft(
-            collection: .schedule,
+            category: .schedule,
             title: "  제주 숙소 예약 정보  ",
             summary: "  예약 요약\n",
             body: "\n본문  "
@@ -262,7 +289,7 @@ final class RecapTests: XCTestCase {
         XCTAssertEqual(
             draft.normalized(),
             CardEditDraft(
-                collection: .schedule,
+                category: .schedule,
                 title: "제주 숙소 예약 정보",
                 summary: "예약 요약",
                 body: "본문"
@@ -270,39 +297,28 @@ final class RecapTests: XCTestCase {
         )
     }
 
-    func testCardMutationPreservesOriginalImageThroughEditAndFavoriteChanges() {
-        let card = SampleData.cards[1]
+    func testCardMutationPreservesOriginalImageThroughEditAndFavoriteChanges() throws {
+        let store = CardStore(captureMutator: PreviewCaptureService())
+        let card = try XCTUnwrap(store.upsert(SampleData.cards[1]))
         let draft = CardEditDraft(
-            collection: .knowledge,
+            category: .knowledge,
             title: "수정된 제목",
             summary: "수정된 요약",
             body: "짧은 본문도 그대로 저장되어야 합니다."
         )
 
-        let updatedCard = card
-            .with(editDraft: draft)
-            .with(isFavorite: true)
+        store.applyEdit(draft, toCaptureID: card.captureID)
+        card.isFavorite = true
 
-        XCTAssertEqual(updatedCard.memo, draft.body)
-        XCTAssertEqual(updatedCard.originalImageAssetName, "InformationCardOriginal")
-        XCTAssertEqual(updatedCard.detailImageAssetName, "InformationCardOriginal")
-        XCTAssertTrue(updatedCard.isFavorite)
+        XCTAssertEqual(card.memo, draft.body)
+        XCTAssertEqual(card.originalImageAssetName, "InformationCardOriginal")
+        XCTAssertEqual(card.detailImageAssetName, "InformationCardOriginal")
+        XCTAssertTrue(card.isFavorite)
     }
 
-    func testCardDetailImageStatesPreserveFigmaLayoutSpacing() {
-        XCTAssertEqual(CardDetailImageState.loaded.imageTopInset, 0)
-        XCTAssertEqual(CardDetailImageState.loaded.metadataSpacing, 22)
-        XCTAssertEqual(CardDetailImageState.failedFullWidth.imageTopInset, 0)
-        XCTAssertEqual(CardDetailImageState.failedFullWidth.metadataSpacing, 22)
-        XCTAssertEqual(CardDetailImageState.failedCard.imageTopInset, 145)
-        XCTAssertEqual(CardDetailImageState.failedCard.metadataSpacing, 20)
-    }
-
-    func testOrganizedDateUsesMonthDayAndOrganizedSuffix() {
-        XCTAssertEqual(
-            RecapPresentation.organizedDateText(for: SampleData.cards[0]),
-            "06월 28일 정리"
-        )
+    func testOrganizedDateUsesMonthDayAndOrganizedSuffix() throws {
+        let card = try XCTUnwrap(Card(snapshot: SampleData.cards[0]))
+        XCTAssertEqual(card.organizedDateText, "06월 28일 정리")
     }
 
 }

@@ -45,19 +45,21 @@ struct SettingsAccountProviderRow: View {
     }
 }
 
+#if DEBUG
 #Preview("로그인 정보") {
     VStack(spacing: 0) {
         SettingsAccountProviderRow(
             providerName: "Apple로 로그인",
-            joinedDateText: "2026년 8월 4일 가입",
+            joinedDateText: "2026.8.4 가입",
             provider: .apple
         )
         SettingsAccountProviderRow(
             providerName: "카카오로 로그인",
-            joinedDateText: "2026년 8월 4일 가입",
+            joinedDateText: "2026.8.4 가입",
             provider: .kakao
         )
     }
     .padding(.horizontal, SettingsLayout.horizontalPadding)
     .background(Color.recapBackground)
 }
+#endif

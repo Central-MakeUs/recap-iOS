@@ -6,12 +6,13 @@ struct RecapInformationCardRow: View {
         case organizedDate
     }
 
-    let card: InformationCard
+    let card: Card
     var metadata: Metadata = .category
     var selectionState: Bool?
     var titleText: Text?
     var summaryText: Text?
     var onToggleFavorite: (() -> Void)?
+    var onRemoteImageFailure: (URL) -> Void = { _ in }
 
     var body: some View {
         Group {
@@ -25,7 +26,9 @@ struct RecapInformationCardRow: View {
         .padding(.vertical, 14)
         .frame(maxWidth: .infinity)
         .frame(height: 108, alignment: .top)
-        .background(Color.white)
+        // 행을 화면과 같은 색으로 둔다. 행을 나누는 것은 아래 구분선이다.
+        // 투명하게 두지 않는 것은 행이 무엇 위에 놓이든 같아 보여야 하기 때문이다.
+        .background(Color.recapBackground)
         .overlay(alignment: .bottom) {
             Rectangle()
                 .fill(Color.recapGray100)
@@ -63,12 +66,13 @@ struct RecapInformationCardRow: View {
     private var thumbnailAndFavorite: some View {
         ZStack(alignment: .topTrailing) {
             RecapScreenshotThumbnail(
-                kind: card.collection,
+                category: card.category,
                 assetName: card.thumbnailAssetName,
                 remoteURL: card.thumbnailURL,
                 hasFavoriteFold: true,
                 size: CGSize(width: 62, height: 80),
-                fallbackStyle: .character
+                fallbackStyle: .character,
+                onRemoteLoadFailure: onRemoteImageFailure
             )
 
             RecapIconView(
@@ -93,11 +97,12 @@ struct RecapInformationCardRow: View {
 
     private var selectedThumbnail: some View {
         RecapScreenshotThumbnail(
-            kind: card.collection,
+            category: card.category,
             assetName: card.thumbnailAssetName,
             remoteURL: card.thumbnailURL,
             cornerRadius: 0,
-            fallbackStyle: .character
+            fallbackStyle: .character,
+            onRemoteLoadFailure: onRemoteImageFailure
         )
         .frame(width: 62, height: 80)
         .clipped()
@@ -108,14 +113,14 @@ struct RecapInformationCardRow: View {
         switch metadata {
         case .category:
             VStack(alignment: .leading, spacing: 8) {
-                RecapChip(configuration: .category(card.collection, size: .small))
+                RecapChip(configuration: .category(card.category, size: .small))
                 titleAndSummary
             }
         case .organizedDate:
             VStack(alignment: .leading, spacing: 0) {
                 titleAndSummary
                 Spacer(minLength: 0)
-                Text(organizedDateText)
+                Text(card.organizedDateText)
                     .font(RecapFont.pretendard(size: 10, weight: .semibold))
                     .tracking(-0.2)
                     .foregroundStyle(Color.recapGray300)
@@ -143,9 +148,6 @@ struct RecapInformationCardRow: View {
         .frame(height: 58, alignment: .topLeading)
     }
 
-    private var organizedDateText: String {
-        RecapPresentation.organizedDateText(for: card)
-    }
 }
 
 private extension String {
@@ -158,27 +160,29 @@ private extension String {
     }
 }
 
+#if DEBUG
 #Preview("card/category") {
-    RecapInformationCardRow(card: SampleData.cards[2])
+    RecapInformationCardRow(
+        card: Card(snapshot: SampleData.cards[2]))
 }
 
 #Preview("card/nocategory") {
     RecapInformationCardRow(
-        card: SampleData.cards[3],
+        card: Card(snapshot: SampleData.cards[3]),
         metadata: .organizedDate
     )
 }
 
 #Preview("card/category/selected") {
     RecapInformationCardRow(
-        card: SampleData.cards[2],
+        card: Card(snapshot: SampleData.cards[2]),
         selectionState: true
     )
 }
 
 #Preview("card/nocategory/selected") {
     RecapInformationCardRow(
-        card: SampleData.cards[3],
+        card: Card(snapshot: SampleData.cards[3]),
         metadata: .organizedDate,
         selectionState: true
     )
@@ -186,7 +190,7 @@ private extension String {
 
 #Preview("card/nocategory - 320pt") {
     RecapInformationCardRow(
-        card: SampleData.cards[2],
+        card: Card(snapshot: SampleData.cards[2]),
         metadata: .organizedDate
     )
     .frame(width: 320)
@@ -194,8 +198,9 @@ private extension String {
 
 #Preview("card/nocategory - 430pt") {
     RecapInformationCardRow(
-        card: SampleData.cards[2],
+        card: Card(snapshot: SampleData.cards[2]),
         metadata: .organizedDate
     )
     .frame(width: 430)
 }
+#endif

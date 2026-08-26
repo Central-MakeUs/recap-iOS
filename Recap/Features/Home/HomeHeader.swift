@@ -32,8 +32,10 @@ struct HomeHeader: View {
     }
 }
 
+#if DEBUG
 #Preview {
     HomeHeader(openSettings: {}, openSearch: {})
         .padding()
         .background(Color.recapBackground)
 }
+#endif

@@ -129,27 +129,51 @@ extension View {
 }
 
 private struct AIDataTransferConsentPresentation: ViewModifier {
+    /// Figma 기준 높이. SE(667)에서도 취소 버튼까지 모두 표시할 수 있는 높이다.
+    private static let designHeight: CGFloat = 532
+    /// 작은 화면에서 시트가 차지해도 되는 최대 비율.
+    private static let maximumScreenRatio: CGFloat = 0.8
+
     @Binding var isPresented: Bool
     let primaryButtonTitle: String
     let onConsent: () -> Void
 
+    /// 시트를 띄우는 화면의 높이. 아래 배경 자로 재서 채운다.
+    /// 재기 전에는 Figma 높이를 그대로 쓴다.
+    @State private var availableHeight: CGFloat?
+
+    private var height: CGFloat {
+        guard let availableHeight else { return Self.designHeight }
+        return min(Self.designHeight, availableHeight * Self.maximumScreenRatio)
+    }
+
     func body(content: Content) -> some View {
-        content.recapBottomSheet(
-            isPresented: $isPresented,
-            height: 532,
-            cornerRadius: 32,
-            dragIndicator: RecapBottomSheetDragIndicator(
-                width: 43,
-                height: 5,
-                topPadding: 13
-            )
-        ) {
-            AIDataTransferConsentSheet(
-                primaryButtonTitle: primaryButtonTitle,
-                onConsent: onConsent,
-                onCancel: dismiss
-            )
-        }
+        content
+            .background {
+                GeometryReader { proxy in
+                    Color.clear
+                        .onAppear { availableHeight = proxy.size.height }
+                        .onChange(of: proxy.size.height) { _, newValue in
+                            availableHeight = newValue
+                        }
+                }
+            }
+            .recapBottomSheet(
+                isPresented: $isPresented,
+                height: height,
+                cornerRadius: 32,
+                dragIndicator: RecapBottomSheetDragIndicator(
+                    width: 43,
+                    height: 5,
+                    topPadding: 13
+                )
+            ) {
+                AIDataTransferConsentSheet(
+                    primaryButtonTitle: primaryButtonTitle,
+                    onConsent: onConsent,
+                    onCancel: dismiss
+                )
+            }
     }
 
     private func dismiss() {
@@ -157,9 +181,11 @@ private struct AIDataTransferConsentPresentation: ViewModifier {
     }
 }
 
+#if DEBUG
 #Preview("AI 전송 동의") {
     AIDataTransferConsentSheet(
         onConsent: PreviewActions.noop,
         onCancel: PreviewActions.noop
     )
 }
+#endif
