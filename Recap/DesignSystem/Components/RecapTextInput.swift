@@ -204,6 +204,7 @@ private struct RecapCharacterCounter: View {
     }
 }
 
+#if DEBUG
 #Preview("입력 필드") {
     @Previewable @State var text = "제주 숙소 예약 정보"
 
@@ -236,3 +237,4 @@ private struct RecapCharacterCounter: View {
     }
     .padding()
 }
+#endif

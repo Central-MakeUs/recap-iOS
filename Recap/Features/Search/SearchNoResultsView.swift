@@ -34,7 +34,9 @@ private struct SearchNoResultsIllustration: View {
     }
 }
 
+#if DEBUG
 #Preview("검색 결과 없음") {
     SearchNoResultsView()
         .background(Color.recapBackground)
 }
+#endif

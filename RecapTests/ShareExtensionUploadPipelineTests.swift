@@ -27,16 +27,14 @@ final class ShareExtensionUploadPipelineTests: XCTestCase {
     /// 회귀 대상: `organize`가 중단되며 batchID를 비워버려 취소 요청이 누락되던 문제.
     func testCancellingOrganizeSendsCancelRequestForCurrentBatch() async throws {
         let pipeline = makePipeline()
-        let organizeStarted = expectation(description: "서버가 batchID를 발급했다")
-        ShareUploadStubURLProtocol.onOrganizeIssued { organizeStarted.fulfill() }
+        let batchIDStored = expectation(description: "첫 폴링이 나가 batchID가 저장됐다")
+        ShareUploadStubURLProtocol.onFirstStatusPoll { batchIDStored.fulfill() }
 
         let organizing = Task {
             try await pipeline.organize(images: [Self.imageData]) { _ in }
         }
 
-        await fulfillment(of: [organizeStarted], timeout: 5)
-        // 폴링이 최소 한 번 돌아 취소 가능한 상태임을 확실히 한다.
-        try await Task.sleep(for: .milliseconds(50))
+        await fulfillment(of: [batchIDStored], timeout: 5)
 
         await pipeline.cancelCurrentProcess()
         organizing.cancel()
@@ -55,15 +53,14 @@ final class ShareExtensionUploadPipelineTests: XCTestCase {
     /// task를 먼저 취소한 뒤 취소 요청을 보내는 경로를 재현한다.
     func testCancelSurvivesTaskCancellationHappeningFirst() async throws {
         let pipeline = makePipeline()
-        let organizeStarted = expectation(description: "서버가 batchID를 발급했다")
-        ShareUploadStubURLProtocol.onOrganizeIssued { organizeStarted.fulfill() }
+        let batchIDStored = expectation(description: "첫 폴링이 나가 batchID가 저장됐다")
+        ShareUploadStubURLProtocol.onFirstStatusPoll { batchIDStored.fulfill() }
 
         let organizing = Task {
             try await pipeline.organize(images: [Self.imageData]) { _ in }
         }
 
-        await fulfillment(of: [organizeStarted], timeout: 5)
-        try await Task.sleep(for: .milliseconds(50))
+        await fulfillment(of: [batchIDStored], timeout: 5)
 
         organizing.cancel()
         _ = try? await organizing.value
@@ -128,7 +125,7 @@ private final class ShareUploadStubURLProtocol: URLProtocol {
     /// 테스트 스레드와 URL 로딩 스레드가 함께 건드리므로 전부 잠금 뒤에 둔다.
     private struct State {
         var recorded: [RecordedRequest] = []
-        var onOrganizeIssued: (@Sendable () -> Void)?
+        var onFirstStatusPoll: (@Sendable () -> Void)?
         var organizeCompletesImmediately = false
     }
 
@@ -138,9 +135,12 @@ private final class ShareUploadStubURLProtocol: URLProtocol {
         state.withLock(\.recorded)
     }
 
-    /// batchID가 발급된 직후 호출된다.
-    static func onOrganizeIssued(_ handler: @escaping @Sendable () -> Void) {
-        state.withLock { $0.onOrganizeIssued = handler }
+    /// 첫 폴링 요청이 도착했을 때 한 번만 호출된다.
+    ///
+    /// 폴링 경로에는 batchID가 들어가므로, 이 요청이 왔다는 것은 파이프라인이
+    /// batchID를 이미 저장했다는 뜻이다 — 곧 취소 요청을 보낼 수 있는 상태다.
+    static func onFirstStatusPoll(_ handler: @escaping @Sendable () -> Void) {
+        state.withLock { $0.onFirstStatusPoll = handler }
     }
 
     /// true면 organize 응답이 곧바로 completed로 온다.
@@ -180,8 +180,12 @@ private final class ShareUploadStubURLProtocol: URLProtocol {
         client?.urlProtocol(self, didLoad: body)
         client?.urlProtocolDidFinishLoading(self)
 
-        if path.hasSuffix("/captures/organize"), method == "POST" {
-            Self.state.withLock(\.onOrganizeIssued)?()
+        if path.hasSuffix("/status") {
+            let handler = Self.state.withLock { state -> (@Sendable () -> Void)? in
+                defer { state.onFirstStatusPoll = nil }
+                return state.onFirstStatusPoll
+            }
+            handler?()
         }
     }
 

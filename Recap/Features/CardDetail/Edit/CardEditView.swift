@@ -2,9 +2,9 @@ import SwiftUI
 
 struct CardEditView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(RecapCardStore.self) private var cardStore
+    @Environment(CardStore.self) private var cardStore
 
-    let card: InformationCard
+    let card: Card
 
     private let originalDraft: CardEditDraft
     private let saveAction: ((CardEditDraft) async throws -> Void)?
@@ -17,7 +17,7 @@ struct CardEditView: View {
     @State private var isSaving = false
 
     init(
-        card: InformationCard,
+        card: Card,
         initialDraft: CardEditDraft? = nil,
         initiallyShowsDiscardConfirmation: Bool = false,
         initialToast: RecapToastContent? = nil,
@@ -85,10 +85,7 @@ struct CardEditView: View {
                 try await persist(draft)
                 close()
             } catch {
-                toast = RecapToastContent(
-                    style: .error,
-                    message: "스크린샷 정보를 저장하지 못했어요. 다시 시도해주세요."
-                )
+                toast = RecapToastMessage.cardSaveFailed.content
             }
         }
     }
@@ -98,7 +95,7 @@ struct CardEditView: View {
             try await saveAction(draft.normalized())
             return
         }
-        cardStore.updateCard(id: card.id, with: draft.normalized())
+        try await cardStore.saveEdit(draft.normalized(), for: card)
     }
 
     private func close() {
@@ -121,9 +118,11 @@ struct CardEditView: View {
     }
 }
 
+#if DEBUG
 #Preview("정보카드 수정 화면") {
     NavigationStack {
-        CardEditView(card: SampleData.cards[1])
+        CardEditView(card: Card(snapshot: SampleData.cards[1]))
     }
-    .environment(PreviewStores.recapCardStore())
+    .environment(PreviewStores.cardStore())
 }
+#endif

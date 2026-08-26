@@ -21,16 +21,19 @@ protocol CaptureReporting: Sendable {
     ) async throws
 }
 
+protocol CaptureDetailLoading: Sendable {
+    func captureDetail(captureID: Int64) async throws -> CardSnapshot
+}
+
 protocol CaptureMutating: CaptureDeleting, CaptureFavoriteUpdating, CaptureUpdating, CaptureReporting {}
 
-protocol CaptureServing: CaptureMutating, Sendable {
+protocol CaptureServing: CaptureMutating, CaptureDetailLoading, Sendable {
     func issueUploadURLs(count: Int) async throws -> [UploadItemDTO]
     func organize(imageKeys: [String]) async throws -> OrganizeResponseDTO
     func organizeStatus(batchID: Int64) async throws -> OrganizeStatusResponseDTO
     func cancelOrganize(batchID: Int64) async throws
     func pendingOrganizeResult() async throws -> PendingOrganizeResultDTO?
     func acknowledgeOrganizeResult(batchID: Int64) async throws
-    func captureDetail(captureID: Int64) async throws -> InformationCard
 }
 
 final class CaptureService: CaptureServing {
@@ -113,7 +116,7 @@ final class CaptureService: CaptureServing {
         let _: EmptyResponse = try await networkClient.send(endpoint)
     }
 
-    func captureDetail(captureID: Int64) async throws -> InformationCard {
+    func captureDetail(captureID: Int64) async throws -> CardSnapshot {
         let endpoint = APIEndpoint(
             method: .get,
             path: "/api/v1/captures/\(captureID)",
@@ -121,7 +124,7 @@ final class CaptureService: CaptureServing {
             authorization: .bearer
         )
         let response: APIResponse<CaptureDetailDTO> = try await networkClient.send(endpoint)
-        return InformationCard(detailDTO: try response.requiredData())
+        return CardSnapshot(detailDTO: try response.requiredData())
     }
 
     func updateFavorite(captureID: Int64, isFavorite: Bool) async throws {
@@ -134,7 +137,7 @@ final class CaptureService: CaptureServing {
     }
 
     func updateCapture(captureID: Int64, draft: CardEditDraft) async throws {
-        guard let cardType = CardTypeCode(collectionKind: draft.collection) else {
+        guard let cardType = CardTypeCode(category: draft.category) else {
             throw APIError.malformedRequest
         }
         let normalizedDraft = draft.normalized()
@@ -213,21 +216,16 @@ nonisolated enum CaptureLifecycleError: Error, Equatable, Sendable {
     case missingCaptureID
 }
 
-extension InformationCard {
+extension CardSnapshot {
     nonisolated init(detailDTO dto: CaptureDetailDTO) {
         self.init(
-            id: UUID(),
             captureID: dto.captureId,
             title: dto.title,
             summary: dto.summary,
-            collection: dto.typeCode.collectionKind,
+            category: dto.typeCode.category,
             organizedAt: dto.organizedAt,
-            dateText: dto.organizedAt.formatted(
-                .dateTime.year().month(.twoDigits).day(.twoDigits)
-            ),
             location: "",
             businessHours: "",
-            category: dto.typeCode.displayTitle,
             confirmationLabel: nil,
             memo: dto.body,
             tags: [],

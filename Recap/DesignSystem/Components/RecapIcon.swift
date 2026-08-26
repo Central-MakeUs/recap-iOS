@@ -28,8 +28,10 @@ enum RecapIcon: String, CaseIterable, Identifiable {
     case event
     case record
     case career
+    case other
     case noImage
     case check
+    case aiEdit
 
     var id: String { rawValue }
 
@@ -62,14 +64,16 @@ enum RecapIcon: String, CaseIterable, Identifiable {
         case .event: "icon/event"
         case .record: "icon/record"
         case .career: "icon/career"
+        case .other: "icon/etc"
         case .noImage: "icon/noimage"
         case .check: "icon/check"
+        case .aiEdit: "si:ai-edit-fill"
         }
     }
 
     var defaultSize: CGFloat {
         switch self {
-        case .cancelCircle, .dropdown, .checkbox, .shopping, .place, .schedule, .idea, .book, .event, .record, .career:
+        case .cancelCircle, .dropdown, .checkbox, .shopping, .place, .schedule, .idea, .book, .event, .record, .career, .aiEdit, .other:
             16
         case .plus: 30
         case .star, .starEmpty, .cancel, .back, .forward, .search, .home, .storage, .more,
@@ -113,11 +117,13 @@ enum RecapIcon: String, CaseIterable, Identifiable {
         case .career: "RecapIconCareer"
         case .noImage: "RecapIconNoImage"
         case .check: "RecapIconCheck"
+        case .aiEdit: "RecapIconAiEdit"
+        case .other: "RecapIconOther"
         }
     }
 
-    static func categoryIcon(for kind: CollectionKind) -> RecapIcon {
-        switch kind {
+    static func categoryIcon(for category: CardCategory) -> RecapIcon {
+        switch category {
         case .shopping:
             .shopping
         case .place:
@@ -135,7 +141,7 @@ enum RecapIcon: String, CaseIterable, Identifiable {
         case .career:
             .career
         case .other:
-            .storage
+            .other
         }
     }
 }
@@ -158,6 +164,7 @@ struct RecapIconView: View {
     }
 }
 
+#if DEBUG
 #Preview("Recap icons") {
     ScrollView(.horizontal, showsIndicators: true) {
         LazyHStack(spacing: RecapTheme.Spacing.medium) {
@@ -174,3 +181,4 @@ struct RecapIconView: View {
     }
     .background(Color.recapBackground)
 }
+#endif

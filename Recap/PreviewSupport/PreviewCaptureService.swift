@@ -1,3 +1,4 @@
+#if DEBUG
 import Foundation
 
 final class PreviewCaptureService: CaptureServing {
@@ -37,7 +38,7 @@ final class PreviewCaptureService: CaptureServing {
     func cancelOrganize(batchID: Int64) async throws {}
     func pendingOrganizeResult() async throws -> PendingOrganizeResultDTO? { nil }
     func acknowledgeOrganizeResult(batchID: Int64) async throws {}
-    func captureDetail(captureID: Int64) async throws -> InformationCard {
+    func captureDetail(captureID: Int64) async throws -> CardSnapshot {
         try await cardRepository.card(captureID: captureID)
     }
     func updateFavorite(captureID: Int64, isFavorite: Bool) async throws {
@@ -93,3 +94,4 @@ actor PreviewCardCreationPipeline: CardCreationProcessing {
 
     func cancelCurrentProcess() async {}
 }
+#endif

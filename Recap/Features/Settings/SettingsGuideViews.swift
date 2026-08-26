@@ -276,6 +276,7 @@ private struct PrivacyInformationBullet: View {
     }
 }
 
+#if DEBUG
 #Preview("이용 안내") {
     NavigationStack {
         UsageGuideView()
@@ -287,3 +288,4 @@ private struct PrivacyInformationBullet: View {
         PrivacyInformationView()
     }
 }
+#endif

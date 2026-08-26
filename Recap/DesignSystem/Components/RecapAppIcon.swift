@@ -20,6 +20,7 @@ struct RecapAppIcon: View {
     }
 }
 
+#if DEBUG
 #Preview("Recap app icon") {
     HStack(spacing: 24) {
         RecapAppIcon()
@@ -28,3 +29,4 @@ struct RecapAppIcon: View {
     .padding()
     .background(Color.recapBackground)
 }
+#endif

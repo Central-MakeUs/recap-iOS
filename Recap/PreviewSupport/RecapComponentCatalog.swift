@@ -1,3 +1,4 @@
+#if DEBUG
 import SwiftUI
 
 struct RecapComponentCatalog: View {
@@ -41,10 +42,10 @@ struct RecapComponentCatalog: View {
         VStack(alignment: .leading, spacing: 12) {
             catalogTitle("category")
             HStack {
-                RecapCategoryIcon(kind: .shopping)
-                RecapCategoryIcon(kind: .place, size: .large)
-                RecapCategoryIcon(kind: .schedule)
-                RecapCategoryIcon(kind: .knowledge, size: .large)
+                RecapCategoryIcon.folderRow(.shopping)
+                RecapCategoryIcon.frequentType(.place)
+                RecapCategoryIcon.chip(.schedule)
+                RecapCategoryIcon.folderCard(.knowledge)
             }
         }
     }
@@ -54,11 +55,14 @@ struct RecapComponentCatalog: View {
             catalogTitle("card/category · card/nocategory")
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.bottom, 12)
-            RecapInformationCardRow(card: SampleData.cards[2])
-            RecapInformationCardRow(card: SampleData.cards[3], selectionState: true)
-            RecapInformationCardRow(card: SampleData.cards[4], metadata: .organizedDate)
             RecapInformationCardRow(
-                card: SampleData.cards[1],
+        card: Card(snapshot: SampleData.cards[2]))
+            RecapInformationCardRow(
+        card: Card(snapshot: SampleData.cards[3]), selectionState: true)
+            RecapInformationCardRow(
+        card: Card(snapshot: SampleData.cards[4]), metadata: .organizedDate)
+            RecapInformationCardRow(
+        card: Card(snapshot: SampleData.cards[1]),
                 metadata: .organizedDate,
                 selectionState: true
             )
@@ -70,16 +74,16 @@ struct RecapComponentCatalog: View {
             catalogTitle("imagecard · card/home")
             HStack(alignment: .top) {
                 RecapImageCard(
-                    kind: .capture,
+                    category: .capture,
                     assetName: SampleData.cards[3].thumbnailAssetName
                 )
                 RecapImageCard(
-                    kind: .shopping,
+                    category: .shopping,
                     assetName: SampleData.cards[0].thumbnailAssetName,
                     isFavorite: true
                 )
-                RecapHomeRecentCard(card: SampleData.cards[2])
-                RecapHomeFavoriteCard(card: SampleData.cards[3])
+                RecapHomeRecentCard(card: Card(snapshot: SampleData.cards[2]))
+                RecapHomeFavoriteCard(card: Card(snapshot: SampleData.cards[3]))
             }
         }
     }
@@ -145,12 +149,12 @@ struct RecapComponentCatalog: View {
     private var folders: some View {
         VStack(alignment: .leading, spacing: 12) {
             catalogTitle("folder · folder/list")
-            RecapFolderCard(title: "쇼핑 · 상품", count: 12, kind: .shopping)
+            RecapFolderCard(title: "쇼핑 · 상품", count: 12, category: .shopping)
             RecapFolderListRow(
                 title: "쇼핑 · 상품",
                 subtitle: "택배 반품 절차 · 노트북 가격 비교",
                 count: 12,
-                kind: .shopping
+                category: .shopping
             )
         }
     }
@@ -195,3 +199,4 @@ struct RecapComponentCatalog: View {
 #Preview("Figma 공통 컴포넌트 전체") {
     RecapComponentCatalog()
 }
+#endif

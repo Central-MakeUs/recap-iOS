@@ -17,7 +17,7 @@ final class RecapMainTabChromeState {
 
 struct RecapMainTabContainer: View {
     let router: AppRouter
-    let cardStore: RecapCardStore
+    let cardStore: CardStore
     let homeSummaryLoader: any HomeSummaryLoading
     let archiveLoader: any ArchiveLoading
     let searchLoader: any SearchLoading
@@ -25,7 +25,7 @@ struct RecapMainTabContainer: View {
     let userAccountService: any UserAccountServing
     let cardCreationProcessor: any CardCreationProcessing
     let cardDataInvalidationCenter: CardDataInvalidationCenter
-    let organizeNotificationController: OrganizeNotificationController
+    let organizeNotificationStore: OrganizeNotificationStore
     let onUpload: () -> Void
     let onCardDeleted: () -> Void
     let onAccountWithdrawalCompleted: () -> Void
@@ -42,6 +42,7 @@ struct RecapMainTabContainer: View {
                     tabStack(for: .home) {
                         HomeContainerView(
                             summaryLoader: homeSummaryLoader,
+                            cardStore: cardStore,
                             invalidationCenter: cardDataInvalidationCenter
                         )
                     }
@@ -50,7 +51,7 @@ struct RecapMainTabContainer: View {
 
                 Tab("보관함", image: "RecapTabArchiveIcon", value: MainTab.archive) {
                     tabStack(for: .archive) {
-                        CollectionHomeContainerView(
+                        ArchiveHomeContainerView(
                             loader: archiveLoader,
                             invalidationCenter: cardDataInvalidationCenter
                         )
@@ -93,7 +94,7 @@ struct RecapMainTabContainer: View {
                     userAccountService: userAccountService,
                     cardCreationProcessor: cardCreationProcessor,
                     cardDataInvalidationCenter: cardDataInvalidationCenter,
-                    organizeNotificationController: organizeNotificationController,
+                    organizeNotificationStore: organizeNotificationStore,
                     onCardDeleted: onCardDeleted,
                     onAccountWithdrawalCompleted: onAccountWithdrawalCompleted,
                     onAccountDataDeleted: onAccountDataDeleted
@@ -118,7 +119,7 @@ enum RecapMainTabChromePolicy {
         case nil:
             true
         case .search, .allRecentCards, .archiveFavorites, .archiveDetail,
-             .remoteCardDetail, .cardCreationStart, .settings:
+             .remoteCardDetail, .cardEdit, .cardCreationStart, .settings:
             false
         }
     }
@@ -156,6 +157,7 @@ struct RecapMainTabBarToolbar: View {
     }
 }
 
+#if DEBUG
 #Preview("메인 탭 바와 업로드") {
     @Previewable @State var selection = MainTab.home
 
@@ -166,3 +168,4 @@ struct RecapMainTabBarToolbar: View {
     )
     .background(Color.recapGray50)
 }
+#endif

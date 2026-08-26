@@ -100,31 +100,3 @@ private extension AuthProvider {
         }
     }
 }
-
-@MainActor
-final class PreviewUserAccountService: UserAccountServing {
-    private let provider: AuthProvider
-    private var capturedCount: Int
-
-    init(provider: AuthProvider = .kakao, capturedCount: Int = 128) {
-        self.provider = provider
-        self.capturedCount = capturedCount
-    }
-
-    func fetchAccountInfo() async throws -> UserAccountInfo {
-        UserAccountInfo(
-            provider: provider,
-            createdAt: Date(timeIntervalSince1970: 1_781_190_000)
-        )
-    }
-
-    func fetchDataSummary() async throws -> UserDataSummary {
-        UserDataSummary(capturedCount: capturedCount)
-    }
-
-    func withdrawAccount() async throws {}
-
-    func deleteAllData() async throws {
-        capturedCount = 0
-    }
-}

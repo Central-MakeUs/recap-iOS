@@ -119,6 +119,7 @@ struct RecapButtonStyle: ButtonStyle {
     }
 }
 
+#if DEBUG
 #Preview("btn states") {
     VStack(spacing: 12) {
         RecapButton(title: "버튼", action: {})
@@ -129,3 +130,4 @@ struct RecapButtonStyle: ButtonStyle {
     }
     .padding()
 }
+#endif

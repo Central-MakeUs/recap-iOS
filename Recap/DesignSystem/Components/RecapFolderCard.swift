@@ -3,11 +3,11 @@ import SwiftUI
 struct RecapFolderCard: View {
     let title: String
     let count: Int
-    var kind: CollectionKind = .shopping
+    var category: CardCategory = .shopping
 
     var body: some View {
         VStack(spacing: 10) {
-            RecapFolderArtwork(kind: kind)
+            RecapFolderArtwork(category: category)
 
             VStack(spacing: 3) {
                 Text(title)
@@ -28,11 +28,9 @@ struct RecapFolderCard: View {
 }
 
 private struct RecapFolderArtwork: View {
-    let kind: CollectionKind
+    let category: CardCategory
 
     var body: some View {
-        let display = RecapPresentation.collectionDisplay(for: kind)
-
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 7.409886837005615, style: .continuous)
                 .fill(Color.recapFolderBack)
@@ -47,19 +45,8 @@ private struct RecapFolderArtwork: View {
                 .frame(width: 94, height: 79)
                 .offset(x: 5, y: 9)
 
-            if kind != .other {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Color.recapBackground)
-                    .frame(width: 30, height: 30)
-                    .overlay {
-                        RecapIconView(
-                            icon: RecapIcon.categoryIcon(for: kind),
-                            size: 16,
-                            color: display.dotColor
-                        )
-                    }
-                    .offset(x: 13, y: 17)
-            }
+            RecapCategoryIcon.folderCard(category)
+                .offset(x: 13, y: 17)
         }
         .frame(width: 99, height: 88, alignment: .topLeading)
     }
@@ -130,6 +117,7 @@ private struct RecapFolderFrontShape: Shape {
     }
 }
 
+#if DEBUG
 #Preview("폴더 카드") {
     ZStack {
         Color.recapBackground.ignoresSafeArea()
@@ -137,14 +125,15 @@ private struct RecapFolderFrontShape: Shape {
             columns: Array(repeating: GridItem(.fixed(99), spacing: 23), count: 3),
             spacing: 15
         ) {
-            ForEach(CollectionKind.allCases) { kind in
+            ForEach(CardCategory.allCases) { category in
                 RecapFolderCard(
-                    title: kind.displayTitle,
-                    count: SampleData.sampleCount(for: kind),
-                    kind: kind
+                    title: category.displayTitle,
+                    count: SampleData.sampleCount(for: category),
+                    category: category
                 )
             }
         }
         .padding()
     }
 }
+#endif

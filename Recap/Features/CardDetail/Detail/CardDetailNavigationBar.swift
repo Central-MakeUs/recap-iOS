@@ -29,11 +29,11 @@ struct CardDetailNavigationBar: View {
 
             Button(action: onFavorite) {
                 RecapIconView(
-                    icon: isFavorite ? .star : .starEmpty,
+                    icon: .star,
                     size: 24,
                     color: isFavorite
                         ? Color.recapBlue300
-                        : foregroundColor.opacity(0.70)
+                        : Color.recapGray200
                 )
                     .contentShape(Rectangle())
             }
@@ -55,6 +55,7 @@ struct CardDetailNavigationBar: View {
     }
 }
 
+#if DEBUG
 #Preview("정보카드 상세 내비게이션") {
     ZStack(alignment: .top) {
         Color.gray
@@ -71,3 +72,4 @@ struct CardDetailNavigationBar: View {
     }
     .frame(height: 64)
 }
+#endif

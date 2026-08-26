@@ -8,7 +8,7 @@ struct RecapScreenshotThumbnail: View {
         case folderCharacter
     }
 
-    let kind: CollectionKind
+    let category: CardCategory
     var assetName: String?
     var remoteURL: URL? = nil
     var cornerRadius: CGFloat = 5
@@ -28,7 +28,7 @@ struct RecapScreenshotThumbnail: View {
                     url: remoteURL,
                     onExpiredURL: onRemoteLoadFailure,
                     imageContent: { image in
-                        image
+                        Image(uiImage: image)
                             .resizable()
                             .scaledToFill()
                     },
@@ -154,9 +154,10 @@ private struct RecapScreenshotThumbnailShape: InsettableShape {
     }
 }
 
+#if DEBUG
 #Preview("스크린샷 썸네일") {
     RecapScreenshotThumbnail(
-        kind: .shopping,
+        category: .shopping,
         assetName: SampleData.cards[0].thumbnailAssetName
     )
     .frame(width: 134, height: 85)
@@ -166,7 +167,7 @@ private struct RecapScreenshotThumbnailShape: InsettableShape {
 #Preview("즐겨찾기 접힘 썸네일") {
     ZStack(alignment: .topTrailing) {
         RecapScreenshotThumbnail(
-            kind: .shopping,
+            category: .shopping,
             assetName: SampleData.cards[2].thumbnailAssetName,
             hasFavoriteFold: true
         )
@@ -184,7 +185,7 @@ private struct RecapScreenshotThumbnailShape: InsettableShape {
 #Preview("즐겨찾기 썸네일 폴백") {
     ZStack(alignment: .topTrailing) {
         RecapScreenshotThumbnail(
-            kind: .shopping,
+            category: .shopping,
             assetName: nil,
             hasFavoriteFold: true,
             size: CGSize(width: 62, height: 80),
@@ -200,3 +201,4 @@ private struct RecapScreenshotThumbnailShape: InsettableShape {
     .frame(width: 62, height: 80)
     .padding()
 }
+#endif

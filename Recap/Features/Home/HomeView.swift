@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HomeContainerView: View {
     @Environment(AppRouter.self) private var router
+    @Environment(CardStore.self) private var cardStore
 
     @State private var model: HomeFeatureModel
     @State private var hasRequestedSummary = false
@@ -9,18 +10,24 @@ struct HomeContainerView: View {
 
     init(
         summaryLoader: any HomeSummaryLoading,
+        cardStore: CardStore,
         invalidationCenter: CardDataInvalidationCenter
     ) {
         self.invalidationCenter = invalidationCenter
-        _model = State(initialValue: HomeFeatureModel(summaryLoader: summaryLoader))
+        _model = State(
+            initialValue: HomeFeatureModel(
+                summaryLoader: summaryLoader,
+                cardStore: cardStore
+            )
+        )
     }
 
     var body: some View {
         HomeView(
             status: homeStatus,
-            recentCards: content.recentCards,
-            favoriteCards: content.favoriteCards,
-            collectionSummaries: content.frequentTypes,
+            recentCards: cards(for: content.recentCards),
+            favoriteCards: cards(for: content.favoriteCards),
+            categorySummaries: content.frequentTypes,
             onAction: handleAction,
             onRetry: retry
         )
@@ -51,6 +58,12 @@ struct HomeContainerView: View {
         return content
     }
 
+    /// 응답은 순서·소속만 정하고, 그리기는 스토어의 공유 인스턴스로 한다.
+    /// 모델이 적재 시점에 upsert하므로 스토어 조회는 실패하지 않는다.
+    private func cards(for snapshots: [CardSnapshot]) -> [Card] {
+        snapshots.compactMap { cardStore.card(withCaptureID: $0.captureID) }
+    }
+
     private var homeStatus: HomeStatus {
         switch model.state {
         case .idle, .loading:
@@ -72,10 +85,10 @@ struct HomeContainerView: View {
             router.navigate(.archiveFavorites)
         case .openAllRecent:
             router.navigate(.allRecentCards)
-        case .openCard(let card):
-            router.navigate(.remoteCardDetail(card))
-        case .openArchive(let kind):
-            router.navigate(.archiveDetail(kind))
+        case .openCard(let captureID):
+            router.navigate(.remoteCardDetail(captureID))
+        case .openArchive(let category):
+            router.navigate(.archiveDetail(category))
         case .openSettings:
             router.navigate(.settings)
         }
@@ -95,24 +108,24 @@ private struct HomeReloadTrigger: Hashable {
 
 struct HomeView: View {
     var status: HomeStatus = .ready
-    let recentCards: [InformationCard]
-    let favoriteCards: [InformationCard]
-    let collectionSummaries: [CollectionSummary]
+    let recentCards: [Card]
+    let favoriteCards: [Card]
+    let categorySummaries: [CategorySummary]
     let onAction: (HomeAction) -> Void
     let onRetry: () -> Void
 
     init(
         status: HomeStatus = .ready,
-        recentCards: [InformationCard],
-        favoriteCards: [InformationCard] = [],
-        collectionSummaries: [CollectionSummary],
+        recentCards: [Card],
+        favoriteCards: [Card] = [],
+        categorySummaries: [CategorySummary],
         onAction: @escaping (HomeAction) -> Void,
         onRetry: @escaping () -> Void = {}
     ) {
         self.status = status
         self.recentCards = recentCards
         self.favoriteCards = favoriteCards
-        self.collectionSummaries = collectionSummaries
+        self.categorySummaries = categorySummaries
         self.onAction = onAction
         self.onRetry = onRetry
     }
@@ -141,19 +154,19 @@ struct HomeView: View {
                         HomeFavoritesSection(
                             cards: favoriteCards,
                             openFavorites: { onAction(.openFavorites) },
-                            openCard: { onAction(.openCard($0)) }
+                            openCard: { onAction(.openCard($0.captureID)) }
                         )
                         .padding(.top, 26)
 
                         HomeRecentSection(
                             cards: recentCards,
                             openAllRecent: { onAction(.openAllRecent) },
-                            openCard: { onAction(.openCard($0)) }
+                            openCard: { onAction(.openCard($0.captureID)) }
                         )
                         .padding(.top, 26)
 
                         HomeFrequentTypesSection(
-                            summaries: collectionSummaries,
+                            summaries: categorySummaries,
                             openArchive: { onAction(.openArchive($0)) }
                         )
                         .padding(.top, 26)
@@ -161,6 +174,7 @@ struct HomeView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 16)
+                .padding(.bottom, RecapMainTabBarMetrics.height)
             }
         }
         .background(Color.recapBackground)
@@ -169,13 +183,14 @@ struct HomeView: View {
     }
 }
 
+#if DEBUG
 #Preview("Home with cards") {
     NavigationStack {
         HomeView(
             status: .ready,
-            recentCards: SampleData.recentCards,
-            favoriteCards: SampleData.cards.filter(\.isFavorite),
-            collectionSummaries: SampleData.collectionSummaries,
+            recentCards: SampleData.recentCards.compactMap(Card.init(snapshot:)),
+            favoriteCards: SampleData.cards.filter(\.isFavorite).compactMap(Card.init(snapshot:)),
+            categorySummaries: SampleData.categorySummaries,
             onAction: PreviewActions.handleHome
         )
     }
@@ -185,9 +200,9 @@ struct HomeView: View {
     NavigationStack {
         HomeView(
             status: .ready,
-            recentCards: Array(SampleData.recentCards.prefix(2)),
-            favoriteCards: Array(SampleData.cards.filter(\.isFavorite).prefix(2)),
-            collectionSummaries: [],
+            recentCards: Array(SampleData.recentCards.prefix(2)).compactMap(Card.init(snapshot:)),
+            favoriteCards: Array(SampleData.cards.filter(\.isFavorite).prefix(2)).compactMap(Card.init(snapshot:)),
+            categorySummaries: [],
             onAction: PreviewActions.handleHome
         )
     }
@@ -199,7 +214,7 @@ struct HomeView: View {
             status: .waiting,
             recentCards: [],
             favoriteCards: [],
-            collectionSummaries: [],
+            categorySummaries: [],
             onAction: PreviewActions.handleHome
         )
     }
@@ -211,7 +226,7 @@ struct HomeView: View {
             status: .failed,
             recentCards: [],
             favoriteCards: [],
-            collectionSummaries: [],
+            categorySummaries: [],
             onAction: PreviewActions.handleHome
         )
     }
@@ -223,8 +238,9 @@ struct HomeView: View {
             status: .loading,
             recentCards: [],
             favoriteCards: [],
-            collectionSummaries: [],
+            categorySummaries: [],
             onAction: PreviewActions.handleHome
         )
     }
 }
+#endif

@@ -1,48 +1,71 @@
 import SwiftUI
 
+/// 원본 스크린샷 카드. 새 디자인(07-01)은 전폭 히어로 대신
+/// 가운데 놓인 134×179 카드로 이미지를 보여준다.
 struct CardDetailImageSection: View {
-    let card: InformationCard
-    let imageState: CardDetailImageState
+    /// 화면 높이 비율. 카드도 같이 커지고 작아져야 제목이 기기마다
+    /// 같은 자리에 온다. 가로세로에 같은 배율을 써서 모양은 유지한다.
+    @Environment(\.designHeightScale) private var heightScale
+
+    let card: Card
     let onOpenOriginal: () -> Void
     var onRemoteImageFailure: (URL) -> Void = { _ in }
 
-    @ViewBuilder
+    private var size: CGSize {
+        CGSize(
+            width: CardDetailStyle.detailImageSize.width * heightScale,
+            height: CardDetailStyle.detailImageSize.height * heightScale
+        )
+    }
+
     var body: some View {
-        switch imageState {
-        case .loaded:
-            CardDetailHeroView(onExpand: onOpenOriginal) {
-                RecapScreenshotThumbnail(
-                    kind: card.collection,
-                    assetName: card.detailImageAssetName,
-                    remoteURL: card.originalImageURL ?? card.thumbnailURL,
-                    onRemoteLoadFailure: onRemoteImageFailure
+        Button(action: onOpenOriginal) {
+            RecapScreenshotThumbnail(
+                category: card.category,
+                assetName: card.detailImageAssetName,
+                remoteURL: card.originalImageURL ?? card.thumbnailURL,
+                cornerRadius: CardDetailStyle.cornerRadius,
+                size: size,
+                fallbackStyle: .folderCharacter,
+                onRemoteLoadFailure: onRemoteImageFailure
+            )
+            .frame(width: size.width, height: size.height)
+            .clipShape(
+                RoundedRectangle(
+                    cornerRadius: CardDetailStyle.cornerRadius,
+                    style: .continuous
                 )
-                .frame(height: CardDetailStyle.heroHeight)
-                .frame(maxWidth: .infinity)
-                .clipped()
+            )
+            .overlay {
+                RoundedRectangle(
+                    cornerRadius: CardDetailStyle.cornerRadius,
+                    style: .continuous
+                )
+                .strokeBorder(Color.recapGray100, lineWidth: 0.5)
             }
-        case .failedFullWidth:
-            CardDetailHeroView(onExpand: onOpenOriginal) {
-                ZStack {
-                    LinearGradient(
-                        colors: [Color.recapImageFailureFill, .white],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    CardImageFailureView()
-                }
-                .frame(height: CardDetailStyle.heroHeight)
+            .overlay(alignment: .bottomTrailing) {
+                CardExpandIcon()
+                    .padding(10)
             }
-        case .failedCard:
-            CardDetailFailedImageCard(onExpand: onOpenOriginal)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel("원본 이미지 전체 보기")
     }
 }
 
-#Preview("정보카드 이미지 - 로딩 실패") {
+#if DEBUG
+#Preview("정보카드 이미지") {
     CardDetailImageSection(
-        card: SampleData.cards[1],
-        imageState: .failedCard,
+        card: Card(snapshot: SampleData.cards[1]),
         onOpenOriginal: {}
     )
 }
+
+#Preview("정보카드 이미지 - 폴백") {
+    CardDetailImageSection(
+        card: Card(snapshot: SampleData.cards[8]),
+        onOpenOriginal: {}
+    )
+}
+#endif

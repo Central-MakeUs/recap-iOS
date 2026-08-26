@@ -1,3 +1,4 @@
+#if DEBUG
 import Foundation
 
 @MainActor
@@ -23,9 +24,9 @@ final class PreviewSearchLoader: SearchLoading {
             case .favorites:
                 card.isFavorite
             case .other:
-                card.collection == .other
-            case .type(let kind):
-                card.collection == kind
+                card.category == .other
+            case .type(let category):
+                card.category == category
             }
         }
         let start = min(page * size, cards.count)
@@ -39,3 +40,4 @@ final class PreviewSearchLoader: SearchLoading {
         )
     }
 }
+#endif

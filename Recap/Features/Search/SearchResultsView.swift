@@ -8,9 +8,10 @@ struct SearchResultsView: View {
     }
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(CardStore.self) private var cardStore
     @State private var query: String
-    @State private var favoriteUpdatingIDs: Set<InformationCard.ID> = []
     @State private var toast: RecapToastContent?
+    @State private var cardPendingDeletion: Card?
 
     let mode: ScreenMode
     let model: SearchFeatureModel
@@ -56,6 +57,22 @@ struct SearchResultsView: View {
             guard mode == .normal else { return }
             await model.search(query: query)
         }
+        .recapConfirmationDialog(
+            isPresented: Binding(
+                get: { cardPendingDeletion != nil },
+                set: { if !$0 { cardPendingDeletion = nil } }
+            ),
+            title: "스크린샷을 삭제할까요?",
+            message: "삭제한 스크린샷 정보는\n되돌릴 수 없어요.",
+            cancelTitle: "취소",
+            confirmTitle: "삭제",
+            // 다이얼로그가 확인 직전에 isPresented를 내리면서 카드가 비워지므로,
+            // 그리는 시점의 카드를 클로저에 담아둔다.
+            onConfirm: { [card = cardPendingDeletion] in
+                guard let card else { return }
+                delete(card)
+            }
+        )
         .recapToast(toast)
         .task(id: toast) {
             guard toast != nil else { return }
@@ -65,25 +82,21 @@ struct SearchResultsView: View {
         }
     }
 
-    private func toggleFavorite(_ id: InformationCard.ID) {
-        guard favoriteUpdatingIDs.insert(id).inserted else { return }
-
+    private func toggleFavorite(_ card: Card) {
         Task {
-            defer { favoriteUpdatingIDs.remove(id) }
+            guard let content = await cardStore.toggleFavoriteReturningToast(card) else { return }
+            toast = content
+        }
+    }
 
+    /// 삭제는 상세 화면과 같은 길로 보낸다. 스토어가 내리면 홈·보관함도 함께 갱신된다.
+    private func delete(_ card: Card) {
+        Task {
             do {
-                let isFavorite = try await model.toggleFavorite(cardID: id)
-                toast = RecapToastContent(
-                    style: .success,
-                    message: isFavorite
-                        ? "즐겨찾기에 추가했어요."
-                        : "즐겨찾기에서 해제했어요."
-                )
+                try await cardStore.delete(card)
+                await model.refreshCurrentQuery()
             } catch {
-                toast = RecapToastContent(
-                    style: .error,
-                    message: "즐겨찾기를 변경하지 못했어요. 다시 시도해주세요."
-                )
+                toast = RecapToastMessage.screenshotDeleteFailed.content
             }
         }
     }
@@ -129,16 +142,15 @@ struct SearchResultsView: View {
         case .loaded(let content) where content.results.isEmpty:
             SearchNoResultsView()
         case .loaded(let content):
-            scrollContent {
-                SearchResultsList(
-                    totalCount: content.totalCount,
-                    results: content.results,
-                    openCard: openCard,
-                    loadNextPageIfNeeded: loadNextPageIfNeeded,
-                    onToggleFavorite: toggleFavorite,
-                    favoriteUpdatingIDs: favoriteUpdatingIDs
-                )
-            }
+            SearchResultsList(
+                totalCount: content.totalCount,
+                results: content.results,
+                openCard: openCard,
+                loadNextPageIfNeeded: loadNextPageIfNeeded,
+                onToggleFavorite: toggleFavorite,
+                onEditCard: { onAction(.editCard($0.captureID)) },
+                onRequestDeletion: { cardPendingDeletion = $0 }
+            )
         }
     }
 
@@ -155,14 +167,8 @@ struct SearchResultsView: View {
     }
 
     private func close() { dismiss() }
-    private func openCard(_ id: InformationCard.ID) {
-        guard
-            case .loaded(let content) = model.state,
-            let card = content.results.first(where: { $0.card.id == id })?.card
-        else {
-            return
-        }
-        onAction(.openCard(card))
+    private func openCard(_ captureID: Int64) {
+        onAction(.openCard(captureID))
     }
 
     private func loadNextPageIfNeeded(_ resultID: SearchResult.ID) {
@@ -172,6 +178,7 @@ struct SearchResultsView: View {
     }
 }
 
+#if DEBUG
 #Preview("Search home - recent terms") {
     NavigationStack {
         SearchResultsView(
@@ -224,6 +231,7 @@ struct SearchResultsView: View {
         )
     }
 }
+#endif
 
 @MainActor
 private func previewRecentSearchStore(
@@ -234,6 +242,7 @@ private func previewRecentSearchStore(
     )
 }
 
+#if DEBUG
 @MainActor
 private func previewSearchModel(
     query: String = "",
@@ -259,3 +268,4 @@ private func previewSearchModel(
         initialState: initialState
     )
 }
+#endif

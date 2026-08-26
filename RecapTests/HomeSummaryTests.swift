@@ -21,7 +21,7 @@ final class HomeSummaryTests: XCTestCase {
         let topType = try XCTUnwrap(content.frequentTypes.first)
 
         XCTAssertEqual(recentCard.captureID, 101)
-        XCTAssertEqual(recentCard.collection, .shopping)
+        XCTAssertEqual(recentCard.category, .shopping)
         XCTAssertEqual(recentCard.thumbnailURL?.absoluteString, "https://images.example.com/101.jpg")
         XCTAssertEqual(
             recentCard.organizedAt,
@@ -29,7 +29,7 @@ final class HomeSummaryTests: XCTestCase {
         )
         XCTAssertEqual(favoriteCard.captureID, 102)
         XCTAssertTrue(favoriteCard.isFavorite)
-        XCTAssertEqual(topType.kind, .career)
+        XCTAssertEqual(topType.category, .career)
         XCTAssertEqual(topType.count, 4)
         XCTAssertEqual(
             topType.representativeThumbnailURL?.absoluteString,
@@ -172,44 +172,6 @@ final class HomeSummaryTests: XCTestCase {
         XCTAssertEqual(HomeSummaryURLProtocol.requestCount, 1)
     }
 
-    func testToggleFavoriteUpdatesRecentCardAndNotifiesInvalidation() async throws {
-        let mutator = HomeCaptureMutatorStub()
-        let invalidationCenter = CardDataInvalidationCenter()
-        let model = HomeFeatureModel(
-            summaryLoader: SequencedHomeSummaryLoader(results: [.success(try Self.decodedSummary())]),
-            captureMutator: mutator,
-            invalidationCenter: invalidationCenter
-        )
-        await model.loadIfNeeded()
-        let cardID = try XCTUnwrap(Self.recentCard(in: model)?.id)
-
-        let isFavorite = try await model.toggleFavorite(cardID: cardID)
-
-        XCTAssertTrue(isFavorite)
-        XCTAssertEqual(mutator.favoriteUpdates, [.init(captureID: 101, isFavorite: true)])
-        XCTAssertEqual(Self.recentCard(in: model)?.isFavorite, true)
-        XCTAssertEqual(invalidationCenter.homeRevision, 1)
-    }
-
-    func testToggleFavoriteRestoresPreviousStateWhenRequestFails() async throws {
-        let invalidationCenter = CardDataInvalidationCenter()
-        let model = HomeFeatureModel(
-            summaryLoader: SequencedHomeSummaryLoader(results: [.success(try Self.decodedSummary())]),
-            captureMutator: HomeCaptureMutatorStub(favoriteError: APIError.transport),
-            invalidationCenter: invalidationCenter
-        )
-        await model.loadIfNeeded()
-        let cardID = try XCTUnwrap(Self.recentCard(in: model)?.id)
-
-        do {
-            _ = try await model.toggleFavorite(cardID: cardID)
-            XCTFail("A failed favorite update must throw")
-        } catch {
-            XCTAssertEqual(Self.recentCard(in: model)?.isFavorite, false)
-            XCTAssertEqual(invalidationCenter.homeRevision, 0)
-        }
-    }
-
     private static func decodedSummary() throws -> HomeSummaryContent {
         let response = try JSONDecoder.recapAPI.decode(
             APIResponse<HomeSummaryDTO>.self,
@@ -218,7 +180,7 @@ final class HomeSummaryTests: XCTestCase {
         return HomeSummaryContent(dto: try response.requiredData())
     }
 
-    private static func recentCard(in model: HomeFeatureModel) -> InformationCard? {
+    private static func recentCard(in model: HomeFeatureModel) -> CardSnapshot? {
         guard case .loaded(let content) = model.state else { return nil }
         return content.recentCards.first
     }

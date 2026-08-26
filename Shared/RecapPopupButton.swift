@@ -67,6 +67,7 @@ private struct RecapPopupButtonStyle: ButtonStyle {
     }
 }
 
+#if DEBUG
 #Preview("popup buttons") {
     HStack(spacing: 14) {
         RecapPopupButton(title: "취소", style: .secondary, action: {})
@@ -74,3 +75,4 @@ private struct RecapPopupButtonStyle: ButtonStyle {
     }
     .frame(width: 250)
 }
+#endif

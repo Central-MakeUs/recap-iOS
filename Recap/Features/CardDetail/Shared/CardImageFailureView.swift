@@ -16,8 +16,10 @@ struct CardImageFailureView: View {
     }
 }
 
+#if DEBUG
 #Preview("원본 이미지 불러오기 실패") {
     CardImageFailureView()
         .frame(width: 361, height: 184)
         .background(Color.recapImageFailureFill)
 }
+#endif

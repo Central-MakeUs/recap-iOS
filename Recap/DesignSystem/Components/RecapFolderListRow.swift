@@ -4,11 +4,11 @@ struct RecapFolderListRow: View {
     let title: String
     let subtitle: String
     let count: Int
-    let kind: CollectionKind
+    let category: CardCategory
 
     var body: some View {
         HStack(spacing: 27) {
-            RecapCategoryIcon(kind: kind, size: .medium)
+            RecapCategoryIcon.folderRow(category)
 
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 8) {
@@ -45,20 +45,22 @@ struct RecapFolderListRow: View {
     }
 }
 
+#if DEBUG
 #Preview("폴더 목록 행") {
     VStack(spacing: 0) {
         RecapFolderListRow(
             title: "쇼핑 · 상품",
             subtitle: "택배 반품 절차 · 노트북 가격 비교",
             count: 12,
-            kind: .shopping
+            category: .shopping
         )
 
         RecapFolderListRow(
             title: "기타",
             subtitle: "",
             count: 0,
-            kind: .other
+            category: .other
         )
     }
 }
+#endif

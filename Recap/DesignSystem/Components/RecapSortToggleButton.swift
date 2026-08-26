@@ -24,6 +24,7 @@ struct RecapSortToggleButton: View {
     }
 }
 
+#if DEBUG
 #Preview("최신순") {
     RecapSortToggleButton(title: "최신순", action: {})
         .padding()
@@ -33,3 +34,4 @@ struct RecapSortToggleButton: View {
     RecapSortToggleButton(title: "오래된순", action: {})
         .padding()
 }
+#endif

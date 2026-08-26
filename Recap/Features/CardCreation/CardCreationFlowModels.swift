@@ -4,18 +4,18 @@ import SwiftUI
 
 struct CardCreationScreenshot: Identifiable, Hashable {
     let id: UUID
-    let kind: CollectionKind
+    let category: CardCategory
     let assetName: String?
     let imageData: Data?
 
     init(
         id: UUID = UUID(),
-        kind: CollectionKind,
+        category: CardCategory,
         assetName: String? = nil,
         imageData: Data? = nil
     ) {
         self.id = id
-        self.kind = kind
+        self.category = category
         self.assetName = assetName
         self.imageData = imageData
     }
@@ -28,38 +28,6 @@ enum CardCreationFlowStep: Hashable {
     case complete
     case partialFailure
     case failure
-}
-
-enum CardCreationResultState: Hashable {
-    case complete
-    case partialFailure
-    case failure
-
-    func title(selectedCount: Int, failedCount: Int) -> String {
-        switch self {
-        case .complete:
-            "\(selectedCount)개의 스크린샷을\n정리했어요"
-        case .partialFailure:
-            "일부 스크린샷을 정리하지 못했어요"
-        case .failure:
-            "스크린샷을 정리하지 못했어요"
-        }
-    }
-
-    var message: String {
-        switch self {
-        case .complete:
-            "보관함에서 확인해보세요!"
-        case .partialFailure:
-            "정리된 스크린샷은\n보관함에 저장했어요!"
-        case .failure:
-            "다음에 다시 시도해주세요."
-        }
-    }
-
-    var buttonTitle: String {
-        self == .complete ? "완료" : "닫기"
-    }
 }
 
 enum CardCreationFlowDecision {
@@ -82,16 +50,16 @@ final class CardCreationFlowViewModel {
     private(set) var failedLoadCount = 0
     private let processor: any CardCreationProcessing
     private let invalidationCenter: CardDataInvalidationCenter?
-    private let notificationController: OrganizeNotificationController?
+    private let notificationStore: OrganizeNotificationStore?
     private let backgroundExecution: any OrganizeBackgroundExecuting
 
     init(
         step: CardCreationFlowStep = .picking,
         screenshots: [CardCreationScreenshot]? = nil,
         progress: CardCreationProgress = .initial,
-        processor: (any CardCreationProcessing)? = nil,
+        processor: any CardCreationProcessing,
         invalidationCenter: CardDataInvalidationCenter? = nil,
-        notificationController: OrganizeNotificationController? = nil,
+        notificationStore: OrganizeNotificationStore? = nil,
         backgroundExecution: (any OrganizeBackgroundExecuting)? = nil
     ) {
         let screenshots = screenshots ?? []
@@ -101,15 +69,15 @@ final class CardCreationFlowViewModel {
             screenshot.imageData.map { SelectedScreenshot(imageData: $0) }
         }
         self.progress = progress
-        self.processor = processor ?? PreviewCardCreationPipeline()
+        self.processor = processor
         self.invalidationCenter = invalidationCenter
-        self.notificationController = notificationController
-        self.backgroundExecution = backgroundExecution ?? PreviewOrganizeBackgroundExecution()
+        self.notificationStore = notificationStore
+        self.backgroundExecution = backgroundExecution ?? NoopOrganizeBackgroundExecution()
     }
 
     var selectedCount: Int { selectedScreenshots.count }
     var areOrganizeNotificationsEnabled: Bool {
-        notificationController?.isEnabled ?? false
+        notificationStore?.isEnabled ?? false
     }
 
     func receivePickerSelection(imageData: [Data], failedCount: Int, appending: Bool) {
@@ -134,7 +102,7 @@ final class CardCreationFlowViewModel {
         }
 
         screenshots = selectedScreenshots.map {
-            CardCreationScreenshot(kind: .capture, imageData: $0.imageData)
+            CardCreationScreenshot(category: .capture, imageData: $0.imageData)
         }
         progress = .initial
         step = .confirmation
@@ -143,7 +111,7 @@ final class CardCreationFlowViewModel {
     func removeScreenshot(id: SelectedScreenshot.ID) {
         selectedScreenshots.removeAll { $0.id == id }
         screenshots = selectedScreenshots.map {
-            CardCreationScreenshot(kind: .capture, imageData: $0.imageData)
+            CardCreationScreenshot(category: .capture, imageData: $0.imageData)
         }
     }
 
@@ -155,11 +123,15 @@ final class CardCreationFlowViewModel {
     }
 
     func shouldPresentNotificationPermissionGuide() async -> Bool {
-        await notificationController?.shouldPresentPermissionGuide() ?? false
+        await notificationStore?.shouldPresentPermissionGuide() ?? false
+    }
+
+    func declineNotificationPermissionGuide() {
+        notificationStore?.declinePermissionGuide()
     }
 
     func requestNotificationPermission() async {
-        await notificationController?.requestPermissionForOrganize()
+        await notificationStore?.requestPermissionForOrganize()
     }
 
     func cancelProcessing() async {
@@ -171,7 +143,7 @@ final class CardCreationFlowViewModel {
     func processSelectedScreenshots() async {
         let images = selectedScreenshots.map(\.imageData)
 
-        await notificationController?.prepareForOrganize()
+        await notificationStore?.prepareForOrganize()
         backgroundExecution.begin()
         defer { backgroundExecution.end() }
 
@@ -187,7 +159,7 @@ final class CardCreationFlowViewModel {
             if result.successCount > 0 {
                 invalidationCenter?.invalidate(.captureCreated)
             }
-            await notificationController?.notifyOrganizeResult(result)
+            await notificationStore?.notifyOrganizeResult(result)
 
             switch result.status {
             case .completed:
@@ -203,7 +175,7 @@ final class CardCreationFlowViewModel {
             return
         } catch {
             failedLoadCount = max(failedLoadCount, images.count)
-            await notificationController?.notifyOrganizeFailure()
+            await notificationStore?.notifyOrganizeFailure()
             step = .failure
         }
     }

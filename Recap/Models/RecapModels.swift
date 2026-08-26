@@ -16,15 +16,7 @@ enum SettingsRoute: Hashable {
     case openSourceLicenses
 }
 
-enum InitialRange: String, CaseIterable, Identifiable, Hashable {
-    case sevenDays
-    case thirtyDays
-    case threeMonths
-
-    var id: String { rawValue }
-}
-
-nonisolated enum CollectionKind: String, CaseIterable, Identifiable, Hashable, Sendable {
+nonisolated enum CardCategory: String, CaseIterable, Identifiable, Hashable, Sendable {
     case shopping
     case place
     case schedule
@@ -37,23 +29,7 @@ nonisolated enum CollectionKind: String, CaseIterable, Identifiable, Hashable, S
 
     var id: String { rawValue }
 
-    /// 분류 표시 이름. 색상·아이콘이 붙는 `RecapPresentation.collectionDisplay`와 달리
-    /// 순수 문자열이라 격리 없이 어디서든 쓸 수 있다.
-    var displayTitle: String {
-        switch self {
-        case .shopping: "쇼핑 · 상품"
-        case .place: "장소 · 맛집"
-        case .schedule: "일정 · 예약"
-        case .knowledge: "정보 · 지식"
-        case .content: "책 · 콘텐츠"
-        case .benefits: "혜택 · 이벤트"
-        case .capture: "기록 · 캡처"
-        case .career: "채용 · 취업"
-        case .other: "기타"
-        }
-    }
-
-    static let folderCases: [CollectionKind] = [
+    static let folderCases: [CardCategory] = [
         .shopping,
         .place,
         .schedule,
@@ -76,17 +52,15 @@ enum HomeStatus: String, CaseIterable, Identifiable, Hashable {
     var id: String { rawValue }
 }
 
-nonisolated struct InformationCard: Identifiable, Hashable, Sendable {
-    let id: UUID
-    let captureID: Int64?
+nonisolated struct CardSnapshot: Identifiable, Equatable, Sendable {
+    /// 서버가 부여한 정체성. `Card`와 같은 키를 쓴다.
+    let captureID: Int64
     let title: String
     let summary: String
-    let collection: CollectionKind
+    let category: CardCategory
     let organizedAt: Date?
-    let dateText: String
     let location: String
     let businessHours: String
-    let category: String
     let confirmationLabel: String?
     let memo: String
     let tags: [String]
@@ -96,17 +70,16 @@ nonisolated struct InformationCard: Identifiable, Hashable, Sendable {
     let thumbnailURL: URL?
     var isFavorite: Bool
 
+    var id: Int64 { captureID }
+
     init(
-        id: UUID,
-        captureID: Int64? = nil,
+        captureID: Int64,
         title: String,
         summary: String,
-        collection: CollectionKind,
+        category: CardCategory,
         organizedAt: Date? = nil,
-        dateText: String,
         location: String,
         businessHours: String,
-        category: String,
         confirmationLabel: String?,
         memo: String,
         tags: [String],
@@ -116,16 +89,13 @@ nonisolated struct InformationCard: Identifiable, Hashable, Sendable {
         thumbnailURL: URL? = nil,
         isFavorite: Bool
     ) {
-        self.id = id
         self.captureID = captureID
         self.title = title
         self.summary = summary
-        self.collection = collection
+        self.category = category
         self.organizedAt = organizedAt
-        self.dateText = dateText
         self.location = location
         self.businessHours = businessHours
-        self.category = category
         self.confirmationLabel = confirmationLabel
         self.memo = memo
         self.tags = tags
@@ -137,23 +107,23 @@ nonisolated struct InformationCard: Identifiable, Hashable, Sendable {
     }
 }
 
-nonisolated struct CollectionSummary: Identifiable, Hashable, Sendable {
-    let kind: CollectionKind
+nonisolated struct CategorySummary: Identifiable, Hashable, Sendable {
+    let category: CardCategory
     let count: Int
     let previewTitle: String
     let representativeThumbnailURL: URL?
 
     init(
-        kind: CollectionKind,
+        category: CardCategory,
         count: Int,
         previewTitle: String,
         representativeThumbnailURL: URL? = nil
     ) {
-        self.kind = kind
+        self.category = category
         self.count = count
         self.previewTitle = previewTitle
         self.representativeThumbnailURL = representativeThumbnailURL
     }
 
-    var id: CollectionKind { kind }
+    var id: CardCategory { category }
 }

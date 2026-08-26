@@ -137,6 +137,7 @@ private struct RecapConfirmationDialogModifier: ViewModifier {
     }
 }
 
+#if DEBUG
 #Preview("확인 팝업") {
     RecapConfirmationDialog(
         title: "스크린샷을 삭제할까요?",
@@ -151,3 +152,4 @@ private struct RecapConfirmationDialogModifier: ViewModifier {
     .padding()
     .background(Color.black.opacity(0.30))
 }
+#endif

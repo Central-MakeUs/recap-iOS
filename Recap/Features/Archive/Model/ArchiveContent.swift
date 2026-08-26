@@ -10,7 +10,7 @@ nonisolated struct ArchiveHomeRefreshScope: OptionSet, Sendable {
 }
 
 nonisolated struct ArchiveHomeContent: Equatable, Sendable {
-    let summaries: [CollectionSummary]
+    let summaries: [CategorySummary]
     let favoriteCount: Int
     let otherCount: Int
 
@@ -39,21 +39,16 @@ nonisolated enum ArchiveSort: String, CaseIterable, Hashable, Sendable {
     }
 }
 
-extension InformationCard {
+extension CardSnapshot {
     nonisolated init(archiveDTO dto: ArchiveCaptureSummaryDTO) {
         self.init(
-            id: UUID(),
             captureID: dto.captureId,
             title: dto.title,
             summary: dto.summary,
-            collection: dto.typeCode.collectionKind,
+            category: dto.typeCode.category,
             organizedAt: dto.organizedAt,
-            dateText: dto.organizedAt.formatted(
-                .dateTime.year().month(.twoDigits).day(.twoDigits)
-            ),
             location: "",
             businessHours: "",
-            category: dto.typeCode.displayTitle,
             confirmationLabel: nil,
             memo: "",
             tags: [],
@@ -63,10 +58,10 @@ extension InformationCard {
     }
 }
 
-extension CollectionSummary {
+extension CategorySummary {
     nonisolated init(archiveDTO dto: ArchiveStorageTypeDTO) {
         self.init(
-            kind: dto.typeCode.collectionKind,
+            category: dto.typeCode.category,
             count: dto.count,
             previewTitle: dto.representativeTitles
                 .prefix(2)

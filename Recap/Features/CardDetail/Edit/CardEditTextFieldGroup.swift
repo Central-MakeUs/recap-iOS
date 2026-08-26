@@ -18,6 +18,7 @@ struct CardEditTextFieldGroup: View {
     }
 }
 
+#if DEBUG
 #Preview("정보카드 제목 입력") {
     @Previewable @State var title = "제주 숙소 예약 정보"
     CardEditTextFieldGroup(
@@ -41,3 +42,4 @@ struct CardEditTextFieldGroup: View {
     )
     .padding()
 }
+#endif

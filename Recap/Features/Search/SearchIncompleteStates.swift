@@ -16,7 +16,9 @@ struct SearchTargetCardEmptyState: View {
     }
 }
 
+#if DEBUG
 #Preview("검색 대상 카드 없음") {
     SearchTargetCardEmptyState()
         .background(Color.recapBackground)
 }
+#endif

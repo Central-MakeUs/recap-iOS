@@ -6,12 +6,12 @@ struct ShareUploadCancellationDialog: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Text("정리를 취소할까요?")
+            Text(OrganizeCancellationCopy.title)
                 .font(.custom("Pretendard-SemiBold", size: 16))
                 .tracking(-0.32)
                 .foregroundStyle(Color("RecapGray900"))
 
-            Text("지금 나가면 공유한 스크린샷이\n정리되지 않아요")
+            Text(OrganizeCancellationCopy.message)
                 .font(.custom("Pretendard-Regular", size: 14))
                 .tracking(-0.28)
                 .multilineTextAlignment(.center)
@@ -21,13 +21,13 @@ struct ShareUploadCancellationDialog: View {
 
             HStack(spacing: 14) {
                 RecapPopupButton(
-                    title: "계속정리하기",
+                    title: OrganizeCancellationCopy.continueTitle,
                     style: .secondary,
                     action: onContinue
                 )
 
                 RecapPopupButton(
-                    title: "나가기",
+                    title: OrganizeCancellationCopy.exitTitle,
                     style: .primary,
                     action: onExit
                 )
@@ -43,6 +43,7 @@ struct ShareUploadCancellationDialog: View {
 
 }
 
+#if DEBUG
 #Preview("공유 업로드 취소 확인") {
     ZStack {
         Color.black.opacity(0.30)
@@ -54,3 +55,4 @@ struct ShareUploadCancellationDialog: View {
         )
     }
 }
+#endif

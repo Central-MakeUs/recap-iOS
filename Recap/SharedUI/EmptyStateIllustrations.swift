@@ -64,10 +64,12 @@ struct RecapFolderEmptyIllustration: View {
     }
 }
 
+#if DEBUG
 #Preview("폴더 빈 상태 일러스트") {
     RecapFolderEmptyIllustration()
         .padding()
 }
+#endif
 
 struct RecapArchiveEmptyIllustration: View {
     var body: some View {
@@ -79,10 +81,12 @@ struct RecapArchiveEmptyIllustration: View {
     }
 }
 
+#if DEBUG
 #Preview("보관함 빈 상태 일러스트") {
     RecapArchiveEmptyIllustration()
         .padding()
 }
+#endif
 
 struct RecapFavoriteEmptyIllustration: View {
     var body: some View {
@@ -94,10 +98,12 @@ struct RecapFavoriteEmptyIllustration: View {
     }
 }
 
+#if DEBUG
 #Preview("즐겨찾기 빈 상태 일러스트") {
     RecapFavoriteEmptyIllustration()
         .padding()
 }
+#endif
 
 private struct RecapEmptyFolderTabShape: Shape {
     func path(in rect: CGRect) -> Path {

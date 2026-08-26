@@ -1,13 +1,13 @@
 import SwiftUI
 
 struct CardEditTypeSelectionSheet: View {
-    @Binding private var selection: CollectionKind
-    @State private var pendingSelection: CollectionKind
+    @Binding private var selection: CardCategory
+    @State private var pendingSelection: CardCategory
 
     private let onSelectionConfirmed: () -> Void
 
     init(
-        selection: Binding<CollectionKind>,
+        selection: Binding<CardCategory>,
         onSelectionConfirmed: @escaping () -> Void
     ) {
         _selection = selection
@@ -26,8 +26,8 @@ struct CardEditTypeSelectionSheet: View {
             Grid(horizontalSpacing: 8, verticalSpacing: 20) {
                 ForEach(categoryRows.indices, id: \.self) { rowIndex in
                     GridRow {
-                        ForEach(categoryRows[rowIndex]) { kind in
-                            categoryButton(for: kind)
+                        ForEach(categoryRows[rowIndex]) { category in
+                            categoryButton(for: category)
                         }
                     }
                 }
@@ -50,36 +50,38 @@ struct CardEditTypeSelectionSheet: View {
         onSelectionConfirmed()
     }
 
-    private var categoryRows: [[CollectionKind]] {
-        let categories = CollectionKind.allCases
+    private var categoryRows: [[CardCategory]] {
+        let categories = CardCategory.allCases
 
         return stride(from: 0, to: categories.count, by: 3).map { startIndex in
             Array(categories[startIndex..<min(startIndex + 3, categories.count)])
         }
     }
 
-    private func categoryButton(for kind: CollectionKind) -> some View {
+    private func categoryButton(for category: CardCategory) -> some View {
         Button {
-            pendingSelection = kind
+            pendingSelection = category
         } label: {
             RecapChip(
                 configuration: .category(
-                    kind,
+                    category,
                     size: .large,
-                    isSelected: pendingSelection == kind
+                    isSelected: pendingSelection == category
                 )
             )
         }
         .buttonStyle(.plain)
-        .accessibilityAddTraits(pendingSelection == kind ? .isSelected : [])
+        .accessibilityAddTraits(pendingSelection == category ? .isSelected : [])
     }
 }
 
+#if DEBUG
 #Preview("정보카드 유형 선택") {
-    @Previewable @State var selection = CollectionKind.schedule
+    @Previewable @State var selection = CardCategory.schedule
 
     CardEditTypeSelectionSheet(
         selection: $selection,
         onSelectionConfirmed: PreviewActions.noop
     )
 }
+#endif

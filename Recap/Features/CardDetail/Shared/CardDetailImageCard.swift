@@ -29,6 +29,14 @@ struct CardDetailImageCard<Content: View>: View {
                         style: .continuous
                     )
                 )
+                // 흰 스크린샷이 배경에 묻히지 않게 경계를 그린다 (07-01 수정 화면).
+                .overlay {
+                    RoundedRectangle(
+                        cornerRadius: CardDetailStyle.cornerRadius,
+                        style: .continuous
+                    )
+                    .strokeBorder(Color.recapGray100, lineWidth: 0.5)
+                }
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -36,9 +44,11 @@ struct CardDetailImageCard<Content: View>: View {
     }
 }
 
+#if DEBUG
 #Preview("정보카드 이미지 카드") {
     CardDetailImageCard(onExpand: {}) {
         Color.gray
     }
     .padding(.horizontal, CardDetailStyle.horizontalPadding)
 }
+#endif

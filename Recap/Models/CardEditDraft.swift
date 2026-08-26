@@ -5,20 +5,21 @@ nonisolated struct CardEditDraft: Equatable, Sendable {
     static let summaryLimit = 80
     static let bodyLimit = 1000
 
-    var collection: CollectionKind
+    var category: CardCategory
     var title: String
     var summary: String
     var body: String
 
-    init(collection: CollectionKind, title: String, summary: String, body: String) {
-        self.collection = collection
+    init(category: CardCategory, title: String, summary: String, body: String) {
+        self.category = category
         self.title = title
         self.summary = summary
         self.body = body
     }
 
-    init(card: InformationCard) {
-        collection = card.collection
+    @MainActor
+    init(card: Card) {
+        category = card.category
         title = card.title
         summary = card.summary
         body = card.memo

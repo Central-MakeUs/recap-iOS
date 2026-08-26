@@ -1,15 +1,15 @@
 import Foundation
 
 nonisolated struct HomeSummaryContent: Equatable, Sendable {
-    let recentCards: [InformationCard]
-    let favoriteCards: [InformationCard]
-    let frequentTypes: [CollectionSummary]
+    let recentCards: [CardSnapshot]
+    let favoriteCards: [CardSnapshot]
+    let frequentTypes: [CategorySummary]
     let hasAnyCapture: Bool
 
     init(
-        recentCards: [InformationCard],
-        favoriteCards: [InformationCard],
-        frequentTypes: [CollectionSummary],
+        recentCards: [CardSnapshot],
+        favoriteCards: [CardSnapshot],
+        frequentTypes: [CategorySummary],
         hasAnyCapture: Bool
     ) {
         self.recentCards = recentCards
@@ -19,7 +19,7 @@ nonisolated struct HomeSummaryContent: Equatable, Sendable {
     }
 
     init(dto: HomeSummaryDTO) {
-        recentCards = dto.recentCaptures.map(InformationCard.init(dto:))
+        recentCards = dto.recentCaptures.map(CardSnapshot.init(dto:))
         favoriteCards = dto.favorites
             .enumerated()
             .sorted { lhs, rhs in
@@ -27,34 +27,9 @@ nonisolated struct HomeSummaryContent: Equatable, Sendable {
                     ? lhs.offset < rhs.offset
                     : lhs.element.organizedAt > rhs.element.organizedAt
             }
-            .map { InformationCard(dto: $0.element) }
-        frequentTypes = dto.topTypes.map(CollectionSummary.init(dto:))
+            .map { CardSnapshot(dto: $0.element) }
+        frequentTypes = dto.topTypes.map(CategorySummary.init(dto:))
         hasAnyCapture = dto.hasAnyCapture
-    }
-
-    /// 같은 캡처가 최근·즐겨찾기 목록에 각각 다른 `id`로 존재하므로 `captureID`로 찾는다.
-    func applyingFavorite(_ isFavorite: Bool, captureID: Int64) -> HomeSummaryContent {
-        HomeSummaryContent(
-            recentCards: recentCards.map { card in
-                card.captureID == captureID ? card.with(isFavorite: isFavorite) : card
-            },
-            favoriteCards: isFavorite
-                ? favoriteCards
-                : favoriteCards.filter { $0.captureID != captureID },
-            frequentTypes: frequentTypes,
-            hasAnyCapture: hasAnyCapture
-        )
-    }
-
-    var allCards: [InformationCard] {
-        var cardsByCaptureID: [Int64: InformationCard] = [:]
-
-        for card in recentCards + favoriteCards {
-            guard let captureID = card.captureID else { continue }
-            cardsByCaptureID[captureID] = card
-        }
-
-        return Array(cardsByCaptureID.values)
     }
 
     static let empty = HomeSummaryContent(
@@ -65,23 +40,18 @@ nonisolated struct HomeSummaryContent: Equatable, Sendable {
     )
 }
 
-extension InformationCard {
+extension CardSnapshot {
     nonisolated init(dto: HomeCaptureSummaryDTO) {
-        let kind = dto.typeCode.collectionKind
+        let category = dto.typeCode.category
 
         self.init(
-            id: UUID(),
             captureID: dto.captureId,
             title: dto.title,
             summary: dto.summary,
-            collection: kind,
+            category: category,
             organizedAt: dto.organizedAt,
-            dateText: dto.organizedAt.formatted(
-                .dateTime.year().month(.twoDigits).day(.twoDigits)
-            ),
             location: "",
             businessHours: "",
-            category: dto.typeCode.displayTitle,
             confirmationLabel: nil,
             memo: "",
             tags: [],
@@ -94,9 +64,9 @@ extension InformationCard {
 nonisolated struct RecentCapturesPage: Equatable, Sendable {
     let totalCount: Int
     let hasNext: Bool
-    let cards: [InformationCard]
+    let cards: [CardSnapshot]
 
-    init(totalCount: Int, hasNext: Bool, cards: [InformationCard]) {
+    init(totalCount: Int, hasNext: Bool, cards: [CardSnapshot]) {
         self.totalCount = totalCount
         self.hasNext = hasNext
         self.cards = cards
@@ -105,18 +75,18 @@ nonisolated struct RecentCapturesPage: Equatable, Sendable {
     init(dto: RecentCapturesPageDTO) {
         totalCount = dto.count
         hasNext = dto.hasNext
-        cards = dto.items.map(InformationCard.init(dto:))
+        cards = dto.items.map(CardSnapshot.init(dto:))
     }
 }
 
-private extension CollectionSummary {
+private extension CategorySummary {
     nonisolated init(dto: HomeTopTypeDTO) {
-        let kind = dto.typeCode.collectionKind
+        let category = dto.typeCode.category
 
         self.init(
-            kind: kind,
+            category: category,
             count: dto.count,
-            previewTitle: dto.typeCode.displayTitle,
+            previewTitle: category.displayTitle,
             representativeThumbnailURL: dto.representativeThumbnailUrl
         )
     }

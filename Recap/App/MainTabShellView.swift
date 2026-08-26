@@ -4,7 +4,7 @@ struct AppShellView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     let router: AppRouter
-    let cardStore: RecapCardStore
+    let cardStore: CardStore
     let homeSummaryLoader: any HomeSummaryLoading
     let archiveLoader: any ArchiveLoading
     let searchLoader: any SearchLoading
@@ -12,7 +12,7 @@ struct AppShellView: View {
     let userAccountService: any UserAccountServing
     let cardCreationProcessor: any CardCreationProcessing
     let cardDataInvalidationCenter: CardDataInvalidationCenter
-    let organizeNotificationController: OrganizeNotificationController
+    let organizeNotificationStore: OrganizeNotificationStore
     let aiDataTransferConsentStore: AIDataTransferConsentStore
     var onLogout: () -> Void = {}
     var onAccountWithdrawalCompleted: () -> Void = {}
@@ -21,7 +21,7 @@ struct AppShellView: View {
 
     init(
         router: AppRouter,
-        cardStore: RecapCardStore,
+        cardStore: CardStore,
         homeSummaryLoader: any HomeSummaryLoading,
         archiveLoader: any ArchiveLoading,
         searchLoader: any SearchLoading,
@@ -29,7 +29,7 @@ struct AppShellView: View {
         userAccountService: any UserAccountServing,
         cardCreationProcessor: any CardCreationProcessing,
         cardDataInvalidationCenter: CardDataInvalidationCenter,
-        organizeNotificationController: OrganizeNotificationController,
+        organizeNotificationStore: OrganizeNotificationStore,
         aiDataTransferConsentStore: AIDataTransferConsentStore,
         onLogout: @escaping () -> Void = {},
         onAccountWithdrawalCompleted: @escaping () -> Void = {}
@@ -43,7 +43,7 @@ struct AppShellView: View {
         self.userAccountService = userAccountService
         self.cardCreationProcessor = cardCreationProcessor
         self.cardDataInvalidationCenter = cardDataInvalidationCenter
-        self.organizeNotificationController = organizeNotificationController
+        self.organizeNotificationStore = organizeNotificationStore
         self.aiDataTransferConsentStore = aiDataTransferConsentStore
         self.onLogout = onLogout
         self.onAccountWithdrawalCompleted = onAccountWithdrawalCompleted
@@ -65,7 +65,7 @@ struct AppShellView: View {
                 userAccountService: userAccountService,
                 cardCreationProcessor: cardCreationProcessor,
                 cardDataInvalidationCenter: cardDataInvalidationCenter,
-                organizeNotificationController: organizeNotificationController,
+                organizeNotificationStore: organizeNotificationStore,
                 onUpload: openCardCreationFlow,
                 onCardDeleted: showCardDeletedToast,
                 onAccountWithdrawalCompleted: onAccountWithdrawalCompleted,
@@ -74,7 +74,7 @@ struct AppShellView: View {
         }
         .environment(router)
         .environment(cardStore)
-        .environment(organizeNotificationController)
+        .environment(organizeNotificationStore)
         .environment(aiDataTransferConsentStore)
         .environment(\.recapLogout, onLogout)
         .recapToast(toast)
@@ -85,9 +85,9 @@ struct AppShellView: View {
             try? await aiDataTransferConsentStore.refresh()
         }
         .task(id: scenePhase) {
-            organizeNotificationController.setApplicationInBackground(scenePhase == .background)
+            organizeNotificationStore.setApplicationInBackground(scenePhase == .background)
             guard scenePhase == .active else { return }
-            await showPendingOrganizeResultIfNeeded()
+            await acknowledgePendingOrganizeResultIfNeeded()
         }
     }
 
@@ -99,14 +99,11 @@ struct AppShellView: View {
     }
 
     private func showCardDeletedToast() {
-        toast = RecapToastContent(
-            style: .success,
-            message: "스크린샷을 삭제했어요."
-        )
+        toast = RecapToastMessage.screenshotDeleted.content
     }
 
     private func handleAccountDataDeleted() {
-        cardStore.removeAllCards()
+        cardStore.removeAll()
         cardDataInvalidationCenter.invalidate(.captureDeleted)
     }
 
@@ -117,32 +114,21 @@ struct AppShellView: View {
         toast = nil
     }
 
-    private func showPendingOrganizeResultIfNeeded() async {
+    /// 앱 밖에서 끝난 정리 결과를 서버에 확인 처리하고 카드 목록을 갱신한다.
+    ///
+    /// 결과를 알리는 화면은 따로 있고 이 시점의 토스트는 디자인에 없어 띄우지 않는다.
+    /// 확인 처리를 건너뛰면 서버가 같은 결과를 계속 돌려주므로 그 부분만 남긴다.
+    private func acknowledgePendingOrganizeResultIfNeeded() async {
         guard let result = try? await captureService.pendingOrganizeResult() else {
             return
         }
 
         switch result.status {
-        case .completed:
-            toast = RecapToastContent(
-                style: .success,
-                message: "\(result.successCount)개의 스크린샷을 정리했어요."
-            )
-        case .partialFailed:
-            toast = RecapToastContent(
-                style: .error,
-                message: "\(result.failCount)개의 스크린샷을 정리하지 못했어요."
-            )
-        case .failed:
-            toast = RecapToastContent(
-                style: .error,
-                message: "스크린샷을 정리하지 못했어요."
-            )
+        case .completed, .partialFailed, .failed:
+            break
         case .cancelled, .processing:
             return
         }
-
-        await Task.yield()
 
         do {
             try await captureService.acknowledgeOrganizeResult(batchID: result.batchId)
@@ -153,10 +139,11 @@ struct AppShellView: View {
     }
 }
 
+#if DEBUG
 #Preview("App shell") {
     AppShellView(
         router: AppRouter(),
-        cardStore: PreviewStores.recapCardStore(),
+        cardStore: PreviewStores.cardStore(),
         homeSummaryLoader: PreviewHomeSummaryLoaderForAppShell(),
         archiveLoader: PreviewArchiveLoader(),
         searchLoader: PreviewSearchLoader(),
@@ -164,7 +151,7 @@ struct AppShellView: View {
         userAccountService: PreviewUserAccountService(),
         cardCreationProcessor: PreviewCardCreationPipeline(),
         cardDataInvalidationCenter: CardDataInvalidationCenter(),
-        organizeNotificationController: OrganizeNotificationController(
+        organizeNotificationStore: OrganizeNotificationStore(
             delivery: PreviewOrganizeNotificationDelivery(),
             userDefaults: UserDefaults(suiteName: UUID().uuidString)!
         ),
@@ -173,15 +160,18 @@ struct AppShellView: View {
         )
     )
 }
+#endif
 
+#if DEBUG
 @MainActor
 private final class PreviewHomeSummaryLoaderForAppShell: HomeSummaryLoading {
     func fetchSummary() async throws -> HomeSummaryContent {
         HomeSummaryContent(
             recentCards: SampleData.recentCards,
             favoriteCards: SampleData.cards.filter(\.isFavorite),
-            frequentTypes: SampleData.collectionSummaries,
+            frequentTypes: SampleData.categorySummaries,
             hasAnyCapture: true
         )
     }
 }
+#endif

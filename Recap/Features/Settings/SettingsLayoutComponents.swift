@@ -95,6 +95,7 @@ struct SettingsSectionDivider: View {
     }
 }
 
+#if DEBUG
 #Preview("설정 공통 레이아웃") {
     VStack(spacing: 0) {
         SettingsNavigationHeader(title: "설정", dismiss: {})
@@ -106,3 +107,4 @@ struct SettingsSectionDivider: View {
     }
     .background(Color.recapBackground)
 }
+#endif
