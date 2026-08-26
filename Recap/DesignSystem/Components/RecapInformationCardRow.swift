@@ -72,7 +72,13 @@ struct RecapInformationCardRow: View {
                 hasFavoriteFold: true,
                 size: CGSize(width: 62, height: 80),
                 fallbackStyle: .character,
-                onRemoteLoadFailure: onRemoteImageFailure
+                onRemoteLoadFailure: onRemoteImageFailure,
+                onRemoteLoadCompletion: { succeeded in
+#if IMAGE_PERFORMANCE_MEASUREMENT
+                    guard succeeded else { return }
+                    ImagePerformanceMeasurement.shared.markCategoryThumbnailLoaded(captureID: card.captureID)
+#endif
+                }
             )
 
             RecapIconView(

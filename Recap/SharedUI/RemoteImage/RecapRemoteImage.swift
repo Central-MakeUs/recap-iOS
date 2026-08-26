@@ -4,20 +4,26 @@ import SwiftUI
 import UIKit
 
 /// Kingfisher 도입 전후 원격 이미지 비용을 같은 Instruments trace에서 비교한다.
-/// URL에는 presigned query가 포함되므로 식별자나 URL 원문은 기록하지 않는다.
+/// URL에는 민감한 query가 포함될 수 있으므로 식별자나 URL 원문은 기록하지 않는다.
 private nonisolated enum RecapRemoteImageMetrics {
     static let log = OSLog(
         subsystem: "com.centralmakeus.recap",
         category: .pointsOfInterest
     )
 
-    static func beginLoad() -> OSSignpostID {
+    static func beginLoad() -> OSSignpostID? {
+#if IMAGE_PERFORMANCE_MEASUREMENT
         let signpostID = OSSignpostID(log: log)
         os_signpost(.begin, log: log, name: "RemoteImageLoad", signpostID: signpostID)
         return signpostID
+#else
+        nil
+#endif
     }
 
-    static func endLoad(_ signpostID: OSSignpostID, outcome: Int) {
+    static func endLoad(_ signpostID: OSSignpostID?, outcome: Int) {
+#if IMAGE_PERFORMANCE_MEASUREMENT
+        guard let signpostID else { return }
         os_signpost(
             .end,
             log: log,
@@ -26,9 +32,11 @@ private nonisolated enum RecapRemoteImageMetrics {
             "outcome=%{public}d",
             outcome
         )
+#endif
     }
 
     static func recordDownload(statusCode: Int, byteCount: Int) {
+#if IMAGE_PERFORMANCE_MEASUREMENT
         os_signpost(
             .event,
             log: log,
@@ -37,15 +45,22 @@ private nonisolated enum RecapRemoteImageMetrics {
             statusCode,
             byteCount
         )
+#endif
     }
 
-    static func beginDecode() -> OSSignpostID {
+    static func beginDecode() -> OSSignpostID? {
+#if IMAGE_PERFORMANCE_MEASUREMENT
         let signpostID = OSSignpostID(log: log)
         os_signpost(.begin, log: log, name: "RemoteImageDecode", signpostID: signpostID)
         return signpostID
+#else
+        nil
+#endif
     }
 
-    static func endDecode(_ signpostID: OSSignpostID, succeeded: Bool) {
+    static func endDecode(_ signpostID: OSSignpostID?, succeeded: Bool) {
+#if IMAGE_PERFORMANCE_MEASUREMENT
+        guard let signpostID else { return }
         os_signpost(
             .end,
             log: log,
@@ -54,6 +69,7 @@ private nonisolated enum RecapRemoteImageMetrics {
             "succeeded=%{public}d",
             succeeded ? 1 : 0
         )
+#endif
     }
 }
 
@@ -163,6 +179,7 @@ struct RecapRemoteImage<
     @ViewBuilder let imageContent: (UIImage) -> ImageContent
     @ViewBuilder let loadingContent: () -> LoadingContent
     @ViewBuilder let failureContent: () -> FailureContent
+    var onLoadCompletion: (Bool) -> Void = { _ in }
 
     @State private var loader = RecapRemoteImageLoader()
 
@@ -179,6 +196,11 @@ struct RecapRemoteImage<
         }
         .task(id: url) {
             let failure = await loader.load(url)
+            switch loader.state {
+            case .loaded: onLoadCompletion(true)
+            case .failed: onLoadCompletion(false)
+            case .idle, .loading: break
+            }
             guard failure == .expiredURL, !Task.isCancelled else { return }
             onExpiredURL(url)
         }

@@ -16,6 +16,7 @@ struct RecapScreenshotThumbnail: View {
     var size: CGSize? = nil
     var fallbackStyle: FallbackStyle = .folderCharacter
     var onRemoteLoadFailure: (URL) -> Void = { _ in }
+    var onRemoteLoadCompletion: (Bool) -> Void = { _ in }
 
     var body: some View {
         Group {
@@ -37,7 +38,8 @@ struct RecapScreenshotThumbnail: View {
                     },
                     failureContent: {
                         fallback
-                    }
+                    },
+                    onLoadCompletion: onRemoteLoadCompletion
                 )
             } else {
                 fallback
