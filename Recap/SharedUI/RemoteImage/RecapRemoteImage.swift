@@ -1,6 +1,61 @@
 import Observation
+import os
 import SwiftUI
 import UIKit
+
+/// Kingfisher 도입 전후 원격 이미지 비용을 같은 Instruments trace에서 비교한다.
+/// URL에는 presigned query가 포함되므로 식별자나 URL 원문은 기록하지 않는다.
+private nonisolated enum RecapRemoteImageMetrics {
+    static let log = OSLog(
+        subsystem: "com.centralmakeus.recap",
+        category: .pointsOfInterest
+    )
+
+    static func beginLoad() -> OSSignpostID {
+        let signpostID = OSSignpostID(log: log)
+        os_signpost(.begin, log: log, name: "RemoteImageLoad", signpostID: signpostID)
+        return signpostID
+    }
+
+    static func endLoad(_ signpostID: OSSignpostID, outcome: Int) {
+        os_signpost(
+            .end,
+            log: log,
+            name: "RemoteImageLoad",
+            signpostID: signpostID,
+            "outcome=%{public}d",
+            outcome
+        )
+    }
+
+    static func recordDownload(statusCode: Int, byteCount: Int) {
+        os_signpost(
+            .event,
+            log: log,
+            name: "RemoteImageDownload",
+            "status=%{public}d bytes=%{public}ld",
+            statusCode,
+            byteCount
+        )
+    }
+
+    static func beginDecode() -> OSSignpostID {
+        let signpostID = OSSignpostID(log: log)
+        os_signpost(.begin, log: log, name: "RemoteImageDecode", signpostID: signpostID)
+        return signpostID
+    }
+
+    static func endDecode(_ signpostID: OSSignpostID, succeeded: Bool) {
+        os_signpost(
+            .end,
+            log: log,
+            name: "RemoteImageDecode",
+            signpostID: signpostID,
+            "succeeded=%{public}d",
+            succeeded ? 1 : 0
+        )
+    }
+}
 
 nonisolated enum RecapRemoteImageFailure: Equatable, Sendable {
     case expiredURL
@@ -28,10 +83,13 @@ private nonisolated struct RecapDecodedImage: @unchecked Sendable {
 
 private nonisolated enum RecapRemoteImageDecoder {
     static func decode(_ data: Data) async -> RecapDecodedImage? {
-        await Task.detached(priority: .userInitiated) {
+        let signpostID = RecapRemoteImageMetrics.beginDecode()
+        let image: RecapDecodedImage? = await Task.detached(priority: .userInitiated) {
             guard let image = UIImage(data: data) else { return nil }
             return RecapDecodedImage(image: image.preparingForDisplay() ?? image)
         }.value
+        RecapRemoteImageMetrics.endDecode(signpostID, succeeded: image != nil)
+        return image
     }
 }
 
@@ -49,6 +107,9 @@ private final class RecapRemoteImageLoader {
 
     func load(_ url: URL) async -> RecapRemoteImageFailure? {
         state = .loading
+        let signpostID = RecapRemoteImageMetrics.beginLoad()
+        var outcome = 0
+        defer { RecapRemoteImageMetrics.endLoad(signpostID, outcome: outcome) }
 
         do {
             let (data, response) = try await URLSession.shared.data(from: url)
@@ -56,27 +117,37 @@ private final class RecapRemoteImageLoader {
 
             guard let response = response as? HTTPURLResponse else {
                 state = .failed
+                outcome = 1
                 return .unavailable
             }
+            RecapRemoteImageMetrics.recordDownload(
+                statusCode: response.statusCode,
+                byteCount: data.count
+            )
             if let failure = RecapRemoteImageResponsePolicy.failure(
                 for: response.statusCode
             ) {
                 state = .failed
+                outcome = response.statusCode
                 return failure
             }
             guard let decodedImage = await RecapRemoteImageDecoder.decode(data) else {
                 state = .failed
+                outcome = 2
                 return .unavailable
             }
             try Task.checkCancellation()
 
             state = .loaded(decodedImage.image)
+            outcome = 200
             return nil
         } catch is CancellationError {
             state = .idle
+            outcome = 3
             return nil
         } catch {
             state = .failed
+            outcome = 4
             return .unavailable
         }
     }
