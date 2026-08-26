@@ -15,7 +15,7 @@
 
 <p align="center">
   <a href="https://apps.apple.com/us/app/recap-%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7-%EC%9A%94%EC%95%BD-%EC%A0%95%EB%A6%AC/id6795902468">
-    <img width="360" alt="Recap 피처 그래픽" src="docs/images/app-store/screenshot-01.jpg" />
+    <img width="1024" alt="Recap 피처 그래픽" src="docs/images/app-store/cover.png" />
   </a>
 </p>
 
