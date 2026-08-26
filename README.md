@@ -50,14 +50,9 @@
 |:--|:--|
 | Language | Swift 6 |
 | UI | SwiftUI, Lottie, ConfettiSwiftUI |
-| Architecture | Feature 중심 구성, 상태 저장소 기반 화면 상태 관리 |
-| Navigation | SwiftUI NavigationStack, App Router |
-| Async | Swift Concurrency (`async`/`await`) |
-| Network | Alamofire, URLSession |
+| Network | Alamofire |
 | Auth | Kakao Login, Sign in with Apple |
-| Persistence | Keychain, UserDefaults |
-| Image | SwiftUI `AsyncImage`, 원본 이미지 확대 보기 |
-| Extension | iOS Share Extension, App Group |
+| Extension | iOS Share Extension |
 | Analysis | 서버 기반 OCR·AI 분석 |
 | Test | XCTest |
 
