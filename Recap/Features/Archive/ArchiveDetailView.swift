@@ -58,6 +58,9 @@ struct ArchiveDetailContainerView: View {
             }
             guard !Task.isCancelled else { return }
             loadedRevision = revision
+#if IMAGE_PERFORMANCE_MEASUREMENT
+            ImagePerformanceMeasurement.shared.beginCategory(scope: scope, cards: cards)
+#endif
         }
     }
 

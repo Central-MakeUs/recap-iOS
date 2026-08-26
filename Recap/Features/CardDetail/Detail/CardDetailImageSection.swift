@@ -27,7 +27,15 @@ struct CardDetailImageSection: View {
                 cornerRadius: CardDetailStyle.cornerRadius,
                 size: size,
                 fallbackStyle: .folderCharacter,
-                onRemoteLoadFailure: onRemoteImageFailure
+                onRemoteLoadFailure: onRemoteImageFailure,
+                onRemoteLoadCompletion: { succeeded in
+#if IMAGE_PERFORMANCE_MEASUREMENT
+                    ImagePerformanceMeasurement.shared.finishDetail(
+                        captureID: card.captureID,
+                        succeeded: succeeded
+                    )
+#endif
+                }
             )
             .frame(width: size.width, height: size.height)
             .clipShape(
@@ -51,6 +59,11 @@ struct CardDetailImageSection: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel("원본 이미지 전체 보기")
+        .onAppear {
+#if IMAGE_PERFORMANCE_MEASUREMENT
+            ImagePerformanceMeasurement.shared.beginDetail(captureID: card.captureID)
+#endif
+        }
     }
 }
 
